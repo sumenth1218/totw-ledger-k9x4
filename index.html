@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>TOTW — 2026 Studio Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2F1ED; --ink:#1B1A17; --ink-soft:#6E6A61; --line:#D9D6CE;
+  --sindoor:#B5392A; --sindoor-soft:#F3DEDA;
+  --teal:#2E5A5C; --leaf:#3E5C44; --leaf-soft:#E4EAE2;
+  --amber:#B07C28; --amber-soft:#F1E7D2;
+  --cold:#5B6B8C; --cold-soft:#E3E7EF;
+  --card:#FAFAF7;
+  --display:'Cormorant Garamond', Georgia, serif;
+  --body:'Inter', -apple-system, sans-serif;
+  --mono:'Spline Sans Mono', ui-monospace, monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding:0 0 80px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+header{padding:44px 0 26px;border-bottom:1px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+h1{font-family:var(--display);font-weight:500;font-size:clamp(32px,6vw,56px);line-height:1.02;margin-top:10px}
+h1 em{font-style:italic;color:var(--sindoor)}
+.header-row{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.legend{display:flex;gap:16px;flex-wrap:wrap;padding-bottom:6px}
+.legend span{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink-soft)}
+.chip{width:13px;height:13px;border-radius:3px;flex:none}
+.chip.booked{background:var(--sindoor)}
+.chip.team{background:var(--teal)}
+.chip.free{background:transparent;border:1px solid var(--line)}
+
+.sync-banner{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:9px 14px;border-radius:6px;margin-top:14px;display:none}
+.sync-banner.local{display:block;background:var(--amber-soft);color:var(--amber);border:1px solid #D8C396}
+.sync-banner.live{display:block;background:var(--leaf-soft);color:var(--leaf);border:1px solid #BCCDBE}
+
+.strip{display:flex;border-bottom:1px solid var(--ink);overflow-x:auto}
+.strip div{padding:16px 26px 16px 0;margin-right:26px;border-right:1px solid var(--line);flex:none}
+.strip div:last-child{border-right:none}
+.strip b{font-family:var(--display);font-size:30px;font-weight:600;display:block;line-height:1}
+.strip small{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+
+.main{display:grid;grid-template-columns:1fr 392px;gap:36px;margin-top:32px;align-items:start}
+@media(max-width:1000px){.main{grid-template-columns:1fr}}
+
+.months{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:1100px){.months{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.months{grid-template-columns:1fr}}
+.month{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px 14px 14px}
+.month.is-busy{border-color:#C9B6B0}
+.m-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.m-name{font-family:var(--display);font-size:21px;font-weight:600}
+.m-count{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-soft)}
+.m-count.zero{color:var(--leaf)}
+.dow,.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.dow span{font-family:var(--mono);font-size:9px;text-align:center;color:var(--ink-soft);padding-bottom:4px}
+.day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11.5px;border-radius:4px;border:1px solid transparent}
+.day.free{color:#8B877D}
+.day.booked{background:var(--sindoor);color:#FBF4F0;cursor:pointer;font-weight:500}
+.day.booked:hover{background:#933023}
+.day.team-booked{background:var(--teal);color:#EFF6F5;cursor:pointer;font-weight:500}
+.day.team-booked:hover{background:#234748}
+.day.today{border-color:var(--ink)}
+.day.past{opacity:.38}
+.day.blank{visibility:hidden}
+.tbd-note{margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--amber);border-top:1px dashed var(--line);padding-top:8px}
+
+.detail{position:fixed;inset:0;background:rgba(27,26,23,.45);display:none;align-items:flex-end;justify-content:center;z-index:50;padding:16px}
+.detail.open{display:flex}
+@media(min-width:700px){.detail{align-items:center}}
+.detail-card{background:var(--card);border-radius:10px;max-width:440px;width:100%;padding:26px;border-top:4px solid var(--sindoor);max-height:84vh;overflow:auto}
+.detail-card h3{font-family:var(--display);font-size:26px;font-weight:600}
+.detail-card .sub{font-family:var(--mono);font-size:11px;color:var(--sindoor);letter-spacing:.12em;text-transform:uppercase;margin:2px 0 16px}
+.evt{padding:11px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.evt b{font-size:14px;font-weight:600;display:block}
+.evt span{font-size:13px;color:var(--ink-soft)}
+.evt .src{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);display:inline-block;margin-top:3px}
+.evt-del{background:none;border:1px solid var(--line);border-radius:5px;color:var(--ink-soft);font-size:11px;font-family:var(--mono);cursor:pointer;padding:4px 8px;flex:none}
+.evt-del:hover{color:var(--sindoor);border-color:var(--sindoor)}
+.close-btn{margin-top:18px;width:100%;padding:11px;background:var(--ink);color:var(--paper);border:none;border-radius:6px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+
+.panel{position:sticky;top:16px}
+@media(max-width:1000px){.panel{position:static}}
+.panel-card{background:var(--ink);color:var(--paper);border-radius:8px;padding:22px}
+.tabs{display:flex;gap:6px;margin-bottom:18px;background:#2A2823;padding:4px;border-radius:7px}
+.tabs button{flex:1;padding:9px 6px;background:none;border:none;border-radius:5px;color:#A39F95;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.tabs button.active{background:var(--paper);color:var(--ink);font-weight:500}
+.panel-card h2{font-family:var(--display);font-size:25px;font-weight:500}
+.panel-card .hint{font-size:12.5px;color:#A39F95;margin:5px 0 16px}
+.field{margin-bottom:11px}
+.field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#A39F95;margin-bottom:5px}
+.field input,.field select{width:100%;padding:11px 12px;background:#2A2823;border:1px solid #44413A;border-radius:6px;color:var(--paper);font-family:var(--body);font-size:14px;outline:none}
+.field input:focus{border-color:#8A8678}
+.field input[type=date]{font-family:var(--mono);color-scheme:dark}
+.date-add{display:flex;gap:8px}
+.date-add input{flex:1}
+.date-add button{padding:0 16px;background:#44413A;border:none;border-radius:6px;color:var(--paper);font-size:20px;cursor:pointer;line-height:1}
+.date-add button:hover{background:#5A564D}
+.dchips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px}
+.dchip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:5px 8px 5px 10px;border-radius:99px;background:#2A2823;border:1px solid #44413A}
+.dchip.ok{border-color:#3E5C44;color:#BFD8C3}
+.dchip.bad{border-color:#7A3528;color:#F0C2B8}
+.dchip i{font-style:normal;cursor:pointer;opacity:.7;padding:0 2px}
+.dchip i:hover{opacity:1}
+.cat-row{display:flex;gap:6px;margin-bottom:13px}
+.cat-row button{flex:1;padding:9px 4px;border-radius:6px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;cursor:pointer;background:#2A2823;border:1px solid #44413A;color:#A39F95;text-transform:uppercase}
+.cat-row button.sel-HOT{background:var(--sindoor);border-color:var(--sindoor);color:#FBF4F0}
+.cat-row button.sel-WARM{background:var(--amber);border-color:var(--amber);color:#FFF8EA}
+.cat-row button.sel-COLD{background:var(--cold);border-color:var(--cold);color:#EEF1F7}
+.check-result{margin:4px 0 13px;padding:12px 14px;border-radius:6px;font-size:13.5px;display:none;line-height:1.45}
+.check-result.show{display:block}
+.check-result.ok{background:#28342B;color:#BFD8C3;border:1px solid #3E5C44}
+.check-result.clash{background:#3A241F;color:#F0C2B8;border:1px solid #7A3528}
+.check-result b{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px}
+.btn-main{width:100%;padding:13px;background:var(--sindoor);color:#FBF4F0;border:none;border-radius:6px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;font-weight:500}
+.btn-main:hover{background:#9B3022}
+.btn-main.teal{background:var(--teal)}
+.btn-main.teal:hover{background:#234748}
+.sync-note{font-family:var(--mono);font-size:9.5px;color:#7E7A6F;margin-top:12px;text-align:center;line-height:1.6}
+
+.enq-list{margin-top:22px}
+.enq-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--ink);padding-bottom:8px}
+.enq-head h2{font-family:var(--display);font-size:24px;font-weight:600}
+.enq-head small{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase}
+.filters{display:flex;gap:6px;margin:12px 0 4px}
+.filters button{padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink-soft);cursor:pointer;text-transform:uppercase}
+.filters button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.enq{padding:15px 2px;border-bottom:1px solid var(--line)}
+.enq-top{display:flex;gap:11px;align-items:flex-start}
+.enq.done .enq-name{text-decoration:line-through;color:var(--ink-soft)}
+.enq input[type=checkbox]{appearance:none;width:19px;height:19px;border:1.5px solid var(--ink);border-radius:4px;cursor:pointer;flex:none;margin-top:2px;position:relative;background:var(--card)}
+.enq input[type=checkbox]:checked{background:var(--leaf);border-color:var(--leaf)}
+.enq input[type=checkbox]:checked::after{content:'';position:absolute;left:5px;top:1.5px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(43deg)}
+.enq-body{flex:1;min-width:0}
+.enq-name{font-weight:600;font-size:14.5px}
+.enq-meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin-top:2px}
+.enq-dates{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.dtag{font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:99px;letter-spacing:.04em}
+.dtag.free{background:var(--leaf-soft);color:var(--leaf)}
+.dtag.clash{background:var(--sindoor-soft);color:var(--sindoor);text-decoration:line-through}
+.cat-pill{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;padding:4px 11px;border-radius:99px;border:none;cursor:pointer;flex:none;font-weight:500}
+.cat-pill.HOT{background:var(--sindoor);color:#FBF4F0}
+.cat-pill.WARM{background:var(--amber);color:#FFF8EA}
+.cat-pill.COLD{background:var(--cold);color:#EEF1F7}
+.enq-del{background:none;border:none;color:var(--ink-soft);font-size:17px;cursor:pointer;padding:2px 6px;line-height:1;flex:none}
+.enq-del:hover{color:var(--sindoor)}
+.updates{margin:9px 0 0 30px}
+.upd{font-size:12.5px;color:var(--ink-soft);padding:5px 0;border-top:1px dashed var(--line)}
+.upd b{color:var(--ink);font-weight:500}
+.upd small{font-family:var(--mono);font-size:9.5px;display:block;margin-top:1px;color:#9B968B}
+.upd-add{display:flex;gap:7px;margin:8px 0 0 30px}
+.upd-add input{flex:1;padding:8px 11px;border:1px solid var(--line);border-radius:6px;background:var(--card);font-size:12.5px;outline:none;font-family:var(--body)}
+.upd-add input:focus{border-color:var(--ink-soft)}
+.upd-add button{padding:0 13px;border:none;border-radius:6px;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:10px;letter-spacing:.08em;cursor:pointer;text-transform:uppercase}
+.empty{padding:26px 4px;text-align:center;color:var(--ink-soft);font-family:var(--display);font-style:italic;font-size:17px}
+
+.activity{margin-top:26px}
+.activity h2{font-family:var(--display);font-size:22px;font-weight:600;border-bottom:1px solid var(--ink);padding-bottom:8px}
+.act{font-size:12.5px;color:var(--ink-soft);padding:8px 2px;border-bottom:1px solid var(--line)}
+.act b{color:var(--ink);font-weight:600}
+.act small{font-family:var(--mono);font-size:9.5px;display:block;color:#9B968B;margin-top:1px}
+
+.gate,.who{position:fixed;inset:0;background:var(--paper);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.gate-card{max-width:380px;width:100%;text-align:center}
+.gate-card .eyebrow{margin-bottom:8px}
+.gate-card h2{font-family:var(--display);font-size:34px;font-weight:500;margin-bottom:18px}
+.gate-card input{width:100%;padding:13px;border:1px solid var(--ink);border-radius:6px;background:var(--card);font-family:var(--mono);font-size:15px;text-align:center;outline:none;margin-bottom:10px;letter-spacing:.2em}
+.gate-card button{width:100%;padding:13px;background:var(--ink);color:var(--paper);border:none;border-radius:6px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+.gate-err{color:var(--sindoor);font-size:12.5px;margin-bottom:10px;display:none}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--paper);padding:12px 22px;border-radius:99px;font-family:var(--mono);font-size:12px;transition:transform .3s ease;z-index:60;max-width:92vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+
+<!-- ===================== ACCESS GATE ===================== -->
+<div class="gate" id="gate" style="display:none">
+  <div class="gate-card">
+    <div class="eyebrow">Tale of Two Weddings</div>
+    <h2>Studio Ledger</h2>
+    <p class="gate-err" id="gateErr">That's not it. Try again.</p>
+    <input type="password" id="gateCode" placeholder="ACCESS CODE" autocomplete="off">
+    <button onclick="tryGate()">Enter</button>
+  </div>
+</div>
+
+<!-- ===================== NAME PROMPT ===================== -->
+<div class="who" id="who" style="display:none">
+  <div class="gate-card">
+    <div class="eyebrow">Before you start</div>
+    <h2>Who's editing?</h2>
+    <input type="text" id="whoName" placeholder="Your name" autocomplete="off" style="letter-spacing:normal;font-family:var(--body)">
+    <button onclick="setWho()">Continue</button>
+  </div>
+</div>
+
+<div class="wrap">
+<header>
+  <div class="header-row">
+    <div>
+      <div class="eyebrow">Tale of Two Weddings · Studio Ledger</div>
+      <h1>2026 — Dates <em>&amp;</em> Enquiries</h1>
+    </div>
+    <div class="legend">
+      <span><i class="chip booked"></i>Booked</span>
+      <span><i class="chip team"></i>Added by team</span>
+      <span><i class="chip free"></i>Free</span>
+    </div>
+  </div>
+  <div class="sync-banner" id="syncBanner"></div>
+</header>
+
+<div class="strip" id="strip"></div>
+
+<div class="main">
+  <div>
+    <div class="months" id="months"></div>
+    <div class="activity">
+      <h2>Recent activity</h2>
+      <div id="actItems"><div class="empty">Edits show up here, with who made them and when.</div></div>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div class="panel-card">
+      <div class="tabs">
+        <button id="tabEnq" class="active" onclick="setTab('enq')">New enquiry</button>
+        <button id="tabBlock" onclick="setTab('block')">Block dates</button>
+      </div>
+
+      <div id="paneEnq">
+        <h2>New enquiry</h2>
+        <p class="hint">Add every date the couple is asking about — most enquiries span 3–5 event days.</p>
+        <div class="field">
+          <label for="enqName">Couple / name</label>
+          <input id="enqName" type="text" placeholder="e.g. Ananya &amp; Rohit" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>Requested dates</label>
+          <div class="date-add">
+            <input id="enqDate" type="date" min="2026-01-01" max="2026-12-31">
+            <button onclick="addEnqDate()" aria-label="Add date">+</button>
+          </div>
+          <div class="dchips" id="enqChips"></div>
+        </div>
+        <div class="field">
+          <label>Category</label>
+          <div class="cat-row" id="catRow">
+            <button onclick="setCat('COLD')" id="catCOLD">Cold</button>
+            <button onclick="setCat('WARM')" id="catWARM">Warm</button>
+            <button onclick="setCat('HOT')" id="catHOT">Hot</button>
+          </div>
+        </div>
+        <div class="check-result" id="checkResult"></div>
+        <button class="btn-main" id="btnAdd" onclick="addEnquiry()">Add enquiry</button>
+      </div>
+
+      <div id="paneBlock" style="display:none">
+        <h2>Block dates</h2>
+        <p class="hint">Booking confirmed? Add all its dates at once — they turn teal for the whole team.</p>
+        <div class="field">
+          <label for="bkName">Couple / client</label>
+          <input id="bkName" type="text" placeholder="e.g. Ananya &amp; Rohit" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="bkEvent">Event</label>
+          <input id="bkEvent" type="text" placeholder="e.g. Wedding, Haldi, Pre-wedding" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="bkLoc">Location</label>
+          <input id="bkLoc" type="text" placeholder="e.g. Hyderabad" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>Dates</label>
+          <div class="date-add">
+            <input id="bkDate" type="date" min="2026-01-01" max="2026-12-31">
+            <button onclick="addBkDate()" aria-label="Add date">+</button>
+          </div>
+          <div class="dchips" id="bkChips"></div>
+        </div>
+        <div class="check-result" id="blockResult"></div>
+        <button class="btn-main teal" onclick="blockDates()">Block these dates</button>
+      </div>
+      <p class="sync-note" id="footNote"></p>
+    </div>
+
+    <div class="enq-list">
+      <div class="enq-head">
+        <h2>Enquiries</h2>
+        <small id="enqCount"></small>
+      </div>
+      <div class="filters" id="filters">
+        <button class="on" data-f="ALL" onclick="setFilter('ALL')">All</button>
+        <button data-f="HOT" onclick="setFilter('HOT')">Hot</button>
+        <button data-f="WARM" onclick="setFilter('WARM')">Warm</button>
+        <button data-f="COLD" onclick="setFilter('COLD')">Cold</button>
+      </div>
+      <div id="enqItems"></div>
+    </div>
+  </aside>
+</div>
+</div>
+
+<div class="detail" id="detail">
+  <div class="detail-card">
+    <h3 id="dTitle"></h3>
+    <div class="sub" id="dSub"></div>
+    <div id="dEvents"></div>
+    <button class="close-btn" onclick="closeDetail()">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase (loads only if configured below) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<script>
+/* ============================================================
+   CONFIG — the only part you ever touch.
+   1. ACCESS_CODE: the code your team types to open the page.
+      Set to "" to disable the gate.
+   2. FIREBASE: paste your config from the Firebase console here.
+      Leave as null to run in local-only mode (no team sync).
+   ============================================================ */
+const CONFIG = {
+  ACCESS_CODE: "TOTW2026",
+  FIREBASE: {
+    apiKey: "AIzaSyCV14o1M9eUANLRxG_JrDZH2aGfqY3kjA4",
+    authDomain: "tot-ledger.firebaseapp.com",
+    databaseURL: "https://tot-ledger-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "tot-ledger",
+    storageBucket: "tot-ledger.firebasestorage.app",
+    messagingSenderId: "595678125258",
+    appId: "1:595678125258:web:01fef3d4661b6f52346833"
+  }
+};
+
+/* ---------------- baked-in bookings (TOTW 2026 sheet, June 2026) ---------------- */
+const BAKED = [
+[1,11,"Swathi","Cradle ceremony","Hyderabad"],
+[2,4,"Varsha & Darshan","Lagna Patrika, Haldi, Sangeet","Bangalore"],
+[2,5,"Varsha & Darshan","Bride Mehendi","Bangalore"],
+[2,6,"Varsha & Darshan","Chapra Pooja / Groom Haldi","Bangalore"],
+[2,6,"Komal & Preet","Bhyaat & Interviews","Hyderabad"],
+[2,7,"Varsha & Darshan","Reception","Bangalore"],
+[2,8,"Komal & Preet","Haldi","Hyderabad"],
+[2,8,"Varsha & Darshan","Wedding","Bangalore"],
+[2,9,"Komal & Preet","Mehendi","Hyderabad"],
+[2,10,"Komal & Preet","Baarat, Reception & Pheras","Hyderabad"],
+[2,11,"Komal & Preet","Bidaai","Hyderabad"],
+[2,18,"Preethi & Chethan","Mehendi","Anantapur"],
+[2,19,"Preethi & Chethan","Bride Making & Sangeet","Anantapur"],
+[2,20,"Meghana & Smaran","Lagna Patrika","Hyderabad"],
+[2,20,"Preethi & Chethan","Wedding","Anantapur"],
+[2,22,"Mohan & Varshini","Engagement","Hyderabad"],
+[3,1,"Mohan & Varshini","Haldi & Sangeet","Hyderabad"],
+[3,4,"Meghana & Smaran","Bride & Groom Making, Haldi","Hyderabad"],
+[3,4,"Mohan & Varshini","Bride Making","Kurnool"],
+[3,5,"Mohan & Varshini","Groom Making","Karimnagar"],
+[3,5,"Lakshmi & Shiva","Rituals & Wedding","Vijayawada"],
+[3,5,"Meghana & Smaran","Wedding","Hyderabad"],
+[3,6,"Mohan & Varshini","Wedding","Hyderabad"],
+[3,9,"Shivani & Kashyap","Proposal Shoot","Phuket"],
+[3,12,"Kavya & Bharath","Wedding","Hyderabad"],
+[3,18,"Meghana & Smaran","Reception","Hyderabad"],
+[3,20,"Shivani & Kashyap","Engagement","Eluru"],
+[4,8,"Tanvi & Vamshi","Pre-Wedding","—"],
+[4,11,"Shivani & Kashyap","Cocktail","Hyderabad"],
+[4,20,"Shivani & Kashyap","Bride & Groom Making","Eluru / Hyd"],
+[4,21,"Shivani & Kashyap","Wedding","Eluru"],
+[4,22,"Shivani & Kashyap","Wedding (contd.)","Eluru"],
+[4,23,"Anusha & Suraj","Lagna Patrika","Hyderabad"],
+[4,24,"Shivani & Kashyap","Vratham","Hyderabad"],
+[5,5,"Simran & Noel","Ladies Sangeet","Hyderabad"],
+[5,6,"Mugdha & Vijay","Mehendi","Hyderabad"],
+[5,7,"Mugdha & Vijay","Groom Making & Edurukollu","Hyderabad"],
+[5,8,"Mugdha & Vijay","Wedding","Hyderabad"],
+[5,9,"Simran & Noel","Mehendi, Cocktail & Sangeet","Hyderabad"],
+[5,10,"Simran & Noel","Haldi + Wedding","Hyderabad"],
+[5,13,"Sameepa & Sri Raj","Pasupu Danchadam","Anantapur"],
+[5,17,"Vedika & Devansh","Post Wedding","Hyderabad"],
+[5,30,"Kavya & Bharath","Interview","Hyderabad"],
+[6,24,"Mishrita & Charan","Mangalsnanam, Haldi & Mehendi","Tirupati"],
+[6,25,"Mishrita & Charan","Bride Making, Pradhanam & Sangeet","Tirupati"],
+[6,25,"Sushmitha & Bharath","Engagement","Hyderabad"],
+[6,26,"Mishrita & Charan","Nalugu & Wedding","Tirupati"],
+[6,29,"Zoya","Haldi","—"],
+[6,30,"Zoya","Mehendi & Sanchak","—"],
+[7,2,"Zoya","Shaadi","—"],
+[7,3,"Zoya","Walima","—"],
+[8,10,"Nidhi & Archit","Pre-Wedding","Hyderabad"],
+[8,11,"Nidhi & Archit","Pre-Wedding","Hyderabad"],
+[8,13,"Nidhi & Archit","Mehendi","Hyderabad"],
+[8,14,"Nidhi & Archit","Haldi & Sangeet","Hyderabad"],
+[8,15,"Nidhi & Archit","Bride & Groom Making, Vratam","Hyderabad"],
+[8,16,"Nidhi & Archit","Baarat, Wedding & Rituals","Shamshabad"],
+[8,21,"Sameepa & Sri Raj","Haldi & Mehendi","Anantapur"],
+[8,22,"Sameepa & Sri Raj","Bride Making & Sangeet","Anantapur"],
+[8,23,"Sameepa & Sri Raj","Wedding","Anantapur"],
+[10,29,"Vipin & Prathyusha","Mehendi","Dallas"],
+[10,30,"Vipin & Prathyusha","Sangeet & Cocktail","Dallas"],
+[10,30,"Dhiraj & Subhasya","Engagement","Tenali"],
+[10,31,"Vipin & Prathyusha","Haldi & Makings","Dallas"],
+[11,1,"Vipin & Prathyusha","Wedding","Dallas"],
+[11,16,"Sushmitha & Bharath","Bride Making","Hyderabad"],
+[11,17,"Sushmitha & Bharath","Bride Making","Hyderabad"],
+[11,18,"Sushmitha & Bharath","Wedding","Hyderabad"],
+[11,19,"Shreyashi & Sachith","Mehendi & Pooja","Ayana Resort, Hyd"],
+[11,19,"Manisha & Prakash","Pre-Wedding","Michigan, USA"],
+[11,20,"Manisha & Prakash","Mehendi","Michigan, USA"],
+[11,20,"Shreyashi & Sachith","Haldi, Sangeet & After Party","Ayana Resort, Hyd"],
+[11,21,"Manisha & Prakash","Haldi & Makings","Michigan, USA"],
+[11,21,"Shreyashi & Sachith","Rituals, Baarat & Wedding","Ayana Resort, Hyd"],
+[11,22,"Manisha & Prakash","Wedding","Michigan, USA"],
+[11,24,"Dhiraj & Subhasya","Mehendi & Sangeet","Kurnool"],
+[11,25,"Sireesha & Vineeth","Sangeet","Hyderabad"],
+[11,25,"Dhiraj & Subhasya","Groom Making & Mangalsnanam","Kurnool"],
+[11,26,"Dhiraj & Subhasya","Bride Making, Haldi & Wedding","Tenali"],
+[11,29,"Sireesha & Vineeth","Haldi & Mehendi","Hyderabad"],
+[12,2,"Sireesha & Vineeth","Bride & Groom Making","Hyderabad / Kodad"],
+[12,3,"Sireesha & Vineeth","Wedding","Hyderabad"]
+];
+const TBD = {8:"+2 undated pre-weddings (Nidhi & Archit · Sameepa & Sri Raj)",11:"+2 undated shoots (Sireesha & Vineeth pre-wed · Dhiraj & Subhasya pre-wed)"};
+const MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+/* ---------------- state ---------------- */
+let teamBookings = {};   // id -> {m,d,c,e,l,by,at}
+let enquiries = {};      // id -> {name,dates[],cat,done,by,at,updates[]}
+let activity = {};       // id -> {by,text,at}
+let byDate = {};
+let enqDates = [];       // dates staged in the enquiry form
+let bkDates = [];        // dates staged in the block form
+let selCat = "WARM";
+let filterCat = "ALL";
+let editor = localStorage.getItem('totw_editor') || "";
+let db = null, liveMode = false;
+
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const fmt = iso => {const[y,m,d]=iso.split('-').map(Number);return MN[m-1].slice(0,3)+" "+d;};
+const stamp = () => new Date().toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+
+/* ---------------- gate + editor name ---------------- */
+function boot(){
+  if(CONFIG.ACCESS_CODE && localStorage.getItem('totw_gate')!==CONFIG.ACCESS_CODE){
+    document.getElementById('gate').style.display='flex';
+    document.getElementById('gateCode').addEventListener('keydown',e=>{if(e.key==='Enter')tryGate();});
+    return;
+  }
+  afterGate();
+}
+function tryGate(){
+  const v=document.getElementById('gateCode').value.trim();
+  if(v===CONFIG.ACCESS_CODE){
+    localStorage.setItem('totw_gate',v);
+    document.getElementById('gate').style.display='none';
+    afterGate();
+  } else {
+    document.getElementById('gateErr').style.display='block';
+  }
+}
+function afterGate(){
+  if(!editor){
+    document.getElementById('who').style.display='flex';
+    document.getElementById('whoName').addEventListener('keydown',e=>{if(e.key==='Enter')setWho();});
+    return;
+  }
+  start();
+}
+function setWho(){
+  const v=document.getElementById('whoName').value.trim();
+  if(!v)return;
+  editor=v;
+  localStorage.setItem('totw_editor',v);
+  document.getElementById('who').style.display='none';
+  start();
+}
+
+/* ---------------- storage layer ---------------- */
+function start(){
+  setCat("WARM");
+  if(CONFIG.FIREBASE && window.firebase){
+    try{
+      firebase.initializeApp(CONFIG.FIREBASE);
+      db=firebase.database();
+      liveMode=true;
+      banner('live','Live sync on — every change saves instantly and appears for the whole team.');
+      db.ref('bookings').on('value',s=>{teamBookings=s.val()||{};refresh();});
+      db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};refresh();});
+      db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
+      document.getElementById('footNote').textContent='Shared live ledger. Signed in as '+editor+'.';
+      return;
+    }catch(e){ console.warn('Firebase init failed',e); }
+  }
+  // local fallback
+  banner('local','Local mode — changes save on this device only. Add the Firebase config to turn on team sync.');
+  try{teamBookings=JSON.parse(localStorage.getItem('totw_bk')||'{}');}catch(e){teamBookings={};}
+  try{enquiries=JSON.parse(localStorage.getItem('totw_enq')||'{}');}catch(e){enquiries={};}
+  try{activity=JSON.parse(localStorage.getItem('totw_act')||'{}');}catch(e){activity={};}
+  document.getElementById('footNote').textContent='Local mode. Editing as '+editor+'.';
+  refresh();renderActivity();
+}
+function banner(kind,msg){
+  const b=document.getElementById('syncBanner');
+  b.className='sync-banner '+kind;
+  b.textContent=msg;
+}
+function saveBookings(){
+  if(liveMode)return; // firebase writes happen per-item
+  localStorage.setItem('totw_bk',JSON.stringify(teamBookings));
+}
+function saveEnquiries(){
+  if(liveMode)return;
+  localStorage.setItem('totw_enq',JSON.stringify(enquiries));
+}
+function log(text){
+  const entry={by:editor,text,at:stamp(),t:Date.now()};
+  if(liveMode){db.ref('activity').push(entry);return;}
+  activity[uid('a')]=entry;
+  const keys=Object.keys(activity).sort((a,b)=>activity[a].t-activity[b].t);
+  while(keys.length>15){delete activity[keys.shift()];}
+  localStorage.setItem('totw_act',JSON.stringify(activity));
+  renderActivity();
+}
+function writeBooking(id,obj){ if(liveMode)db.ref('bookings/'+id).set(obj); else {teamBookings[id]=obj;saveBookings();refresh();} }
+function deleteBooking(id){ if(liveMode)db.ref('bookings/'+id).remove(); else {delete teamBookings[id];saveBookings();refresh();} }
+function writeEnquiry(id,obj){ if(liveMode)db.ref('enquiries/'+id).set(obj); else {enquiries[id]=obj;saveEnquiries();refresh();} }
+function deleteEnquiry(id){ if(liveMode)db.ref('enquiries/'+id).remove(); else {delete enquiries[id];saveEnquiries();refresh();} }
+
+/* ---------------- index + rendering ---------------- */
+function rebuildIndex(){
+  byDate={};
+  BAKED.forEach(([m,d,c,e,l])=>{const k=m+"-"+d;(byDate[k]=byDate[k]||[]).push({c,e,l,baked:true});});
+  Object.entries(teamBookings).forEach(([id,b])=>{const k=b.m+"-"+b.d;(byDate[k]=byDate[k]||[]).push({c:b.c,e:b.e,l:b.l,baked:false,id});});
+}
+function refresh(){rebuildIndex();renderStrip();renderCalendar();renderEnquiries();renderChips('enq');renderChips('bk');}
+
+function renderStrip(){
+  const bookedDays=Object.keys(byDate).length;
+  const couples=new Set([...BAKED.map(b=>b[2]),...Object.values(teamBookings).map(b=>b.c)]).size;
+  const open=Object.values(enquiries).filter(x=>!x.done).length;
+  const hot=Object.values(enquiries).filter(x=>!x.done&&x.cat==='HOT').length;
+  document.getElementById('strip').innerHTML=
+   `<div><b>${bookedDays}</b><small>Booked days</small></div>
+    <div><b>${couples}</b><small>Couples / clients</small></div>
+    <div><b>${365-bookedDays}</b><small>Open days</small></div>
+    <div><b>${open}</b><small>Open enquiries</small></div>
+    <div><b>${hot}</b><small>Hot leads</small></div>`;
+}
+
+function renderCalendar(){
+  const today=new Date();
+  const isThisYear=today.getFullYear()===2026;
+  const el=document.getElementById('months');
+  el.innerHTML='';
+  for(let m=0;m<12;m++){
+    const dim=new Date(2026,m+1,0).getDate();
+    const off=(new Date(2026,m,1).getDay()+6)%7;
+    let cells='',count=0;
+    for(let i=0;i<off;i++)cells+='<i class="day blank"></i>';
+    for(let d=1;d<=dim;d++){
+      const evts=byDate[(m+1)+"-"+d];
+      const booked=!!evts;
+      if(booked)count++;
+      const teamOnly=booked&&evts.every(x=>!x.baked);
+      const isToday=isThisYear&&today.getMonth()===m&&today.getDate()===d;
+      const isPast=isThisYear&&new Date(2026,m,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
+      cells+=`<i class="day ${booked?(teamOnly?'team-booked':'booked'):'free'}${isToday?' today':''}${isPast&&!booked?' past':''}"${booked?` onclick="openDetail(${m+1},${d})"`:''}>${d}</i>`;
+    }
+    const div=document.createElement('div');
+    div.className='month'+(count?' is-busy':'');
+    div.innerHTML=`<div class="m-head"><span class="m-name">${MN[m]}</span>
+      <span class="m-count ${count?'':'zero'}">${count?count+' booked':'wide open'}</span></div>
+      <div class="dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+      <div class="grid">${cells}</div>
+      ${TBD[m+1]?`<div class="tbd-note">${TBD[m+1]}</div>`:''}`;
+    el.appendChild(div);
+  }
+}
+
+/* ---------------- day detail ---------------- */
+let openDay=null;
+function openDetail(m,d){
+  openDay=[m,d];
+  const evts=byDate[m+"-"+d]||[];
+  document.getElementById('dTitle').textContent=MN[m-1]+" "+d;
+  document.getElementById('dSub').textContent=evts.length+(evts.length>1?" events booked":" event booked");
+  document.getElementById('dEvents').innerHTML=evts.map(x=>
+    `<div class="evt"><div><b>${esc(x.c)}</b><span>${esc(x.e)}${x.l&&x.l!=="—"?" · "+esc(x.l):""}</span>${x.baked?'':'<span class="src">Added by team</span>'}</div>
+     ${x.baked?'':`<button class="evt-del" onclick="removeBooking('${x.id}')">Remove</button>`}</div>`).join('');
+  document.getElementById('detail').classList.add('open');
+}
+function closeDetail(){document.getElementById('detail').classList.remove('open');openDay=null;}
+document.getElementById('detail').addEventListener('click',e=>{if(e.target.id==='detail')closeDetail();});
+function removeBooking(id){
+  const b=teamBookings[id];
+  deleteBooking(id);
+  if(b)log(`removed booking: ${b.c} — ${fmt(iso(b.m,b.d))}`);
+  toast('Booking removed');
+  setTimeout(()=>{if(openDay){const e=byDate[openDay[0]+"-"+openDay[1]];if(e&&e.length)openDetail(openDay[0],openDay[1]);else closeDetail();}},150);
+}
+const iso=(m,d)=>`2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+/* ---------------- date check ---------------- */
+function checkDate(isoStr){
+  if(!isoStr)return null;
+  const[y,m,d]=isoStr.split('-').map(Number);
+  if(y!==2026)return{ok:false,msg:"This ledger covers 2026 only."};
+  const evts=byDate[m+"-"+d];
+  if(evts){
+    const names=[...new Set(evts.map(x=>x.c))].join(', ');
+    return{ok:false,clash:true,msg:`${MN[m-1]} ${d} clashes with ${names}.`};
+  }
+  return{ok:true,msg:`${MN[m-1]} ${d} is open.`};
+}
+
+/* ---------------- multi-date chips ---------------- */
+function addEnqDate(){stageDate('enq');}
+function addBkDate(){stageDate('bk');}
+function stageDate(kind){
+  const input=document.getElementById(kind==='enq'?'enqDate':'bkDate');
+  const arr=kind==='enq'?enqDates:bkDates;
+  const v=input.value;
+  if(!v)return;
+  if(!arr.includes(v))arr.push(v);
+  arr.sort();
+  input.value='';
+  renderChips(kind);
+}
+function dropDate(kind,v){
+  const arr=kind==='enq'?enqDates:bkDates;
+  const i=arr.indexOf(v);
+  if(i>-1)arr.splice(i,1);
+  renderChips(kind);
+}
+function renderChips(kind){
+  const arr=kind==='enq'?enqDates:bkDates;
+  const el=document.getElementById(kind==='enq'?'enqChips':'bkChips');
+  if(!el)return;
+  el.innerHTML=arr.map(v=>{
+    const r=checkDate(v);
+    return `<span class="dchip ${r&&r.ok?'ok':'bad'}">${fmt(v)}<i onclick="dropDate('${kind}','${v}')">×</i></span>`;
+  }).join('');
+}
+
+/* ---------------- category select ---------------- */
+function setCat(c){
+  selCat=c;
+  ['COLD','WARM','HOT'].forEach(k=>{
+    document.getElementById('cat'+k).className = (k===c)?('sel-'+k):'';
+  });
+}
+
+/* ---------------- tabs / filters ---------------- */
+function setTab(t){
+  document.getElementById('paneEnq').style.display=t==='enq'?'':'none';
+  document.getElementById('paneBlock').style.display=t==='block'?'':'none';
+  document.getElementById('tabEnq').classList.toggle('active',t==='enq');
+  document.getElementById('tabBlock').classList.toggle('active',t==='block');
+}
+function setFilter(f){
+  filterCat=f;
+  document.querySelectorAll('#filters button').forEach(b=>b.classList.toggle('on',b.dataset.f===f));
+  renderEnquiries();
+}
+
+/* ---------------- enquiries ---------------- */
+function addEnquiry(){
+  const name=document.getElementById('enqName').value.trim();
+  const res=document.getElementById('checkResult');
+  if(!name||!enqDates.length){
+    res.className='check-result show clash';
+    res.innerHTML='<b>Missing details</b>A name and at least one date are needed.';
+    return;
+  }
+  const clashes=enqDates.filter(v=>{const r=checkDate(v);return r&&!r.ok;});
+  const id=uid('e');
+  writeEnquiry(id,{name,dates:enqDates.slice(),cat:selCat,done:false,by:editor,at:stamp(),updates:[]});
+  log(`added ${selCat.toLowerCase()} enquiry: ${name} (${enqDates.length} date${enqDates.length>1?'s':''})`);
+  document.getElementById('enqName').value='';
+  enqDates=[];renderChips('enq');
+  res.className='check-result show '+(clashes.length?'clash':'ok');
+  res.innerHTML=clashes.length
+    ?`<b>Saved with conflicts</b>${clashes.length} of the requested dates already have bookings — check before promising.`
+    :'<b>Saved</b>All requested dates are currently free.';
+  toast('Enquiry added');
+}
+function renderEnquiries(){
+  const el=document.getElementById('enqItems');
+  const list=Object.entries(enquiries).sort((a,b)=>(b[1].at||'').localeCompare(a[1].at||''));
+  const shown=list.filter(([id,x])=>filterCat==='ALL'||x.cat===filterCat);
+  const open=list.filter(([id,x])=>!x.done).length;
+  document.getElementById('enqCount').textContent=list.length?`${open} open · ${list.length} total`:'';
+  if(!shown.length){el.innerHTML='<div class="empty">'+(list.length?'Nothing in this category.':'No enquiries logged yet. The next DM goes here.')+'</div>';return;}
+  el.innerHTML=shown.map(([id,x])=>{
+    const dates=(x.dates||[]).map(v=>{const r=checkDate(v);return `<span class="dtag ${r&&r.ok?'free':'clash'}">${fmt(v)}</span>`;}).join('');
+    const ups=(x.updates||[]).map(u=>`<div class="upd"><b>${esc(u.text)}</b><small>${esc(u.by)} · ${esc(u.at)}</small></div>`).join('');
+    return `<div class="enq ${x.done?'done':''}">
+      <div class="enq-top">
+        <input type="checkbox" ${x.done?'checked':''} onchange="toggleEnq('${id}')" aria-label="Mark handled">
+        <div class="enq-body">
+          <div class="enq-name">${esc(x.name)}</div>
+          <div class="enq-meta">added by ${esc(x.by||'—')} · ${esc(x.at||'')}</div>
+          <div class="enq-dates">${dates}</div>
+        </div>
+        <button class="cat-pill ${x.cat}" onclick="cycleCat('${id}')" title="Tap to change category">${x.cat}</button>
+        <button class="enq-del" onclick="removeEnq('${id}')" aria-label="Delete">×</button>
+      </div>
+      <div class="updates">${ups}</div>
+      <div class="upd-add">
+        <input id="upd-${id}" type="text" placeholder="Add an update — call done, sent proposal…" onkeydown="if(event.key==='Enter')addUpdate('${id}')">
+        <button onclick="addUpdate('${id}')">Log</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function cycleCat(id){
+  const order=['COLD','WARM','HOT'];
+  const x=enquiries[id];if(!x)return;
+  x.cat=order[(order.indexOf(x.cat)+1)%3];
+  writeEnquiry(id,x);
+  log(`moved ${x.name} to ${x.cat}`);
+}
+function toggleEnq(id){
+  const x=enquiries[id];if(!x)return;
+  x.done=!x.done;
+  writeEnquiry(id,x);
+  log(`${x.done?'closed':'reopened'} enquiry: ${x.name}`);
+}
+function removeEnq(id){
+  const x=enquiries[id];
+  deleteEnquiry(id);
+  if(x)log(`deleted enquiry: ${x.name}`);
+}
+function addUpdate(id){
+  const input=document.getElementById('upd-'+id);
+  const t=input.value.trim();if(!t)return;
+  const x=enquiries[id];if(!x)return;
+  x.updates=x.updates||[];
+  x.updates.push({text:t,by:editor,at:stamp()});
+  writeEnquiry(id,x);
+  log(`update on ${x.name}: ${t.slice(0,40)}${t.length>40?'…':''}`);
+}
+
+/* ---------------- block dates ---------------- */
+function blockDates(){
+  const c=document.getElementById('bkName').value.trim();
+  const e=document.getElementById('bkEvent').value.trim();
+  const l=document.getElementById('bkLoc').value.trim();
+  const res=document.getElementById('blockResult');
+  if(!c||!bkDates.length){
+    res.className='check-result show clash';
+    res.innerHTML='<b>Missing details</b>A name and at least one date are needed.';
+    return;
+  }
+  bkDates.forEach(v=>{
+    const[y,m,d]=v.split('-').map(Number);
+    writeBooking(uid('b'),{m,d,c,e:e||'Booking',l:l||'—',by:editor,at:stamp()});
+  });
+  log(`blocked ${bkDates.length} date${bkDates.length>1?'s':''} for ${c}`);
+  toast(`${bkDates.length} date${bkDates.length>1?'s':''} blocked for ${c}`);
+  bkDates=[];renderChips('bk');
+  document.getElementById('bkDate').value='';
+  res.className='check-result';
+}
+
+/* ---------------- activity feed ---------------- */
+function renderActivity(){
+  const el=document.getElementById('actItems');
+  const list=Object.values(activity).sort((a,b)=>(b.t||0)-(a.t||0)||String(b.at).localeCompare(String(a.at)));
+  if(!list.length){el.innerHTML='<div class="empty">Edits show up here, with who made them and when.</div>';return;}
+  el.innerHTML=list.slice(0,15).map(a=>`<div class="act"><b>${esc(a.by)}</b> ${esc(a.text)}<small>${esc(a.at)}</small></div>`).join('');
+}
+
+/* ---------------- toast ---------------- */
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+boot();
+</script>
+</body>
+</html>
