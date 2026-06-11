@@ -48,6 +48,10 @@ h1 em{font-style:italic;color:var(--sindoor)}
 
 .main{display:grid;grid-template-columns:1fr 392px;gap:36px;margin-top:32px;align-items:start}
 @media(max-width:1000px){.main{grid-template-columns:1fr}}
+@media(min-width:1001px){
+  .cal-col{position:sticky;top:0;max-height:100vh;overflow-y:auto;padding:4px 6px 60px 0;scrollbar-width:thin}
+  .panel{position:sticky;top:0;max-height:100vh;overflow-y:auto;padding:4px 2px 60px;scrollbar-width:thin}
+}
 
 .months{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 @media(max-width:1100px){.months{grid-template-columns:repeat(2,1fr)}}
@@ -69,6 +73,19 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .day.today{border-color:var(--ink)}
 .day.past{opacity:.38}
 .day.blank{visibility:hidden}
+.day.enq1{box-shadow:0 0 0 1.5px var(--amber);cursor:pointer}
+.day.enq2{box-shadow:0 0 0 2.5px var(--amber);cursor:pointer}
+.day.enq3{box-shadow:0 0 0 3.5px var(--amber);cursor:pointer}
+
+.has-pop{position:relative;cursor:pointer}
+.clash-pop{display:none;position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 7px);background:var(--ink);color:var(--paper);border-radius:8px;padding:11px 13px;min-width:215px;max-width:265px;z-index:45;text-align:left;box-shadow:0 8px 24px rgba(27,26,23,.3);text-decoration:none}
+.clash-pop em{font-style:normal;display:block;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#D9A79E;margin-bottom:6px}
+.clash-pop b{display:block;font-size:12.5px;font-weight:600;line-height:1.3}
+.clash-pop u{text-decoration:none;font-size:11px;color:#B9B4A8;display:block;margin-bottom:6px;line-height:1.35}
+.clash-pop u:last-child{margin-bottom:0}
+.clash-pop::after{content:'';position:absolute;bottom:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-bottom-color:var(--ink)}
+.has-pop.open .clash-pop{display:block}
+@media(hover:hover){.has-pop:hover .clash-pop{display:block}}
 .tbd-note{margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--amber);border-top:1px dashed var(--line);padding-top:8px}
 
 .detail{position:fixed;inset:0;background:rgba(27,26,23,.45);display:none;align-items:flex-end;justify-content:center;z-index:50;padding:16px}
@@ -85,8 +102,8 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .evt-del:hover{color:var(--sindoor);border-color:var(--sindoor)}
 .close-btn{margin-top:18px;width:100%;padding:11px;background:var(--ink);color:var(--paper);border:none;border-radius:6px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
 
-.panel{position:sticky;top:16px}
-@media(max-width:1000px){.panel{position:static}}
+.panel{}
+@media(max-width:1000px){.panel{position:static;max-height:none;overflow:visible}}
 .panel-card{background:var(--ink);color:var(--paper);border-radius:8px;padding:22px}
 .tabs{display:flex;gap:6px;margin-bottom:18px;background:#2A2823;padding:4px;border-radius:7px}
 .tabs button{flex:1;padding:9px 6px;background:none;border:none;border-radius:5px;color:#A39F95;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
@@ -213,6 +230,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
       <span><i class="chip booked"></i>Booked</span>
       <span><i class="chip team"></i>Added by team</span>
       <span><i class="chip free"></i>Free</span>
+      <span><i class="chip" style="background:transparent;border:2px solid var(--amber)"></i>Enquiry interest</span>
     </div>
   </div>
   <div class="sync-banner" id="syncBanner"></div>
@@ -221,7 +239,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
 <div class="strip" id="strip"></div>
 
 <div class="main">
-  <div>
+  <div class="cal-col">
     <div class="months" id="months"></div>
     <div class="activity">
       <h2>Recent activity</h2>
@@ -242,6 +260,15 @@ h1 em{font-style:italic;color:var(--sindoor)}
         <div class="field">
           <label for="enqName">Couple / name</label>
           <input id="enqName" type="text" placeholder="e.g. Ananya &amp; Rohit" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="enqType">Event type</label>
+          <select id="enqType">
+            <option>Wedding</option>
+            <option>Engagement</option>
+            <option>Pre-Wedding</option>
+            <option>Others</option>
+          </select>
         </div>
         <div class="field">
           <label>Requested dates</label>
@@ -438,6 +465,7 @@ let teamBookings = {};   // id -> {m,d,c,e,l,by,at}
 let enquiries = {};      // id -> {name,dates[],cat,done,by,at,updates[]}
 let activity = {};       // id -> {by,text,at}
 let byDate = {};
+let enqByDate = {};      // "m-d" -> count of open enquiries requesting that date
 let enqDates = [];       // dates staged in the enquiry form
 let bkDates = [];        // dates staged in the block form
 let selCat = "WARM";
@@ -542,6 +570,16 @@ function rebuildIndex(){
   byDate={};
   BAKED.forEach(([m,d,c,e,l])=>{const k=m+"-"+d;(byDate[k]=byDate[k]||[]).push({c,e,l,baked:true});});
   Object.entries(teamBookings).forEach(([id,b])=>{const k=b.m+"-"+b.d;(byDate[k]=byDate[k]||[]).push({c:b.c,e:b.e,l:b.l,baked:false,id});});
+  enqByDate={};
+  Object.values(enquiries).forEach(x=>{
+    if(x.done)return;
+    (x.dates||[]).forEach(v=>{
+      const[y,m,d]=v.split('-').map(Number);
+      if(y!==2026)return;
+      const k=m+"-"+d;
+      enqByDate[k]=(enqByDate[k]||0)+1;
+    });
+  });
 }
 function refresh(){rebuildIndex();renderStrip();renderCalendar();renderEnquiries();renderChips('enq');renderChips('bk');}
 
@@ -572,10 +610,12 @@ function renderCalendar(){
       const evts=byDate[(m+1)+"-"+d];
       const booked=!!evts;
       if(booked)count++;
+      const ec=Math.min(enqByDate[(m+1)+"-"+d]||0,3);
+      const clickable=booked||ec>0;
       const teamOnly=booked&&evts.every(x=>!x.baked);
       const isToday=isThisYear&&today.getMonth()===m&&today.getDate()===d;
       const isPast=isThisYear&&new Date(2026,m,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
-      cells+=`<i class="day ${booked?(teamOnly?'team-booked':'booked'):'free'}${isToday?' today':''}${isPast&&!booked?' past':''}"${booked?` onclick="openDetail(${m+1},${d})"`:''}>${d}</i>`;
+      cells+=`<i class="day ${booked?(teamOnly?'team-booked':'booked'):'free'}${ec?' enq'+ec:''}${isToday?' today':''}${isPast&&!booked?' past':''}"${clickable?` onclick="openDetail(${m+1},${d})"`:''}>${d}</i>`;
     }
     const div=document.createElement('div');
     div.className='month'+(count?' is-busy':'');
@@ -593,11 +633,20 @@ let openDay=null;
 function openDetail(m,d){
   openDay=[m,d];
   const evts=byDate[m+"-"+d]||[];
+  const ds=iso(m,d);
+  const reqs=Object.values(enquiries).filter(x=>!x.done&&(x.dates||[]).includes(ds));
   document.getElementById('dTitle').textContent=MN[m-1]+" "+d;
-  document.getElementById('dSub').textContent=evts.length+(evts.length>1?" events booked":" event booked");
-  document.getElementById('dEvents').innerHTML=evts.map(x=>
+  document.getElementById('dSub').textContent=evts.length
+    ? evts.length+(evts.length>1?" events booked":" event booked")+(reqs.length?` · ${reqs.length} enquir${reqs.length>1?'ies':'y'}`:'')
+    : "No bookings — enquiry interest only";
+  const evtHtml=evts.map(x=>
     `<div class="evt"><div><b>${esc(x.c)}</b><span>${esc(x.e)}${x.l&&x.l!=="—"?" · "+esc(x.l):""}</span>${x.baked?'':'<span class="src">Added by team</span>'}</div>
      ${x.baked?'':`<button class="evt-del" onclick="removeBooking('${x.id}')">Remove</button>`}</div>`).join('');
+  const reqHtml=reqs.length?`<div style="margin-top:${evts.length?'16px':'0'}">
+    <div class="sub" style="color:var(--amber)">${reqs.length} enquir${reqs.length>1?'ies':'y'} asking for this date</div>
+    ${reqs.map(x=>`<div class="evt"><div><b>${esc(x.name)}</b><span>${esc(x.type||'Enquiry')}</span></div><span class="cat-pill ${x.cat}" style="cursor:default">${x.cat}</span></div>`).join('')}
+  </div>`:'';
+  document.getElementById('dEvents').innerHTML=evtHtml+reqHtml;
   document.getElementById('detail').classList.add('open');
 }
 function closeDetail(){document.getElementById('detail').classList.remove('open');openDay=null;}
@@ -649,9 +698,26 @@ function renderChips(kind){
   if(!el)return;
   el.innerHTML=arr.map(v=>{
     const r=checkDate(v);
-    return `<span class="dchip ${r&&r.ok?'ok':'bad'}">${fmt(v)}<i onclick="dropDate('${kind}','${v}')">×</i></span>`;
+    const ok=r&&r.ok;
+    return `<span class="dchip ${ok?'ok':'bad'}${ok?'':' has-pop'}"${ok?'':` onclick="togglePop(event,this)"`}>${fmt(v)}${ok?'':clashPop(v)}<i onclick="event.stopPropagation();dropDate('${kind}','${v}')">×</i></span>`;
   }).join('');
 }
+
+/* ---------------- clash popover ---------------- */
+function clashPop(isoStr){
+  const[y,m,d]=isoStr.split('-').map(Number);
+  const evts=byDate[m+"-"+d]||[];
+  if(!evts.length)return'';
+  return `<span class="clash-pop"><em>Clashes with</em>${evts.map(x=>
+    `<b>${esc(x.c)}</b><u>${esc(x.e)}${x.l&&x.l!=="—"?" · "+esc(x.l):""}</u>`).join('')}</span>`;
+}
+window.togglePop=function(e,el){
+  e.stopPropagation();
+  const was=el.classList.contains('open');
+  document.querySelectorAll('.has-pop.open').forEach(p=>p.classList.remove('open'));
+  if(!was)el.classList.add('open');
+};
+document.addEventListener('click',()=>document.querySelectorAll('.has-pop.open').forEach(p=>p.classList.remove('open')));
 
 /* ---------------- category select ---------------- */
 function setCat(c){
@@ -684,9 +750,10 @@ function addEnquiry(){
     return;
   }
   const clashes=enqDates.filter(v=>{const r=checkDate(v);return r&&!r.ok;});
+  const type=document.getElementById('enqType').value;
   const id=uid('e');
-  writeEnquiry(id,{name,dates:enqDates.slice(),cat:selCat,done:false,by:editor,at:stamp(),updates:[]});
-  log(`added ${selCat.toLowerCase()} enquiry: ${name} (${enqDates.length} date${enqDates.length>1?'s':''})`);
+  writeEnquiry(id,{name,type,dates:enqDates.slice(),cat:selCat,done:false,by:editor,at:stamp(),updates:[]});
+  log(`added ${selCat.toLowerCase()} enquiry: ${name} (${type}, ${enqDates.length} date${enqDates.length>1?'s':''})`);
   document.getElementById('enqName').value='';
   enqDates=[];renderChips('enq');
   res.className='check-result show '+(clashes.length?'clash':'ok');
@@ -703,14 +770,18 @@ function renderEnquiries(){
   document.getElementById('enqCount').textContent=list.length?`${open} open · ${list.length} total`:'';
   if(!shown.length){el.innerHTML='<div class="empty">'+(list.length?'Nothing in this category.':'No enquiries logged yet. The next DM goes here.')+'</div>';return;}
   el.innerHTML=shown.map(([id,x])=>{
-    const dates=(x.dates||[]).map(v=>{const r=checkDate(v);return `<span class="dtag ${r&&r.ok?'free':'clash'}">${fmt(v)}</span>`;}).join('');
+    const dates=(x.dates||[]).map(v=>{
+      const r=checkDate(v);
+      const ok=r&&r.ok;
+      return `<span class="dtag ${ok?'free':'clash'}${ok?'':' has-pop'}"${ok?'':` onclick="togglePop(event,this)"`}>${fmt(v)}${ok?'':clashPop(v)}</span>`;
+    }).join('');
     const ups=(x.updates||[]).map(u=>`<div class="upd"><b>${esc(u.text)}</b><small>${esc(u.by)} · ${esc(u.at)}</small></div>`).join('');
     return `<div class="enq ${x.done?'done':''}">
       <div class="enq-top">
         <input type="checkbox" ${x.done?'checked':''} onchange="toggleEnq('${id}')" aria-label="Mark handled">
         <div class="enq-body">
           <div class="enq-name">${esc(x.name)}</div>
-          <div class="enq-meta">added by ${esc(x.by||'—')} · ${esc(x.at||'')}</div>
+          <div class="enq-meta">${x.type?esc(x.type)+' · ':''}added by ${esc(x.by||'—')} · ${esc(x.at||'')}</div>
           <div class="enq-dates">${dates}</div>
         </div>
         <button class="cat-pill ${x.cat}" onclick="cycleCat('${id}')" title="Tap to change category">${x.cat}</button>
