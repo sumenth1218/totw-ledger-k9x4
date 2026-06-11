@@ -210,6 +210,13 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .act-head span{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase}
 .act-body{display:none}
 .activity.open .act-body{display:block}
+.closed-sec{margin-top:22px}
+.closed-sec.open .act-body{display:block}
+.cl-row{display:flex;align-items:center;gap:9px;padding:11px 2px;border-bottom:1px solid var(--line);font-size:13.5px}
+.cl-row b{font-weight:600}
+.cl-row small{font-family:var(--mono);font-size:10px;color:var(--ink-soft);flex:1;min-width:0;text-align:right}
+.cl-row .cl-btn{background:none;border:1px solid var(--line);border-radius:5px;color:var(--ink-soft);font-size:12px;cursor:pointer;padding:4px 9px;font-family:var(--mono);flex:none}
+.cl-row .cl-btn:hover{color:var(--ink);border-color:var(--ink-soft)}
 .snooze{background:var(--amber);border:none;color:#FFF8EA;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:7px 13px;border-radius:99px;cursor:pointer;margin-top:9px}
 .snooze:hover{background:#96691F}
 .st-pill{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;padding:3px 9px;border-radius:99px;margin-left:7px;vertical-align:2px;font-weight:500}
@@ -372,6 +379,13 @@ h1 em{font-style:italic;color:var(--sindoor)}
         <button data-f="COLD" onclick="setFilter('COLD')">Cold</button>
       </div>
       <div id="enqItems"></div>
+      <div class="closed-sec" id="closedSec">
+        <div class="act-head" onclick="toggleClosed()">
+          <h2 style="font-size:20px">Closed</h2>
+          <span id="closedMeta">Show ▸</span>
+        </div>
+        <div class="act-body" id="closedItems"></div>
+      </div>
     </div>
   </aside>
 </div>
@@ -641,21 +655,25 @@ function refresh(){rebuildIndex();renderStrip();renderCalendar();renderEnquiries
 
 function renderStrip(){
   const bookedDays=Object.keys(byDate).length;
-  const couples=new Set([...BAKED.map(b=>b[2]),...Object.values(teamBookings).map(b=>b.c)]).size;
   const vals=Object.values(enquiries);
   const open=vals.filter(x=>!x.done&&!x.status).length;
   const hot=vals.filter(x=>!x.done&&!x.status&&x.cat==='HOT').length;
-  const won=vals.filter(x=>x.status==='BOOKED').length;
+  // 2026 goal: unique booked couples — baked calendar + team-blocked + enquiries won (deduped by name)
+  const wonNames=new Set();
+  BAKED.forEach(b=>wonNames.add(String(b[2]).trim().toLowerCase()));
+  Object.values(teamBookings).forEach(b=>{if(b.c)wonNames.add(String(b.c).trim().toLowerCase());});
+  vals.filter(x=>x.status==='BOOKED'&&x.name).forEach(x=>wonNames.add(String(x.name).trim().toLowerCase()));
+  const won=wonNames.size;
+  const enqWon=vals.filter(x=>x.status==='BOOKED').length;
   const lost=vals.filter(x=>x.status==='LOST').length;
-  const conv=(won+lost)?Math.round(won/(won+lost)*100)+'%':'—';
+  const conv=(enqWon+lost)?Math.round(enqWon/(enqWon+lost)*100)+'%':'—';
   document.getElementById('strip').innerHTML=
    `<div><b>${bookedDays}</b><small>Booked days</small></div>
-    <div><b>${couples}</b><small>Couples / clients</small></div>
     <div><b>${open}</b><small>Open enquiries</small></div>
     <div><b>${hot}</b><small>Hot leads</small></div>
     <div><b>${won}<span style="font-size:16px;color:var(--ink-soft)"> / 50</span></b><small>Booked · 2026 goal</small></div>
     <div><b>${lost}</b><small>Lost</small></div>
-    <div><b>${conv}</b><small>Conversion</small></div>`;
+    <div><b>${conv}</b><small>Enquiry conversion</small></div>`;
 }
 
 function renderCalendar(){
@@ -912,10 +930,13 @@ function tOf(id,x){
 function renderEnquiries(){
   const el=document.getElementById('enqItems');
   const now=Date.now();
-  const list=Object.entries(enquiries).sort((a,b)=>tOf(b[0],b[1])-tOf(a[0],a[1]));
+  const all=Object.entries(enquiries).sort((a,b)=>tOf(b[0],b[1])-tOf(a[0],a[1]));
+  const list=all.filter(([id,x])=>!x.status);
+  const closed=all.filter(([id,x])=>!!x.status).sort((a,b)=>(b[1].closedAt||0)-(a[1].closedAt||0));
   const shown=list.filter(([id,x])=>filterCat==='ALL'||x.cat===filterCat);
   const open=list.filter(([id,x])=>!x.done).length;
-  document.getElementById('enqCount').textContent=list.length?`${open} open · ${list.length} total`:'';
+  document.getElementById('enqCount').textContent=(list.length||closed.length)?`${open} open · ${closed.length} closed`:'';
+  renderClosed(closed);
   const dueIds=new Set(list.filter(([id,x])=>isDue(id,x,now)).map(([id])=>id));
   const dueNames=[...dueIds].map(i=>enquiries[i]&&enquiries[i].name).filter(Boolean);
   const remHtml=dueNames.length?`<div class="remind">Follow up due: <b>${dueNames.map(esc).join(', ')}</b> — after you reach out, tap "Followed up" on the card and it returns in 2 days.</div>`:'';
@@ -966,6 +987,43 @@ function renderEnquiries(){
   }).join('');
   if(editState)renderMiniCal('edit');
 }
+/* ---- closed enquiries dropdown ---- */
+function toggleClosed(){
+  document.getElementById('closedSec').classList.toggle('open');
+  renderEnquiries();
+}
+function renderClosed(closed){
+  const sec=document.getElementById('closedSec');
+  const meta=document.getElementById('closedMeta');
+  const el=document.getElementById('closedItems');
+  if(!sec||!el)return;
+  sec.style.display=closed.length?'':'none';
+  if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+` · ${closed.length}`;
+  el.innerHTML=closed.length?closed.map(([id,x])=>{
+    const when=x.closedAt?new Date(x.closedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'';
+    return `<div class="cl-row">
+      <b>${esc(x.name)}</b><span class="st-pill ${x.status}" style="margin-left:0">${x.status}</span>
+      <small>${x.type?esc(x.type)+' · ':''}${when?'closed '+when:''}</small>
+      <button class="cl-btn" onclick="reopenEnq('${id}')" title="Reopen">↺</button>
+      <button class="cl-btn" onclick="purgeEnq('${id}')" title="Delete permanently">×</button>
+    </div>`;
+  }).join(''):'<div class="empty">Nothing closed yet.</div>';
+}
+function reopenEnq(id){
+  const x=enquiries[id];if(!x)return;
+  x.status=null;x.done=false;x.closedAt=null;
+  x.remindBase=Date.now();
+  writeEnquiry(id,x);
+  log(`reopened enquiry: ${x.name}`);
+  toast('Reopened — back in the pipeline');
+}
+function purgeEnq(id){
+  const x=enquiries[id];if(!x)return;
+  deleteEnquiry(id);
+  log(`deleted closed enquiry: ${x.name}`);
+  toast('Deleted — removed from numbers too');
+}
+
 function cycleCat(id){
   const order=['COLD','WARM','HOT'];
   const x=enquiries[id];if(!x)return;
