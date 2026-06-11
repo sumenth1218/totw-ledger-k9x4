@@ -205,7 +205,22 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .empty{padding:26px 4px;text-align:center;color:var(--ink-soft);font-family:var(--display);font-style:italic;font-size:17px}
 
 .activity{margin-top:26px}
-.activity h2{font-family:var(--display);font-size:22px;font-weight:600;border-bottom:1px solid var(--ink);padding-bottom:8px}
+.act-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--ink);padding-bottom:8px;cursor:pointer;user-select:none}
+.act-head h2{font-family:var(--display);font-size:22px;font-weight:600}
+.act-head span{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase}
+.act-body{display:none}
+.activity.open .act-body{display:block}
+.snooze{background:var(--amber);border:none;color:#FFF8EA;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:7px 13px;border-radius:99px;cursor:pointer;margin-top:9px}
+.snooze:hover{background:#96691F}
+.st-pill{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;padding:3px 9px;border-radius:99px;margin-left:7px;vertical-align:2px;font-weight:500}
+.st-pill.BOOKED{background:var(--leaf-soft);color:var(--leaf)}
+.st-pill.LOST{background:var(--sindoor-soft);color:var(--sindoor)}
+.cm-actions{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.cm-b{padding:12px;border-radius:6px;border:none;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.cm-b.booked{background:var(--leaf);color:#fff}
+.cm-b.lost{background:var(--sindoor);color:#FBF4F0}
+.cm-b.del{background:transparent;border:1px solid var(--line);color:var(--ink-soft)}
+.cm-b.cancel{background:var(--ink);color:var(--paper)}
 .act{font-size:12.5px;color:var(--ink-soft);padding:8px 2px;border-bottom:1px solid var(--line)}
 .act b{color:var(--ink);font-weight:600}
 .act small{font-family:var(--mono);font-size:9.5px;display:block;color:#9B968B;margin-top:1px}
@@ -268,9 +283,14 @@ h1 em{font-style:italic;color:var(--sindoor)}
 <div class="main">
   <div class="cal-col">
     <div class="months" id="months"></div>
-    <div class="activity">
-      <h2>Recent activity</h2>
-      <div id="actItems"><div class="empty">Edits show up here, with who made them and when.</div></div>
+    <div class="activity" id="activity">
+      <div class="act-head" onclick="toggleAct()">
+        <h2>Recent activity</h2>
+        <span id="actMeta">Show ▸</span>
+      </div>
+      <div class="act-body">
+        <div id="actItems"><div class="empty">Edits show up here, with who made them and when.</div></div>
+      </div>
     </div>
   </div>
 
@@ -363,6 +383,20 @@ h1 em{font-style:italic;color:var(--sindoor)}
     <div class="sub" id="dSub"></div>
     <div id="dEvents"></div>
     <button class="close-btn" onclick="closeDetail()">Close</button>
+  </div>
+</div>
+
+<div class="detail" id="closeModal">
+  <div class="detail-card" style="border-top-color:var(--ink)">
+    <h3>Close this enquiry?</h3>
+    <div class="sub" id="cmName" style="color:var(--ink-soft)"></div>
+    <p style="font-size:13.5px;color:var(--ink-soft);margin-bottom:10px;line-height:1.5">Closing keeps it in your numbers, so booked-vs-lost and conversion stay honest. Deleting removes it completely with no trace.</p>
+    <div class="cm-actions">
+      <button class="cm-b booked" onclick="cmDo('BOOKED')">Booked — we won this</button>
+      <button class="cm-b lost" onclick="cmDo('LOST')">Lost — didn't convert</button>
+      <button class="cm-b del" onclick="cmDo('DEL')">Delete permanently</button>
+      <button class="cm-b cancel" onclick="cmClose()">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -608,14 +642,20 @@ function refresh(){rebuildIndex();renderStrip();renderCalendar();renderEnquiries
 function renderStrip(){
   const bookedDays=Object.keys(byDate).length;
   const couples=new Set([...BAKED.map(b=>b[2]),...Object.values(teamBookings).map(b=>b.c)]).size;
-  const open=Object.values(enquiries).filter(x=>!x.done).length;
-  const hot=Object.values(enquiries).filter(x=>!x.done&&x.cat==='HOT').length;
+  const vals=Object.values(enquiries);
+  const open=vals.filter(x=>!x.done&&!x.status).length;
+  const hot=vals.filter(x=>!x.done&&!x.status&&x.cat==='HOT').length;
+  const won=vals.filter(x=>x.status==='BOOKED').length;
+  const lost=vals.filter(x=>x.status==='LOST').length;
+  const conv=(won+lost)?Math.round(won/(won+lost)*100)+'%':'—';
   document.getElementById('strip').innerHTML=
    `<div><b>${bookedDays}</b><small>Booked days</small></div>
     <div><b>${couples}</b><small>Couples / clients</small></div>
-    <div><b>${365-bookedDays}</b><small>Open days</small></div>
     <div><b>${open}</b><small>Open enquiries</small></div>
-    <div><b>${hot}</b><small>Hot leads</small></div>`;
+    <div><b>${hot}</b><small>Hot leads</small></div>
+    <div><b>${won}<span style="font-size:16px;color:var(--ink-soft)"> / 50</span></b><small>Booked · 2026 goal</small></div>
+    <div><b>${lost}</b><small>Lost</small></div>
+    <div><b>${conv}</b><small>Conversion</small></div>`;
 }
 
 function renderCalendar(){
@@ -876,14 +916,9 @@ function renderEnquiries(){
   const shown=list.filter(([id,x])=>filterCat==='ALL'||x.cat===filterCat);
   const open=list.filter(([id,x])=>!x.done).length;
   document.getElementById('enqCount').textContent=list.length?`${open} open · ${list.length} total`:'';
-  const dueIds=new Set(list.filter(([id,x])=>{
-    if(x.done)return false;
-    const t=tOf(id,x);if(!t)return false;
-    const h=(now-t)/36e5;
-    return h>=20&&h<48;
-  }).map(([id])=>id));
+  const dueIds=new Set(list.filter(([id,x])=>isDue(id,x,now)).map(([id])=>id));
   const dueNames=[...dueIds].map(i=>enquiries[i]&&enquiries[i].name).filter(Boolean);
-  const remHtml=dueNames.length?`<div class="remind">Follow up — added yesterday and still open: <b>${dueNames.map(esc).join(', ')}</b></div>`:'';
+  const remHtml=dueNames.length?`<div class="remind">Follow up due: <b>${dueNames.map(esc).join(', ')}</b> — after you reach out, tap "Followed up" on the card and it returns in 2 days.</div>`:'';
   if(!shown.length){el.innerHTML=remHtml+'<div class="empty">'+(list.length?'Nothing in this category.':'No enquiries logged yet. The next DM goes here.')+'</div>';return;}
   el.innerHTML=remHtml+shown.map(([id,x])=>{
     if(editState&&editState.id===id){
@@ -913,9 +948,10 @@ function renderEnquiries(){
       <div class="enq-top">
         <input type="checkbox" ${x.done?'checked':''} onchange="toggleEnq('${id}')" aria-label="Mark handled">
         <div class="enq-body">
-          <div class="enq-name">${esc(x.name)}${botSrc?`<span class="src-tag">${botSrc}</span>`:''}</div>
+          <div class="enq-name">${esc(x.name)}${x.status?`<span class="st-pill ${x.status}">${x.status}</span>`:''}${botSrc?`<span class="src-tag">${botSrc}</span>`:''}</div>
           <div class="enq-meta">${x.type?esc(x.type)+' · ':''}added by ${esc(x.by||'—')} · ${esc(x.at||'')}</div>
           <div class="enq-dates">${dates}</div>
+          ${dueIds.has(id)?`<button class="snooze" onclick="snooze('${id}')">Followed up — remind in 2 days</button>`:''}
         </div>
         <button class="cat-pill ${x.cat}" onclick="cycleCat('${id}')" title="Tap to change category">${x.cat}</button>
         <button class="enq-act" onclick="startEdit('${id}')" title="Edit enquiry">✎</button>
@@ -943,10 +979,50 @@ function toggleEnq(id){
   writeEnquiry(id,x);
   log(`${x.done?'closed':'reopened'} enquiry: ${x.name}`);
 }
+/* ---- close vs delete (conversion tracking) ---- */
+let cmId=null;
 function removeEnq(id){
+  cmId=id;
   const x=enquiries[id];
-  deleteEnquiry(id);
-  if(x)log(`deleted enquiry: ${x.name}`);
+  document.getElementById('cmName').textContent=x?x.name:'';
+  document.getElementById('closeModal').classList.add('open');
+}
+function cmClose(){cmId=null;document.getElementById('closeModal').classList.remove('open');}
+function cmDo(kind){
+  const id=cmId;
+  const x=id?enquiries[id]:null;
+  cmClose();
+  if(!id||!x)return;
+  if(kind==='DEL'){
+    deleteEnquiry(id);
+    log(`deleted enquiry: ${x.name}`);
+    toast('Deleted — not counted in numbers');
+    return;
+  }
+  x.status=kind;
+  x.done=true;
+  x.closedAt=Date.now();
+  writeEnquiry(id,x);
+  log(`closed enquiry as ${kind.toLowerCase()}: ${x.name}`);
+  toast(kind==='BOOKED'?'Booked! Now block the dates on the calendar':'Closed as lost');
+}
+document.getElementById('closeModal').addEventListener('click',e=>{if(e.target.id==='closeModal')cmClose();});
+
+/* ---- recurring follow-up reminders ---- */
+const H24=86400000,H48=172800000,H72=259200000;
+function isDue(id,x,now){
+  if(x.done||x.status)return false;
+  const t=tOf(id,x);if(!t)return false;
+  const base=x.remindBase||(t+H24);
+  if(now<base)return false;
+  return ((now-base)%H72)<H24;
+}
+function snooze(id){
+  const x=enquiries[id];if(!x)return;
+  x.remindBase=Date.now()+H48;
+  writeEnquiry(id,x);
+  log(`followed up with ${x.name} — next reminder in 2 days`);
+  toast('Snoozed — reminder returns in 2 days');
 }
 function addUpdate(id){
   const input=document.getElementById('upd-'+id);
@@ -980,9 +1056,17 @@ function blockDates(){
 }
 
 /* ---------------- activity feed ---------------- */
+function toggleAct(){
+  const a=document.getElementById('activity');
+  a.classList.toggle('open');
+  renderActivity();
+}
 function renderActivity(){
   const el=document.getElementById('actItems');
   const list=Object.values(activity).sort((a,b)=>(b.t||0)-(a.t||0)||String(b.at).localeCompare(String(a.at)));
+  const a=document.getElementById('activity');
+  const meta=document.getElementById('actMeta');
+  if(meta)meta.textContent=(a.classList.contains('open')?'Hide ▾':'Show ▸')+(list.length?` · ${Math.min(list.length,15)}`:'');
   if(!list.length){el.innerHTML='<div class="empty">Edits show up here, with who made them and when.</div>';return;}
   el.innerHTML=list.slice(0,15).map(a=>`<div class="act"><b>${esc(a.by)}</b> ${esc(a.text)}<small>${esc(a.at)}</small></div>`).join('');
 }
