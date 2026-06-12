@@ -243,6 +243,71 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--paper);padding:12px 22px;border-radius:99px;font-family:var(--mono);font-size:12px;transition:transform .3s ease;z-index:60;max-width:92vw;text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
 @media(prefers-reduced-motion:reduce){.toast{transition:none}}
+.vtabs{display:flex;gap:6px;background:var(--ink);padding:4px;border-radius:8px;margin:18px 0 4px}
+.vtabs button{flex:1;padding:11px 6px;background:none;border:none;border-radius:6px;color:#A39F95;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.vtabs button.on{background:var(--paper);color:var(--ink);font-weight:500}
+.prod-wrap{max-width:780px;margin:0 auto}
+.prod-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--ink);padding:16px 0 8px}
+.prod-head h2{font-family:var(--display);font-size:28px;font-weight:500}
+.btn-mini{background:var(--ink);color:var(--paper);border:none;border-radius:6px;padding:9px 14px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.p-row{display:flex;justify-content:space-between;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.p-row .nm{font-family:var(--display);font-size:19px;font-weight:500}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:9px}
+.dot.r{background:var(--sindoor)}.dot.a{background:var(--amber)}.dot.g{background:var(--leaf)}
+.p-card{border:1px solid #C9B6B0;border-radius:8px;background:var(--card);margin:8px 0;padding:14px}
+.p-sec{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink-soft);margin:15px 0 7px;text-transform:uppercase}
+.day-card{border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:8px;background:#fff}
+.day-card.warn{border-color:#D8C396;background:#FBF6EA}
+.day-card.bad{border-color:#D9A79E;background:#FBF0ED}
+.day-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px}
+.day-top b{font-weight:600}
+.gb-in{width:72px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:11px;text-align:right;background:#fff}
+.role-row{border-top:1px dashed var(--line);padding:8px 0 3px;margin-top:8px}
+.role-line{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.role-line select,.role-line input{padding:7px 8px;border:1px solid var(--line);border-radius:5px;font-size:12px;background:#fff;color:var(--ink)}
+.role-line input.person{flex:1;min-width:110px}
+.role-line input.payin{width:86px;font-family:var(--mono);text-align:right}
+.cardchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;align-items:center}
+.cardc{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:6px;padding:4px 7px;font-family:var(--mono);font-size:10px;background:var(--card)}
+.cardc.okc{border-color:var(--leaf);background:var(--leaf-soft)}
+.tickbox{min-width:20px;height:18px;border:1px solid var(--line);border-radius:4px;font-size:9px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;color:var(--ink-soft);font-style:normal;padding:0 3px}
+.tickbox.on{background:var(--leaf);border-color:var(--leaf);color:#fff}
+.xs{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:13px;padding:0 4px;font-style:normal}
+.xs:hover{color:var(--sindoor)}
+.fmt-row{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px}
+.fmt-row input{width:17px;height:17px;accent-color:var(--leaf)}
+.stage-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.stage-row:last-child{border-bottom:none}
+.stage-l{display:flex;align-items:center;gap:9px}
+.stage-row input[type=checkbox]{width:17px;height:17px;accent-color:var(--leaf);flex:none}
+.sdue{font-family:var(--mono);font-size:10px;letter-spacing:.06em;white-space:nowrap}
+.sdue.ok{color:var(--leaf)}.sdue.warn{color:#854F0B}.sdue.bad{color:var(--sindoor)}.sdue.cl{color:#534AB7}.sdue.mut{color:var(--ink-soft)}
+.cw{color:#534AB7}
+.pay-grid{display:flex;flex-direction:column;gap:7px}
+.pay-row{display:flex;align-items:center;gap:9px;font-size:13px}
+.pay-row label{flex:1}
+.pay-row input[type=number]{width:110px;padding:7px 9px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;text-align:right;background:#fff}
+.pay-row input[type=checkbox]{width:17px;height:17px;accent-color:var(--leaf)}
+.alert{padding:9px 12px;font-size:12.5px;border-radius:0 6px 6px 0;margin-bottom:6px;line-height:1.5}
+.alert.r{background:var(--sindoor-soft);border-left:3px solid var(--sindoor);color:#7A2A1E}
+.alert.a{background:var(--amber-soft);border-left:3px solid var(--amber);color:#7A5A1E}
+.evchips{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.evc{font-family:var(--mono);font-size:9.5px;padding:4px 9px;border-radius:99px;border:1px solid var(--line);cursor:pointer;background:#fff;color:var(--ink-soft)}
+.evc.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.ev-pill{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:99px;background:#EFEAE0;color:#6E6A61}
+.team-table{width:100%;font-size:13px;border-collapse:collapse;margin-top:8px}
+.team-table th{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);text-align:left;padding:6px 4px;border-bottom:1px solid var(--ink)}
+.team-table td{padding:8px 4px;border-bottom:1px solid var(--line)}
+.team-table td.num{font-family:var(--mono);text-align:right}
+.dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:2px}
+.dl-check{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--paper);cursor:pointer}
+.dl-check input{width:16px;height:16px;accent-color:var(--sindoor)}
+.tag-edit{margin-top:8px;border:1px dashed var(--line);border-radius:6px;padding:9px;background:#fff}
+.tag-edit .row2{display:flex;gap:6px;margin-top:8px}
+.tag-edit input{flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:5px;font-size:12px;background:#fff;color:var(--ink)}
+.tag-edit button{padding:0 12px;border:none;border-radius:5px;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;cursor:pointer;text-transform:uppercase}
+.dt-edit{font-size:10px;cursor:pointer;margin-left:4px;opacity:.6;font-style:normal}
+.dt-edit:hover{opacity:1}
 </style>
 </head>
 <body>
@@ -285,6 +350,12 @@ h1 em{font-style:italic;color:var(--sindoor)}
   <div class="sync-banner" id="syncBanner"></div>
 </header>
 
+<div class="vtabs">
+  <button id="vtEnq" class="on" onclick="setView('ledger')">Dates &amp; Enquiries</button>
+  <button id="vtProd" onclick="setView('prod')">Production</button>
+</div>
+
+<div id="tabLedger">
 <div class="strip" id="strip"></div>
 
 <div class="main">
@@ -388,6 +459,73 @@ h1 em{font-style:italic;color:var(--sindoor)}
       </div>
     </div>
   </aside>
+</div>
+</div>
+
+<div id="tabProd" style="display:none">
+ <div class="prod-wrap">
+  <div id="prodAlerts" style="margin-top:16px"></div>
+  <div class="prod-head">
+    <h2>Production</h2>
+    <div style="display:flex;gap:12px;align-items:baseline">
+      <span id="prodCount" style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-soft)"></span>
+      <button class="btn-mini" onclick="toggleProdNew()">+ New wedding</button>
+    </div>
+  </div>
+
+  <div class="panel-card" id="prodNew" style="display:none;margin-top:14px">
+    <h2>New wedding</h2>
+    <p class="hint">Pick the couple, name their two designated disks, tick what they bought, tap the shoot dates.</p>
+    <div class="field">
+      <label for="pImport">Import from booked enquiry (optional)</label>
+      <select id="pImport" onchange="pImportPick()"><option value="">—</option></select>
+    </div>
+    <div class="field">
+      <label for="pName">Couple</label>
+      <input id="pName" list="dlCouples" type="text" placeholder="e.g. Nidhi &amp; Archit" autocomplete="off">
+    </div>
+    <div style="display:flex;gap:8px">
+      <div class="field" style="flex:1"><label for="pDiskA">Hard disk I</label><input id="pDiskA" list="dlDisks" type="text" placeholder="e.g. LaCie-01" autocomplete="off"></div>
+      <div class="field" style="flex:1"><label for="pDiskB">Hard disk II</label><input id="pDiskB" list="dlDisks" type="text" placeholder="e.g. WD-02" autocomplete="off"></div>
+    </div>
+    <div class="field">
+      <label>Deliverables in their package</label>
+      <div class="dl-grid">
+        <label class="dl-check"><input type="checkbox" id="pdl-sneak" checked>Sneak peek</label>
+        <label class="dl-check"><input type="checkbox" id="pdl-cphoto" checked>Candid photos</label>
+        <label class="dl-check"><input type="checkbox" id="pdl-tphoto" checked>Traditional photos</label>
+        <label class="dl-check"><input type="checkbox" id="pdl-cfilm" checked>Candid film</label>
+        <label class="dl-check"><input type="checkbox" id="pdl-trailer">Trailer</label>
+        <label class="dl-check"><input type="checkbox" id="pdl-tvideo" checked>Traditional video</label>
+        <label class="dl-check"><input type="checkbox" id="pdl-album" checked>Album</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>Shoot dates — tap to select</label>
+      <div class="mini-cal dark" id="mcProd"></div>
+      <div class="dchips" id="prodChips"></div>
+    </div>
+    <div class="check-result" id="prodResult"></div>
+    <button class="btn-main teal" onclick="createProd()">Create wedding</button>
+  </div>
+
+  <div id="prodList" style="margin-top:6px"></div>
+
+  <div class="closed-sec" id="teamSec" style="margin-top:28px;display:block">
+    <div class="act-head" onclick="toggleTeam()">
+      <h2 style="font-size:20px">Team</h2>
+      <span id="teamMeta">Show ▸</span>
+    </div>
+    <div class="act-body">
+      <div style="margin:10px 0 4px"><select id="teamMonth" onchange="renderTeam()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></select></div>
+      <div id="teamItems"></div>
+    </div>
+  </div>
+
+  <datalist id="dlCouples"></datalist>
+  <datalist id="dlDisks"></datalist>
+  <datalist id="dlPeople"></datalist>
+ </div>
 </div>
 </div>
 
@@ -538,6 +676,14 @@ let enqByDate = {};      // "m-d" -> count of open enquiries requesting that dat
 let enqDates = [];       // dates staged in the enquiry form
 let bkDates = [];        // dates staged in the block form
 let editState = null;    // in-place edit state {id,name,type,dates}
+let prods = {};          // production records
+let people = {};         // crew registry name->style
+let openProdId = null;
+let evEdit = null;       // enquiry date-event editor {id,date}
+let evEditP = null;      // production day-event editor {id,di}
+let prodDates = [];      // staged dates in new-wedding form
+let prodEvMap = {};      // staged events per date (from import)
+let pdayFor = null;      // prod id receiving an added day
 let selCat = "WARM";
 let filterCat = "ALL";
 let editor = localStorage.getItem('totw_editor') || "";
@@ -596,6 +742,8 @@ function start(){
       db.ref('bookings').on('value',s=>{teamBookings=s.val()||{};refresh();});
       db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};refresh();});
       db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
+      db.ref('prod').on('value',s=>{prods=s.val()||{};renderProdAll();});
+      db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
       document.getElementById('footNote').textContent='Shared live ledger. Signed in as '+editor+'.';
       return;
     }catch(e){ console.warn('Firebase init failed',e); }
@@ -605,6 +753,8 @@ function start(){
   try{teamBookings=JSON.parse(localStorage.getItem('totw_bk')||'{}');}catch(e){teamBookings={};}
   try{enquiries=JSON.parse(localStorage.getItem('totw_enq')||'{}');}catch(e){enquiries={};}
   try{activity=JSON.parse(localStorage.getItem('totw_act')||'{}');}catch(e){activity={};}
+  try{prods=JSON.parse(localStorage.getItem('totw_prod')||'{}');}catch(e){prods={};}
+  try{people=JSON.parse(localStorage.getItem('totw_people')||'{}');}catch(e){people={};}
   document.getElementById('footNote').textContent='Local mode. Editing as '+editor+'.';
   refresh();renderActivity();
 }
@@ -651,7 +801,7 @@ function rebuildIndex(){
     });
   });
 }
-function refresh(){rebuildIndex();renderStrip();renderCalendar();renderEnquiries();renderChips('enq');renderChips('bk');renderMiniCal('enq');renderMiniCal('bk');}
+function refresh(){rebuildIndex();renderStrip();renderCalendar();renderEnquiries();renderChips('enq');renderChips('bk');renderMiniCal('enq');renderMiniCal('bk');renderProdAll();}
 
 function renderStrip(){
   const bookedDays=Object.keys(byDate).length;
@@ -724,7 +874,7 @@ function openDetail(m,d){
      ${x.baked?'':`<button class="evt-del" onclick="removeBooking('${x.id}')">Remove</button>`}</div>`).join('');
   const reqHtml=reqs.length?`<div style="margin-top:${evts.length?'16px':'0'}">
     <div class="sub" style="color:var(--amber)">${reqs.length} enquir${reqs.length>1?'ies':'y'} asking for this date</div>
-    ${reqs.map(x=>`<div class="evt"><div><b>${esc(x.name)}</b><span>${esc(x.type||'Enquiry')}</span></div><span class="cat-pill ${x.cat}" style="cursor:default">${x.cat}</span></div>`).join('')}
+    ${reqs.map(x=>`<div class="evt"><div><b>${esc(x.name)}</b><span>${esc(x.type||'Enquiry')}${x.dateEvents&&x.dateEvents[ds]?' · '+x.dateEvents[ds].map(esc).join(' + '):''}</span></div><span class="cat-pill ${x.cat}" style="cursor:default">${x.cat}</span></div>`).join('')}
   </div>`:'';
   document.getElementById('dEvents').innerHTML=evtHtml+reqHtml;
   document.getElementById('detail').classList.add('open');
@@ -754,11 +904,18 @@ function checkDate(isoStr){
 }
 
 /* ---------------- multi-date selection (mini calendars) ---------------- */
-let mcMonth={enq:5,bk:5,edit:5}; // June 2026 start; clamps to 2026
-{const tm=new Date();if(tm.getFullYear()===2026){mcMonth={enq:tm.getMonth(),bk:tm.getMonth(),edit:tm.getMonth()};}}
-function miniTarget(kind){return kind==='enq'?enqDates:kind==='bk'?bkDates:(editState?editState.dates:[]);}
+let mcMonth={enq:5,bk:5,edit:5,prod:5,pday:5}; // June 2026 start; clamps to 2026
+{const tm=new Date();if(tm.getFullYear()===2026){const m=tm.getMonth();mcMonth={enq:m,bk:m,edit:m,prod:m,pday:m};}}
+const MC_EL={enq:'mcEnq',bk:'mcBk',edit:'mcEdit',prod:'mcProd',pday:'mcPday'};
+function miniTarget(kind){
+  if(kind==='enq')return enqDates;
+  if(kind==='bk')return bkDates;
+  if(kind==='prod')return prodDates;
+  if(kind==='pday')return [];
+  return editState?editState.dates:[];
+}
 function renderMiniCal(kind){
-  const el=document.getElementById(kind==='enq'?'mcEnq':kind==='bk'?'mcBk':'mcEdit');
+  const el=document.getElementById(MC_EL[kind]);
   if(!el)return;
   const mo=mcMonth[kind];
   const sel=new Set(miniTarget(kind));
@@ -782,10 +939,36 @@ function mcNav(kind,dir){
   renderMiniCal(kind);
 }
 function mcToggle(kind,v){
+  if(kind==='pday'){
+    const p=prods[pdayFor];if(!p)return;
+    p.days=p.days||[];
+    if(!p.days.some(d=>d.date===v)){
+      p.days.push({date:v,events:[],gb:0,roles:[],fmt:false});
+      p.days.sort((a,b)=>a.date<b.date?-1:1);
+      writeProd(pdayFor);
+      log(`added shoot day ${fmt(v)} to ${p.couple}`);
+      toast('Shoot day added');
+    }
+    pdayFor=null;
+    renderProdAll();
+    return;
+  }
+  if(kind==='prod'){
+    const i=prodDates.indexOf(v);
+    if(i>-1)prodDates.splice(i,1);else prodDates.push(v);
+    prodDates.sort();
+    renderProdChips();renderMiniCal('prod');
+    return;
+  }
   const arr=miniTarget(kind);
   const i=arr.indexOf(v);
   if(i>-1)arr.splice(i,1);else arr.push(v);
   arr.sort();
+  if(kind==='enq'){
+    const r=document.getElementById('checkResult');
+    if(r)r.className='check-result';
+    clearTimeout(window._resT);
+  }
   if(kind==='edit')renderEnquiries();
   else{renderChips(kind);renderMiniCal(kind);}
 }
@@ -894,6 +1077,7 @@ function saveEdit(){
   x.name=editState.name.trim()||x.name;
   x.type=editState.type;
   x.dates=editState.dates.slice();
+  if(x.dateEvents)Object.keys(x.dateEvents).forEach(d=>{if(!x.dates.includes(d))delete x.dateEvents[d];});
   const id=editState.id;
   editState=null;
   writeEnquiry(id,x);
@@ -920,6 +1104,8 @@ function addEnquiry(){
   res.innerHTML=clashes.length
     ?`<b>Saved with conflicts</b>${clashes.length} of the requested dates already have bookings — check before promising.`
     :'<b>Saved</b>All requested dates are currently free.';
+  clearTimeout(window._resT);
+  window._resT=setTimeout(()=>{res.className='check-result';},5000);
   toast('Enquiry added');
 }
 function tOf(id,x){
@@ -962,8 +1148,20 @@ function renderEnquiries(){
     const dates=(x.dates||[]).map(v=>{
       const r=checkDate(v);
       const ok=r&&r.ok;
-      return `<span class="dtag ${ok?'free':'clash'}${ok?'':' has-pop'}"${ok?'':` data-date="${v}"`}>${fmt(v)}</span>`;
+      const evs=(x.dateEvents&&x.dateEvents[v])||[];
+      const lab=fmt(v)+(evs.length?' · '+evs.map(esc).join(' + '):'');
+      return `<span class="dtag ${ok?'free':'clash'}${ok?'':' has-pop'}"${ok?'':` data-date="${v}"`}>${lab}<i class="dt-edit" onclick="event.stopPropagation();hidePop();evOpen('${id}','${v}')">✎</i></span>`;
     }).join('');
+    let evHtml='';
+    if(evEdit&&evEdit.id===id){
+      const cur=(x.dateEvents&&x.dateEvents[evEdit.date])||[];
+      const allEv=[...new Set([...EVQ,...cur])];
+      evHtml=`<div class="tag-edit">
+        <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--ink-soft)">EVENTS — ${fmt(evEdit.date).toUpperCase()}</div>
+        <div class="evchips">${allEv.map(e=>`<span class="evc ${cur.includes(e)?'on':''}" onclick="evTog('${id}','${e.replace(/'/g,"\\'")}')">${esc(e)}</span>`).join('')}</div>
+        <div class="row2"><input id="evCustom" type="text" placeholder="Custom event" onkeydown="if(event.key==='Enter')evAdd('${id}')"><button onclick="evAdd('${id}')">Add</button><button onclick="evClose()" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line)">Done</button></div>
+      </div>`;
+    }
     const ups=(x.updates||[]).map(u=>`<div class="upd"><b>${esc(u.text)}</b><small>${esc(u.by)} · ${esc(u.at)}</small></div>`).join('');
     return `<div class="enq ${x.done?'done':''}${dueIds.has(id)?' due':''}">
       <div class="enq-top">
@@ -972,6 +1170,7 @@ function renderEnquiries(){
           <div class="enq-name">${esc(x.name)}${x.status?`<span class="st-pill ${x.status}">${x.status}</span>`:''}${botSrc?`<span class="src-tag">${botSrc}</span>`:''}</div>
           <div class="enq-meta">${x.type?esc(x.type)+' · ':''}added by ${esc(x.by||'—')} · ${esc(x.at||'')}</div>
           <div class="enq-dates">${dates}</div>
+          ${evHtml}
           ${dueIds.has(id)?`<button class="snooze" onclick="snooze('${id}')">Followed up — remind in 2 days</button>`:''}
         </div>
         <button class="cat-pill ${x.cat}" onclick="cycleCat('${id}')" title="Tap to change category">${x.cat}</button>
@@ -1137,6 +1336,565 @@ function toast(msg){
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
 }
+
+/* ================= PRODUCTION ================= */
+const EVQ=['Haldi','Mehendi','Sangeet','Bride Making','Groom Making','Vratam','Wedding','Reception','Cocktail','Engagement'];
+const ROLES=['Photographer','Cinematographer','Traditional Photo','Traditional Video','Drone','Assistant'];
+const DAYMS=86400000;
+const DELIVS=['sneak','cphoto','tphoto','cfilm','trailer','tvideo','album'];
+function gD(p,k){return p.deliv&&p.deliv[k];}
+const STAGES=[
+ {k:'sneak',l:'Sneak peek',o:'Sumenth',need:p=>gD(p,'sneak'),due:(f,l)=>f?f+2*DAYMS:null},
+ {k:'cull',l:'Culling',o:'Mahima',need:p=>gD(p,'cphoto')||gD(p,'tphoto'),due:(f,l)=>l?l+7*DAYMS:null},
+ {k:'photo',l:'Photos delivery',o:'Sumenth',need:p=>gD(p,'cphoto')||gD(p,'tphoto'),due:(f,l)=>l?l+14*DAYMS:null,gate:1},
+ {k:'trailer',l:'Trailer',o:'Team',need:p=>gD(p,'trailer'),due:(f,l)=>l?l+90*DAYMS:null,gate:1},
+ {k:'cfilm',l:'Candid film',o:'Team',need:p=>gD(p,'cfilm'),due:(f,l)=>l?l+90*DAYMS:null,gate:1},
+ {k:'tvideo',l:'Traditional video',o:'Team',need:p=>gD(p,'tvideo'),due:(f,l)=>l?l+90*DAYMS:null,gate:1},
+ {k:'albumsel',l:'Album selection',o:'Client',need:p=>gD(p,'album'),client:1},
+ {k:'albumdes',l:'Album design',o:'Sumenth',need:p=>gD(p,'album')},
+ {k:'albumappr',l:'Album approval',o:'Client',need:p=>gD(p,'album'),client:1,gate:1}
+];
+const PRAISE=[
+ (l,e)=>`${l} delivered ${e}. This is why they pay the premium.`,
+ (l,e)=>`${l} done ${e}. Somewhere a couple is crying at their laptop. Good.`,
+ (l,e)=>`${l} in ${e}. Unreasonable behavior. Keep it up.`
+];
+
+function writeProd(id){
+  if(liveMode)db.ref('prod/'+id).set(prods[id]);
+  else{localStorage.setItem('totw_prod',JSON.stringify(prods));renderProdAll();}
+}
+function deleteProdRec(id){
+  delete prods[id];
+  if(liveMode)db.ref('prod/'+id).remove();
+  else{localStorage.setItem('totw_prod',JSON.stringify(prods));renderProdAll();}
+}
+function writePeople(){
+  if(liveMode)db.ref('people').set(people);
+  else localStorage.setItem('totw_people',JSON.stringify(people));
+}
+function regPerson(name,style){
+  const k=name.trim().toLowerCase();
+  if(!k)return;
+  if(!people[k]){
+    people[k]={name:name.trim(),style:style||''};
+    writePeople();
+    updateDatalists();
+  }
+}
+function updateDatalists(){
+  const dc=document.getElementById('dlCouples');
+  if(dc){
+    const s=new Set();
+    BAKED.forEach(b=>s.add(b[2]));
+    Object.values(teamBookings).forEach(b=>{if(b.c)s.add(b.c);});
+    Object.values(enquiries).forEach(x=>{if(x.status==='BOOKED'&&x.name)s.add(x.name);});
+    dc.innerHTML=[...s].sort().map(n=>`<option value="${esc(n)}">`).join('');
+  }
+  const dd=document.getElementById('dlDisks');
+  if(dd){
+    const s=new Set();
+    Object.values(prods).forEach(p=>{if(p.diskA)s.add(p.diskA);if(p.diskB)s.add(p.diskB);});
+    dd.innerHTML=[...s].sort().map(n=>`<option value="${esc(n)}">`).join('');
+  }
+  const dp=document.getElementById('dlPeople');
+  if(dp)dp.innerHTML=Object.values(people).map(o=>`<option value="${esc(o.name)}">`).join('');
+  const im=document.getElementById('pImport');
+  if(im){
+    const keep=im.value;
+    const opts=Object.entries(enquiries).filter(([i,x])=>x.status==='BOOKED');
+    im.innerHTML='<option value="">—</option>'+opts.map(([i,x])=>`<option value="${i}">${esc(x.name)}</option>`).join('');
+    im.value=keep;
+  }
+}
+
+/* ---- view tabs ---- */
+function setView(v){
+  const led=document.getElementById('tabLedger'),pr=document.getElementById('tabProd');
+  if(!led||!pr)return;
+  document.getElementById('vtEnq').classList.toggle('on',v!=='prod');
+  document.getElementById('vtProd').classList.toggle('on',v==='prod');
+  led.style.display=v==='prod'?'none':'';
+  pr.style.display=v==='prod'?'':'none';
+  localStorage.setItem('totw_view',v);
+  hidePop();
+  if(v==='prod')renderProdAll();
+}
+function restoreView(){setView(localStorage.getItem('totw_view')||'ledger');}
+
+/* ---- creation ---- */
+function toggleProdNew(){
+  const f=document.getElementById('prodNew');
+  const show=f.style.display==='none';
+  f.style.display=show?'':'none';
+  if(show){renderMiniCal('prod');renderProdChips();updateDatalists();}
+}
+function renderProdChips(){
+  const el=document.getElementById('prodChips');
+  if(el)el.innerHTML=prodDates.map(v=>`<span class="dchip" style="border-color:#5A564D;color:var(--paper)">${fmt(v)}<i onclick="mcToggle('prod','${v}')">×</i></span>`).join('');
+}
+function pImportPick(){
+  const id=document.getElementById('pImport').value;
+  if(!id)return;
+  const x=enquiries[id];if(!x)return;
+  document.getElementById('pName').value=x.name||'';
+  prodDates=(x.dates||[]).slice().sort();
+  prodEvMap={};
+  if(x.dateEvents)prodDates.forEach(d=>{if(x.dateEvents[d])prodEvMap[d]=x.dateEvents[d].slice();});
+  if(prodDates.length)mcMonth.prod=parseInt(prodDates[0].split('-')[1],10)-1;
+  renderMiniCal('prod');renderProdChips();
+  toast('Imported — dates and events carried over');
+}
+function createProd(){
+  const res=document.getElementById('prodResult');
+  const name=document.getElementById('pName').value.trim();
+  const a=document.getElementById('pDiskA').value.trim();
+  const b=document.getElementById('pDiskB').value.trim();
+  if(!name||!a||!b||!prodDates.length){
+    res.className='check-result show clash';
+    res.innerHTML='<b>Missing details</b>Couple, both disks, and at least one shoot date are needed.';
+    return;
+  }
+  if(a.toLowerCase()===b.toLowerCase()){
+    res.className='check-result show clash';
+    res.innerHTML='<b>Same disk twice</b>Disk II must be a different drive — that is the whole point of copy two.';
+    return;
+  }
+  const deliv={};
+  DELIVS.forEach(k=>{const c=document.getElementById('pdl-'+k);deliv[k]=!!(c&&c.checked);});
+  const id=uid('p');
+  prods[id]={couple:name,diskA:a,diskB:b,deliv,
+    days:prodDates.map(d=>({date:d,events:(prodEvMap[d]||[]).slice(),gb:0,roles:[],fmt:false})),
+    stages:{},pay:{adv:{amt:0,paid:false},pre:{amt:0,paid:false},fin:{amt:0,paid:false}},
+    by:editor,at:stamp(),t:Date.now()};
+  writeProd(id);
+  log(`created production: ${name} (${prodDates.length} shoot day${prodDates.length>1?'s':''}, disks ${a} + ${b})`);
+  toast('Wedding created');
+  prodDates=[];prodEvMap={};
+  ['pName','pDiskA','pDiskB'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('pImport').value='';
+  res.className='check-result';
+  document.getElementById('prodNew').style.display='none';
+  openProdId=id;
+  renderProdAll();
+}
+
+/* ---- health ---- */
+function prodTimes(p){
+  const ds=(p.days||[]).map(d=>Date.parse(d.date)).filter(Boolean).sort((x,y)=>x-y);
+  return {f:ds[0]||null,l:ds[ds.length-1]||null};
+}
+function dayCardsOk(d){
+  let total=0,ok=0;
+  (d.roles||[]).forEach(r=>(r.cards||[]).forEach(c=>{total++;if(c.a&&c.b&&c.v)ok++;}));
+  return {total,ok,all:total>0&&ok===total};
+}
+function dayDataAlarm(d,now){
+  const ts=Date.parse(d.date);
+  if(!ts||now<ts+1.5*DAYMS)return null;
+  const {total,all}=dayCardsOk(d);
+  if(total===0)return 'none';
+  if(!all)return 'incomplete';
+  return null;
+}
+function stageState(p,s,now){
+  const st=(p.stages||{})[s.k];
+  if(st&&st.done)return {done:true};
+  const {f,l}=prodTimes(p);
+  const due=s.due?s.due(f,l):null;
+  if(!due)return {cls:'mut',txt:'—'};
+  const left=due-now;
+  if(left<0){const od=Math.ceil(-left/DAYMS);return {cls:'bad',txt:od+'D OVER',od};}
+  const dd=Math.ceil(left/DAYMS);
+  return {cls:dd<=3?'warn':'mut',txt:dd<=0?'DUE TODAY':dd+'D LEFT'};
+}
+function clientWaitDays(p,idx,now){
+  for(let i=idx-1;i>=0;i--){
+    const st=(p.stages||{})[STAGES[i].k];
+    if(st&&st.done&&st.doneT)return Math.max(0,Math.floor((now-st.doneT)/DAYMS));
+  }
+  const {l}=prodTimes(p);
+  return l?Math.max(0,Math.floor((now-l)/DAYMS)):0;
+}
+function prodIssues(p,now){
+  const out=[];
+  (p.days||[]).forEach(d=>{
+    const al=dayDataAlarm(d,now);
+    if(al==='none')out.push({sev:'r',t:`${p.couple} — ${fmt(d.date)}: no cards logged and the shoot was ${Math.floor((now-Date.parse(d.date))/DAYMS)}d ago.`});
+    else if(al==='incomplete')out.push({sev:'r',t:`${p.couple} — ${fmt(d.date)}: cards not fully on ${p.diskA} + ${p.diskB}. The 24h rule is blown.`});
+  });
+  STAGES.forEach(s=>{
+    if(!s.need(p))return;
+    const ss=stageState(p,s,now);
+    if(ss.done)return;
+    if(ss.od){
+      out.push({sev:'r',t:ss.od>=7
+        ?`${p.couple}: ${s.l} ${ss.od} days over. This is now a reputation expense.`
+        :ss.od>=3
+        ?`${p.couple}: ${s.l} overdue by ${ss.od} days. The couple noticed before you did.`
+        :`${p.couple}: ${s.l} due ${ss.od}d ago. Quick win available.`});
+    } else if(ss.cls==='warn'){
+      out.push({sev:'a',t:`${p.couple}: ${s.l} due soon — ${ss.txt.toLowerCase()}. The couple is refreshing their inbox.`});
+    }
+  });
+  const {f}=prodTimes(p);
+  const pay=p.pay||{};
+  if(f&&pay.pre&&!pay.pre.paid&&f-now<7*DAYMS&&f-now>-2*DAYMS)
+    out.push({sev:'a',t:`${p.couple}: pre-wedding payment not received — first shoot ${f-now<0?'is here':'in '+Math.ceil((f-now)/DAYMS)+'d'}.`});
+  const delivered=STAGES.some(s=>s.gate&&s.need(p)&&(p.stages||{})[s.k]&&p.stages[s.k].done);
+  if(delivered&&pay.fin&&!pay.fin.paid)
+    out.push({sev:'a',t:`${p.couple}: deliverables going out with the final payment pending.`});
+  return out;
+}
+function doubleBookings(){
+  const map={};
+  Object.values(prods).forEach(p=>{
+    (p.days||[]).forEach(d=>{
+      (d.roles||[]).forEach(r=>{
+        if(!r.person)return;
+        const k=d.date+'|'+r.person.trim().toLowerCase();
+        (map[k]=map[k]||new Set()).add(p.couple);
+      });
+    });
+  });
+  return Object.entries(map).filter(([k,s])=>s.size>1).map(([k,s])=>{
+    const parts=k.split('|');
+    return {sev:'r',t:`Crew clash: ${parts[1]} is on ${[...s].join(' and ')} on ${fmt(parts[0])}.`,key:k};
+  });
+}
+function prodSevRank(p,now,dbl){
+  const iss=prodIssues(p,now);
+  const hasClash=dbl.some(x=>[...x.t.matchAll(/./g)].length&&x.t.includes(p.couple));
+  if(iss.some(i=>i.sev==='r')||hasClash)return 0;
+  if(iss.length)return 1;
+  return 2;
+}
+
+/* ---- rendering ---- */
+function renderProd(){
+  const el=document.getElementById('prodList');
+  if(!el)return;
+  const now=Date.now();
+  const dbl=doubleBookings();
+  const dblSet=new Set(dbl.map(x=>x.key));
+  const list=Object.entries(prods).sort((a,b)=>{
+    const ra=prodSevRank(a[1],now,dbl),rb=prodSevRank(b[1],now,dbl);
+    if(ra!==rb)return ra-rb;
+    return (b[1].t||0)-(a[1].t||0);
+  });
+  const cnt=document.getElementById('prodCount');
+  if(cnt)cnt.textContent=list.length?list.length+' ACTIVE':'';
+  if(!list.length){el.innerHTML='<div class="empty">No weddings in production yet. The next booked couple starts here.</div>';return;}
+  el.innerHTML=list.map(([id,p])=>{
+    const rank=prodSevRank(p,now,dbl);
+    const dot=rank===0?'r':rank===1?'a':'g';
+    if(openProdId!==id)
+      return `<div class="p-row" onclick="openProd('${id}')"><span class="nm">${esc(p.couple)}</span><span style="display:flex;align-items:center"><i class="dot ${dot}"></i><span style="color:var(--ink-soft);font-size:13px">▸</span></span></div>`;
+    return prodCard(id,p,now,dblSet,dot);
+  }).join('');
+  if(pdayFor&&prods[pdayFor]&&openProdId===pdayFor){
+    const cal=document.getElementById('pdayCal');
+    if(cal){cal.innerHTML='<div class="mini-cal lite" id="mcPday"></div>';renderMiniCal('pday');}
+  }
+}
+function openProd(id){openProdId=openProdId===id?null:id;pdayFor=null;evEditP=null;renderProd();}
+function addDayMode(id){
+  pdayFor=pdayFor===id?null:id;
+  renderProd();
+}
+function dayCard(id,p,d,di,now,dblSet){
+  const al=dayDataAlarm(d,now);
+  const {total,ok,all}=dayCardsOk(d);
+  const evs=d.events||[];
+  const rolesHtml=(d.roles||[]).map((r,ri)=>{
+    const clash=r.person&&dblSet.has(d.date+'|'+r.person.trim().toLowerCase());
+    const cards=(r.cards||[]).map((c,ci)=>{
+      const okc=c.a&&c.b&&c.v;
+      return `<span class="cardc ${okc?'okc':''}">Card-${ci+1}
+        <i class="tickbox ${c.a?'on':''}" onclick="cTog('${id}',${di},${ri},${ci},'a')" title="${esc(p.diskA)}">I</i>
+        <i class="tickbox ${c.b?'on':''}" onclick="cTog('${id}',${di},${ri},${ci},'b')" title="${esc(p.diskB)}">II</i>
+        <i class="tickbox ${c.v?'on':''}" onclick="cTog('${id}',${di},${ri},${ci},'v')" title="Verified — files opened and checked">✓</i>
+        <i class="xs" onclick="cDel('${id}',${di},${ri},${ci})">×</i></span>`;
+    }).join('');
+    return `<div class="role-row">
+      <div class="role-line">
+        <select onchange="rSet('${id}',${di},${ri},'role',this.value)">${ROLES.map(o=>`<option${r.role===o?' selected':''}>${o}</option>`).join('')}</select>
+        <input class="person" list="dlPeople" type="text" placeholder="Who shot" value="${esc(r.person||'')}" onchange="rSet('${id}',${di},${ri},'person',this.value)">
+        <input class="payin" type="number" placeholder="₹ pay" value="${r.pay||''}" onchange="rSet('${id}',${di},${ri},'pay',this.value)">
+        <button class="xs" onclick="rDel('${id}',${di},${ri})">×</button>
+        ${clash?'<span class="st-pill LOST" style="margin-left:0;vertical-align:0">CLASH</span>':''}
+      </div>
+      <div class="cardchips">${cards}<button class="xs" style="border:1px dashed var(--line);border-radius:6px;padding:3px 8px;font-size:10px;font-family:var(--mono)" onclick="cAdd('${id}',${di},${ri})">+ CARD</button></div>
+    </div>`;
+  }).join('');
+  let evEd='';
+  if(evEditP&&evEditP.id===id&&evEditP.di===di){
+    const setEv=new Set(evs);
+    const allEv=[...new Set([...EVQ,...evs])];
+    evEd=`<div class="tag-edit">
+      <div class="evchips">${allEv.map(e=>`<span class="evc ${setEv.has(e)?'on':''}" onclick="pEvTog('${id}',${di},'${e.replace(/'/g,"\\'")}')">${esc(e)}</span>`).join('')}</div>
+      <div class="row2"><input id="pEvIn" type="text" placeholder="Custom event" onkeydown="if(event.key==='Enter')pEvAdd('${id}',${di})"><button onclick="pEvAdd('${id}',${di})">Add</button><button onclick="pEvClose()" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line)">Done</button></div>
+    </div>`;
+  }
+  return `<div class="day-card ${al?'bad':(total&&!all?'warn':'')}">
+    <div class="day-top">
+      <b>${fmt(d.date)}${evs.length?' · '+evs.map(esc).join(' + '):''} <i class="dt-edit" onclick="pEvOpen('${id}',${di})">✎</i></b>
+      <span style="display:flex;gap:7px;align-items:center">
+        <input class="gb-in" type="number" placeholder="GB" value="${d.gb||''}" onchange="dSet('${id}',${di},'gb',this.value)">
+        <button class="xs" onclick="dDel('${id}',${di})">×</button>
+      </span>
+    </div>
+    ${al?`<div style="font-size:12px;color:#7A2A1E;margin-top:6px;font-weight:500">${al==='none'?'No cards logged — shoot was over 24h ago.':'Copies incomplete past the 24h rule.'}</div>`:''}
+    ${evEd}
+    ${rolesHtml}
+    <div class="role-line" style="margin-top:9px"><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="rAdd('${id}',${di})">+ Role</button></div>
+    <div class="fmt-row"><input type="checkbox" ${d.fmt?'checked':''} ${all?'':'disabled'} onchange="dSet('${id}',${di},'fmt',this.checked)"><span style="${all?'':'color:var(--ink-soft)'}">Cards formatted${all?'':' — locked until every card is on both disks and verified'}</span>${total?`<span class="sdue ${all?'ok':'warn'}" style="margin-left:auto">${ok}/${total} CARDS SAFE</span>`:''}</div>
+  </div>`;
+}
+function prodCard(id,p,now,dblSet,dot){
+  const daysHtml=(p.days||[]).map((d,di)=>dayCard(id,p,d,di,now,dblSet)).join('');
+  const stagesHtml=STAGES.map((s,idx)=>{
+    if(!s.need(p))return'';
+    const st=(p.stages||{})[s.k]||{};
+    const ss=stageState(p,s,now);
+    let right;
+    if(st.done)right=`<span class="sdue ok">DONE${st.at?' · '+esc(st.at):''}</span>`;
+    else if(s.client)right=`<span class="sdue cl">WAITING ${clientWaitDays(p,STAGES.indexOf(s),now)}D</span>`;
+    else right=`<span class="sdue ${ss.cls}">${ss.txt}</span>`;
+    return `<div class="stage-row"><span class="stage-l"><input type="checkbox" ${st.done?'checked':''} onchange="stageTog('${id}','${s.k}',this.checked)"><span class="${s.client?'cw':''}">${s.l} — ${s.client?'client':s.o}</span></span>${right}</div>`;
+  }).join('');
+  const pay=p.pay||{adv:{},pre:{},fin:{}};
+  const recd=['adv','pre','fin'].reduce((t,k)=>t+(pay[k]&&pay[k].paid?(+pay[k].amt||0):0),0);
+  const tot=['adv','pre','fin'].reduce((t,k)=>t+(pay[k]?(+pay[k].amt||0):0),0);
+  const payRow=(k,lab)=>{
+    const o=pay[k]||{};
+    return `<div class="pay-row"><label>${lab}</label><input type="number" value="${o.amt||''}" placeholder="₹" onchange="paySet('${id}','${k}','amt',this.value)"><input type="checkbox" ${o.paid?'checked':''} onchange="paySet('${id}','${k}','paid',this.checked)"><span class="sdue ${o.paid?'ok':'mut'}">${o.paid?esc(o.date||'PAID'):'PENDING'}</span></div>`;
+  };
+  const gbTot=(p.days||[]).reduce((t,d)=>t+(+d.gb||0),0);
+  return `<div class="p-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer" onclick="openProd('${id}')">
+      <div><span style="font-family:var(--display);font-size:21px;font-weight:600">${esc(p.couple)}</span>
+        <div style="font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin-top:3px">DISK I · ${esc(p.diskA)} &nbsp;&nbsp; DISK II · ${esc(p.diskB)}${gbTot?' &nbsp;&nbsp; '+gbTot.toLocaleString('en-IN')+' GB':''}</div></div>
+      <span style="display:flex;align-items:center"><i class="dot ${dot}"></i><span style="color:var(--ink-soft);font-size:13px">▾</span></span>
+    </div>
+    <div class="p-sec">Shoot days</div>
+    ${daysHtml||'<div style="font-size:13px;color:var(--ink-soft);margin-bottom:8px">No shoot days yet.</div>'}
+    <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="addDayMode('${id}')">${pdayFor===id?'Cancel':'+ Add shoot day'}</button>
+    <div id="pdayCal" style="margin-top:8px;max-width:340px"></div>
+    <div class="p-sec">Pipeline</div>
+    ${stagesHtml||'<div style="font-size:13px;color:var(--ink-soft)">No deliverables ticked for this couple.</div>'}
+    <div class="p-sec">Payments — ₹${recd.toLocaleString('en-IN')} of ₹${tot.toLocaleString('en-IN')} received</div>
+    <div class="pay-grid">${payRow('adv','Advance')}${payRow('pre','Pre-wedding')}${payRow('fin','Final')}</div>
+    <div style="display:flex;justify-content:flex-end;margin-top:15px">
+      <button class="xs" id="pdel-${id}" onclick="armDelProd('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">DELETE</button>
+    </div>
+  </div>`;
+}
+
+/* ---- mutators ---- */
+function dSet(id,di,k,v){
+  const p=prods[id];if(!p||!p.days||!p.days[di])return;
+  const d=p.days[di];
+  if(k==='gb')d.gb=+v||0;
+  else if(k==='fmt'){
+    d.fmt=!!v;
+    if(v){log(`cards formatted — ${p.couple}, ${fmt(d.date)} (both disks verified)`);toast(`Cards formatted. Data safe on ${p.diskA} + ${p.diskB}.`);}
+  }
+  writeProd(id);
+}
+function dDel(id,di){
+  const p=prods[id];if(!p||!p.days||!p.days[di])return;
+  const d=p.days[di];
+  p.days.splice(di,1);
+  log(`removed shoot day ${fmt(d.date)} from ${p.couple}`);
+  writeProd(id);
+}
+function rAdd(id,di){
+  const p=prods[id];if(!p)return;
+  p.days[di].roles=p.days[di].roles||[];
+  p.days[di].roles.push({role:'Photographer',person:'',pay:0,cards:[{a:false,b:false,v:false}]});
+  writeProd(id);
+}
+function rDel(id,di,ri){
+  prods[id].days[di].roles.splice(ri,1);
+  writeProd(id);
+}
+function rSet(id,di,ri,k,v){
+  const r=prods[id].days[di].roles[ri];
+  if(k==='pay')r.pay=+v||0;else r[k]=v;
+  if(k==='person'&&v)regPerson(v,r.role);
+  writeProd(id);
+}
+function cAdd(id,di,ri){
+  const r=prods[id].days[di].roles[ri];
+  r.cards=r.cards||[];
+  r.cards.push({a:false,b:false,v:false});
+  writeProd(id);
+}
+function cDel(id,di,ri,ci){
+  prods[id].days[di].roles[ri].cards.splice(ci,1);
+  writeProd(id);
+}
+function cTog(id,di,ri,ci,k){
+  const d=prods[id].days[di];
+  const c=d.roles[ri].cards[ci];
+  c[k]=!c[k];
+  if(!dayCardsOk(d).all)d.fmt=false;
+  writeProd(id);
+}
+function pEvOpen(id,di){evEditP=(evEditP&&evEditP.id===id&&evEditP.di===di)?null:{id,di};renderProd();}
+function pEvClose(){evEditP=null;renderProd();}
+function pEvTog(id,di,e){
+  const d=prods[id].days[di];
+  d.events=d.events||[];
+  const i=d.events.indexOf(e);
+  if(i>-1)d.events.splice(i,1);else d.events.push(e);
+  writeProd(id);
+}
+function pEvAdd(id,di){
+  const inp=document.getElementById('pEvIn');
+  const v=inp&&inp.value.trim();
+  if(!v)return;
+  pEvTog(id,di,v);
+}
+function paySet(id,k,f,v){
+  const p=prods[id];if(!p)return;
+  p.pay=p.pay||{};
+  p.pay[k]=p.pay[k]||{amt:0,paid:false};
+  if(f==='amt')p.pay[k].amt=+v||0;
+  else{
+    p.pay[k].paid=!!v;
+    p.pay[k].date=v?stamp():null;
+    if(v)log(`${k==='adv'?'advance':k==='pre'?'pre-wedding':'final'} payment received — ${p.couple}`);
+  }
+  writeProd(id);
+}
+function stageTog(id,k,checked){
+  const p=prods[id];if(!p)return;
+  p.stages=p.stages||{};
+  const s=STAGES.find(x=>x.k===k);
+  const now=Date.now();
+  if(checked){
+    p.stages[k]={done:true,doneT:now,by:editor,at:stamp()};
+    const {f,l}=prodTimes(p);
+    const due=s.due?s.due(f,l):null;
+    let msg;
+    if(due&&now<=due){
+      const dd=Math.floor((due-now)/DAYMS);
+      const e=dd>0?`with ${dd} day${dd>1?'s':''} to spare`:'right on time';
+      msg=PRAISE[Math.floor(Math.random()*PRAISE.length)](s.l,e);
+      log(`${s.l.toLowerCase()} done for ${p.couple} — ${e}`);
+    } else if(due){
+      const dd=Math.ceil((now-due)/DAYMS);
+      msg=`${s.l} delivered ${dd}d late. Logged. Let's not make it a genre.`;
+      log(`${s.l.toLowerCase()} done for ${p.couple} — ${dd}d late`);
+    } else {
+      msg=`${s.l} done.`;
+      log(`${s.l.toLowerCase()} done for ${p.couple}`);
+    }
+    if(s.gate&&p.pay&&p.pay.fin&&!p.pay.fin.paid)msg+=' Final payment still pending.';
+    toast(msg);
+  } else {
+    delete p.stages[k];
+  }
+  writeProd(id);
+}
+let delArmId=null,delArmT=null;
+function armDelProd(id){
+  if(delArmId===id){
+    clearTimeout(delArmT);delArmId=null;
+    const p=prods[id];
+    deleteProdRec(id);
+    log(`deleted production: ${p?p.couple:''}`);
+    toast('Production deleted');
+    if(openProdId===id)openProdId=null;
+    renderProdAll();
+    return;
+  }
+  delArmId=id;
+  const b=document.getElementById('pdel-'+id);
+  if(b){b.textContent='TAP AGAIN TO CONFIRM';b.style.color='#B5392A';b.style.borderColor='#B5392A';}
+  clearTimeout(delArmT);
+  delArmT=setTimeout(()=>{delArmId=null;renderProd();},3500);
+}
+
+/* ---- alerts + team ---- */
+function renderProdAlerts(){
+  const el=document.getElementById('prodAlerts');
+  if(!el)return;
+  const now=Date.now();
+  let all=[];
+  Object.values(prods).forEach(p=>{all=all.concat(prodIssues(p,now));});
+  all=all.concat(doubleBookings());
+  all.sort((a,b)=>(a.sev==='r'?0:1)-(b.sev==='r'?0:1));
+  el.innerHTML=all.slice(0,8).map(x=>`<div class="alert ${x.sev}">${esc(x.t)}</div>`).join('');
+}
+function toggleTeam(){
+  document.getElementById('teamSec').classList.toggle('open');
+  renderTeam();
+}
+function renderTeam(){
+  const el=document.getElementById('teamItems');
+  const sec=document.getElementById('teamSec');
+  if(!el||!sec)return;
+  const sel=document.getElementById('teamMonth');
+  if(sel&&!sel.options.length)
+    sel.innerHTML='<option value="">All of 2026</option>'+MN.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
+  const mFil=sel?sel.value:'';
+  const stats={};
+  Object.values(prods).forEach(p=>{
+    (p.days||[]).forEach(d=>{
+      const mo=parseInt((d.date||'').split('-')[1],10);
+      if(mFil&&mo!==+mFil)return;
+      (d.roles||[]).forEach(r=>{
+        if(!r.person)return;
+        const k=r.person.trim().toLowerCase();
+        const s=stats[k]=stats[k]||{name:r.person.trim(),days:new Set(),ev:0,weds:new Set(),pay:0};
+        s.days.add(d.date);
+        s.ev+=Math.max(1,(d.events||[]).length);
+        s.weds.add(p.couple);
+        s.pay+=+r.pay||0;
+      });
+    });
+  });
+  const rows=Object.values(stats).sort((a,b)=>b.days.size-a.days.size);
+  const meta=document.getElementById('teamMeta');
+  if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+(rows.length?` · ${rows.length}`:'');
+  el.innerHTML=rows.length?`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Events</th><th style="text-align:right">Weddings</th><th style="text-align:right">Paid</th></tr>${rows.map(s=>{
+    const pr=people[s.name.toLowerCase()];
+    return `<tr><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill">${esc(pr.style)}</span>`:''}</td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
+  }).join('')}</table>`
+   :'<div class="empty">No crew logged yet. Add who shot what inside any wedding.</div>';
+}
+function renderProdAll(){renderProd();renderProdAlerts();renderTeam();updateDatalists();}
+
+/* ---- enquiry date-event tags ---- */
+function evOpen(id,date){evEdit=(evEdit&&evEdit.id===id&&evEdit.date===date)?null:{id,date};renderEnquiries();}
+function evClose(){evEdit=null;renderEnquiries();}
+function evTog(id,e){
+  const x=enquiries[id];if(!x||!evEdit)return;
+  x.dateEvents=x.dateEvents||{};
+  const arr=x.dateEvents[evEdit.date]=x.dateEvents[evEdit.date]||[];
+  const i=arr.indexOf(e);
+  if(i>-1)arr.splice(i,1);else arr.push(e);
+  if(!arr.length)delete x.dateEvents[evEdit.date];
+  writeEnquiry(id,x);
+}
+function evAdd(id){
+  const inp=document.getElementById('evCustom');
+  const v=inp&&inp.value.trim();
+  if(!v)return;
+  evTog(id,v);
+}
+
+const _enqNameEl=document.getElementById('enqName');
+if(_enqNameEl)_enqNameEl.addEventListener('input',()=>{
+  const r=document.getElementById('checkResult');
+  if(r)r.className='check-result';
+  clearTimeout(window._resT);
+});
+restoreView();
+
 
 boot();
 </script>
