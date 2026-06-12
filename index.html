@@ -491,13 +491,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
     <div class="field">
       <label>Deliverables in their package</label>
       <div class="dl-grid">
-        <label class="dl-check"><input type="checkbox" id="pdl-sneak" checked>Sneak peek</label>
-        <label class="dl-check"><input type="checkbox" id="pdl-cphoto" checked>Candid photos</label>
-        <label class="dl-check"><input type="checkbox" id="pdl-tphoto" checked>Traditional photos</label>
-        <label class="dl-check"><input type="checkbox" id="pdl-cfilm" checked>Candid film</label>
-        <label class="dl-check"><input type="checkbox" id="pdl-trailer">Trailer</label>
-        <label class="dl-check"><input type="checkbox" id="pdl-tvideo" checked>Traditional video</label>
-        <label class="dl-check"><input type="checkbox" id="pdl-album" checked>Album</label>
+        <label class="dl-check"><input type="checkbox" id="pdl-album" checked>Album (the rest derive from who you log on each day)</label>
       </div>
     </div>
     <div class="field">
@@ -1339,21 +1333,38 @@ function toast(msg){
 
 /* ================= PRODUCTION ================= */
 const EVQ=['Haldi','Mehendi','Sangeet','Bride Making','Groom Making','Vratam','Wedding','Reception','Cocktail','Engagement'];
-const ROLES=['Photographer','Cinematographer','Traditional Photo','Traditional Video','Drone','Assistant'];
+const ROLES=['Traditional Photo','Traditional Video','Candid Photo','Candid Video','Drone','LED','Live Streaming'];
+const NODATA=new Set(['LED','Live Streaming']);
+function dayHasRole(d,role){return (d.roles||[]).some(r=>r.role===role);}
+function diKey(d){return (d.date||'').replace(/[^0-9]/g,'');}
 const DAYMS=86400000;
-const DELIVS=['sneak','cphoto','tphoto','cfilm','trailer','tvideo','album'];
-function gD(p,k){return p.deliv&&p.deliv[k];}
-const STAGES=[
- {k:'sneak',l:'Sneak peek',o:'Sumenth',need:p=>gD(p,'sneak'),due:(f,l)=>f?f+2*DAYMS:null},
- {k:'cull',l:'Culling',o:'Mahima',need:p=>gD(p,'cphoto')||gD(p,'tphoto'),due:(f,l)=>l?l+7*DAYMS:null},
- {k:'photo',l:'Photos delivery',o:'Sumenth',need:p=>gD(p,'cphoto')||gD(p,'tphoto'),due:(f,l)=>l?l+14*DAYMS:null,gate:1},
- {k:'trailer',l:'Trailer',o:'Team',need:p=>gD(p,'trailer'),due:(f,l)=>l?l+90*DAYMS:null,gate:1},
- {k:'cfilm',l:'Candid film',o:'Team',need:p=>gD(p,'cfilm'),due:(f,l)=>l?l+90*DAYMS:null,gate:1},
- {k:'tvideo',l:'Traditional video',o:'Team',need:p=>gD(p,'tvideo'),due:(f,l)=>l?l+90*DAYMS:null,gate:1},
- {k:'albumsel',l:'Album selection',o:'Client',need:p=>gD(p,'album'),client:1},
- {k:'albumdes',l:'Album design',o:'Sumenth',need:p=>gD(p,'album')},
- {k:'albumappr',l:'Album approval',o:'Client',need:p=>gD(p,'album'),client:1,gate:1}
-];
+// Stages derive from logged crew roles. Photo/video per shoot day; teaser+film+album once per wedding.
+function stagesFor(p){
+  const out=[];
+  const days=(p.days||[]).slice().sort((a,b)=>a.date<b.date?-1:1);
+  const f=days.length?Date.parse(days[0].date):null;
+  const l=days.length?Date.parse(days[days.length-1].date):null;
+  let anyCandidPhoto=false,anyCandidVideo=false;
+  days.forEach(d=>{
+    const ts=Date.parse(d.date);
+    if(dayHasRole(d,'Candid Photo')){anyCandidPhoto=true;out.push({k:'cphoto_'+diKey(d),l:`Candid photos · ${fmt(d.date)}`,o:'Sumenth',due:ts+14*DAYMS,gate:1});}
+    if(dayHasRole(d,'Traditional Photo'))out.push({k:'tphoto_'+diKey(d),l:`Traditional photos · ${fmt(d.date)}`,o:'Team',due:ts+14*DAYMS,gate:1});
+    if(dayHasRole(d,'Traditional Video'))out.push({k:'tvideo_'+diKey(d),l:`Traditional video · ${fmt(d.date)}`,o:'Team',due:ts+90*DAYMS,gate:1});
+    if(dayHasRole(d,'Candid Video'))anyCandidVideo=true;
+  });
+  if(anyCandidPhoto)out.unshift({k:'sneak',l:'Sneak peek',o:'Sumenth',due:f?f+2*DAYMS:null});
+  if(anyCandidPhoto||days.some(d=>dayHasRole(d,'Traditional Photo')))out.push({k:'cull',l:'Culling',o:'Mahima',due:l?l+7*DAYMS:null});
+  if(anyCandidVideo){
+    out.push({k:'teaser',l:'Candid teaser',o:'Team',due:l?l+90*DAYMS:null,gate:1});
+    out.push({k:'cfilm',l:'Candid film',o:'Team',due:l?l+90*DAYMS:null,gate:1});
+  }
+  if(p.deliv&&p.deliv.album){
+    out.push({k:'albumsel',l:'Album selection',o:'Client',client:1});
+    out.push({k:'albumdes',l:'Album design',o:'Sumenth'});
+    out.push({k:'albumappr',l:'Album approval',o:'Client',client:1,gate:1});
+  }
+  return out;
+}
 const PRAISE=[
  (l,e)=>`${l} delivered ${e}. This is why they pay the premium.`,
  (l,e)=>`${l} done ${e}. Somewhere a couple is crying at their laptop. Good.`,
@@ -1460,8 +1471,7 @@ function createProd(){
     res.innerHTML='<b>Same disk twice</b>Disk II must be a different drive — that is the whole point of copy two.';
     return;
   }
-  const deliv={};
-  DELIVS.forEach(k=>{const c=document.getElementById('pdl-'+k);deliv[k]=!!(c&&c.checked);});
+  const deliv={album:!!(document.getElementById('pdl-album')||{}).checked};
   const id=uid('p');
   prods[id]={couple:name,diskA:a,diskB:b,deliv,
     days:prodDates.map(d=>({date:d,events:(prodEvMap[d]||[]).slice(),gb:0,roles:[],fmt:false})),
@@ -1486,7 +1496,7 @@ function prodTimes(p){
 }
 function dayCardsOk(d){
   let total=0,ok=0;
-  (d.roles||[]).forEach(r=>(r.cards||[]).forEach(c=>{total++;if(c.a&&c.b&&c.v)ok++;}));
+  (d.roles||[]).forEach(r=>{if(NODATA.has(r.role))return;(r.cards||[]).forEach(c=>{total++;if(c.a&&c.b&&c.v)ok++;});});
   return {total,ok,all:total>0&&ok===total};
 }
 function dayDataAlarm(d,now){
@@ -1500,17 +1510,16 @@ function dayDataAlarm(d,now){
 function stageState(p,s,now){
   const st=(p.stages||{})[s.k];
   if(st&&st.done)return {done:true};
-  const {f,l}=prodTimes(p);
-  const due=s.due?s.due(f,l):null;
+  const due=s.due||null;
   if(!due)return {cls:'mut',txt:'—'};
   const left=due-now;
   if(left<0){const od=Math.ceil(-left/DAYMS);return {cls:'bad',txt:od+'D OVER',od};}
   const dd=Math.ceil(left/DAYMS);
   return {cls:dd<=3?'warn':'mut',txt:dd<=0?'DUE TODAY':dd+'D LEFT'};
 }
-function clientWaitDays(p,idx,now){
+function clientWaitDays(p,stages,idx,now){
   for(let i=idx-1;i>=0;i--){
-    const st=(p.stages||{})[STAGES[i].k];
+    const st=(p.stages||{})[stages[i].k];
     if(st&&st.done&&st.doneT)return Math.max(0,Math.floor((now-st.doneT)/DAYMS));
   }
   const {l}=prodTimes(p);
@@ -1523,8 +1532,8 @@ function prodIssues(p,now){
     if(al==='none')out.push({sev:'r',t:`${p.couple} — ${fmt(d.date)}: no cards logged and the shoot was ${Math.floor((now-Date.parse(d.date))/DAYMS)}d ago.`});
     else if(al==='incomplete')out.push({sev:'r',t:`${p.couple} — ${fmt(d.date)}: cards not fully on ${p.diskA} + ${p.diskB}. The 24h rule is blown.`});
   });
-  STAGES.forEach(s=>{
-    if(!s.need(p))return;
+  const stages=stagesFor(p);
+  stages.forEach(s=>{
     const ss=stageState(p,s,now);
     if(ss.done)return;
     if(ss.od){
@@ -1541,7 +1550,7 @@ function prodIssues(p,now){
   const pay=p.pay||{};
   if(f&&pay.pre&&!pay.pre.paid&&f-now<7*DAYMS&&f-now>-2*DAYMS)
     out.push({sev:'a',t:`${p.couple}: pre-wedding payment not received — first shoot ${f-now<0?'is here':'in '+Math.ceil((f-now)/DAYMS)+'d'}.`});
-  const delivered=STAGES.some(s=>s.gate&&s.need(p)&&(p.stages||{})[s.k]&&p.stages[s.k].done);
+  const delivered=stages.some(s=>s.gate&&(p.stages||{})[s.k]&&p.stages[s.k].done);
   if(delivered&&pay.fin&&!pay.fin.paid)
     out.push({sev:'a',t:`${p.couple}: deliverables going out with the final payment pending.`});
   return out;
@@ -1624,7 +1633,7 @@ function dayCard(id,p,d,di,now,dblSet){
         <button class="xs" onclick="rDel('${id}',${di},${ri})">×</button>
         ${clash?'<span class="st-pill LOST" style="margin-left:0;vertical-align:0">CLASH</span>':''}
       </div>
-      <div class="cardchips">${cards}<button class="xs" style="border:1px dashed var(--line);border-radius:6px;padding:3px 8px;font-size:10px;font-family:var(--mono)" onclick="cAdd('${id}',${di},${ri})">+ CARD</button></div>
+      <div class="cardchips">${NODATA.has(r.role)?'<span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft)">No data to copy</span>':cards+`<button class="xs" style="border:1px dashed var(--line);border-radius:6px;padding:3px 8px;font-size:10px;font-family:var(--mono)" onclick="cAdd('${id}',${di},${ri})">+ CARD</button>`}</div>
     </div>`;
   }).join('');
   let evEd='';
@@ -1653,13 +1662,13 @@ function dayCard(id,p,d,di,now,dblSet){
 }
 function prodCard(id,p,now,dblSet,dot){
   const daysHtml=(p.days||[]).map((d,di)=>dayCard(id,p,d,di,now,dblSet)).join('');
-  const stagesHtml=STAGES.map((s,idx)=>{
-    if(!s.need(p))return'';
+  const stages=stagesFor(p);
+  const stagesHtml=stages.map((s,idx)=>{
     const st=(p.stages||{})[s.k]||{};
     const ss=stageState(p,s,now);
     let right;
     if(st.done)right=`<span class="sdue ok">DONE${st.at?' · '+esc(st.at):''}</span>`;
-    else if(s.client)right=`<span class="sdue cl">WAITING ${clientWaitDays(p,STAGES.indexOf(s),now)}D</span>`;
+    else if(s.client)right=`<span class="sdue cl">WAITING ${clientWaitDays(p,stages,idx,now)}D</span>`;
     else right=`<span class="sdue ${ss.cls}">${ss.txt}</span>`;
     return `<div class="stage-row"><span class="stage-l"><input type="checkbox" ${st.done?'checked':''} onchange="stageTog('${id}','${s.k}',this.checked)"><span class="${s.client?'cw':''}">${s.l} — ${s.client?'client':s.o}</span></span>${right}</div>`;
   }).join('');
@@ -1682,7 +1691,7 @@ function prodCard(id,p,now,dblSet,dot){
     <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="addDayMode('${id}')">${pdayFor===id?'Cancel':'+ Add shoot day'}</button>
     <div id="pdayCal" style="margin-top:8px;max-width:340px"></div>
     <div class="p-sec">Pipeline</div>
-    ${stagesHtml||'<div style="font-size:13px;color:var(--ink-soft)">No deliverables ticked for this couple.</div>'}
+    ${stagesHtml||'<div style="font-size:13px;color:var(--ink-soft)">No deliverables yet — they appear as you log who shot each day.</div>'}
     <div class="p-sec">Payments — ₹${recd.toLocaleString('en-IN')} of ₹${tot.toLocaleString('en-IN')} received</div>
     <div class="pay-grid">${payRow('adv','Advance')}${payRow('pre','Pre-wedding')}${payRow('fin','Final')}</div>
     <div style="display:flex;justify-content:flex-end;margin-top:15px">
@@ -1712,7 +1721,7 @@ function dDel(id,di){
 function rAdd(id,di){
   const p=prods[id];if(!p)return;
   p.days[di].roles=p.days[di].roles||[];
-  p.days[di].roles.push({role:'Photographer',person:'',pay:0,cards:[{a:false,b:false,v:false}]});
+  p.days[di].roles.push({role:'Candid Photo',person:'',pay:0,cards:[{a:false,b:false,v:false}]});
   writeProd(id);
 }
 function rDel(id,di,ri){
@@ -1772,12 +1781,11 @@ function paySet(id,k,f,v){
 function stageTog(id,k,checked){
   const p=prods[id];if(!p)return;
   p.stages=p.stages||{};
-  const s=STAGES.find(x=>x.k===k);
+  const s=stagesFor(p).find(x=>x.k===k)||{l:'Stage'};
   const now=Date.now();
   if(checked){
     p.stages[k]={done:true,doneT:now,by:editor,at:stamp()};
-    const {f,l}=prodTimes(p);
-    const due=s.due?s.due(f,l):null;
+    const due=s.due||null;
     let msg;
     if(due&&now<=due){
       const dd=Math.floor((due-now)/DAYMS);
