@@ -1111,7 +1111,12 @@ function renderEnquiries(){
   const el=document.getElementById('enqItems');
   const now=Date.now();
   const all=Object.entries(enquiries).sort((a,b)=>tOf(b[0],b[1])-tOf(a[0],a[1]));
-  const list=all.filter(([id,x])=>!x.status);
+  const soonDate=x=>{const ds=(x.dates||[]).filter(Boolean).sort();return ds.length?Date.parse(ds[0]):Infinity;};
+  const list=all.filter(([id,x])=>!x.status).sort((a,b)=>{
+    const da=soonDate(a[1]),db=soonDate(b[1]);
+    if(da!==db)return da-db;            // soonest wedding first
+    return tOf(b[0],b[1])-tOf(a[0],a[1]); // undated fall back to newest-added
+  });
   const closed=all.filter(([id,x])=>!!x.status).sort((a,b)=>(b[1].closedAt||0)-(a[1].closedAt||0));
   const shown=list.filter(([id,x])=>filterCat==='ALL'||x.cat===filterCat);
   const open=list.filter(([id,x])=>!x.done).length;
