@@ -1212,6 +1212,7 @@ function reopenEnq(id){
   x.status=null;x.done=false;x.closedAt=null;
   x.remindBase=Date.now();
   writeEnquiry(id,x);
+  Object.entries(teamBookings).filter(([bid,b])=>b.fromEnq===id).forEach(([bid])=>deleteBooking(bid));
   log(`reopened enquiry: ${x.name}`);
   toast('Reopened — back in the pipeline');
 }
@@ -1260,7 +1261,23 @@ function cmDo(kind){
   x.closedAt=Date.now();
   writeEnquiry(id,x);
   log(`closed enquiry as ${kind.toLowerCase()}: ${x.name}`);
-  toast(kind==='BOOKED'?'Booked! Now block the dates on the calendar':'Closed as lost');
+  if(kind==='BOOKED'){
+    const dts=(x.dates||[]).filter(Boolean);
+    let added=0;
+    dts.forEach(v=>{
+      const[y,m,d]=v.split('-').map(Number);
+      if(!m||!d)return;
+      const dup=Object.values(teamBookings).some(b=>b.m===m&&b.d===d&&String(b.c||'').trim().toLowerCase()===String(x.name||'').trim().toLowerCase());
+      if(dup)return;
+      const evs=(x.dateEvents&&x.dateEvents[v])||[];
+      writeBooking(uid('b'),{m,d,c:x.name,e:evs.length?evs.join(' + '):(x.type||'Booking'),l:'—',by:editor,at:stamp(),fromEnq:id});
+      added++;
+    });
+    log(`booked ${added} date${added!==1?'s':''} on the calendar for ${x.name}`);
+    toast(added?`Booked. ${added} date${added!==1?'s':''} added to the calendar.`:'Booked. Dates were already on the calendar.');
+  } else {
+    toast('Closed as lost');
+  }
 }
 document.getElementById('closeModal').addEventListener('click',e=>{if(e.target.id==='closeModal')cmClose();});
 
