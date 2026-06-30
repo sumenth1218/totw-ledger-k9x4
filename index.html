@@ -302,6 +302,11 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .evc{font-family:var(--mono);font-size:9.5px;padding:4px 9px;border-radius:99px;border:1px solid var(--line);cursor:pointer;background:#fff;color:var(--ink-soft)}
 .evc.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .ev-pill{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:99px;background:#EFEAE0;color:#6E6A61}
+.ev-pill.fam-candid{background:#DCE6E6;color:#2E5A5C}
+.ev-pill.fam-trad{background:#F1E7D2;color:#7A5A1E}
+.ev-pill.fam-drone{background:#E4EAE2;color:#3E5C44}
+.ev-pill.fam-live{background:#F3DEDA;color:#7A2A1E}
+.ev-pill.fam-led{background:#E6E3F2;color:#534AB7}
 .team-table{width:100%;font-size:13px;border-collapse:collapse;margin-top:8px}
 .team-table th{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);text-align:left;padding:6px 4px;border-bottom:1px solid var(--ink)}
 .team-table td{padding:8px 4px;border-bottom:1px solid var(--line)}
@@ -1934,6 +1939,15 @@ function toggleTeam(){
   document.getElementById('teamSec').classList.toggle('open');
   renderTeam();
 }
+function famClass(style){
+  const s=(style||'').toLowerCase();
+  if(s.includes('traditional'))return 'fam-trad';
+  if(s.includes('candid')||s.includes('photographer')||s.includes('cinematograph'))return 'fam-candid';
+  if(s.includes('drone'))return 'fam-drone';
+  if(s.includes('live'))return 'fam-live';
+  if(s.includes('led'))return 'fam-led';
+  return '';
+}
 function renderTeam(){
   const el=document.getElementById('teamItems');
   const sec=document.getElementById('teamSec');
@@ -1958,7 +1972,7 @@ function renderTeam(){
       });
     });
   });
-  const rows=Object.values(stats).sort((a,b)=>b.days.size-a.days.size);
+  const rows=Object.values(stats).sort((a,b)=>b.pay-a.pay||b.days.size-a.days.size);
   const roleSpend={};let spendTot=0;
   Object.values(prods).forEach(p=>(p.days||[]).forEach(d=>{
     const mo=parseInt((d.date||'').split('-')[1],10);
@@ -1970,7 +1984,7 @@ function renderTeam(){
   if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+(rows.length?` · ${rows.length}`:'');
   el.innerHTML=(rows.length?roleSpendHtml+`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Events</th><th style="text-align:right">Weddings</th><th style="text-align:right">Paid</th></tr>${rows.map(s=>{
     const pr=people[s.name.toLowerCase()];
-    return `<tr><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill">${esc(pr.style)}</span>`:''}</td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
+    return `<tr><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill ${famClass(pr.style)}">${esc(pr.style)}</span>`:''}</td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
   }).join('')}</table>`
    :'<div class="empty">No crew logged yet. Add who shot what inside any wedding.</div>');
 }
