@@ -481,7 +481,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
 
 <div id="tabProd" style="display:none">
  <div class="prod-wrap">
-  <div id="prodAlerts" style="margin-top:16px"></div>
   <div class="prod-head">
     <h2>Production</h2>
     <div style="display:flex;gap:12px;align-items:baseline">
@@ -521,6 +520,14 @@ h1 em{font-style:italic;color:var(--sindoor)}
   </div>
 
   <div id="prodList" style="margin-top:6px"></div>
+
+  <div class="closed-sec" id="alertSec" style="margin-top:24px">
+    <div class="act-head" onclick="toggleAlerts()">
+      <h2 style="font-size:20px">Alerts</h2>
+      <span id="alertMeta">Show ▸</span>
+    </div>
+    <div class="act-body"><div id="prodAlerts" style="margin-top:10px"></div></div>
+  </div>
 
   <div class="closed-sec" id="teamSec" style="margin-top:28px;display:block">
     <div class="act-head" onclick="toggleTeam()">
@@ -1940,7 +1947,18 @@ function renderProdAlerts(){
   Object.values(prods).forEach(p=>{all=all.concat(prodIssues(p,now));});
   all=all.concat(doubleBookings());
   all.sort((a,b)=>(a.sev==='r'?0:1)-(b.sev==='r'?0:1));
-  el.innerHTML=all.slice(0,8).map(x=>`<div class="alert ${x.sev}">${esc(x.t)}</div>`).join('');
+  el.innerHTML=all.length?all.map(x=>`<div class="alert ${x.sev}">${esc(x.t)}</div>`).join(''):'<div class="empty">Nothing needs attention.</div>';
+  const sec=document.getElementById('alertSec');
+  const meta=document.getElementById('alertMeta');
+  if(meta){
+    const reds=all.filter(x=>x.sev==='r').length;
+    const open=sec&&sec.classList.contains('open');
+    meta.textContent=(open?'Hide ▾':'Show ▸')+(all.length?` · ${all.length}${reds?' ('+reds+' urgent)':''}`:' · clear');
+  }
+}
+function toggleAlerts(){
+  document.getElementById('alertSec').classList.toggle('open');
+  renderProdAlerts();
 }
 function toggleTeam(){
   document.getElementById('teamSec').classList.toggle('open');
