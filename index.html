@@ -283,11 +283,18 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .sdue{font-family:var(--mono);font-size:10px;letter-spacing:.06em;white-space:nowrap}
 .sdue.ok{color:var(--leaf)}.sdue.warn{color:#854F0B}.sdue.bad{color:var(--sindoor)}.sdue.cl{color:#534AB7}.sdue.mut{color:var(--ink-soft)}
 .cw{color:#534AB7}
-.pay-grid{display:flex;flex-direction:column;gap:7px}
-.pay-row{display:flex;align-items:center;gap:9px;font-size:13px}
-.pay-row label{flex:1}
-.pay-row input[type=number]{width:110px;padding:7px 9px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;text-align:right;background:#fff}
-.pay-row input[type=checkbox]{width:17px;height:17px;accent-color:var(--leaf)}
+.cost-exp{border-bottom:1px dashed var(--line)}
+.cost-head{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;font-size:13.5px;cursor:pointer}
+.cost-head>span:last-child{font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+.cost-body{padding:2px 2px 9px;display:flex;flex-direction:column;gap:5px}
+.cost-line{display:flex;justify-content:space-between;font-size:13px;padding:2px 8px}
+.cost-line>span:last-child{font-family:var(--mono);color:var(--ink)}
+.cost-add{background:none;border:1px dashed var(--line);border-radius:6px;padding:7px 12px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-soft);cursor:pointer;text-transform:uppercase}
+.cost-pkg{display:flex;align-items:center;gap:9px;font-size:13px;padding:4px 2px}
+.cost-pkg label{flex:none;color:var(--ink-soft)}
+.cost-pkg input{width:120px;padding:7px 9px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;text-align:right;background:#fff;color:var(--ink)}
+.role-spend{border:1px solid var(--line);border-radius:8px;padding:11px 12px;margin-bottom:14px;background:#fff}
+.rs-head{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
 .alert{padding:9px 12px;font-size:12.5px;border-radius:0 6px 6px 0;margin-bottom:6px;line-height:1.5}
 .alert.r{background:var(--sindoor-soft);border-left:3px solid var(--sindoor);color:#7A2A1E}
 .alert.a{background:var(--amber-soft);border-left:3px solid var(--amber);color:#7A5A1E}
@@ -677,6 +684,8 @@ let evEditP = null;      // production day-event editor {id,di}
 let prodDates = [];      // staged dates in new-wedding form
 let prodEvMap = {};      // staged events per date (from import)
 let pdayFor = null;      // prod id receiving an added day
+let openCost = {};       // {prodId:{role:bool,person:bool,day:bool}} cost expanders
+let pkgOpen = new Set();  // prod ids with package field revealed
 let selCat = "WARM";
 let filterCat = "ALL";
 let editor = localStorage.getItem('totw_editor') || "";
@@ -1600,13 +1609,6 @@ function prodIssues(p,now){
       out.push({sev:'a',t:`${p.couple}: ${s.l} due soon — ${ss.txt.toLowerCase()}. The couple is refreshing their inbox.`});
     }
   });
-  const {f}=prodTimes(p);
-  const pay=p.pay||{};
-  if(f&&pay.pre&&!pay.pre.paid&&f-now<7*DAYMS&&f-now>-2*DAYMS)
-    out.push({sev:'a',t:`${p.couple}: pre-wedding payment not received — first shoot ${f-now<0?'is here':'in '+Math.ceil((f-now)/DAYMS)+'d'}.`});
-  const delivered=stages.some(s=>s.gate&&(p.stages||{})[s.k]&&p.stages[s.k].done);
-  if(delivered&&pay.fin&&!pay.fin.paid)
-    out.push({sev:'a',t:`${p.couple}: deliverables going out with the final payment pending.`});
   return out;
 }
 function doubleBookings(){
@@ -1726,14 +1728,22 @@ function prodCard(id,p,now,dblSet,dot){
     else right=`<span class="sdue ${ss.cls}">${ss.txt}</span>`;
     return `<div class="stage-row"><span class="stage-l"><input type="checkbox" ${st.done?'checked':''} onchange="stageTog('${id}','${s.k}',this.checked)"><span class="${s.client?'cw':''}">${s.l} — ${s.client?'client':s.o}</span></span>${right}</div>`;
   }).join('');
-  const pay=p.pay||{adv:{},pre:{},fin:{}};
-  const recd=['adv','pre','fin'].reduce((t,k)=>t+(pay[k]&&pay[k].paid?(+pay[k].amt||0):0),0);
-  const tot=['adv','pre','fin'].reduce((t,k)=>t+(pay[k]?(+pay[k].amt||0):0),0);
-  const payRow=(k,lab)=>{
-    const o=pay[k]||{};
-    return `<div class="pay-row"><label>${lab}</label><input type="number" value="${o.amt||''}" placeholder="₹" onchange="paySet('${id}','${k}','amt',this.value)"><input type="checkbox" ${o.paid?'checked':''} onchange="paySet('${id}','${k}','paid',this.checked)"><span class="sdue ${o.paid?'ok':'mut'}">${o.paid?esc(o.date||'PAID'):'PENDING'}</span></div>`;
-  };
+  const cost=crewCost(p);
   const gbTot=(p.days||[]).reduce((t,d)=>t+(+d.gb||0),0);
+  const oc=openCost[id]||{};
+  const inr=n=>'₹'+(n||0).toLocaleString('en-IN');
+  const roleRows=Object.entries(cost.byRole).sort((a,b)=>b[1]-a[1]).map(([r,v])=>`<div class="cost-line"><span>${esc(r)}</span><span>${inr(v)}</span></div>`).join('');
+  const personRows=Object.entries(cost.byPerson).filter(([n,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([n,v])=>`<div class="cost-line"><span>${esc(n)}</span><span>${inr(v)}</span></div>`).join('')||'<div class="cost-line" style="color:var(--ink-soft)">No paid crew yet</div>';
+  const dayRows=(p.days||[]).map(d=>{const dv=(d.roles||[]).reduce((t,r)=>t+(+r.pay||0),0);return `<div class="cost-line"><span>${fmt(d.date)}${(d.events||[]).length?' · '+d.events.map(esc).join(' + '):''}</span><span>${inr(dv)}</span></div>`;}).join('');
+  const pkgOpenNow=pkgOpen.has(id)||(p.pkg>0);
+  let pkgHtml;
+  if(pkgOpenNow){
+    const pct=p.pkg>0?Math.round(cost.total/p.pkg*100):null;
+    pkgHtml=`<div class="cost-pkg"><label>Package value</label><input type="number" value="${p.pkg||''}" placeholder="₹" onchange="pkgSet('${id}',this.value)">${pct!==null?`<span class="sdue ${pct>35?'bad':pct>25?'warn':'ok'}">${inr(cost.total)} · ${pct}% of package</span>`:''}</div>`;
+  } else {
+    pkgHtml=`<button class="cost-add" onclick="pkgOpenTog('${id}')">+ Add package value</button>`;
+  }
+  const costExp=(key,label,sub,rows)=>`<div class="cost-exp"><div class="cost-head" onclick="costTog('${id}','${key}')"><span>${label} <span style="color:var(--ink-soft)">▸</span></span><span>${sub}</span></div>${oc[key]?`<div class="cost-body">${rows}</div>`:''}</div>`;
   return `<div class="p-card">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer" onclick="openProd('${id}')">
       <div><span style="font-family:var(--display);font-size:21px;font-weight:600">${esc(p.couple)}</span>
@@ -1746,8 +1756,13 @@ function prodCard(id,p,now,dblSet,dot){
     <div id="pdayCal" style="margin-top:8px;max-width:340px"></div>
     <div class="p-sec">Pipeline</div>
     ${stagesHtml||'<div style="font-size:13px;color:var(--ink-soft)">No deliverables yet — they appear as you log who shot each day.</div>'}
-    <div class="p-sec">Payments — ₹${recd.toLocaleString('en-IN')} of ₹${tot.toLocaleString('en-IN')} received</div>
-    <div class="pay-grid">${payRow('adv','Advance')}${payRow('pre','Pre-wedding')}${payRow('fin','Final')}</div>
+    <div class="p-sec">Crew cost — ${inr(cost.total)}</div>
+    ${cost.total>0||(p.days||[]).some(d=>(d.roles||[]).length)?`
+    ${costExp('role','By role',inr(cost.total),roleRows||'<div class="cost-line" style="color:var(--ink-soft)">No pay entered yet</div>')}
+    ${costExp('person','By person',Object.values(cost.byPerson).filter(v=>v>0).length+' paid',personRows)}
+    ${costExp('day','By day',(p.days||[]).length+' day'+((p.days||[]).length!==1?'s':''),dayRows)}
+    <div style="margin-top:9px">${pkgHtml}</div>
+    `:'<div style="font-size:13px;color:var(--ink-soft)">Crew costs appear as you log ₹ pay against who shot each day.</div>'}
     <div style="display:flex;justify-content:flex-end;margin-top:15px">
       <button class="xs" id="pdel-${id}" onclick="armDelProd('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">DELETE</button>
     </div>
@@ -1836,16 +1851,25 @@ function pEvAdd(id,di){
   if(!v)return;
   pEvTog(id,di,v);
 }
-function paySet(id,k,f,v){
+function crewCost(p){
+  const byRole={},byPerson={};let total=0;
+  (p.days||[]).forEach(d=>(d.roles||[]).forEach(r=>{
+    const v=+r.pay||0;total+=v;
+    byRole[r.role]=(byRole[r.role]||0)+v;
+    const nm=(r.person||'').trim();
+    if(nm)byPerson[nm]=(byPerson[nm]||0)+v;
+  }));
+  return {byRole,byPerson,total};
+}
+function costTog(id,key){
+  openCost[id]=openCost[id]||{};
+  openCost[id][key]=!openCost[id][key];
+  renderProd();
+}
+function pkgOpenTog(id){pkgOpen.add(id);renderProd();}
+function pkgSet(id,v){
   const p=prods[id];if(!p)return;
-  p.pay=p.pay||{};
-  p.pay[k]=p.pay[k]||{amt:0,paid:false};
-  if(f==='amt')p.pay[k].amt=+v||0;
-  else{
-    p.pay[k].paid=!!v;
-    p.pay[k].date=v?stamp():null;
-    if(v)log(`${k==='adv'?'advance':k==='pre'?'pre-wedding':'final'} payment received — ${p.couple}`);
-  }
+  p.pkg=+v||0;
   writeProd(id);
 }
 function stageTog(id,k,checked){
@@ -1870,7 +1894,6 @@ function stageTog(id,k,checked){
       msg=`${s.l} done.`;
       log(`${s.l.toLowerCase()} done for ${p.couple}`);
     }
-    if(s.gate&&p.pay&&p.pay.fin&&!p.pay.fin.paid)msg+=' Final payment still pending.';
     toast(msg);
   } else {
     delete p.stages[k];
@@ -1936,13 +1959,20 @@ function renderTeam(){
     });
   });
   const rows=Object.values(stats).sort((a,b)=>b.days.size-a.days.size);
+  const roleSpend={};let spendTot=0;
+  Object.values(prods).forEach(p=>(p.days||[]).forEach(d=>{
+    const mo=parseInt((d.date||'').split('-')[1],10);
+    if(mFil&&mo!==+mFil)return;
+    (d.roles||[]).forEach(r=>{const v=+r.pay||0;if(!v)return;roleSpend[r.role]=(roleSpend[r.role]||0)+v;spendTot+=v;});
+  }));
+  const roleSpendHtml=spendTot>0?`<div class="role-spend"><div class="rs-head">Spend by role${mFil?' · '+MN[+mFil-1]:' · all of 2026'} — ₹${spendTot.toLocaleString('en-IN')}</div>${Object.entries(roleSpend).sort((a,b)=>b[1]-a[1]).map(([r,v])=>`<div class="cost-line"><span>${esc(r)}</span><span>₹${v.toLocaleString('en-IN')}</span></div>`).join('')}</div>`:'';
   const meta=document.getElementById('teamMeta');
   if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+(rows.length?` · ${rows.length}`:'');
-  el.innerHTML=rows.length?`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Events</th><th style="text-align:right">Weddings</th><th style="text-align:right">Paid</th></tr>${rows.map(s=>{
+  el.innerHTML=(rows.length?roleSpendHtml+`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Events</th><th style="text-align:right">Weddings</th><th style="text-align:right">Paid</th></tr>${rows.map(s=>{
     const pr=people[s.name.toLowerCase()];
     return `<tr><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill">${esc(pr.style)}</span>`:''}</td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
   }).join('')}</table>`
-   :'<div class="empty">No crew logged yet. Add who shot what inside any wedding.</div>';
+   :'<div class="empty">No crew logged yet. Add who shot what inside any wedding.</div>');
 }
 function renderProdAll(){renderProd();renderProdAlerts();renderTeam();updateDatalists();}
 
