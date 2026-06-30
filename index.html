@@ -311,6 +311,12 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .team-table th{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);text-align:left;padding:6px 4px;border-bottom:1px solid var(--ink)}
 .team-table td{padding:8px 4px;border-bottom:1px solid var(--line)}
 .team-table td.num{font-family:var(--mono);text-align:right}
+.person-row{cursor:pointer}
+.person-row:hover td{background:#FBFAF6}
+.person-row.on td{background:#F4F1E9}
+.pr-caret{font-size:10px;color:var(--ink-soft);margin-left:2px}
+.person-detail td{padding:0 4px 10px!important;border-bottom:1px solid var(--line)}
+.pd-wrap{display:flex;flex-direction:column;gap:5px;padding:8px 10px;background:#FBFAF6;border-radius:6px}
 .dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:2px}
 .dl-check{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--paper);cursor:pointer}
 .dl-check input{width:16px;height:16px;accent-color:var(--sindoor)}
@@ -691,6 +697,7 @@ let prodEvMap = {};      // staged events per date (from import)
 let pdayFor = null;      // prod id receiving an added day
 let openCost = {};       // {prodId:{role:bool,person:bool,day:bool}} cost expanders
 let pkgOpen = new Set();  // prod ids with package field revealed
+let openPerson = null;    // team member key whose shoot list is expanded
 let selCat = "WARM";
 let filterCat = "ALL";
 let editor = localStorage.getItem('totw_editor') || "";
@@ -1964,11 +1971,12 @@ function renderTeam(){
       (d.roles||[]).forEach(r=>{
         if(!r.person)return;
         const k=r.person.trim().toLowerCase();
-        const s=stats[k]=stats[k]||{name:r.person.trim(),days:new Set(),ev:0,weds:new Set(),pay:0};
+        const s=stats[k]=stats[k]||{name:r.person.trim(),key:k,days:new Set(),ev:0,weds:new Set(),pay:0,shoots:[]};
         s.days.add(d.date);
         s.ev+=Math.max(1,(d.events||[]).length);
         s.weds.add(p.couple);
         s.pay+=+r.pay||0;
+        s.shoots.push({couple:p.couple,date:d.date,events:(d.events||[]).slice(),role:r.role,pay:+r.pay||0});
       });
     });
   });
@@ -1984,10 +1992,15 @@ function renderTeam(){
   if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+(rows.length?` · ${rows.length}`:'');
   el.innerHTML=(rows.length?roleSpendHtml+`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Events</th><th style="text-align:right">Weddings</th><th style="text-align:right">Paid</th></tr>${rows.map(s=>{
     const pr=people[s.name.toLowerCase()];
-    return `<tr><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill ${famClass(pr.style)}">${esc(pr.style)}</span>`:''}</td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
+    const open=openPerson===s.key;
+    const main=`<tr class="person-row${open?' on':''}" onclick="personTog('${s.key}')"><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill ${famClass(pr.style)}">${esc(pr.style)}</span>`:''} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
+    if(!open)return main;
+    const shoots=s.shoots.slice().sort((a,b)=>a.date<b.date?-1:1).map(sh=>`<div class="cost-line"><span>${fmt(sh.date)} · ${esc(sh.couple)}${sh.events.length?' · '+sh.events.map(esc).join(' + '):''} <span class="ev-pill ${famClass(sh.role)}" style="margin-left:2px">${esc(sh.role)}</span></span><span>${sh.pay?'₹'+sh.pay.toLocaleString('en-IN'):'—'}</span></div>`).join('');
+    return main+`<tr class="person-detail"><td colspan="5"><div class="pd-wrap">${shoots}</div></td></tr>`;
   }).join('')}</table>`
    :'<div class="empty">No crew logged yet. Add who shot what inside any wedding.</div>');
 }
+function personTog(k){openPerson=openPerson===k?null:k;renderTeam();}
 function renderProdAll(){renderProd();renderProdAlerts();renderTeam();updateDatalists();}
 
 /* ---- enquiry date-event tags ---- */
