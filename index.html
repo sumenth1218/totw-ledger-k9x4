@@ -342,7 +342,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
     </div>
     <div class="legend">
       <span><i class="chip booked"></i>Booked</span>
-      <span><i class="chip team"></i>Added by team</span>
       <span><i class="chip free"></i>Free</span>
       <span><i class="chip" style="background:transparent;border:2px solid var(--amber)"></i>Enquiry interest</span>
     </div>
@@ -414,7 +413,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
 
       <div id="paneBlock" style="display:none">
         <h2>Block dates</h2>
-        <p class="hint">Booking confirmed? Add all its dates at once — they turn teal for the whole team.</p>
+        <p class="hint">Booking confirmed? Add all its dates at once — they show as booked for the whole team.</p>
         <div class="field">
           <label for="bkName">Couple / client</label>
           <input id="bkName" type="text" placeholder="e.g. Ananya &amp; Rohit" autocomplete="off">
@@ -477,7 +476,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
     <h2>New wedding</h2>
     <p class="hint">Pick the couple, name their two designated disks, tick what they bought, tap the shoot dates.</p>
     <div class="field">
-      <label for="pImport">Import from booked enquiry (optional)</label>
+      <label for="pImport">Import an existing booking (optional)</label>
       <select id="pImport" onchange="pImportPick()"><option value="">—</option></select>
     </div>
     <div class="field">
@@ -836,10 +835,9 @@ function renderCalendar(){
       if(booked)count++;
       const ec=Math.min(enqByDate[(m+1)+"-"+d]||0,3);
       const clickable=booked||ec>0;
-      const teamOnly=booked&&evts.every(x=>!x.baked);
       const isToday=isThisYear&&today.getMonth()===m&&today.getDate()===d;
       const isPast=isThisYear&&new Date(2026,m,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
-      cells+=`<i class="day ${booked?(teamOnly?'team-booked':'booked'):'free'}${ec?' enq'+ec:''}${isToday?' today':''}${isPast&&!booked?' past':''}"${clickable?` onclick="openDetail(${m+1},${d})"`:''}>${d}</i>`;
+      cells+=`<i class="day ${booked?'booked':'free'}${ec?' enq'+ec:''}${isToday?' today':''}${isPast&&!booked?' past':''}"${clickable?` onclick="openDetail(${m+1},${d})"`:''}>${d}</i>`;
     }
     const div=document.createElement('div');
     div.className='month'+(count?' is-busy':'');
@@ -1435,10 +1433,33 @@ function updateDatalists(){
   const im=document.getElementById('pImport');
   if(im){
     const keep=im.value;
-    const opts=Object.entries(enquiries).filter(([i,x])=>x.status==='BOOKED');
-    im.innerHTML='<option value="">—</option>'+opts.map(([i,x])=>`<option value="${i}">${esc(x.name)}</option>`).join('');
+    const enqOpts=Object.entries(enquiries).filter(([i,x])=>x.status==='BOOKED');
+    const enqNames=new Set(enqOpts.map(([i,x])=>String(x.name||'').trim().toLowerCase()));
+    const cal=calendarCoupleMap();
+    const calNames=Object.keys(cal).filter(n=>!enqNames.has(n.toLowerCase())).sort();
+    let html='<option value="">—</option>';
+    if(enqOpts.length)html+='<optgroup label="Booked enquiries">'+enqOpts.map(([i,x])=>`<option value="${i}">${esc(x.name)}</option>`).join('')+'</optgroup>';
+    if(calNames.length)html+='<optgroup label="On the calendar">'+calNames.map(n=>`<option value="cal:${esc(n)}">${esc(n)}</option>`).join('')+'</optgroup>';
+    im.innerHTML=html;
     im.value=keep;
   }
+}
+
+// Every couple with bookings on the calendar (BAKED + team), with their dates and any event labels
+function calendarCoupleMap(){
+  const map={};
+  const add=(name,m,d,e)=>{
+    if(!name||!m||!d)return;
+    const iso=`2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const o=map[name]=map[name]||{dates:[],events:{}};
+    if(!o.dates.includes(iso))o.dates.push(iso);
+    const evs=String(e||'').split(' + ').map(s=>s.trim()).filter(s=>s&&s!=='Booking'&&s!=='—');
+    if(evs.length)o.events[iso]=[...new Set([...(o.events[iso]||[]),...evs])];
+  };
+  BAKED.forEach(([m,d,c,e])=>add(c,m,d,e));
+  Object.values(teamBookings).forEach(b=>add(b.c,b.m,b.d,b.e));
+  Object.keys(map).forEach(n=>map[n].dates.sort());
+  return map;
 }
 
 /* ---- view tabs ---- */
@@ -1467,13 +1488,24 @@ function renderProdChips(){
   if(el)el.innerHTML=prodDates.map(v=>`<span class="dchip" style="border-color:#5A564D;color:var(--paper)">${fmt(v)}<i onclick="mcToggle('prod','${v}')">×</i></span>`).join('');
 }
 function pImportPick(){
-  const id=document.getElementById('pImport').value;
-  if(!id)return;
-  const x=enquiries[id];if(!x)return;
-  document.getElementById('pName').value=x.name||'';
-  prodDates=(x.dates||[]).slice().sort();
-  prodEvMap={};
-  if(x.dateEvents)prodDates.forEach(d=>{if(x.dateEvents[d])prodEvMap[d]=x.dateEvents[d].slice();});
+  const val=document.getElementById('pImport').value;
+  if(!val)return;
+  let name='',dates=[],evMap={};
+  if(val.startsWith('cal:')){
+    name=val.slice(4);
+    const cal=calendarCoupleMap()[name];
+    if(!cal)return;
+    dates=cal.dates.slice();
+    evMap=JSON.parse(JSON.stringify(cal.events||{}));
+  } else {
+    const x=enquiries[val];if(!x)return;
+    name=x.name||'';
+    dates=(x.dates||[]).slice().sort();
+    if(x.dateEvents)dates.forEach(d=>{if(x.dateEvents[d])evMap[d]=x.dateEvents[d].slice();});
+  }
+  document.getElementById('pName').value=name;
+  prodDates=dates;
+  prodEvMap=evMap;
   if(prodDates.length)mcMonth.prod=parseInt(prodDates[0].split('-')[1],10)-1;
   renderMiniCal('prod');renderProdChips();
   toast('Imported — dates and events carried over');
@@ -1678,7 +1710,7 @@ function dayCard(id,p,d,di,now,dblSet){
     ${al?`<div style="font-size:12px;color:#7A2A1E;margin-top:6px;font-weight:500">${al==='none'?'No cards logged — shoot was over 24h ago.':'Copies incomplete past the 24h rule.'}</div>`:''}
     ${evEd}
     ${rolesHtml}
-    <div class="role-line" style="margin-top:9px"><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="rAdd('${id}',${di})">+ Role</button></div>
+    <div class="role-line" style="margin-top:9px"><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="rAdd('${id}',${di})">+ Role</button>${(p.days||[]).length>1&&(d.roles||[]).some(r=>r.person&&r.person.trim())?`<button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="copyCrewToAll('${id}',${di})">Copy crew to all days</button>`:''}</div>
     <div class="fmt-row"><input type="checkbox" ${d.fmt?'checked':''} ${all?'':'disabled'} onchange="dSet('${id}',${di},'fmt',this.checked)"><span style="${all?'':'color:var(--ink-soft)'}">Cards formatted${all?'':' — locked until every card is on both disks and verified'}</span>${total?`<span class="sdue ${all?'ok':'warn'}" style="margin-left:auto">${ok}/${total} CARDS SAFE</span>`:''}</div>
   </div>`;
 }
@@ -1745,6 +1777,22 @@ function rAdd(id,di){
   p.days[di].roles=p.days[di].roles||[];
   p.days[di].roles.push({role:'Candid Photo',person:'',pay:0,cards:[{a:false,b:false,v:false}]});
   writeProd(id);
+}
+function copyCrewToAll(id,di){
+  const p=prods[id];if(!p||!p.days)return;
+  const src=(p.days[di].roles||[]).filter(r=>r.person&&r.person.trim());
+  if(!src.length)return;
+  let n=0;
+  p.days.forEach((d,i)=>{
+    if(i===di)return;
+    d.roles=src.map(r=>({role:r.role,person:r.person,pay:r.pay||0,cards:[{a:false,b:false,v:false}]}));
+    d.fmt=false;
+    n++;
+  });
+  src.forEach(r=>regPerson(r.person,r.role));
+  writeProd(id);
+  log(`copied crew from ${fmt(p.days[di].date)} to ${n} other day${n!==1?'s':''} — ${p.couple}`);
+  toast(`Crew copied to ${n} other day${n!==1?'s':''}. Fresh cards on each — edit or add per day.`);
 }
 function rDel(id,di,ri){
   prods[id].days[di].roles.splice(ri,1);
