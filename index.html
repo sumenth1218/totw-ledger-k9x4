@@ -309,6 +309,10 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .pcell.gap input::placeholder{color:#B5392A}
 .need-dot{position:absolute;top:2px;right:2px;width:9px;height:9px;border:1px solid var(--line);border-radius:50%;cursor:pointer;background:#fff}
 .need-dot.on{background:var(--sindoor);border-color:var(--sindoor)}
+.plan-table td.ppush{white-space:nowrap;padding-left:10px}
+.push-btn{background:var(--ink);color:var(--paper);border:none;border-radius:5px;padding:6px 10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.push-btn:hover{background:var(--teal)}
+.push-btn.arm{background:var(--sindoor)}
 .alert{padding:9px 12px;font-size:12.5px;border-radius:0 6px 6px 0;margin-bottom:6px;line-height:1.5}
 .alert.r{background:var(--sindoor-soft);border-left:3px solid var(--sindoor);color:#7A2A1E}
 .alert.a{background:var(--amber-soft);border-left:3px solid var(--amber);color:#7A5A1E}
@@ -552,6 +556,21 @@ h1 em{font-style:italic;color:var(--sindoor)}
     <div class="act-body">
       <div style="margin:10px 0 4px"><select id="teamMonth" onchange="renderTeam()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></select></div>
       <div id="teamItems"></div>
+    </div>
+  </div>
+
+  <div class="closed-sec" id="seasonSec" style="margin-top:28px">
+    <div class="act-head" onclick="toggleSeason()">
+      <h2 style="font-size:20px">Season finance review</h2>
+      <span id="seasonMeta">Show ▸</span>
+    </div>
+    <div class="act-body">
+      <p class="hint" style="margin:10px 0 8px">Pick a date range and export a finance summary PDF — cost per couple, total paid to each person, spend by role, and the headline totals.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <div><label style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase;display:block;margin-bottom:4px">From</label><input type="date" id="seasonFrom" value="2026-01-01" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></div>
+        <div><label style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase;display:block;margin-bottom:4px">To</label><input type="date" id="seasonTo" value="2026-12-31" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></div>
+        <button class="btn-mini" onclick="exportSeasonPDF()" style="height:37px">Export PDF</button>
+      </div>
     </div>
   </div>
 
@@ -1832,7 +1851,8 @@ function prodCard(id,p,now,dblSet,dot){
     ${costExp('day','By day',(p.days||[]).length+' day'+((p.days||[]).length!==1?'s':''),dayRows)}
     <div style="margin-top:9px">${pkgHtml}</div>
     `:'<div style="font-size:13px;color:var(--ink-soft)">Crew costs appear as you log ₹ pay against who shot each day.</div>'}
-    <div style="display:flex;justify-content:flex-end;margin-top:15px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px">
+      <button class="xs" onclick="exportCouplePDF('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">EXPORT PDF</button>
       <button class="xs" id="pdel-${id}" onclick="armDelProd('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">DELETE</button>
     </div>
   </div>`;
@@ -2070,6 +2090,118 @@ function renderTeam(){
 }
 function personTog(k){openPerson=openPerson===k?null:k;renderTeam();}
 function renderProdAll(){renderProd();renderProdAlerts();renderTeam();updateDatalists();}
+function toggleSeason(){
+  const sec=document.getElementById('seasonSec');
+  sec.classList.toggle('open');
+  document.getElementById('seasonMeta').textContent=sec.classList.contains('open')?'Hide ▾':'Show ▸';
+}
+/* ---- PDF export (print-window, no libraries) ---- */
+const PDF_CSS=`
+<style>
+@page{margin:22mm 18mm}
+*{box-sizing:border-box}
+body{font-family:Georgia,'Times New Roman',serif;color:#1B1A17;margin:0;font-size:12px;line-height:1.5}
+.brand{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#8A857A;margin-bottom:20px}
+h1{font-size:24px;font-weight:600;margin:0 0 2px}
+.sub{font-family:'Courier New',monospace;font-size:10px;color:#8A857A;letter-spacing:.06em;margin-bottom:20px}
+h2{font-family:'Courier New',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8A857A;border-bottom:1px solid #1B1A17;padding-bottom:5px;margin:22px 0 8px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{text-align:left;font-family:'Courier New',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A857A;padding:5px 6px;border-bottom:1px solid #C9C6BE}
+td{padding:5px 6px;border-bottom:1px solid #E7E4DC;vertical-align:top}
+td.n,th.n{text-align:right;font-family:'Courier New',monospace}
+.tot td{border-top:2px solid #1B1A17;border-bottom:none;font-weight:700}
+.band{display:flex;gap:26px;flex-wrap:wrap;margin:6px 0 4px}
+.band .b{}
+.band .k{font-family:'Courier New',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A857A}
+.band .v{font-size:20px;font-weight:600}
+.muted{color:#8A857A}
+</style>`;
+function inrP(n){return '\u20B9'+(+n||0).toLocaleString('en-IN');}
+function openPrint(title,inner){
+  const w=window.open('','_blank');
+  if(!w){toast('Allow pop-ups to export the PDF.');return;}
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>${PDF_CSS}</head><body>${inner}</body></html>`);
+  w.document.close();
+  setTimeout(()=>{w.focus();w.print();},350);
+}
+function exportCouplePDF(id){
+  const p=prods[id];if(!p)return;
+  const cost=crewCost(p);
+  const days=(p.days||[]).slice().sort((a,b)=>a.date<b.date?-1:1);
+  // crew rows
+  let crewRows='';
+  days.forEach(d=>{
+    (d.roles||[]).forEach(r=>{
+      crewRows+=`<tr><td>${esc(fmt(d.date))}</td><td>${esc((d.events||[]).join(' + ')||'—')}</td><td>${esc(r.person||'—')}</td><td>${esc(r.role)}</td><td class="n">${r.pay?inrP(r.pay):'—'}</td></tr>`;
+    });
+  });
+  if(!crewRows)crewRows='<tr><td colspan="5" class="muted">No crew logged yet.</td></tr>';
+  const roleRows=Object.entries(cost.byRole).sort((a,b)=>b[1]-a[1]).map(([r,v])=>`<tr><td>${esc(r)}</td><td class="n">${inrP(v)}</td></tr>`).join('');
+  const personRows=Object.entries(cost.byPerson).filter(([n,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([n,v])=>`<tr><td>${esc(n)}</td><td class="n">${inrP(v)}</td></tr>`).join('')||'<tr><td colspan="2" class="muted">No pay entered.</td></tr>';
+  const gbTot=days.reduce((t,d)=>t+(+d.gb||0),0);
+  const pct=(p.pkg>0)?` &nbsp;·&nbsp; ${Math.round(cost.total/p.pkg*100)}% of package`:'';
+  const inner=`
+    <div class="brand">Tale of Two Weddings — Studio Ledger</div>
+    <h1>${esc(p.couple)}</h1>
+    <div class="sub">${days.length?esc(fmt(days[0].date))+' – '+esc(fmt(days[days.length-1].date)):'No dates'} &nbsp;·&nbsp; ${days.length} shoot day${days.length!==1?'s':''}${gbTot?' · '+gbTot.toLocaleString('en-IN')+' GB':''}${(p.diskA||p.diskB)?' · disks '+esc(p.diskA||'—')+' + '+esc(p.diskB||'—'):''}</div>
+    <div class="band"><div class="b"><div class="k">Total crew cost</div><div class="v">${inrP(cost.total)}${pct}</div></div></div>
+    <h2>Crew</h2>
+    <table><tr><th>Date</th><th>Events</th><th>Person</th><th>Role</th><th class="n">Pay</th></tr>${crewRows}
+      <tr class="tot"><td colspan="4">Total</td><td class="n">${inrP(cost.total)}</td></tr></table>
+    <h2>Cost by role</h2>
+    <table>${roleRows||'<tr><td colspan="2" class="muted">—</td></tr>'}</table>
+    <h2>Cost by person</h2>
+    <table>${personRows}</table>
+    <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>`;
+  openPrint(`TOTW — ${p.couple}`,inner);
+}
+function exportSeasonPDF(){
+  const from=document.getElementById('seasonFrom').value||'2026-01-01';
+  const to=document.getElementById('seasonTo').value||'2026-12-31';
+  if(from>to){toast('Start date is after end date.');return;}
+  const inRange=iso=>iso>=from&&iso<=to;
+  const couples=[]; const byPerson={}; const byRole={};
+  let grandTotal=0,weddingCount=0,dayCount=0;
+  Object.values(prods).forEach(p=>{
+    const days=(p.days||[]).filter(d=>inRange(d.date));
+    if(!days.length)return;
+    weddingCount++;dayCount+=days.length;
+    let cTot=0; const dts=days.map(d=>d.date).sort();
+    days.forEach(d=>(d.roles||[]).forEach(r=>{
+      const v=+r.pay||0;cTot+=v;grandTotal+=v;
+      byRole[r.role]=(byRole[r.role]||0)+v;
+      const nm=(r.person||'').trim();
+      if(nm&&v)byPerson[nm]=(byPerson[nm]||0)+v;
+    }));
+    couples.push({couple:p.couple,from:dts[0],to:dts[dts.length-1],days:days.length,total:cTot});
+  });
+  if(!weddingCount){toast('No shoot days in that range.');return;}
+  couples.sort((a,b)=>b.total-a.total);
+  const coupleRows=couples.map(c=>`<tr><td>${esc(c.couple)}</td><td>${esc(fmt(c.from))}${c.to!==c.from?' – '+esc(fmt(c.to)):''}</td><td class="n">${c.days}</td><td class="n">${inrP(c.total)}</td></tr>`).join('');
+  const personRows=Object.entries(byPerson).sort((a,b)=>b[1]-a[1]).map(([n,v])=>`<tr><td>${esc(n)}</td><td class="n">${inrP(v)}</td></tr>`).join('')||'<tr><td colspan="2" class="muted">No pay entered.</td></tr>';
+  const roleRows=Object.entries(byRole).filter(([r,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([r,v])=>`<tr><td>${esc(r)}</td><td class="n">${inrP(v)}</td></tr>`).join('')||'<tr><td colspan="2" class="muted">—</td></tr>';
+  const avg=weddingCount?Math.round(grandTotal/weddingCount):0;
+  const fmtRange=`${esc(fmt(from))} ${from.slice(0,4)} – ${esc(fmt(to))} ${to.slice(0,4)}`;
+  const inner=`
+    <div class="brand">Tale of Two Weddings — Studio Ledger</div>
+    <h1>Season finance review</h1>
+    <div class="sub">${fmtRange}</div>
+    <div class="band">
+      <div class="b"><div class="k">Total crew spend</div><div class="v">${inrP(grandTotal)}</div></div>
+      <div class="b"><div class="k">Weddings</div><div class="v">${weddingCount}</div></div>
+      <div class="b"><div class="k">Shoot days</div><div class="v">${dayCount}</div></div>
+      <div class="b"><div class="k">Avg / wedding</div><div class="v">${inrP(avg)}</div></div>
+    </div>
+    <h2>Cost per couple</h2>
+    <table><tr><th>Couple</th><th>Dates</th><th class="n">Days</th><th class="n">Crew cost</th></tr>${coupleRows}
+      <tr class="tot"><td colspan="3">Total</td><td class="n">${inrP(grandTotal)}</td></tr></table>
+    <h2>Total paid per person</h2>
+    <table>${personRows}</table>
+    <h2>Spend by role</h2>
+    <table>${roleRows}</table>
+    <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>`;
+  openPrint(`TOTW — Season ${from} to ${to}`,inner);
+}
 
 /* ---- enquiry date-event tags ---- */
 function evOpen(id,date){evEdit=(evEdit&&evEdit.id===id&&evEdit.date===date)?null:{id,date};renderEnquiries();}
@@ -2098,6 +2230,7 @@ if(_enqNameEl)_enqNameEl.addEventListener('input',()=>{
 });
 /* ================= CREW PLANNER (planning only, separate from Production) ================= */
 const PLAN_ROLES=[['cp','CP'],['cv','CV'],['tp','TP'],['tv','TV'],['ex','Extras']];
+
 function planRowKey(iso,couple,event){return (iso+'|'+String(couple||'').trim().toLowerCase()+'|'+String(event||'').trim().toLowerCase()).replace(/[.#$\[\]]/g,'_');}
 function writePlan(key){
   if(liveMode)db.ref('plan/'+key).set(plans[key]);
@@ -2177,7 +2310,8 @@ function renderPlan(){
   empty.style.display='none';
   const {gaps,clashes}=planIssues(month);
   clashEl.innerHTML=[...clashes.map(t=>`<div class="alert r">${esc(t)}</div>`),...gaps.map(t=>`<div class="alert a">${esc(t)}</div>`)].join('');
-  const head=`<tr><th>Date</th><th>Couple</th><th>Event</th><th>Loc</th>${PLAN_ROLES.map(([rk,lab])=>`<th>${lab}</th>`).join('')}</tr>`;
+  const head=`<tr><th>Date</th><th>Couple</th><th>Event</th><th>Loc</th>${PLAN_ROLES.map(([rk,lab])=>`<th>${lab}</th>`).join('')}<th></th></tr>`;
+  const todayISO=new Date().toISOString().slice(0,10);
   const body=rows.map(r=>{
     const pl=plans[r.key]||{cells:{},need:{}};
     const cells=PLAN_ROLES.map(([rk,lab])=>{
@@ -2187,7 +2321,10 @@ function renderPlan(){
       const dot=!val.trim()?`<i class="need-dot ${need?'on':''}" onclick="planNeed('${r.key}','${rk}')" title="${need?'Needed — click to clear':'Mark this role needed'}"></i>`:'';
       return `<td class="pcell${gap?' gap':''}${val.trim()?' filled':''}"><input list="dlPeople" value="${esc(val)}" placeholder="–" onchange="planCell('${r.key}','${rk}',this.value)">${dot}</td>`;
     }).join('');
-    return `<tr><td class="pd">${fmt(r.iso)}</td><td class="pc">${esc(r.couple)}</td><td class="pe">${esc(r.event)}</td><td class="pl">${esc(r.loc||'')}</td>${cells}</tr>`;
+    const past=r.iso<=todayISO;
+    const anyCrew=PLAN_ROLES.some(([rk])=>(pl.cells&&pl.cells[rk]||'').trim());
+    const pushCell=past&&anyCrew?`<td class="ppush"><button class="push-btn" id="push-${r.key}" onclick="pushRow('${r.key}')">→ Production</button></td>`:'<td class="ppush"></td>';
+    return `<tr><td class="pd">${fmt(r.iso)}</td><td class="pc">${esc(r.couple)}</td><td class="pe">${esc(r.event)}</td><td class="pl">${esc(r.loc||'')}</td>${cells}${pushCell}</tr>`;
   }).join('');
   grid.innerHTML=`<table class="plan-table">${head}${body}</table>`;
   renderPlanTeam(month);
@@ -2234,6 +2371,71 @@ function renderPlanTeam(month){
 }
 function togglePlanTeam(){document.getElementById('planTeamSec').classList.toggle('open');renderPlanTeam();}
 function planPersonTog(k){openPlanPerson=openPlanPerson===k?null:k;renderPlanTeam();}
+
+/* ---- push a done planner row into Production ---- */
+const PLAN_ROLE_TO_PROD={cp:'Candid Photo',cv:'Candid Video',tp:'Traditional Photo',tv:'Traditional Video'};
+// crew rows for one planner row: named people become full crew members (blank cards + pay)
+function planRowCrew(pl){
+  const out=[];
+  ['cp','cv','tp','tv'].forEach(rk=>{
+    planNames((pl.cells&&pl.cells[rk])||'').forEach(nm=>out.push({role:PLAN_ROLE_TO_PROD[rk],person:nm,pay:0,cards:[{a:false,b:false,v:false}]}));
+  });
+  // Extras: split by type — drone gets cards, LED/Live are no-data crew
+  const exRaw=String((pl.cells&&pl.cells.ex)||'');
+  planNames(exRaw).forEach(nm=>out.push({role:'Drone',person:nm,pay:0,cards:[{a:false,b:false,v:false}]}));
+  if(/led/i.test(exRaw))out.push({role:'LED',person:'',pay:0,cards:[]});
+  if(/live/i.test(exRaw))out.push({role:'Live Streaming',person:'',pay:0,cards:[]});
+  return out;
+}
+function findProdByCouple(name){
+  const k=String(name||'').trim().toLowerCase();
+  const hit=Object.entries(prods).find(([id,p])=>String(p.couple||'').trim().toLowerCase()===k);
+  return hit?hit[0]:null;
+}
+function pushToProd(key){
+  const pl=plans[key];if(!pl||!pl.iso)return;
+  const crew=planRowCrew(pl);
+  let pid=findProdByCouple(pl.couple);
+  if(!pid){
+    pid=uid('p');
+    prods[pid]={couple:pl.couple,diskA:'',diskB:'',deliv:{album:false},days:[],stages:{},
+      pay:{adv:{amt:0,paid:false},pre:{amt:0,paid:false},fin:{amt:0,paid:false}},by:editor,at:stamp(),t:Date.now()};
+    log(`created production from planner: ${pl.couple}`);
+  }
+  const p=prods[pid];
+  p.days=p.days||[];
+  const events=pl.event&&pl.event!=='—'?pl.event.split(/\s*[+&]\s*| and /i).map(s=>s.trim()).filter(Boolean):[];
+  const di=p.days.findIndex(d=>d.date===pl.iso);
+  if(di<0){
+    p.days.push({date:pl.iso,events:events,gb:0,roles:crew,fmt:false});
+  } else {
+    // day exists — wipe and rebuild that day (erases its cards/pay by design)
+    p.days[di]={date:pl.iso,events:events.length?events:(p.days[di].events||[]),gb:0,roles:crew,fmt:false};
+  }
+  p.days.sort((a,b)=>a.date<b.date?-1:1);
+  crew.forEach(c=>{if(c.person)regPerson(c.person,c.role);});
+  writeProd(pid);
+  openProdId=pid;
+  log(`pushed ${fmt(pl.iso)} · ${pl.couple} to production (${crew.filter(c=>c.person).length} crew)`);
+  toast(`Pushed to Production: ${pl.couple}, ${fmt(pl.iso)}.`);
+  renderProdAll();
+}
+let pushArmKey=null,pushArmT=null;
+function pushRow(key){
+  const pl=plans[key];if(!pl)return;
+  const pid=findProdByCouple(pl.couple);
+  const dayHasCrew=pid&&(prods[pid].days||[]).some(d=>d.date===pl.iso&&(d.roles||[]).length);
+  if(dayHasCrew&&pushArmKey!==key){
+    pushArmKey=key;
+    const b=document.getElementById('push-'+key);
+    if(b){b.textContent='Re-push wipes that day — tap again';b.classList.add('arm');}
+    clearTimeout(pushArmT);
+    pushArmT=setTimeout(()=>{pushArmKey=null;renderPlan();},3500);
+    return;
+  }
+  pushArmKey=null;clearTimeout(pushArmT);
+  pushToProd(key);
+}
 function planCell(key,role,val){
   const p=plans[key]=plans[key]||{cells:{},need:{}};
   const mt=planRowMeta[key]||{};
