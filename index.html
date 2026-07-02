@@ -1458,24 +1458,26 @@ function stagesFor(p){
   const days=(p.days||[]).slice().sort((a,b)=>a.date<b.date?-1:1);
   const f=days.length?Date.parse(days[0].date):null;
   const l=days.length?Date.parse(days[days.length-1].date):null;
-  let anyCandidPhoto=false,anyCandidVideo=false;
-  days.forEach(d=>{
-    const ts=Date.parse(d.date);
-    if(dayHasRole(d,'Candid Photo')){anyCandidPhoto=true;out.push({k:'cphoto_'+diKey(d),l:`Candid photos · ${fmt(d.date)}`,o:'Sumenth',due:ts+14*DAYMS,gate:1});}
-    if(dayHasRole(d,'Traditional Photo'))out.push({k:'tphoto_'+diKey(d),l:`Traditional photos · ${fmt(d.date)}`,o:'Team',due:ts+14*DAYMS,gate:1});
-    if(dayHasRole(d,'Traditional Video'))out.push({k:'tvideo_'+diKey(d),l:`Traditional video · ${fmt(d.date)}`,o:'Team',due:ts+90*DAYMS,gate:1});
-    if(dayHasRole(d,'Candid Video'))anyCandidVideo=true;
-  });
-  if(anyCandidPhoto)out.unshift({k:'sneak',l:'Sneak peek',o:'Sumenth',due:f?f+2*DAYMS:null});
-  if(anyCandidPhoto||days.some(d=>dayHasRole(d,'Traditional Photo')))out.push({k:'cull',l:'Culling',o:'Mahima',due:l?l+7*DAYMS:null});
-  if(anyCandidVideo){
-    out.push({k:'teaser',l:'Candid teaser',o:'Team',due:l?l+90*DAYMS:null,gate:1});
-    out.push({k:'cfilm',l:'Candid film',o:'Team',due:l?l+90*DAYMS:null,gate:1});
-  }
+  // Which roles were shot anywhere across the wedding
+  const has=role=>days.some(d=>dayHasRole(d,role));
+  const anyCandidPhoto=has('Candid Photo');
+  const anyTradPhoto=has('Traditional Photo');
+  const anyTradVideo=has('Traditional Video');
+  const anyCandidVideo=has('Candid Video');
+  // One line per deliverable type, for the whole couple. Deadlines: sneak from first day, rest from last day.
+  if(anyCandidPhoto)out.push({k:'sneak',l:'Sneak peek',o:'Sumenth',due:f?f+2*DAYMS:null});
+  if(anyCandidPhoto||anyTradPhoto)out.push({k:'cull',l:'Culling',o:'Mahima',due:l?l+7*DAYMS:null});
+  if(anyCandidPhoto)out.push({k:'cphoto',l:'Candid photos',o:'Sumenth',due:l?l+14*DAYMS:null,gate:1});
+  if(anyTradPhoto)out.push({k:'tphoto',l:'Traditional photos',o:'Team',due:l?l+14*DAYMS:null,gate:1});
+  if(anyCandidVideo)out.push({k:'teaser',l:'Candid teaser',o:'Team',due:l?l+90*DAYMS:null,gate:1});
+  if(anyCandidVideo)out.push({k:'cfilm',l:'Candid film',o:'Team',due:l?l+90*DAYMS:null,gate:1});
+  if(anyTradVideo)out.push({k:'tvideo',l:'Traditional video',o:'Team',due:l?l+90*DAYMS:null,gate:1});
   if(p.deliv&&p.deliv.album){
-    out.push({k:'albumsel',l:'Album selection',o:'Client',client:1});
-    out.push({k:'albumdes',l:'Album design',o:'Sumenth'});
-    out.push({k:'albumappr',l:'Album approval',o:'Client',client:1,gate:1});
+    const n=+p.albumCount>0?+p.albumCount:1;
+    const suffix=n>1?` \u00d7${n}`:'';
+    out.push({k:'albumsel',l:'Album selection'+suffix,o:'Client',client:1});
+    out.push({k:'albumdes',l:'Album design'+suffix,o:'Sumenth'});
+    out.push({k:'albumappr',l:'Album approval'+suffix,o:'Client',client:1,gate:1});
   }
   return out;
 }
@@ -1844,6 +1846,7 @@ function prodCard(id,p,now,dblSet,dot){
     <div id="pdayCal" style="margin-top:8px;max-width:340px"></div>
     <div class="p-sec">Pipeline</div>
     ${stagesHtml||'<div style="font-size:13px;color:var(--ink-soft)">No deliverables yet — they appear as you log who shot each day.</div>'}
+    ${p.deliv&&p.deliv.album?`<div style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12.5px;color:var(--ink-soft)"><span>Albums</span><input type="number" min="1" value="${+p.albumCount>0?+p.albumCount:1}" onchange="albumCountSet('${id}',this.value)" style="width:60px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;text-align:right;background:#fff;color:var(--ink)"></div>`:''}
     <div class="p-sec">Crew cost — ${inr(cost.total)}</div>
     ${cost.total>0||(p.days||[]).some(d=>(d.roles||[]).length)?`
     ${costExp('role','By role',inr(cost.total),roleRows||'<div class="cost-line" style="color:var(--ink-soft)">No pay entered yet</div>')}
@@ -1939,6 +1942,11 @@ function pEvAdd(id,di){
   const v=inp&&inp.value.trim();
   if(!v)return;
   pEvTog(id,di,v);
+}
+function albumCountSet(id,v){
+  const p=prods[id];if(!p)return;
+  p.albumCount=Math.max(1,+v||1);
+  writeProd(id);
 }
 function crewCost(p){
   const byRole={},byPerson={};let total=0;
