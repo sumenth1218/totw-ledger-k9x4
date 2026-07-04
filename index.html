@@ -2256,6 +2256,18 @@ function coupleTint(name){
   for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%997;
   return 'cpal'+(h%8);
 }
+function hexTextColor(c){
+  const m=String(c||'').match(/^#([0-9a-f]{6})$/i);
+  if(!m)return '#1B1A17';
+  const n=parseInt(m[1],16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  const lum=(0.299*r+0.587*g+0.114*b)/255;
+  return lum>0.62?'#1B1A17':'#FFFFFF';
+}
+function coupleCellHtml(r){
+  const col=(r.src==='plan'&&plans[r.key]&&plans[r.key].color&&/^#[0-9a-f]{6}$/i.test(plans[r.key].color))?plans[r.key].color:null;
+  if(col)return `<td class="pc" style="background:${col};color:${hexTextColor(col)}">${esc(r.couple)}</td>`;
+  return `<td class="pc ${coupleTint(r.couple)}">${esc(r.couple)}</td>`;
+}
 function writePlan(key){
   if(liveMode)db.ref('plan/'+key).set(plans[key]);
   else{localStorage.setItem('totw_plan',JSON.stringify(plans));}
@@ -2348,7 +2360,7 @@ function renderPlan(){
     const past=r.iso<=todayISO;
     const anyCrew=PLAN_ROLES.some(([rk])=>(pl.cells&&pl.cells[rk]||'').trim());
     const pushCell=`<td class="ppush">${past&&anyCrew?`<button class="push-btn" id="push-${r.key}" onclick="pushRow('${r.key}')">→ Production</button> `:''}<button class="xs" title="Remove this row" onclick="planDel('${r.key}')">×</button></td>`;
-    return `<tr class="${past?'ppast':''}"><td class="pd">${fmt(r.iso)}</td><td class="pc ${coupleTint(r.couple)}">${esc(r.couple)}</td><td class="pe">${esc(r.event)}</td><td class="pl">${esc(r.loc||'')}</td>${cells}${pushCell}</tr>`;
+    return `<tr class="${past?'ppast':''}"><td class="pd">${fmt(r.iso)}</td>${coupleCellHtml(r)}<td class="pe">${esc(r.event)}</td><td class="pl">${esc(r.loc||'')}</td>${cells}${pushCell}</tr>`;
   }).join('');
   const hidCount=Object.keys(planHidden).length;
   grid.innerHTML=`<table class="plan-table">${head}${body}</table>`+(hidCount?`<div style="margin-top:8px;font-size:12px;color:var(--ink-soft)">${hidCount} removed row${hidCount!==1?'s':''} · <a href="javascript:void(0)" onclick="planRestoreAll()" style="color:var(--teal)">restore all</a></div>`:'');
