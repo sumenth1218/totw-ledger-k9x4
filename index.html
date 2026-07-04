@@ -312,6 +312,12 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .need-dot{position:absolute;top:2px;right:2px;width:9px;height:9px;border:1px solid var(--line);border-radius:50%;cursor:pointer;background:#fff}
 .need-dot.on{background:var(--sindoor);border-color:var(--sindoor)}
 .plan-table td.ppush{white-space:nowrap;padding-left:6px}
+.plan-table tr.ppast td{opacity:.55}
+.plan-table tr.ppast td.ppush{opacity:1}
+.plan-table td.cpal0{background:#EFE6D8}.plan-table td.cpal1{background:#E4EAE2}
+.plan-table td.cpal2{background:#DCE6E6}.plan-table td.cpal3{background:#F3DEDA}
+.plan-table td.cpal4{background:#E6E3F2}.plan-table td.cpal5{background:#F1E7D2}
+.plan-table td.cpal6{background:#E3EBEF}.plan-table td.cpal7{background:#EFE0E8}
 .push-btn{background:var(--ink);color:var(--paper);border:none;border-radius:5px;padding:6px 10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
 .push-btn:hover{background:var(--teal)}
 .push-btn.arm{background:var(--sindoor)}
@@ -2245,6 +2251,11 @@ if(_enqNameEl)_enqNameEl.addEventListener('input',()=>{
 const PLAN_ROLES=[['cp','CP'],['cv','CV'],['tp','TP'],['tv','TV'],['ex','Extras']];
 
 function planRowKey(iso,couple,event){return (iso+'|'+String(couple||'').trim().toLowerCase()+'|'+String(event||'').trim().toLowerCase()).replace(/[.#$\[\]]/g,'_');}
+function coupleTint(name){
+  let h=0;const s=String(name||'').trim().toLowerCase();
+  for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%997;
+  return 'cpal'+(h%8);
+}
 function writePlan(key){
   if(liveMode)db.ref('plan/'+key).set(plans[key]);
   else{localStorage.setItem('totw_plan',JSON.stringify(plans));}
@@ -2337,7 +2348,7 @@ function renderPlan(){
     const past=r.iso<=todayISO;
     const anyCrew=PLAN_ROLES.some(([rk])=>(pl.cells&&pl.cells[rk]||'').trim());
     const pushCell=`<td class="ppush">${past&&anyCrew?`<button class="push-btn" id="push-${r.key}" onclick="pushRow('${r.key}')">→ Production</button> `:''}<button class="xs" title="Remove this row" onclick="planDel('${r.key}')">×</button></td>`;
-    return `<tr><td class="pd">${fmt(r.iso)}</td><td class="pc">${esc(r.couple)}</td><td class="pe">${esc(r.event)}</td><td class="pl">${esc(r.loc||'')}</td>${cells}${pushCell}</tr>`;
+    return `<tr class="${past?'ppast':''}"><td class="pd">${fmt(r.iso)}</td><td class="pc ${coupleTint(r.couple)}">${esc(r.couple)}</td><td class="pe">${esc(r.event)}</td><td class="pl">${esc(r.loc||'')}</td>${cells}${pushCell}</tr>`;
   }).join('');
   const hidCount=Object.keys(planHidden).length;
   grid.innerHTML=`<table class="plan-table">${head}${body}</table>`+(hidCount?`<div style="margin-top:8px;font-size:12px;color:var(--ink-soft)">${hidCount} removed row${hidCount!==1?'s':''} · <a href="javascript:void(0)" onclick="planRestoreAll()" style="color:var(--teal)">restore all</a></div>`:'');
