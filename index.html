@@ -758,6 +758,7 @@ let editState = null;    // in-place edit state {id,name,type,dates}
 let prods = {};          // production records
 let people = {};         // crew registry name->style
 let plans = {};          // crew planner rows: rowKey -> {iso,couple,event,loc,cells:{},need:{}}
+let planHidden = {};     // rowKey -> true; deleted planner rows (survives sheet sync)
 let planRowMeta = {};    // runtime: rowKey -> identity for editors
 let openProdId = null;
 let evEdit = null;       // enquiry date-event editor {id,date}
@@ -830,6 +831,7 @@ function start(){
       db.ref('prod').on('value',s=>{prods=s.val()||{};renderProdAll();});
       db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
       db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();});
+      db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();});
       document.getElementById('footNote').textContent='Shared live ledger. Signed in as '+editor+'.';
       return;
     }catch(e){ console.warn('Firebase init failed',e); }
@@ -842,6 +844,7 @@ function start(){
   try{prods=JSON.parse(localStorage.getItem('totw_prod')||'{}');}catch(e){prods={};}
   try{people=JSON.parse(localStorage.getItem('totw_people')||'{}');}catch(e){people={};}
   try{plans=JSON.parse(localStorage.getItem('totw_plan')||'{}');}catch(e){plans={};}
+  try{planHidden=JSON.parse(localStorage.getItem('totw_planhide')||'{}');}catch(e){planHidden={};}
   document.getElementById('footNote').textContent='Local mode. Editing as '+editor+'.';
   refresh();renderActivity();
 }
@@ -2272,7 +2275,7 @@ function planRows(month){
   });
   rows.sort((a,b)=>a.iso<b.iso?-1:a.iso>b.iso?1:String(a.couple).localeCompare(String(b.couple)));
   planRowMeta=meta;
-  return rows;
+  return rows.filter(r=>!planHidden[r.key]);
 }
 // Pull real names out of a freeform cell ("Sumenth & 1","2P Sai Charan","Akash + Prudhvi")
 const PLAN_EQUIP=new Set(['drone','live','led','fpv','streaming','live streaming','pax','videographer','glass reel']);
@@ -2331,10 +2334,11 @@ function renderPlan(){
     }).join('');
     const past=r.iso<=todayISO;
     const anyCrew=PLAN_ROLES.some(([rk])=>(pl.cells&&pl.cells[rk]||'').trim());
-    const pushCell=past&&anyCrew?`<td class="ppush"><button class="push-btn" id="push-${r.key}" onclick="pushRow('${r.key}')">→ Production</button></td>`:'<td class="ppush"></td>';
+    const pushCell=`<td class="ppush">${past&&anyCrew?`<button class="push-btn" id="push-${r.key}" onclick="pushRow('${r.key}')">→ Production</button> `:''}<button class="xs" title="Remove this row" onclick="planDel('${r.key}')">×</button></td>`;
     return `<tr><td class="pd">${fmt(r.iso)}</td><td class="pc">${esc(r.couple)}</td><td class="pe">${esc(r.event)}</td><td class="pl">${esc(r.loc||'')}</td>${cells}${pushCell}</tr>`;
   }).join('');
-  grid.innerHTML=`<table class="plan-table">${head}${body}</table>`;
+  const hidCount=Object.keys(planHidden).length;
+  grid.innerHTML=`<table class="plan-table">${head}${body}</table>`+(hidCount?`<div style="margin-top:8px;font-size:12px;color:var(--ink-soft)">${hidCount} removed row${hidCount!==1?'s':''} · <a href="javascript:void(0)" onclick="planRestoreAll()" style="color:var(--teal)">restore all</a></div>`:'');
   renderPlanTeam(month);
 }
 // Per-person schedule for the month: what they're on, and which booked dates they're free
@@ -2452,6 +2456,22 @@ function planCell(key,role,val){
   p.cells[role]=val;
   planNames(val).forEach(nm=>regPerson(nm,''));
   writePlan(key);
+  renderPlan();
+}
+function planDel(key){
+  planHidden[key]=true;
+  if(liveMode)db.ref('planHide/'+key).set(true);
+  else localStorage.setItem('totw_planhide',JSON.stringify(planHidden));
+  const mt=planRowMeta[key]||{};
+  log(`removed planner row${mt.couple?': '+mt.couple:''}${mt.iso?' · '+fmt(mt.iso):''}`);
+  toast('Row removed. If it lives in the sheet, delete it there too or it stays hidden here only.');
+  renderPlan();
+}
+function planRestoreAll(){
+  planHidden={};
+  if(liveMode)db.ref('planHide').remove();
+  else localStorage.setItem('totw_planhide','{}');
+  toast('All removed rows restored.');
   renderPlan();
 }
 function planNeed(key,role){
