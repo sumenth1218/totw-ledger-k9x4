@@ -582,6 +582,25 @@ h1 em{font-style:italic;color:var(--sindoor)}
     </div>
   </div>
 
+  <div class="closed-sec" id="diskSec" style="margin-top:28px">
+    <div class="act-head" onclick="toggleDisks()">
+      <h2 style="font-size:20px">Disks</h2>
+      <span id="diskMeta">Show ▸</span>
+    </div>
+    <div class="act-body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 8px">
+        <input id="diskSearch" type="text" placeholder="Search disks…" oninput="renderDisks()" autocomplete="off" style="flex:1;min-width:160px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+        <button class="btn-mini" onclick="toggleDiskImport()">Import catalogue</button>
+      </div>
+      <div id="diskImport" style="display:none;margin-bottom:10px">
+        <p class="hint" style="margin:0 0 6px">Paste rows from your DiskCatalogMaker export — each line with a disk name, size and free space. Re-pasting updates by name; nothing gets deleted.</p>
+        <textarea id="diskPaste" rows="7" placeholder="Akh &amp; Rut 2&#9;3.25 TB&#9;1.75 TB&#9;USB HD" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:12px;font-family:var(--mono);color:var(--ink)"></textarea>
+        <button class="btn-mini" style="margin-top:6px" onclick="importDisks()">Import</button>
+      </div>
+      <div id="diskItems"></div>
+    </div>
+  </div>
+
   <datalist id="dlCouples"></datalist>
   <datalist id="dlDisks"></datalist>
   <datalist id="dlPeople"></datalist>
@@ -767,6 +786,7 @@ let prods = {};          // production records
 let people = {};         // crew registry name->style
 let plans = {};          // crew planner rows: rowKey -> {iso,couple,event,loc,cells:{},need:{}}
 let planHidden = {};     // rowKey -> true; deleted planner rows (survives sheet sync)
+let disks = {};          // disk registry: key -> {name,size,free,kind,seen,src}
 let planRowMeta = {};    // runtime: rowKey -> identity for editors
 let openProdId = null;
 let evEdit = null;       // enquiry date-event editor {id,date}
@@ -840,6 +860,7 @@ function start(){
       db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
       db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();});
       db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();});
+      db.ref('disks').on('value',s=>{disks=s.val()||{};renderDisks();updateDatalists();});
       document.getElementById('footNote').textContent='Shared live ledger. Signed in as '+editor+'.';
       return;
     }catch(e){ console.warn('Firebase init failed',e); }
@@ -853,6 +874,7 @@ function start(){
   try{people=JSON.parse(localStorage.getItem('totw_people')||'{}');}catch(e){people={};}
   try{plans=JSON.parse(localStorage.getItem('totw_plan')||'{}');}catch(e){plans={};}
   try{planHidden=JSON.parse(localStorage.getItem('totw_planhide')||'{}');}catch(e){planHidden={};}
+  try{disks=JSON.parse(localStorage.getItem('totw_disks')||'{}');}catch(e){disks={};}
   document.getElementById('footNote').textContent='Local mode. Editing as '+editor+'.';
   refresh();renderActivity();
 }
@@ -1533,6 +1555,7 @@ function updateDatalists(){
   if(dd){
     const s=new Set();
     Object.values(prods).forEach(p=>{if(p.diskA)s.add(p.diskA);if(p.diskB)s.add(p.diskB);});
+    Object.values(disks).forEach(d=>{if(d.name)s.add(d.name);});
     dd.innerHTML=[...s].sort().map(n=>`<option value="${esc(n)}">`).join('');
   }
   const dp=document.getElementById('dlPeople');
@@ -2113,6 +2136,77 @@ function toggleSeason(){
   const sec=document.getElementById('seasonSec');
   sec.classList.toggle('open');
   document.getElementById('seasonMeta').textContent=sec.classList.contains('open')?'Hide ▾':'Show ▸';
+}
+/* ---- disks ---- */
+function diskKey(n){return String(n||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_');}
+function parseSizeTok(s){
+  const m=String(s||'').match(/([\d.,]+)\s*(KB|MB|GB|TB)/i);
+  if(!m)return null;
+  const v=parseFloat(m[1].replace(/,/g,''));
+  const mult={KB:1024,MB:1048576,GB:1073741824,TB:1099511627776}[m[2].toUpperCase()];
+  return Math.round(v*mult);
+}
+function fmtBytes(b){
+  b=+b||0;
+  if(b>=1099511627776)return (b/1099511627776).toFixed(2).replace(/\.?0+$/,'')+' TB';
+  if(b>=1073741824)return (b/1073741824).toFixed(1).replace(/\.0$/,'')+' GB';
+  if(b>=1048576)return Math.round(b/1048576)+' MB';
+  return b+' B';
+}
+function toggleDisks(){
+  document.getElementById('diskSec').classList.toggle('open');
+  renderDisks();
+}
+function toggleDiskImport(){
+  const el=document.getElementById('diskImport');
+  el.style.display=el.style.display==='none'?'':'none';
+}
+function writeDisksPatch(patch){
+  if(liveMode)db.ref('disks').update(patch);
+  else{Object.assign(disks,patch);localStorage.setItem('totw_disks',JSON.stringify(disks));renderDisks();updateDatalists();}
+}
+function importDisks(){
+  const ta=document.getElementById('diskPaste');
+  const lines=String(ta.value||'').split(/\r?\n/);
+  const patch={};let n=0;
+  lines.forEach(raw=>{
+    const line=raw.replace(/^[>\s│├└─\-\t]+/,'').trim();
+    if(!line)return;
+    const toks=[...line.matchAll(/([\d.,]+)\s*(KB|MB|GB|TB)\b/gi)];
+    if(toks.length<2)return;
+    const st=toks[toks.length-2],ft=toks[toks.length-1];
+    const name=line.slice(0,st.index).replace(/[\t\s]+$/,'').trim();
+    if(!name)return;
+    const kind=line.slice(ft.index+ft[0].length).replace(/^[\t\s]+/,'').trim();
+    const k=diskKey(name);
+    const prev=disks[k]||{};
+    patch[k]={name,size:parseSizeTok(st[0]),free:parseSizeTok(ft[0]),kind:kind||prev.kind||'',seen:prev.seen||null,src:'catalog'};
+    n++;
+  });
+  if(!n){toast('No disk lines recognized — each line needs a name, size and free.');return;}
+  writeDisksPatch(patch);
+  log(`imported ${n} disks from catalogue`);
+  toast(`${n} disk${n!==1?'s':''} imported.`);
+  ta.value='';
+  document.getElementById('diskImport').style.display='none';
+}
+function renderDisks(){
+  const el=document.getElementById('diskItems');
+  const sec=document.getElementById('diskSec');
+  if(!el||!sec)return;
+  const q=(document.getElementById('diskSearch').value||'').trim().toLowerCase();
+  const all=Object.values(disks);
+  const rows=all.filter(d=>!q||String(d.name||'').toLowerCase().includes(q))
+    .sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  const meta=document.getElementById('diskMeta');
+  if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+(all.length?` · ${all.length}`:'');
+  if(!all.length){el.innerHTML='<div class="empty">No disks yet. Import your catalogue once — the watcher keeps it live after that.</div>';return;}
+  if(!rows.length){el.innerHTML='<div class="empty">No disks match that search.</div>';return;}
+  el.innerHTML=`<table class="team-table"><tr><th>Disk</th><th style="text-align:right">Size</th><th style="text-align:right">Free</th><th style="text-align:right">Last seen</th></tr>${rows.map(d=>{
+    const low=d.size>0&&d.free>=0&&(d.free/d.size)<0.08;
+    const seen=d.seen?fmt(new Date(+d.seen).toISOString().slice(0,10)):'—';
+    return `<tr><td>${esc(d.name)}${d.kind?` <span class="ev-pill">${esc(d.kind)}</span>`:''}</td><td class="num">${d.size?fmtBytes(d.size):'—'}</td><td class="num${low?'':''}">${d.free!=null?`<span class="sdue ${low?'bad':'mut'}">${fmtBytes(d.free)}</span>`:'—'}</td><td class="num" style="font-size:11px;color:var(--ink-soft)">${seen}</td></tr>`;
+  }).join('')}</table>`;
 }
 /* ---- PDF export (print-window, no libraries) ---- */
 const PDF_CSS=`
