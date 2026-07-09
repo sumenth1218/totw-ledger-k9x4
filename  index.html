@@ -312,6 +312,11 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .need-dot{position:absolute;top:2px;right:2px;width:9px;height:9px;border:1px solid var(--line);border-radius:50%;cursor:pointer;background:#fff}
 .need-dot.on{background:var(--sindoor);border-color:var(--sindoor)}
 .plan-table td.ppush{white-space:nowrap;padding-left:6px}
+.chg-chip{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:99px;background:var(--sindoor-soft);color:#7A2A1E;margin-left:6px}
+.diff-tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;padding:1px 6px;border-radius:99px;margin-left:4px}
+.diff-tag.add{background:var(--leaf-soft);color:var(--leaf)}
+.diff-tag.rem{background:var(--sindoor-soft);color:#B5392A}
+.cost-line.rem-line{text-decoration:line-through;color:var(--ink-soft)}
 .plan-table tr.ppast td{opacity:.55}
 .plan-table tr.ppast td.ppush{opacity:1}
 .plan-table td.cpal0{background:#EFE6D8}.plan-table td.cpal1{background:#E4EAE2}
@@ -352,6 +357,17 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .tag-edit button{padding:0 12px;border:none;border-radius:5px;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;cursor:pointer;text-transform:uppercase}
 .dt-edit{font-size:10px;cursor:pointer;margin-left:4px;opacity:.6;font-style:normal}
 .dt-edit:hover{opacity:1}
+@media(max-width:820px){
+  .vtabs button{font-size:10px;padding:9px 4px;letter-spacing:.05em}
+  .plan-wrap{padding:0 14px}
+  .plan-table{table-layout:auto;width:auto;min-width:980px}
+  .plan-table th.thd,.plan-table th.thc,.plan-table th.the,.plan-table th.thl,.plan-table th.thp{width:auto}
+  .plan-table td.pc{min-width:130px;white-space:nowrap}
+  .plan-table td.pe{min-width:120px}
+  .plan-table td.pl{min-width:90px}
+  .pcell input{width:92px;min-width:92px}
+  .push-btn{padding:6px 8px;font-size:9px}
+}
 </style>
 </head>
 <body>
@@ -767,6 +783,7 @@ let prods = {};          // production records
 let people = {};         // crew registry name->style
 let plans = {};          // crew planner rows: rowKey -> {iso,couple,event,loc,cells:{},need:{}}
 let planHidden = {};     // rowKey -> true; deleted planner rows (survives sheet sync)
+let sentSnaps = {};      // personKey -> {at, items:{iso|couple:{iso,couple,event,role}}} — last-sent schedule baselines (survives sheet sync)
 let planRowMeta = {};    // runtime: rowKey -> identity for editors
 let openProdId = null;
 let evEdit = null;       // enquiry date-event editor {id,date}
@@ -840,6 +857,7 @@ function start(){
       db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
       db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();});
       db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();});
+      db.ref('sentSnaps').on('value',s=>{sentSnaps=s.val()||{};renderPlanTeam();});
       document.getElementById('footNote').textContent='Shared live ledger. Signed in as '+editor+'.';
       return;
     }catch(e){ console.warn('Firebase init failed',e); }
@@ -853,6 +871,7 @@ function start(){
   try{people=JSON.parse(localStorage.getItem('totw_people')||'{}');}catch(e){people={};}
   try{plans=JSON.parse(localStorage.getItem('totw_plan')||'{}');}catch(e){plans={};}
   try{planHidden=JSON.parse(localStorage.getItem('totw_planhide')||'{}');}catch(e){planHidden={};}
+  try{sentSnaps=JSON.parse(localStorage.getItem('totw_sentsnaps')||'{}');}catch(e){sentSnaps={};}
   document.getElementById('footNote').textContent='Local mode. Editing as '+editor+'.';
   refresh();renderActivity();
 }
@@ -2367,6 +2386,7 @@ function renderPlan(){
   renderPlanTeam(month);
 }
 // Per-person schedule for the month: what they're on, and which booked dates they're free
+function itemKey(a){return a.iso+'|'+String(a.couple||'').trim().toLowerCase();}
 function planPeople(month){
   const rows=planRows(month);
   const bookingDates={};
@@ -2384,10 +2404,52 @@ function planPeople(month){
   });
   const list=Object.values(map).map(o=>{
     o.assigned.sort((a,b)=>a.iso<b.iso?-1:1);
+    // diff against last-sent baseline for this person, within this month
+    const snap=sentSnaps[o.key];
+    o.lastSentAt=snap&&snap.at?snap.at:null;
+    o.removed=[];
+    if(snap&&snap.items){
+      const curKeys=new Set(o.assigned.filter(a=>a.iso.slice(0,7)===monthISO(month)||!month).map(itemKey));
+      Object.values(snap.items).forEach(it=>{
+        if(month&&it.iso.slice(5,7)!==String(month).padStart(2,'0'))return;
+        if(!curKeys.has(itemKey(it)))o.removed.push(it);
+      });
+      o.assigned.forEach(a=>{a.isNew=!snap.items[itemKey(a)];});
+    } else {
+      o.assigned.forEach(a=>{a.isNew=false;});
+    }
+    o.removed.sort((a,b)=>a.iso<b.iso?-1:1);
     return o;
   });
   list.sort((a,b)=>b.assigned.length-a.assigned.length||a.name.localeCompare(b.name));
   return list;
+}
+function monthISO(m){return '2026-'+String(m).padStart(2,'0');}
+function markSent(key){
+  const list=planPeople(document.getElementById('planMonth')?+document.getElementById('planMonth').value:null);
+  const person=list.find(o=>o.key===key);
+  if(!person)return;
+  const items={};
+  person.assigned.forEach(a=>{items[itemKey(a)]={iso:a.iso,couple:a.couple,event:a.event,role:a.role};});
+  const snap={at:Date.now(),items};
+  sentSnaps[key]=snap;
+  if(liveMode)db.ref('sentSnaps/'+key).set(snap);
+  else localStorage.setItem('totw_sentsnaps',JSON.stringify(sentSnaps));
+  toast(`Marked as sent — ${person.name}. Baseline reset.`);
+  renderPlanTeam();
+}
+function copyChanges(key){
+  const list=planPeople(document.getElementById('planMonth')?+document.getElementById('planMonth').value:null);
+  const person=list.find(o=>o.key===key);
+  if(!person)return;
+  const added=person.assigned.filter(a=>a.isNew);
+  const removed=person.removed;
+  if(!added.length&&!removed.length){toast('No changes since last sent.');return;}
+  let msg=`${person.name} — schedule update:\n`;
+  added.forEach(a=>{msg+=`+ ADDED ${fmt(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
+  removed.forEach(a=>{msg+=`- REMOVED ${fmt(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
+  navigator.clipboard&&navigator.clipboard.writeText(msg).then(()=>toast('Changes copied — paste into WhatsApp.'));
+  if(!navigator.clipboard){const ta=document.createElement('textarea');ta.value=msg;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Changes copied — paste into WhatsApp.');}
 }
 function renderPlanTeam(month){
   const el=document.getElementById('planTeamList');
@@ -2395,15 +2457,30 @@ function renderPlanTeam(month){
   const meta=document.getElementById('planTeamMeta');
   if(!el||!sec)return;
   if(month===undefined){const sel=document.getElementById('planMonth');month=sel?+sel.value:1;}
-  const list=planPeople(month).filter(o=>o.assigned.length);
+  const list=planPeople(month).filter(o=>o.assigned.length||o.removed.length);
   if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+(list.length?` · ${list.length}`:'');
   if(!list.length){el.innerHTML='<div class="empty">No crew assigned this month yet.</div>';return;}
   el.innerHTML=`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Shooting</th></tr>${list.map(o=>{
     const open=openPlanPerson===o.key;
-    const main=`<tr class="person-row${open?' on':''}" onclick="planPersonTog('${o.key}')"><td>${esc(o.name)}${o.style?` <span class="ev-pill ${famClass(o.style)}">${esc(o.style)}</span>`:''} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${o.assigned.length}</td></tr>`;
+    const changes=o.assigned.filter(a=>a.isNew).length+o.removed.length;
+    const chipHtml=changes?`<span class="chg-chip">${changes} change${changes!==1?'s':''}</span>`:'';
+    const main=`<tr class="person-row${open?' on':''}" onclick="planPersonTog('${o.key}')"><td>${esc(o.name)}${o.style?` <span class="ev-pill ${famClass(o.style)}">${esc(o.style)}</span>`:''}${chipHtml} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${o.assigned.length}</td></tr>`;
     if(!open)return main;
-    const shooting=o.assigned.length?o.assigned.map(a=>`<div class="cost-line"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span></span></div>`).join(''):'<div class="cost-line" style="color:var(--ink-soft)">Not assigned anything this month</div>';
-    return main+`<tr class="person-detail"><td colspan="2"><div class="pd-wrap">${shooting}</div></td></tr>`;
+    const monthLabel=month?MN[month-1]+' 2026':'All 2026';
+    const sentLine=o.lastSentAt?`changes since last sent ${esc(fmt(new Date(o.lastSentAt).toISOString().slice(0,10)))}`:'no baseline yet — this is his first schedule';
+    const merged=[...o.assigned.map(a=>({...a,removed:false})),...o.removed.map(a=>({...a,removed:true}))].sort((a,b)=>a.iso<b.iso?-1:1);
+    const shooting=merged.length?merged.map(a=>{
+      const tag=a.removed?'<span class="diff-tag rem">REMOVED</span>':(a.isNew?'<span class="diff-tag add">ADDED</span>':'');
+      return `<div class="cost-line${a.removed?' rem-line':''}"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span> ${tag}</span></div>`;
+    }).join(''):'<div class="cost-line" style="color:var(--ink-soft)">Not assigned anything this month</div>';
+    return main+`<tr class="person-detail"><td colspan="2"><div class="pd-wrap">
+      <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:6px">${monthLabel} · ${sentLine}</div>
+      ${shooting}
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn-mini" onclick="event.stopPropagation();markSent('${o.key}')">Mark as sent</button>
+        <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="event.stopPropagation();copyChanges('${o.key}')">Copy changes</button>
+      </div>
+    </div></td></tr>`;
   }).join('')}</table>`;
 }
 function togglePlanTeam(){document.getElementById('planTeamSec').classList.toggle('open');renderPlanTeam();}
