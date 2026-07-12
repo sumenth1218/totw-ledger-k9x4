@@ -614,7 +614,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
     </div>
   </div>
   <p class="hint" style="margin:10px 0 0">Booked dates fill in from the calendar. Type names into role cells (CP · CV · TP · TV · Extras). Use "&amp; 1" or "+1" for a lead plus an unnamed hand. Mark which roles an event needs — only those show a gap when empty. Planning only; nothing here touches Production.</p>
-  <div id="planClash" style="margin-top:12px"></div>
   <div id="planGrid" style="margin-top:10px;overflow-x:auto"></div>
   <div id="planEmpty" class="empty" style="display:none">No booked dates this month. Mark an enquiry as booked, or block dates on the calendar, and they show up here.</div>
 
@@ -2354,29 +2353,9 @@ function planNames(txt){
     .map(s=>s.replace(/^(drone|live|led|fpv)\s+/i,'').trim()) // strip leading equipment word ("Drone Sai Charan")
     .filter(s=>s && !/^\d+$/.test(s) && s!=='1' && !PLAN_EQUIP.has(s.toLowerCase()));
 }
-function planIssues(month){
-  const rows=planRows(month);
-  const gaps=[],clashMap={};
-  rows.forEach(r=>{
-    const pl=plans[r.key]||{};
-    PLAN_ROLES.forEach(([rk,lab])=>{
-      const val=(pl.cells&&pl.cells[rk])||'';
-      const need=pl.need&&pl.need[rk];
-      if(need&&!val.trim())gaps.push(`${fmt(r.iso)} · ${r.couple} — needs ${lab}`);
-      planNames(val).forEach(nm=>{
-        const k=nm.toLowerCase()+'|'+r.iso;
-        (clashMap[k]=clashMap[k]||{name:nm,iso:r.iso,couples:new Set()}).couples.add(r.couple);
-      });
-    });
-  });
-  const clashes=Object.values(clashMap).filter(o=>o.couples.size>1)
-    .map(o=>`Clash: ${o.name} is on ${[...o.couples].join(' and ')} on ${fmt(o.iso)}.`);
-  return {gaps,clashes};
-}
 function renderPlan(){
   const grid=document.getElementById('planGrid');
   const empty=document.getElementById('planEmpty');
-  const clashEl=document.getElementById('planClash');
   if(!grid)return;
   const sel=document.getElementById('planMonth');
   if(sel&&!sel.options.length){
@@ -2385,10 +2364,8 @@ function renderPlan(){
   }
   const month=sel?+sel.value:1;
   const rows=planRows(month);
-  if(!rows.length){grid.innerHTML='';empty.style.display='';clashEl.innerHTML='';return;}
+  if(!rows.length){grid.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
-  const {gaps,clashes}=planIssues(month);
-  clashEl.innerHTML=[...clashes.map(t=>`<div class="alert r">${esc(t)}</div>`),...gaps.map(t=>`<div class="alert a">${esc(t)}</div>`)].join('');
   const head=`<tr><th class="thd">Date</th><th class="thc">Couple</th><th class="the">Event</th><th class="thl">Loc</th>${PLAN_ROLES.map(([rk,lab])=>`<th>${lab}</th>`).join('')}<th class="thp"></th></tr>`;
   const todayISO=new Date().toISOString().slice(0,10);
   const body=rows.map(r=>{
