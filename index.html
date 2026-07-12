@@ -1538,6 +1538,46 @@ function regPerson(name,style){
     updateDatalists();
   }
 }
+function personRateSet(key,v){
+  if(!people[key])return;
+  people[key].rate=Math.max(0,+v||0);
+  writePeople();
+  renderPlanTeam();
+}
+function unnamedRateSet(v){
+  people['_unnamed']=people['_unnamed']||{name:'Unnamed hands',style:''};
+  people['_unnamed'].rate=Math.max(0,+v||0);
+  writePeople();
+  renderPlanTeam();
+}
+// Count unnamed extra hands in a cell: "Sumenth & 1"=1, "2P Sai Charan"=1, bare "2"=2, equipment words=0
+function planUnnamed(txt){
+  if(!txt)return 0;
+  let n=0;
+  String(txt).split(/[&+,\/]/).forEach(t=>{
+    t=t.trim();if(!t)return;
+    const m=t.match(/^(\d+)\s*(?:[PVpv]\b)?\s*(.*)$/);
+    if(!m)return;
+    const cnt=+m[1],rest=m[2].trim();
+    if(!cnt)return;
+    if(!rest){n+=cnt;return;}
+    if(PLAN_EQUIP.has(rest.toLowerCase())||/^(drone|led|live|fpv|stream)/i.test(rest))return;
+    if(cnt>1)n+=cnt-1;
+  });
+  return n;
+}
+// Unnamed hand-days for a month: per couple per date, the max needed across its rows
+function planUnnamedDays(month){
+  const per={};
+  planRows(month).forEach(r=>{
+    const pl=plans[r.key]||{};
+    let u=0;
+    PLAN_ROLES.forEach(([rk])=>{u+=planUnnamed((pl.cells&&pl.cells[rk])||'');});
+    const k=r.iso+'|'+String(r.couple||'').toLowerCase();
+    per[k]=Math.max(per[k]||0,u);
+  });
+  return Object.values(per).reduce((a,b)=>a+b,0);
+}
 function updateDatalists(){
   const dc=document.getElementById('dlCouples');
   if(dc){
@@ -2461,11 +2501,17 @@ function renderPlanTeam(month){
   const list=planPeople(month).filter(o=>o.assigned.length||o.removed.length);
   if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+(list.length?` · ${list.length}`:'');
   if(!list.length){el.innerHTML='<div class="empty">No crew assigned this month yet.</div>';return;}
-  el.innerHTML=`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Shooting</th></tr>${list.map(o=>{
+  const uDays=planUnnamedDays(month);
+  const uRate=(people['_unnamed']&&+people['_unnamed'].rate)||0;
+  const uRow=uDays?`<tr class="person-row"><td>Unnamed hands <span class="ev-pill" title="'& 1' / '2P' counts not yet named">est</span><input type="number" min="0" placeholder="rate/day" value="${uRate||''}" onclick="event.stopPropagation()" onchange="unnamedRateSet(this.value)" style="width:82px;margin-left:10px;padding:4px 6px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:11px;background:#fff;color:var(--ink)"></td><td class="num">${uDays}</td><td class="num">${uRate?'₹'+(uDays*uRate).toLocaleString('en-IN'):'—'}</td></tr>`:'';
+  el.innerHTML=`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Est. ₹</th></tr>${list.map(o=>{
     const open=openPlanPerson===o.key;
+    const rate=(people[o.key]&&+people[o.key].rate)||0;
+    const days=o.dates.size;
+    const est=rate?days*rate:0;
     const changes=o.assigned.filter(a=>a.isNew).length+o.removed.length;
     const chipHtml=changes?`<span class="chg-chip">${changes} change${changes!==1?'s':''}</span>`:'';
-    const main=`<tr class="person-row${open?' on':''}" onclick="planPersonTog('${o.key}')"><td>${esc(o.name)}${o.style?` <span class="ev-pill ${famClass(o.style)}">${esc(o.style)}</span>`:''}${chipHtml} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${o.assigned.length}</td></tr>`;
+    const main=`<tr class="person-row${open?' on':''}" onclick="planPersonTog('${o.key}')"><td>${esc(o.name)}${o.style?` <span class="ev-pill ${famClass(o.style)}">${esc(o.style)}</span>`:''}${chipHtml} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${days}</td><td class="num">${est?'₹'+est.toLocaleString('en-IN'):'—'}</td></tr>`;
     if(!open)return main;
     const monthLabel=month?MN[month-1]+' 2026':'All 2026';
     const sentLine=o.lastSentAt?`changes since last sent ${esc(fmt(new Date(o.lastSentAt).toISOString().slice(0,10)))}`:'no baseline yet — this is his first schedule';
@@ -2474,15 +2520,17 @@ function renderPlanTeam(month){
       const tag=a.removed?'<span class="diff-tag rem">REMOVED</span>':(a.isNew?'<span class="diff-tag add">ADDED</span>':'');
       return `<div class="cost-line${a.removed?' rem-line':''}"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span> ${tag}</span></div>`;
     }).join(''):'<div class="cost-line" style="color:var(--ink-soft)">Not assigned anything this month</div>';
-    return main+`<tr class="person-detail"><td colspan="2"><div class="pd-wrap">
+    const rateLine=`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--ink-soft)"><span>Day rate</span><input type="number" min="0" placeholder="₹/day" value="${rate||''}" onclick="event.stopPropagation()" onchange="personRateSet('${o.key}',this.value)" style="width:92px;padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;background:#fff;color:var(--ink)">${est?`<span style="font-family:var(--mono);font-size:11px">→ ${days} day${days!==1?'s':''} ≈ ₹${est.toLocaleString('en-IN')}</span>`:'<span style="font-size:11.5px">set a rate to project this month</span>'}</div>`;
+    return main+`<tr class="person-detail"><td colspan="3"><div class="pd-wrap">
       <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:6px">${monthLabel} · ${sentLine}</div>
       ${shooting}
+      ${rateLine}
       <div style="display:flex;gap:8px;margin-top:10px">
         <button class="btn-mini" onclick="event.stopPropagation();markSent('${o.key}')">Mark as sent</button>
         <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="event.stopPropagation();copyChanges('${o.key}')">Copy changes</button>
       </div>
     </div></td></tr>`;
-  }).join('')}</table>`;
+  }).join('')}${uRow}</table>`;
 }
 function togglePlanTeam(){document.getElementById('planTeamSec').classList.toggle('open');renderPlanTeam();}
 function planPersonTog(k){openPlanPerson=openPlanPerson===k?null:k;renderPlanTeam();}
