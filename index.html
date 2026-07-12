@@ -313,6 +313,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .need-dot.on{background:var(--sindoor);border-color:var(--sindoor)}
 .plan-table td.ppush{white-space:nowrap;padding-left:6px}
 .chg-chip{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:99px;background:var(--sindoor-soft);color:#7A2A1E;margin-left:6px}
+.team-table tr.team-total td{border-top:2px solid var(--ink);border-bottom:none;font-weight:700;font-family:var(--mono);font-size:12px;padding-top:9px}
 .diff-tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;padding:1px 6px;border-radius:99px;margin-left:4px}
 .diff-tag.add{background:var(--leaf-soft);color:var(--leaf)}
 .diff-tag.rem{background:var(--sindoor-soft);color:#B5392A}
@@ -1538,9 +1539,15 @@ function regPerson(name,style){
     updateDatalists();
   }
 }
-function personRateSet(key,v){
-  if(!people[key])return;
+function personRateSet(key,v,nm){
+  if(!people[key])people[key]={name:nm||key,style:''};
   people[key].rate=Math.max(0,+v||0);
+  writePeople();
+  renderPlanTeam();
+}
+function personUnitSet(key,u,nm){
+  if(!people[key])people[key]={name:nm||key,style:''};
+  people[key].unit=u==='event'?'event':'day';
   writePeople();
   renderPlanTeam();
 }
@@ -2504,11 +2511,20 @@ function renderPlanTeam(month){
   const uDays=planUnnamedDays(month);
   const uRate=(people['_unnamed']&&+people['_unnamed'].rate)||0;
   const uRow=uDays?`<tr class="person-row"><td>Unnamed hands <span class="ev-pill" title="'& 1' / '2P' counts not yet named">est</span><input type="number" min="0" placeholder="rate/day" value="${uRate||''}" onclick="event.stopPropagation()" onchange="unnamedRateSet(this.value)" style="width:82px;margin-left:10px;padding:4px 6px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:11px;background:#fff;color:var(--ink)"></td><td class="num">${uDays}</td><td class="num">${uRate?'₹'+(uDays*uRate).toLocaleString('en-IN'):'—'}</td></tr>`:'';
+  const calc=o=>{
+    const rec=people[o.key]||{};
+    const rate=+rec.rate||0;
+    const unit=rec.unit==='event'?'event':'day';
+    const qty=unit==='event'?o.assigned.length:o.dates.size;
+    return {rate,unit,qty,est:rate?qty*rate:0};
+  };
+  let totalEst=uRate?uDays*uRate:0, noRate=0;
+  list.forEach(o=>{const c=calc(o);totalEst+=c.est;if(!c.est&&o.assigned.length)noRate++;});
+  const totalRow=`<tr class="team-total"><td>Estimated total${noRate?` <span style="font-family:var(--sans);font-weight:400;font-size:11px;color:var(--ink-soft);letter-spacing:0;text-transform:none">· ${noRate} ${noRate===1?'person':'people'} without a rate</span>`:''}</td><td></td><td class="num">₹${totalEst.toLocaleString('en-IN')}</td></tr>`;
   el.innerHTML=`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Est. ₹</th></tr>${list.map(o=>{
     const open=openPlanPerson===o.key;
-    const rate=(people[o.key]&&+people[o.key].rate)||0;
+    const {rate,unit,qty,est}=calc(o);
     const days=o.dates.size;
-    const est=rate?days*rate:0;
     const changes=o.assigned.filter(a=>a.isNew).length+o.removed.length;
     const chipHtml=changes?`<span class="chg-chip">${changes} change${changes!==1?'s':''}</span>`:'';
     const main=`<tr class="person-row${open?' on':''}" onclick="planPersonTog('${o.key}')"><td>${esc(o.name)}${o.style?` <span class="ev-pill ${famClass(o.style)}">${esc(o.style)}</span>`:''}${chipHtml} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${days}</td><td class="num">${est?'₹'+est.toLocaleString('en-IN'):'—'}</td></tr>`;
@@ -2520,7 +2536,7 @@ function renderPlanTeam(month){
       const tag=a.removed?'<span class="diff-tag rem">REMOVED</span>':(a.isNew?'<span class="diff-tag add">ADDED</span>':'');
       return `<div class="cost-line${a.removed?' rem-line':''}"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span> ${tag}</span></div>`;
     }).join(''):'<div class="cost-line" style="color:var(--ink-soft)">Not assigned anything this month</div>';
-    const rateLine=`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--ink-soft)"><span>Day rate</span><input type="number" min="0" placeholder="₹/day" value="${rate||''}" onclick="event.stopPropagation()" onchange="personRateSet('${o.key}',this.value)" style="width:92px;padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;background:#fff;color:var(--ink)">${est?`<span style="font-family:var(--mono);font-size:11px">→ ${days} day${days!==1?'s':''} ≈ ₹${est.toLocaleString('en-IN')}</span>`:'<span style="font-size:11.5px">set a rate to project this month</span>'}</div>`;
+    const rateLine=`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft)"><span>Rate</span><input type="number" min="0" placeholder="₹" value="${rate||''}" onclick="event.stopPropagation()" onchange="personRateSet('${o.key}',this.value,'${esc(o.name)}')" style="width:88px;padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;background:#fff;color:var(--ink)"><select onclick="event.stopPropagation()" onchange="personUnitSet('${o.key}',this.value,'${esc(o.name)}')" style="padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-size:12px;background:#fff;color:var(--ink)"><option value="day"${unit==='day'?' selected':''}>per day</option><option value="event"${unit==='event'?' selected':''}>per event</option></select>${est?`<span style="font-family:var(--mono);font-size:11px">→ ${qty} ${unit}${qty!==1?'s':''} ≈ ₹${est.toLocaleString('en-IN')}</span>`:'<span style="font-size:11.5px">set a rate to project this month</span>'}</div>`;
     return main+`<tr class="person-detail"><td colspan="3"><div class="pd-wrap">
       <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:6px">${monthLabel} · ${sentLine}</div>
       ${shooting}
@@ -2530,7 +2546,7 @@ function renderPlanTeam(month){
         <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="event.stopPropagation();copyChanges('${o.key}')">Copy changes</button>
       </div>
     </div></td></tr>`;
-  }).join('')}${uRow}</table>`;
+  }).join('')}${uRow}${totalRow}</table>`;
 }
 function togglePlanTeam(){document.getElementById('planTeamSec').classList.toggle('open');renderPlanTeam();}
 function planPersonTog(k){openPlanPerson=openPlanPerson===k?null:k;renderPlanTeam();}
