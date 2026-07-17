@@ -247,9 +247,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .shot-row.ok{background:var(--leaf-soft);color:var(--leaf)}
 .shot-row.miss{background:var(--sindoor-soft);color:var(--sindoor)}
 .shot-row .tick{flex:0 0 12px;font-weight:600}
-.shot-mood{display:flex;gap:8px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);flex-wrap:wrap}
-.shot-mood-l{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#A39F95}
-.shot-mood input{flex:1;min-width:180px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)}
 .gate-card{max-width:380px;width:100%;text-align:center}
 .gate-card .eyebrow{margin-bottom:8px}
 .gate-card h2{font-family:var(--display);font-size:34px;font-weight:500;margin-bottom:18px}
@@ -668,6 +665,22 @@ h1 em{font-style:italic;color:var(--sindoor)}
   <p class="hint" style="margin:10px 0 0">What the candid and traditional teams submitted from their checklist links — ticks, who filled it, and logged start and close times. Newest event first. Submissions are read-only; the crew can't see or edit anything here.</p>
   <div id="shotGroups" style="margin-top:14px"></div>
 
+  <div class="closed-sec open" id="moodSec" style="margin-top:26px">
+    <div class="act-head" onclick="toggleMoodSec()">
+      <h2 style="font-size:20px">Mood boards — candid team</h2>
+      <span id="moodSecMeta">Hide ▾</span>
+    </div>
+    <div class="act-body">
+      <p class="hint" style="margin:10px 0 8px">Pin a Pinterest board (or any link) to a couple. The candid team sees it at the top of their checklist the moment they pick that couple — no submission needed first.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <select id="moodCouple" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:200px"></select>
+        <input id="moodUrl" type="url" placeholder="https://pinterest.com/…" style="flex:1;min-width:220px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+        <button class="btn-mini" onclick="saveMoodBoard()">Save board</button>
+      </div>
+      <div id="moodList"></div>
+    </div>
+  </div>
+
   <div class="closed-sec" id="shotEditSec" style="margin-top:26px">
     <div class="act-head" onclick="toggleShotEdit()">
       <h2 style="font-size:20px">Edit shot lists</h2>
@@ -923,7 +936,7 @@ function start(){
       db.ref('sentSnaps').on('value',s=>{sentSnaps=s.val()||{};renderPlanTeam();});
       db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();});
       db.ref('shotLists').on('value',s=>{shotLists=s.val()||{};loadShotEd();});
-      db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();});
+      db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();});
       document.getElementById('footNote').textContent='Shared live ledger. Signed in as '+editor+'.';
       return;
     }catch(e){ console.warn('Firebase init failed',e); }
@@ -1731,7 +1744,7 @@ function setView(v){
   hidePop();
   if(v==='prod')renderProdAll();
   if(v==='plan')renderPlan();
-  if(v==='shots'){renderShots();loadShotEd();}
+  if(v==='shots'){renderShots();renderMoodSec();loadShotEd();}
 }
 function restoreView(){setView(localStorage.getItem('totw_view')||'ledger');}
 
@@ -2867,7 +2880,7 @@ function renderShots(){
   const list=Object.entries(groups).sort((a,b)=>a[1].eventDate<b[1].eventDate?1:-1);
   if(!list.length){el.innerHTML='<div class="empty">No checklists submitted yet. Send the crew their links before the next event and they show up here.</div>';return;}
   el.innerHTML=list.map(([gk,g])=>{
-    const mood=(shotMoods&&shotMoods[gk]&&shotMoods[gk].url)||'';
+    const mood=(shotMoods&&shotMoods[moodKey(g.client)]&&shotMoods[moodKey(g.client)].url)||'';
     const teamCol=team=>{
       const subs=g.subs.filter(s=>s.team===team).sort((a,b)=>(a.submittedAt||0)-(b.submittedAt||0));
       if(!subs.length)return `<div class="shot-team"><div class="shot-team-h ${team}">${team==='candid'?'Candid':'Traditional'}</div><div class="empty" style="padding:14px 4px">Not submitted yet.</div></div>`;
@@ -2883,25 +2896,68 @@ function renderShots(){
     };
     return `<div class="shot-card">
       <div class="shot-card-h">
-        <span><b>${esc(g.client)}</b> — ${esc(g.eventType)} · ${esc(fmt(g.eventDate))} ${g.eventDate.slice(0,4)}</span>
+        <span><b>${esc(g.client)}</b> — ${esc(g.eventType)} · ${esc(fmt(g.eventDate))} ${g.eventDate.slice(0,4)}${mood?` <a href="${esc(mood)}" target="_blank" rel="noopener" class="btn-mini" style="text-decoration:none;margin-left:8px">Mood board ↗</a>`:''}</span>
       </div>
       <div class="shot-cols">${teamCol('candid')}${teamCol('traditional')}</div>
-      <div class="shot-mood">
-        <span class="shot-mood-l">Mood board</span>
-        <input id="mood_${gk}" type="url" placeholder="Paste a link — Pinterest, Drive, anything" value="${esc(mood)}">
-        <button class="btn-mini" onclick="saveMood('${gk}')">Save</button>
-        ${mood?`<a href="${esc(mood)}" target="_blank" rel="noopener" class="btn-mini" style="text-decoration:none;display:inline-block">Open</a>`:''}
-      </div>
     </div>`;
   }).join('');
 }
 
-function saveMood(gk){
-  const v=(document.getElementById('mood_'+gk)?.value||'').trim();
+const moodKey = name => String(name||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_');
+
+function upcomingCouplesAdmin(){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const p2=n=>String(n).padStart(2,'0');
+  const map={};
+  const add=(iso,name)=>{
+    if(!name)return;
+    const d=new Date(iso+'T00:00:00');
+    if(isNaN(d)||d<today)return;
+    const k=String(name).trim(); if(!k)return;
+    if(!map[k]||iso<map[k])map[k]=iso;
+  };
+  BAKED.forEach(r=>add(`2026-${p2(r[0])}-${p2(r[1])}`,r[2]));
+  Object.values(teamBookings||{}).forEach(b=>{if(b&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c);});
+  Object.values(enquiries||{}).forEach(x=>{if(x&&x.status==='BOOKED')(x.dates||[]).forEach(iso=>add(iso,x.name));});
+  return Object.entries(map).sort((a,b)=>a[1]<b[1]?-1:1);
+}
+
+function toggleMoodSec(){
+  const s=document.getElementById('moodSec');
+  s.classList.toggle('open');
+  document.getElementById('moodSecMeta').textContent=s.classList.contains('open')?'Hide ▾':'Show ▸';
+}
+
+function renderMoodSec(){
+  const sel=document.getElementById('moodCouple'); if(!sel)return;
+  const keep=sel.value;
+  const ups=upcomingCouplesAdmin();
+  sel.innerHTML='<option value="">Pick the couple…</option>'+ups.map(([n,iso])=>`<option value="${esc(n)}">${esc(n)} — from ${esc(fmt(iso))}</option>`).join('');
+  if(keep)sel.value=keep;
+  const list=document.getElementById('moodList');
+  const entries=Object.entries(shotMoods||{}).filter(([k,v])=>v&&v.url);
+  if(!entries.length){list.innerHTML='<div class="empty" style="padding:10px 4px">No boards saved yet.</div>';return;}
+  list.innerHTML=entries.sort((a,b)=>String(a[1].couple||'').localeCompare(String(b[1].couple||''))).map(([k,v])=>
+    `<div class="cost-line"><span><b>${esc(v.couple||k)}</b> · <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url.length>52?v.url.slice(0,52)+'…':v.url)}</a></span><span><button class="btn-mini" onclick="removeMoodBoard('${esc(k)}')">Remove</button></span></div>`
+  ).join('');
+}
+
+function saveMoodBoard(){
+  if(!liveMode){toast('Needs live sync to save.');return;}
+  const name=document.getElementById('moodCouple').value;
+  const url=(document.getElementById('moodUrl').value||'').trim();
+  if(!name){toast('Pick the couple first.');return;}
+  if(!url){toast('Paste the board link.');return;}
+  db.ref('shotMoods/'+moodKey(name)).set({url,couple:name,by:editor,at:stamp()});
+  document.getElementById('moodUrl').value='';
+  log('saved mood board for '+name);
+  toast('Board saved. The candid team sees it when they pick '+name+'.');
+}
+
+function removeMoodBoard(k){
   if(!liveMode)return;
-  if(v)db.ref('shotMoods/'+gk).set({url:v,by:editor,at:stamp()});
-  else db.ref('shotMoods/'+gk).remove();
-  toast(v?'Mood board link saved.':'Mood board link cleared.');
+  db.ref('shotMoods/'+k).remove();
+  toast('Board removed.');
 }
 
 function toggleShotEdit(){
