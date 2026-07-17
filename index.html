@@ -233,6 +233,23 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .act small{font-family:var(--mono);font-size:9.5px;display:block;color:#9B968B;margin-top:1px}
 
 .gate,.who{position:fixed;inset:0;background:var(--paper);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+/* Shot checklist admin */
+.shot-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+.shot-card-h{font-size:15px;padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.shot-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.shot-cols{grid-template-columns:1fr}}
+.shot-team-h{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:4px 10px;border-radius:99px;display:inline-block;margin-bottom:8px}
+.shot-team-h.candid{background:var(--sindoor-soft);color:var(--sindoor)}
+.shot-team-h.traditional{background:var(--cold-soft);color:var(--cold)}
+.shot-sub{margin-bottom:10px}
+.shot-meta{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:6px}
+.shot-row{font-size:13px;padding:5px 8px;border-radius:5px;margin-bottom:3px;display:flex;gap:8px;line-height:1.4}
+.shot-row.ok{background:var(--leaf-soft);color:var(--leaf)}
+.shot-row.miss{background:var(--sindoor-soft);color:var(--sindoor)}
+.shot-row .tick{flex:0 0 12px;font-weight:600}
+.shot-mood{display:flex;gap:8px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);flex-wrap:wrap}
+.shot-mood-l{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#A39F95}
+.shot-mood input{flex:1;min-width:180px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)}
 .gate-card{max-width:380px;width:100%;text-align:center}
 .gate-card .eyebrow{margin-bottom:8px}
 .gate-card h2{font-family:var(--display);font-size:34px;font-weight:500;margin-bottom:18px}
@@ -418,6 +435,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
   <button id="vtEnq" class="on" onclick="setView('ledger')">Dates &amp; Enquiries</button>
   <button id="vtPlan" onclick="setView('plan')">Crew Planner</button>
   <button id="vtProd" onclick="setView('prod')">Production</button>
+  <button id="vtShots" onclick="setView('shots')">Shot Lists</button>
 </div>
 
 <div id="tabLedger">
@@ -634,6 +652,43 @@ h1 em{font-style:italic;color:var(--sindoor)}
   </div>
  </div>
 </div>
+
+<div id="tabShots" style="display:none">
+ <div class="plan-wrap">
+  <div class="prod-head">
+    <h2>Shot Checklists</h2>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input id="shotFClient" placeholder="Filter by couple…" oninput="renderShots()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);width:170px">
+      <select id="shotFType" onchange="renderShots()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+        <option value="">All events</option>
+        <option>Haldi</option><option>Mehndi</option><option>Sangeet</option><option>Ceremony</option><option>Reception</option>
+      </select>
+    </div>
+  </div>
+  <p class="hint" style="margin:10px 0 0">What the candid and traditional teams submitted from their checklist links — ticks, who filled it, and logged start and close times. Newest event first. Submissions are read-only; the crew can't see or edit anything here.</p>
+  <div id="shotGroups" style="margin-top:14px"></div>
+
+  <div class="closed-sec" id="shotEditSec" style="margin-top:26px">
+    <div class="act-head" onclick="toggleShotEdit()">
+      <h2 style="font-size:20px">Edit shot lists</h2>
+      <span id="shotEditMeta">Show ▸</span>
+    </div>
+    <div class="act-body">
+      <p class="hint" style="margin:10px 0 8px">One shot per line. Saving updates the checklist the crew sees from now on — already-submitted checklists keep the list they were shot against.</p>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <select id="shotEdType" onchange="loadShotEd()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+          <option value="haldi">Haldi</option><option value="mehndi">Mehndi</option><option value="sangeet">Sangeet</option><option value="ceremony">Ceremony</option><option value="reception">Reception</option>
+        </select>
+        <select id="shotEdTeam" onchange="loadShotEd()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+          <option value="traditional">Traditional</option><option value="candid">Candid</option>
+        </select>
+      </div>
+      <textarea id="shotEdArea" rows="10" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:var(--body);font-size:14px;color:var(--ink);line-height:1.6;resize:vertical"></textarea>
+      <button class="btn-mini" style="margin-top:10px" onclick="saveShotEd()">Save this list</button>
+    </div>
+  </div>
+ </div>
+</div>
 </div>
 
 <div class="detail" id="detail">
@@ -789,6 +844,9 @@ let people = {};         // crew registry name->style
 let plans = {};          // crew planner rows: rowKey -> {iso,couple,event,loc,cells:{},need:{}}
 let planHidden = {};     // rowKey -> true; deleted planner rows (survives sheet sync)
 let sentSnaps = {};      // personKey -> {at, items:{iso|couple:{iso,couple,event,role}}} — last-sent schedule baselines (survives sheet sync)
+let shotSubs = {};       // shotChecklists: pushId -> {client,eventType,eventDate,team,crewName,startTime,endTime,items[],submittedAt}
+let shotLists = {};      // shotLists: eventKey -> {candid:[],traditional:[]} — editable defaults for the crew pages
+let shotMoods = {};      // shotMoods: groupKey -> {url} — mood board link per event
 let planRowMeta = {};    // runtime: rowKey -> identity for editors
 let openProdId = null;
 let evEdit = null;       // enquiry date-event editor {id,date}
@@ -863,6 +921,9 @@ function start(){
       db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();});
       db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();});
       db.ref('sentSnaps').on('value',s=>{sentSnaps=s.val()||{};renderPlanTeam();});
+      db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();});
+      db.ref('shotLists').on('value',s=>{shotLists=s.val()||{};loadShotEd();});
+      db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();});
       document.getElementById('footNote').textContent='Shared live ledger. Signed in as '+editor+'.';
       return;
     }catch(e){ console.warn('Firebase init failed',e); }
@@ -1656,18 +1717,21 @@ function calendarCoupleMap(){
 
 /* ---- view tabs ---- */
 function setView(v){
-  const led=document.getElementById('tabLedger'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan');
-  if(!led||!pr||!pl)return;
+  const led=document.getElementById('tabLedger'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots');
+  if(!led||!pr||!pl||!sh)return;
   document.getElementById('vtEnq').classList.toggle('on',v==='ledger');
   document.getElementById('vtPlan').classList.toggle('on',v==='plan');
   document.getElementById('vtProd').classList.toggle('on',v==='prod');
+  document.getElementById('vtShots').classList.toggle('on',v==='shots');
   led.style.display=v==='ledger'?'':'none';
   pl.style.display=v==='plan'?'':'none';
   pr.style.display=v==='prod'?'':'none';
+  sh.style.display=v==='shots'?'':'none';
   localStorage.setItem('totw_view',v);
   hidePop();
   if(v==='prod')renderProdAll();
   if(v==='plan')renderPlan();
+  if(v==='shots'){renderShots();loadShotEd();}
 }
 function restoreView(){setView(localStorage.getItem('totw_view')||'ledger');}
 
@@ -2687,6 +2751,180 @@ function importRoster(){
   });
   toast(added?`Imported ${added} shoot rows from your sheet.`:'Already imported — nothing new to add.');
   renderPlan();
+}
+
+
+/* ================= Shot Checklists (admin) ================= */
+const SHOT_DEFAULTS = {
+  "haldi": {
+    "traditional": [
+      "Wide shot of the haldi setup before guests arrive",
+      "Parents applying haldi first (formal frame)",
+      "Group shot of all family members present",
+      "Close-up of the haldi thali and props",
+      "Bride/groom solo portrait with haldi on face and hands"
+    ],
+    "candid": [
+      "Reaction shots as haldi is applied (laughing, flinching, crying)",
+      "Siblings and cousins smearing haldi playfully",
+      "Someone getting ambushed with a haldi handful",
+      "Candid mother-daughter or father-son moment",
+      "Details: haldi-covered hands, petals, marigold garlands"
+    ]
+  },
+  "mehndi": {
+    "traditional": [
+      "Wide of the mehndi setup and seating",
+      "Artist's hands applying the design (macro)",
+      "Finished mehndi \u2014 both hands, both feet",
+      "Family group photo",
+      "Bride solo portrait showing full mehndi"
+    ],
+    "candid": [
+      "Bride's face mid-application (boredom, excitement, chatting)",
+      "Friends dancing or singing in the background",
+      "Guests showing off their own mehndi",
+      "Grandparents watching from the side",
+      "The groom's name hidden in the design, if there is one"
+    ]
+  },
+  "sangeet": {
+    "traditional": [
+      "Stage and decor wide before the crowd fills in",
+      "Each performance group, posed after their act",
+      "Couple's entry",
+      "Family dance formal frame",
+      "Couple portrait against the stage backdrop"
+    ],
+    "candid": [
+      "Mid-dance action, unscripted joining-in moments",
+      "Someone missing a step and laughing about it",
+      "Couple reacting to performances from their seats",
+      "Backstage nerves before a performance",
+      "Kids dancing at the edge of the floor"
+    ]
+  },
+  "ceremony": {
+    "traditional": [
+      "Mandap wide shot before the couple arrives",
+      "Baraat / entry formal sequence",
+      "Jaimala",
+      "Kanyadaan",
+      "Saptapadi / pheras",
+      "Sindoor",
+      "Mangalsutra",
+      "Priest and family during key rituals",
+      "Formal couple portrait post-ceremony",
+      "Full family group photo"
+    ],
+    "candid": [
+      "Bride's expression right before she is led in",
+      "Groom's reaction seeing the bride",
+      "Parents' faces during kanyadaan",
+      "Tears, laughter, or nerves during rituals",
+      "Guests reacting in real time",
+      "Mangalsutra close-up",
+      "Feet during pheras",
+      "Hands during rituals"
+    ]
+  },
+  "reception": {
+    "traditional": [
+      "Stage and decor wide before guests enter",
+      "Couple's grand entry",
+      "Formal portraits with each side of the family",
+      "Cake cutting / ring ceremony if included",
+      "Couple solo portraits on the stage"
+    ],
+    "candid": [
+      "Guests' reactions during the entry",
+      "First dance or impromptu dancing",
+      "Couple in conversation with guests",
+      "Kids running around, elders seated and observing",
+      "Final goodbye hugs and farewell moments"
+    ]
+  }
+};
+
+function shotGroupKey(s){
+  return (String(s.client||'').trim().toLowerCase()+'|'+String(s.eventType||'')+'|'+String(s.eventDate||'')).replace(/[.#$\[\]\/]/g,'_');
+}
+function shotTimeFmt(t){ if(!t)return '—'; const[h,m]=t.split(':').map(Number); const ap=h>=12?'PM':'AM'; const hh=h%12||12; return hh+':'+String(m).padStart(2,'0')+' '+ap; }
+
+function renderShots(){
+  const el=document.getElementById('shotGroups'); if(!el)return;
+  if(!liveMode){el.innerHTML='<div class="empty">Shot checklists need live sync — they read from the shared database.</div>';return;}
+  const fc=(document.getElementById('shotFClient')?.value||'').trim().toLowerCase();
+  const ft=document.getElementById('shotFType')?.value||'';
+  const groups={};
+  Object.entries(shotSubs||{}).forEach(([id,s])=>{
+    if(!s||!s.client)return;
+    if(fc && !String(s.client).toLowerCase().includes(fc))return;
+    if(ft && s.eventType!==ft)return;
+    const k=shotGroupKey(s);
+    (groups[k]=groups[k]||{client:s.client,eventType:s.eventType,eventDate:s.eventDate,subs:[]}).subs.push(s);
+  });
+  const list=Object.entries(groups).sort((a,b)=>a[1].eventDate<b[1].eventDate?1:-1);
+  if(!list.length){el.innerHTML='<div class="empty">No checklists submitted yet. Send the crew their links before the next event and they show up here.</div>';return;}
+  el.innerHTML=list.map(([gk,g])=>{
+    const mood=(shotMoods&&shotMoods[gk]&&shotMoods[gk].url)||'';
+    const teamCol=team=>{
+      const subs=g.subs.filter(s=>s.team===team).sort((a,b)=>(a.submittedAt||0)-(b.submittedAt||0));
+      if(!subs.length)return `<div class="shot-team"><div class="shot-team-h ${team}">${team==='candid'?'Candid':'Traditional'}</div><div class="empty" style="padding:14px 4px">Not submitted yet.</div></div>`;
+      return `<div class="shot-team"><div class="shot-team-h ${team}">${team==='candid'?'Candid':'Traditional'}</div>`+subs.map(s=>{
+        const its=Array.isArray(s.items)?s.items:Object.values(s.items||{});
+        const done=its.filter(x=>x&&x.done).length;
+        const rows=its.map(x=>`<div class="shot-row ${x.done?'ok':'miss'}"><span class="tick">${x.done?'✓':'✗'}</span>${esc(x.t)}</div>`).join('');
+        return `<div class="shot-sub">
+          <div class="shot-meta">${esc(s.crewName||'—')} · ${shotTimeFmt(s.startTime)} – ${shotTimeFmt(s.endTime)} · <b>${done}/${its.length}</b></div>
+          ${rows}
+        </div>`;
+      }).join('')+`</div>`;
+    };
+    return `<div class="shot-card">
+      <div class="shot-card-h">
+        <span><b>${esc(g.client)}</b> — ${esc(g.eventType)} · ${esc(fmt(g.eventDate))} ${g.eventDate.slice(0,4)}</span>
+      </div>
+      <div class="shot-cols">${teamCol('candid')}${teamCol('traditional')}</div>
+      <div class="shot-mood">
+        <span class="shot-mood-l">Mood board</span>
+        <input id="mood_${gk}" type="url" placeholder="Paste a link — Pinterest, Drive, anything" value="${esc(mood)}">
+        <button class="btn-mini" onclick="saveMood('${gk}')">Save</button>
+        ${mood?`<a href="${esc(mood)}" target="_blank" rel="noopener" class="btn-mini" style="text-decoration:none;display:inline-block">Open</a>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function saveMood(gk){
+  const v=(document.getElementById('mood_'+gk)?.value||'').trim();
+  if(!liveMode)return;
+  if(v)db.ref('shotMoods/'+gk).set({url:v,by:editor,at:stamp()});
+  else db.ref('shotMoods/'+gk).remove();
+  toast(v?'Mood board link saved.':'Mood board link cleared.');
+}
+
+function toggleShotEdit(){
+  const s=document.getElementById('shotEditSec');
+  s.classList.toggle('open');
+  document.getElementById('shotEditMeta').textContent=s.classList.contains('open')?'Hide ▾':'Show ▸';
+  if(s.classList.contains('open'))loadShotEd();
+}
+function loadShotEd(){
+  const area=document.getElementById('shotEdArea'); if(!area)return;
+  const t=document.getElementById('shotEdType').value, tm=document.getElementById('shotEdTeam').value;
+  const remote=shotLists&&shotLists[t]&&shotLists[t][tm];
+  const arr=(Array.isArray(remote)&&remote.length)?remote:(remote&&typeof remote==='object')?Object.values(remote):(SHOT_DEFAULTS[t]&&SHOT_DEFAULTS[t][tm])||[];
+  area.value=arr.join('\n');
+}
+function saveShotEd(){
+  if(!liveMode){toast('Needs live sync to save.');return;}
+  const t=document.getElementById('shotEdType').value, tm=document.getElementById('shotEdTeam').value;
+  const arr=document.getElementById('shotEdArea').value.split('\n').map(x=>x.trim()).filter(Boolean);
+  if(!arr.length){toast('The list is empty — add at least one shot.');return;}
+  db.ref('shotLists/'+t+'/'+tm).set(arr);
+  log('updated '+tm+' shot list for '+t+' ('+arr.length+' shots)');
+  toast('Saved. The crew sees this list from their next checklist on.');
 }
 
 restoreView();
