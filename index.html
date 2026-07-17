@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>TOTW — 2026 Studio Ledger</title>
+<title>TOTW — Studio Ledger</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -313,6 +313,9 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .need-dot.on{background:var(--sindoor);border-color:var(--sindoor)}
 .plan-table td.ppush{white-space:nowrap;padding-left:6px}
 .chg-chip{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:99px;background:var(--sindoor-soft);color:#7A2A1E;margin-left:6px}
+.yr-tabs{display:inline-flex;gap:6px;margin-top:10px}
+.yr-tabs button{font-family:var(--mono);font-size:11px;letter-spacing:.08em;padding:6px 14px;border:1px solid var(--line);background:transparent;color:var(--ink-soft);border-radius:6px;cursor:pointer}
+.yr-tabs button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .team-table tr.team-total td{border-top:2px solid var(--ink);border-bottom:none;font-weight:700;font-family:var(--mono);font-size:12px;padding-top:9px}
 .diff-tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;padding:1px 6px;border-radius:99px;margin-left:4px}
 .diff-tag.add{background:var(--leaf-soft);color:var(--leaf)}
@@ -399,12 +402,13 @@ h1 em{font-style:italic;color:var(--sindoor)}
   <div class="header-row">
     <div>
       <div class="eyebrow">Tale of Two Weddings · Studio Ledger</div>
-      <h1>2026 — Dates <em>&amp;</em> Enquiries</h1>
+      <h1>Dates <em>&amp;</em> Enquiries</h1>
+      <div class="yr-tabs"><button id="yrT2026" class="on" onclick="setCalYear(2026)">2026</button><button id="yrT2027" onclick="setCalYear(2027)">2027</button></div>
     </div>
     <div class="legend">
       <span><i class="chip booked"></i>Booked</span>
       <span><i class="chip free"></i>Free</span>
-      <span><i class="chip" style="background:transparent;border:2px solid var(--amber)"></i>Enquiry interest</span>
+      <span><i class="chip" style="background:transparent;border:2px solid var(--teal)"></i>Enquiry interest</span>
     </div>
   </div>
   <div class="sync-banner" id="syncBanner"></div>
@@ -778,6 +782,7 @@ let byDate = {};
 let enqByDate = {};      // "m-d" -> count of open enquiries requesting that date
 let enqDates = [];       // dates staged in the enquiry form
 let bkDates = [];        // dates staged in the block form
+let calYear = 2026;      // year shown on the Dates & Enquiries calendar
 let editState = null;    // in-place edit state {id,name,type,dates}
 let prods = {};          // production records
 let people = {};         // crew registry name->style
@@ -905,15 +910,15 @@ function deleteEnquiry(id){ if(liveMode)db.ref('enquiries/'+id).remove(); else {
 /* ---------------- index + rendering ---------------- */
 function rebuildIndex(){
   byDate={};
-  BAKED.forEach(([m,d,c,e,l])=>{const k=m+"-"+d;(byDate[k]=byDate[k]||[]).push({c,e,l,baked:true});});
-  Object.entries(teamBookings).forEach(([id,b])=>{const k=b.m+"-"+b.d;(byDate[k]=byDate[k]||[]).push({c:b.c,e:b.e,l:b.l,baked:false,id});});
+  BAKED.forEach(([m,d,c,e,l])=>{const k="2026-"+m+"-"+d;(byDate[k]=byDate[k]||[]).push({c,e,l,baked:true});});
+  Object.entries(teamBookings).forEach(([id,b])=>{const k=(b.y||2026)+"-"+b.m+"-"+b.d;(byDate[k]=byDate[k]||[]).push({c:b.c,e:b.e,l:b.l,baked:false,id});});
   enqByDate={};
   Object.values(enquiries).forEach(x=>{
     if(x.done)return;
     (x.dates||[]).forEach(v=>{
       const[y,m,d]=v.split('-').map(Number);
-      if(y!==2026)return;
-      const k=m+"-"+d;
+      if(y!==2026&&y!==2027)return;
+      const k=y+"-"+m+"-"+d;
       enqByDate[k]=(enqByDate[k]||0)+1;
     });
   });
@@ -921,14 +926,14 @@ function rebuildIndex(){
 function refresh(){rebuildIndex();renderStrip();renderCalendar();renderEnquiries();renderChips('enq');renderChips('bk');renderMiniCal('enq');renderMiniCal('bk');renderProdAll();}
 
 function renderStrip(){
-  const bookedDays=Object.keys(byDate).length;
+  const bookedDays=Object.keys(byDate).filter(k=>k.indexOf(calYear+'-')===0).length;
   const vals=Object.values(enquiries);
   const open=vals.filter(x=>!x.done&&!x.status).length;
   const hot=vals.filter(x=>!x.done&&!x.status&&x.cat==='HOT').length;
   // 2026 goal: unique booked couples — baked calendar + team-blocked + enquiries won (deduped by name)
   const wonNames=new Set();
   BAKED.forEach(b=>wonNames.add(String(b[2]).trim().toLowerCase()));
-  Object.values(teamBookings).forEach(b=>{if(b.c)wonNames.add(String(b.c).trim().toLowerCase());});
+  Object.values(teamBookings).forEach(b=>{if(b.c&&(b.y||2026)===2026)wonNames.add(String(b.c).trim().toLowerCase());});
   vals.filter(x=>x.status==='BOOKED'&&x.name).forEach(x=>wonNames.add(String(x.name).trim().toLowerCase()));
   const won=wonNames.size;
   const enqWon=vals.filter(x=>x.status==='BOOKED').length;
@@ -943,25 +948,32 @@ function renderStrip(){
     <div><b>${conv}</b><small>Enquiry conversion</small></div>`;
 }
 
+function setCalYear(y){
+  calYear=y;
+  const a=document.getElementById('yrT2026'),b=document.getElementById('yrT2027');
+  if(a)a.classList.toggle('on',y===2026);
+  if(b)b.classList.toggle('on',y===2027);
+  renderStrip();renderCalendar();
+}
 function renderCalendar(){
   const today=new Date();
-  const isThisYear=today.getFullYear()===2026;
+  const isThisYear=today.getFullYear()===calYear;
   const el=document.getElementById('months');
   el.innerHTML='';
   for(let m=0;m<12;m++){
-    const dim=new Date(2026,m+1,0).getDate();
-    const off=(new Date(2026,m,1).getDay()+6)%7;
+    const dim=new Date(calYear,m+1,0).getDate();
+    const off=(new Date(calYear,m,1).getDay()+6)%7;
     let cells='',count=0;
     for(let i=0;i<off;i++)cells+='<i class="day blank"></i>';
     for(let d=1;d<=dim;d++){
-      const evts=byDate[(m+1)+"-"+d];
+      const evts=byDate[calYear+"-"+(m+1)+"-"+d];
       const booked=!!evts;
       if(booked)count++;
-      const ec=Math.min(enqByDate[(m+1)+"-"+d]||0,3);
+      const ec=Math.min(enqByDate[calYear+"-"+(m+1)+"-"+d]||0,3);
       const clickable=booked||ec>0;
       const isToday=isThisYear&&today.getMonth()===m&&today.getDate()===d;
-      const isPast=isThisYear&&new Date(2026,m,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
-      cells+=`<i class="day ${booked?'booked':'free'}${ec?' enq'+ec:''}${isToday?' today':''}${isPast&&!booked?' past':''}"${clickable?` onclick="openDetail(${m+1},${d})"`:''}>${d}</i>`;
+      const isPast=isThisYear&&new Date(calYear,m,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
+      cells+=`<i class="day ${booked?'booked':'free'}${ec?' enq'+ec:''}${isToday?' today':''}${isPast&&!booked?' past':''}"${clickable?` onclick="openDetail(${calYear},${m+1},${d})"`:''}>${d}</i>`;
     }
     const div=document.createElement('div');
     div.className='month'+(count?' is-busy':'');
@@ -969,19 +981,19 @@ function renderCalendar(){
       <span class="m-count ${count?'':'zero'}">${count?count+' booked':'wide open'}</span></div>
       <div class="dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
       <div class="grid">${cells}</div>
-      ${TBD[m+1]?`<div class="tbd-note">${TBD[m+1]}</div>`:''}`;
+      ${calYear===2026&&TBD[m+1]?`<div class="tbd-note">${TBD[m+1]}</div>`:''}`;
     el.appendChild(div);
   }
 }
 
 /* ---------------- day detail ---------------- */
 let openDay=null;
-function openDetail(m,d){
-  openDay=[m,d];
-  const evts=byDate[m+"-"+d]||[];
-  const ds=iso(m,d);
+function openDetail(y,m,d){
+  openDay=[y,m,d];
+  const evts=byDate[y+"-"+m+"-"+d]||[];
+  const ds=iso(m,d,y);
   const reqs=Object.values(enquiries).filter(x=>!x.done&&(x.dates||[]).includes(ds));
-  document.getElementById('dTitle').textContent=MN[m-1]+" "+d;
+  document.getElementById('dTitle').textContent=MN[m-1]+" "+d+(y!==2026?" · "+y:"");
   document.getElementById('dSub').textContent=evts.length
     ? evts.length+(evts.length>1?" events booked":" event booked")+(reqs.length?` · ${reqs.length} enquir${reqs.length>1?'ies':'y'}`:'')
     : "No bookings — enquiry interest only";
@@ -1000,28 +1012,32 @@ document.getElementById('detail').addEventListener('click',e=>{if(e.target.id===
 function removeBooking(id){
   const b=teamBookings[id];
   deleteBooking(id);
-  if(b)log(`removed booking: ${b.c} — ${fmt(iso(b.m,b.d))}`);
+  if(b)log(`removed booking: ${b.c} — ${fmt(iso(b.m,b.d,b.y||2026))}`);
   toast('Booking removed');
-  setTimeout(()=>{if(openDay){const e=byDate[openDay[0]+"-"+openDay[1]];if(e&&e.length)openDetail(openDay[0],openDay[1]);else closeDetail();}},150);
+  setTimeout(()=>{if(openDay){const e=byDate[openDay[0]+"-"+openDay[1]+"-"+openDay[2]];if(e&&e.length)openDetail(openDay[0],openDay[1],openDay[2]);else closeDetail();}},150);
 }
-const iso=(m,d)=>`2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+const iso=(m,d,y)=>`${y||calYear}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
 
 /* ---------------- date check ---------------- */
 function checkDate(isoStr){
   if(!isoStr)return null;
   const[y,m,d]=isoStr.split('-').map(Number);
-  if(y!==2026)return{ok:false,msg:"This ledger covers 2026 only."};
-  const evts=byDate[m+"-"+d];
+  if(y!==2026&&y!==2027)return{ok:false,msg:"This ledger covers 2026–2027 only."};
+  const evts=byDate[y+"-"+m+"-"+d];
+  const yl=y!==2026?' '+y:'';
   if(evts){
     const names=[...new Set(evts.map(x=>x.c))].join(', ');
-    return{ok:false,clash:true,msg:`${MN[m-1]} ${d} clashes with ${names}.`};
+    return{ok:false,clash:true,msg:`${MN[m-1]} ${d}${yl} clashes with ${names}.`};
   }
-  return{ok:true,msg:`${MN[m-1]} ${d} is open.`};
+  return{ok:true,msg:`${MN[m-1]} ${d}${yl} is open.`};
 }
 
 /* ---------------- multi-date selection (mini calendars) ---------------- */
-let mcMonth={enq:5,bk:5,edit:5,prod:5,pday:5}; // June 2026 start; clamps to 2026
-{const tm=new Date();if(tm.getFullYear()===2026){const m=tm.getMonth();mcMonth={enq:m,bk:m,edit:m,prod:m,pday:m};}}
+let mcMonth={enq:5,bk:5,edit:5,prod:5,pday:5};
+let mcYear={enq:2026,bk:2026,edit:2026,prod:2026,pday:2026};
+{const tm=new Date();const ty=tm.getFullYear();
+ if(ty===2026||ty===2027){const m=tm.getMonth();mcMonth={enq:m,bk:m,edit:m,prod:m,pday:m};
+  if(ty===2027)mcYear={enq:2027,bk:2027,edit:2027,prod:2027,pday:2027};}}
 const MC_EL={enq:'mcEnq',bk:'mcBk',edit:'mcEdit',prod:'mcProd',pday:'mcPday'};
 function miniTarget(kind){
   if(kind==='enq')return enqDates;
@@ -1035,23 +1051,27 @@ function renderMiniCal(kind){
   if(!el)return;
   const mo=mcMonth[kind];
   const sel=new Set(miniTarget(kind));
-  const dim=new Date(2026,mo+1,0).getDate();
-  const off=(new Date(2026,mo,1).getDay()+6)%7;
+  const yr=mcYear[kind];
+  const dim=new Date(yr,mo+1,0).getDate();
+  const off=(new Date(yr,mo,1).getDay()+6)%7;
   let cells='';
   for(let i=0;i<off;i++)cells+='<i style="visibility:hidden"></i>';
   for(let d=1;d<=dim;d++){
-    const v=iso(mo+1,d);
-    const booked=!!byDate[(mo+1)+"-"+d];
+    const v=iso(mo+1,d,yr);
+    const booked=!!byDate[yr+"-"+(mo+1)+"-"+d];
     cells+=`<i class="mc-d${sel.has(v)?' sel':''}${booked?' bk':''}" onclick="mcToggle('${kind}','${v}')">${d}</i>`;
   }
   el.innerHTML=`<div class="mc-h">
-    <button onclick="mcNav('${kind}',-1)"${mo===0?' disabled':''}>‹</button>
-    <span>${MN[mo]} 2026</span>
-    <button onclick="mcNav('${kind}',1)"${mo===11?' disabled':''}>›</button></div>
+    <button onclick="mcNav('${kind}',-1)"${mo===0&&yr===2026?' disabled':''}>‹</button>
+    <span>${MN[mo]} ${yr}</span>
+    <button onclick="mcNav('${kind}',1)"${mo===11&&yr===2027?' disabled':''}>›</button></div>
     <div class="mc-g"><u>M</u><u>T</u><u>W</u><u>T</u><u>F</u><u>S</u><u>S</u>${cells}</div>`;
 }
 function mcNav(kind,dir){
-  mcMonth[kind]=Math.min(11,Math.max(0,mcMonth[kind]+dir));
+  let m=mcMonth[kind]+dir,y=mcYear[kind];
+  if(m<0){if(y>2026){y--;m=11;}else m=0;}
+  if(m>11){if(y<2027){y++;m=0;}else m=11;}
+  mcMonth[kind]=m;mcYear[kind]=y;
   renderMiniCal(kind);
 }
 function mcToggle(kind,v){
@@ -1389,10 +1409,10 @@ function cmDo(kind){
     dts.forEach(v=>{
       const[y,m,d]=v.split('-').map(Number);
       if(!m||!d)return;
-      const dup=Object.values(teamBookings).some(b=>b.m===m&&b.d===d&&String(b.c||'').trim().toLowerCase()===String(x.name||'').trim().toLowerCase());
+      const dup=Object.values(teamBookings).some(b=>b.m===m&&b.d===d&&(b.y||2026)===y&&String(b.c||'').trim().toLowerCase()===String(x.name||'').trim().toLowerCase());
       if(dup)return;
       const evs=(x.dateEvents&&x.dateEvents[v])||[];
-      writeBooking(uid('b'),{m,d,c:x.name,e:evs.length?evs.join(' + '):(x.type||'Booking'),l:'—',by:editor,at:stamp(),fromEnq:id});
+      writeBooking(uid('b'),{y,m,d,c:x.name,e:evs.length?evs.join(' + '):(x.type||'Booking'),l:'—',by:editor,at:stamp(),fromEnq:id});
       added++;
     });
     log(`booked ${added} date${added!==1?'s':''} on the calendar for ${x.name}`);
@@ -1442,7 +1462,7 @@ function blockDates(){
   }
   bkDates.forEach(v=>{
     const[y,m,d]=v.split('-').map(Number);
-    writeBooking(uid('b'),{m,d,c,e:e||'Booking',l:l||'—',by:editor,at:stamp()});
+    writeBooking(uid('b'),{y,m,d,c,e:e||'Booking',l:l||'—',by:editor,at:stamp()});
   });
   log(`blocked ${bkDates.length} date${bkDates.length>1?'s':''} for ${c}`);
   toast(`${bkDates.length} date${bkDates.length>1?'s':''} blocked for ${c}`);
@@ -1620,16 +1640,16 @@ function updateDatalists(){
 // Every couple with bookings on the calendar (BAKED + team), with their dates and any event labels
 function calendarCoupleMap(){
   const map={};
-  const add=(name,m,d,e)=>{
+  const add=(name,m,d,e,y)=>{
     if(!name||!m||!d)return;
-    const iso=`2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const iso=`${y||2026}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const o=map[name]=map[name]||{dates:[],events:{}};
     if(!o.dates.includes(iso))o.dates.push(iso);
     const evs=String(e||'').split(' + ').map(s=>s.trim()).filter(s=>s&&s!=='Booking'&&s!=='—');
     if(evs.length)o.events[iso]=[...new Set([...(o.events[iso]||[]),...evs])];
   };
-  BAKED.forEach(([m,d,c,e])=>add(c,m,d,e));
-  Object.values(teamBookings).forEach(b=>add(b.c,b.m,b.d,b.e));
+  BAKED.forEach(([m,d,c,e])=>add(c,m,d,e,2026));
+  Object.values(teamBookings).forEach(b=>add(b.c,b.m,b.d,b.e,b.y||2026));
   Object.keys(map).forEach(n=>map[n].dates.sort());
   return map;
 }
@@ -2133,13 +2153,12 @@ function renderTeam(){
   if(!el||!sec)return;
   const sel=document.getElementById('teamMonth');
   if(sel&&!sel.options.length)
-    sel.innerHTML='<option value="">All of 2026</option>'+MN.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
+    sel.innerHTML='<option value="">All months</option>'+[2026,2027].map(y=>MN.map((m,i)=>`<option value="${y}-${String(i+1).padStart(2,'0')}">${m} ${y}</option>`).join('')).join('');
   const mFil=sel?sel.value:'';
   const stats={};
   Object.values(prods).forEach(p=>{
     (p.days||[]).forEach(d=>{
-      const mo=parseInt((d.date||'').split('-')[1],10);
-      if(mFil&&mo!==+mFil)return;
+      if(mFil&&String(d.date||'').slice(0,7)!==mFil)return;
       (d.roles||[]).forEach(r=>{
         if(!r.person)return;
         const k=r.person.trim().toLowerCase();
@@ -2155,11 +2174,10 @@ function renderTeam(){
   const rows=Object.values(stats).sort((a,b)=>b.pay-a.pay||b.days.size-a.days.size);
   const roleSpend={};let spendTot=0;
   Object.values(prods).forEach(p=>(p.days||[]).forEach(d=>{
-    const mo=parseInt((d.date||'').split('-')[1],10);
-    if(mFil&&mo!==+mFil)return;
+    if(mFil&&String(d.date||'').slice(0,7)!==mFil)return;
     (d.roles||[]).forEach(r=>{const v=+r.pay||0;if(!v)return;roleSpend[r.role]=(roleSpend[r.role]||0)+v;spendTot+=v;});
   }));
-  const roleSpendHtml=spendTot>0?`<div class="role-spend"><div class="rs-head">Spend by role${mFil?' · '+MN[+mFil-1]:' · all of 2026'} — ₹${spendTot.toLocaleString('en-IN')}</div>${Object.entries(roleSpend).sort((a,b)=>b[1]-a[1]).map(([r,v])=>`<div class="cost-line"><span>${esc(r)}</span><span>₹${v.toLocaleString('en-IN')}</span></div>`).join('')}</div>`:'';
+  const roleSpendHtml=spendTot>0?`<div class="role-spend"><div class="rs-head">Spend by role${mFil?' · '+MN[+mFil.slice(5)-1]+' '+mFil.slice(0,4):' · all months'} — ₹${spendTot.toLocaleString('en-IN')}</div>${Object.entries(roleSpend).sort((a,b)=>b[1]-a[1]).map(([r,v])=>`<div class="cost-line"><span>${esc(r)}</span><span>₹${v.toLocaleString('en-IN')}</span></div>`).join('')}</div>`:'';
   const meta=document.getElementById('teamMeta');
   if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+(rows.length?` · ${rows.length}`:'');
   el.innerHTML=(rows.length?roleSpendHtml+`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Events</th><th style="text-align:right">Weddings</th><th style="text-align:right">Paid</th></tr>${rows.map(s=>{
@@ -2364,9 +2382,9 @@ function writePlan(key){
 // All booked event-rows for a given month (1-based). Source: BAKED + teamBookings.
 function planBookings(month){
   const rows=[];
-  const push=(m,d,c,e,l)=>{if(!m||!d||!c)return;if(month&&m!==month)return;const iso=`2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;rows.push({iso,m,d,couple:c,event:e||'—',loc:l||''});};
-  BAKED.forEach(([m,d,c,e,l])=>push(m,d,c,e,l));
-  Object.values(teamBookings).forEach(b=>push(b.m,b.d,b.c,b.e,b.l));
+  const push=(m,d,c,e,l,y)=>{if(!m||!d||!c)return;const iso=`${y||2026}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;if(month&&iso.slice(0,7)!==month)return;rows.push({iso,m,d,couple:c,event:e||'—',loc:l||''});};
+  BAKED.forEach(([m,d,c,e,l])=>push(m,d,c,e,l,2026));
+  Object.values(teamBookings).forEach(b=>push(b.m,b.d,b.c,b.e,b.l,b.y||2026));
   // de-dupe identical iso|couple|event
   const seen={};const out=[];
   rows.forEach(r=>{const k=planRowKey(r.iso,r.couple,r.event);if(seen[k])return;seen[k]=1;r.key=k;out.push(r);});
@@ -2378,7 +2396,7 @@ function planRows(month){
   const rows=[],meta={};
   Object.entries(plans).forEach(([k,p])=>{
     if(!p||!p.iso)return;
-    if(month&&parseInt(p.iso.split('-')[1],10)!==month)return;
+    if(month&&String(p.iso||'').slice(0,7)!==month)return;
     const row={key:k,iso:p.iso,couple:p.couple||'',event:p.event||'—',loc:p.loc||'',src:'plan'};
     rows.push(row);meta[k]={iso:row.iso,couple:row.couple,event:row.event,loc:row.loc};
   });
@@ -2406,10 +2424,13 @@ function renderPlan(){
   if(!grid)return;
   const sel=document.getElementById('planMonth');
   if(sel&&!sel.options.length){
-    const nowM=(new Date().getFullYear()===2026)?new Date().getMonth()+1:1;
-    sel.innerHTML=MN.map((m,i)=>`<option value="${i+1}"${i+1===nowM?' selected':''}>${m} 2026</option>`).join('');
+    const t=new Date();
+    const nowYM=(t.getFullYear()===2026||t.getFullYear()===2027)?t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0'):'2026-01';
+    let opts='';
+    [2026,2027].forEach(y=>MN.forEach((m,i)=>{const v=y+'-'+String(i+1).padStart(2,'0');opts+=`<option value="${v}"${v===nowYM?' selected':''}>${m} ${y}</option>`;}));
+    sel.innerHTML=opts;
   }
-  const month=sel?+sel.value:1;
+  const month=sel?sel.value:'2026-01';
   const rows=planRows(month);
   if(!rows.length){grid.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
@@ -2457,9 +2478,9 @@ function planPeople(month){
     o.lastSentAt=snap&&snap.at?snap.at:null;
     o.removed=[];
     if(snap&&snap.items){
-      const curKeys=new Set(o.assigned.filter(a=>a.iso.slice(0,7)===monthISO(month)||!month).map(itemKey));
+      const curKeys=new Set(o.assigned.filter(a=>!month||String(a.iso||'').slice(0,7)===month).map(itemKey));
       Object.values(snap.items).forEach(it=>{
-        if(month&&it.iso.slice(5,7)!==String(month).padStart(2,'0'))return;
+        if(month&&String(it.iso||'').slice(0,7)!==month)return;
         if(!curKeys.has(itemKey(it)))o.removed.push(it);
       });
       o.assigned.forEach(a=>{a.isNew=!snap.items[itemKey(a)];});
@@ -2472,9 +2493,8 @@ function planPeople(month){
   list.sort((a,b)=>b.assigned.length-a.assigned.length||a.name.localeCompare(b.name));
   return list;
 }
-function monthISO(m){return '2026-'+String(m).padStart(2,'0');}
 function markSent(key){
-  const list=planPeople(document.getElementById('planMonth')?+document.getElementById('planMonth').value:null);
+  const list=planPeople(document.getElementById('planMonth')?document.getElementById('planMonth').value:null);
   const person=list.find(o=>o.key===key);
   if(!person)return;
   const items={};
@@ -2487,15 +2507,16 @@ function markSent(key){
   renderPlanTeam();
 }
 function copyChanges(key){
-  const list=planPeople(document.getElementById('planMonth')?+document.getElementById('planMonth').value:null);
+  const list=planPeople(document.getElementById('planMonth')?document.getElementById('planMonth').value:null);
   const person=list.find(o=>o.key===key);
   if(!person)return;
   const added=person.assigned.filter(a=>a.isNew);
   const removed=person.removed;
   if(!added.length&&!removed.length){toast('No changes since last sent.');return;}
   let msg=`${person.name} — schedule update:\n`;
-  added.forEach(a=>{msg+=`+ ADDED ${fmt(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
-  removed.forEach(a=>{msg+=`- REMOVED ${fmt(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
+  const fy=a=>fmt(a.iso)+(String(a.iso).slice(0,4)!=='2026'?' '+String(a.iso).slice(0,4):'');
+  added.forEach(a=>{msg+=`+ ADDED ${fy(a)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
+  removed.forEach(a=>{msg+=`- REMOVED ${fy(a)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
   navigator.clipboard&&navigator.clipboard.writeText(msg).then(()=>toast('Changes copied — paste into WhatsApp.'));
   if(!navigator.clipboard){const ta=document.createElement('textarea');ta.value=msg;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Changes copied — paste into WhatsApp.');}
 }
@@ -2504,7 +2525,7 @@ function renderPlanTeam(month){
   const sec=document.getElementById('planTeamSec');
   const meta=document.getElementById('planTeamMeta');
   if(!el||!sec)return;
-  if(month===undefined){const sel=document.getElementById('planMonth');month=sel?+sel.value:1;}
+  if(month===undefined){const sel=document.getElementById('planMonth');month=sel?sel.value:'2026-01';}
   const list=planPeople(month).filter(o=>o.assigned.length||o.removed.length);
   if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+(list.length?` · ${list.length}`:'');
   if(!list.length){el.innerHTML='<div class="empty">No crew assigned this month yet.</div>';return;}
@@ -2529,7 +2550,7 @@ function renderPlanTeam(month){
     const chipHtml=changes?`<span class="chg-chip">${changes} change${changes!==1?'s':''}</span>`:'';
     const main=`<tr class="person-row${open?' on':''}" onclick="planPersonTog('${o.key}')"><td>${esc(o.name)}${o.style?` <span class="ev-pill ${famClass(o.style)}">${esc(o.style)}</span>`:''}${chipHtml} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${days}</td><td class="num">${est?'₹'+est.toLocaleString('en-IN'):'—'}</td></tr>`;
     if(!open)return main;
-    const monthLabel=month?MN[month-1]+' 2026':'All 2026';
+    const monthLabel=month?MN[+month.slice(5)-1]+' '+month.slice(0,4):'All months';
     const sentLine=o.lastSentAt?`changes since last sent ${esc(fmt(new Date(o.lastSentAt).toISOString().slice(0,10)))}`:'no baseline yet — this is his first schedule';
     const merged=[...o.assigned.map(a=>({...a,removed:false})),...o.removed.map(a=>({...a,removed:true}))].sort((a,b)=>a.iso<b.iso?-1:1);
     const shooting=merged.length?merged.map(a=>{
