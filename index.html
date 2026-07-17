@@ -242,7 +242,13 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .shot-team-h.candid{background:var(--sindoor-soft);color:var(--sindoor)}
 .shot-team-h.traditional{background:var(--cold-soft);color:var(--cold)}
 .shot-sub{margin-bottom:10px}
-.shot-meta{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:6px}
+.shot-meta{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.shot-meta-main{min-width:180px}
+.shot-meta-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.shot-duration{display:inline-flex;align-items:center;padding:3px 7px;border-radius:99px;background:var(--leaf-soft);color:var(--leaf);font-weight:600;letter-spacing:.06em}
+.shot-duration.over{background:var(--sindoor-soft);color:var(--sindoor)}
+.shot-delete{border:1px solid var(--line);background:transparent;color:var(--ink-soft);border-radius:5px;padding:3px 7px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.shot-delete:hover{border-color:var(--sindoor);color:var(--sindoor);background:var(--sindoor-soft)}
 .shot-row{font-size:13px;padding:5px 8px;border-radius:5px;margin-bottom:3px;display:flex;gap:8px;line-height:1.4}
 .shot-row.ok{background:var(--leaf-soft);color:var(--leaf)}
 .shot-row.miss{background:var(--sindoor-soft);color:var(--sindoor)}
@@ -2863,6 +2869,30 @@ function shotGroupKey(s){
   return (String(s.client||'').trim().toLowerCase()+'|'+String(s.eventType||'')+'|'+String(s.eventDate||'')).replace(/[.#$\[\]\/]/g,'_');
 }
 function shotTimeFmt(t){ if(!t)return '—'; const[h,m]=t.split(':').map(Number); const ap=h>=12?'PM':'AM'; const hh=h%12||12; return hh+':'+String(m).padStart(2,'0')+' '+ap; }
+function shotDurationMins(start,end){
+  if(!/^\d{2}:\d{2}$/.test(start||'')||!/^\d{2}:\d{2}$/.test(end||''))return null;
+  const [sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);
+  let mins=(eh*60+em)-(sh*60+sm);
+  if(mins<0)mins+=24*60; // event closed after midnight
+  return mins;
+}
+function shotDurationFmt(mins){
+  if(mins===null)return 'Hours unavailable';
+  const h=Math.floor(mins/60),m=mins%60;
+  if(!h)return `${m} min`;
+  return `${h} hr${h===1?'':'s'}${m?' '+m+' min':''}`;
+}
+function deleteShotSubmission(id){
+  if(!liveMode||!id)return;
+  const s=shotSubs[id]||{};
+  const client=s.client||'this couple',eventType=s.eventType||'event',team=s.team||'',crew=s.crewName||'';
+  const who=crew||team||'this crew member';
+  if(!confirm(`Delete ${who}'s ${team||''} checklist for ${client} — ${eventType}?\n\nThis removes the test submission permanently.`))return;
+  db.ref('shotChecklists/'+id).remove().then(()=>{
+    log(`deleted ${team||''} shot checklist: ${client} — ${eventType} — ${who}`);
+    toast('Checklist submission deleted.');
+  }).catch(()=>toast('Could not delete the checklist. Try again.'));
+}
 
 function renderShots(){
   const el=document.getElementById('shotGroups'); if(!el)return;
@@ -2875,7 +2905,7 @@ function renderShots(){
     if(fc && !String(s.client).toLowerCase().includes(fc))return;
     if(ft && s.eventType!==ft)return;
     const k=shotGroupKey(s);
-    (groups[k]=groups[k]||{client:s.client,eventType:s.eventType,eventDate:s.eventDate,subs:[]}).subs.push(s);
+    (groups[k]=groups[k]||{client:s.client,eventType:s.eventType,eventDate:s.eventDate,subs:[]}).subs.push({...s,_id:id});
   });
   const list=Object.entries(groups).sort((a,b)=>a[1].eventDate<b[1].eventDate?1:-1);
   if(!list.length){el.innerHTML='<div class="empty">No checklists submitted yet. Send the crew their links before the next event and they show up here.</div>';return;}
@@ -2887,9 +2917,17 @@ function renderShots(){
       return `<div class="shot-team"><div class="shot-team-h ${team}">${team==='candid'?'Candid':'Traditional'}</div>`+subs.map(s=>{
         const its=Array.isArray(s.items)?s.items:Object.values(s.items||{});
         const done=its.filter(x=>x&&x.done).length;
+        const duration=shotDurationMins(s.startTime,s.endTime);
+        const overSeven=team==='traditional'&&duration!==null&&duration>7*60;
         const rows=its.map(x=>`<div class="shot-row ${x.done?'ok':'miss'}"><span class="tick">${x.done?'✓':'✗'}</span>${esc(x.t)}</div>`).join('');
         return `<div class="shot-sub">
-          <div class="shot-meta">${esc(s.crewName||'—')} · ${shotTimeFmt(s.startTime)} – ${shotTimeFmt(s.endTime)} · <b>${done}/${its.length}</b></div>
+          <div class="shot-meta">
+            <span class="shot-meta-main">${esc(s.crewName||'—')} · ${shotTimeFmt(s.startTime)} – ${shotTimeFmt(s.endTime)} · <b>${done}/${its.length}</b></span>
+            <span class="shot-meta-actions">
+              <span class="shot-duration${overSeven?' over':''}">${shotDurationFmt(duration)}${overSeven?' · Over 7 hrs':''}</span>
+              <button class="shot-delete" onclick="deleteShotSubmission('${s._id}')">Delete</button>
+            </span>
+          </div>
           ${rows}
         </div>`;
       }).join('')+`</div>`;
