@@ -55,6 +55,10 @@ h1 em{font-style:italic;color:var(--sindoor)}
 #done h2{font-family:var(--display);font-size:32px;font-weight:500;margin-bottom:8px}
 #done p{color:var(--ink-soft);font-size:14px}
 #otherWrap{display:none}
+#moodCard{display:none;background:var(--sindoor-soft);border:1px solid #D8A79E;border-radius:8px;padding:14px;margin:18px 0 4px}
+#moodCard .mood-l{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--sindoor);margin-bottom:5px}
+#moodCard .mood-t{font-size:13px;color:var(--ink-soft);line-height:1.45;margin-bottom:10px}
+#moodCard a{display:inline-block;background:var(--sindoor);color:#fff;text-decoration:none;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:10px 16px;border-radius:6px}
 footer{margin-top:44px;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#A39F95;text-align:center}
 </style>
 </head>
@@ -104,6 +108,12 @@ footer{margin-top:44px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1
       <label for="fEnd">Event close time</label>
       <input id="fEnd" type="time">
     </div>
+  </div>
+
+  <div id="moodCard">
+    <div class="mood-l">Mood board for this couple</div>
+    <div class="mood-t" id="moodTxt">The planned looks and references — open it before you start shooting.</div>
+    <a id="moodLink" href="#" target="_blank" rel="noopener">Open the board ↗</a>
   </div>
 
   <div id="shotsWrap" style="display:none">
@@ -323,7 +333,23 @@ const p2 = n => String(n).padStart(2,'0');
 const MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const fmtIso = iso => {const[y,m,d]=iso.split('-').map(Number);return MN[m-1].slice(0,3)+" "+d;};
 
-let db=null, shotListsRemote={}, items=[];
+let db=null, shotListsRemote={}, items=[], moods={};
+
+const moodKey = name => String(name||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_');
+
+function updateMoodCard(){
+  if(TEAM!=='candid') return;
+  const card = document.getElementById('moodCard');
+  const selVal = document.getElementById('fClient').value;
+  const client = selVal==='__other__' ? document.getElementById('fClientOther').value.trim() : selVal;
+  const m = client && moods[moodKey(client)];
+  if(m && m.url){
+    document.getElementById('moodLink').href = m.url;
+    card.style.display = 'block';
+  }else{
+    card.style.display = 'none';
+  }
+}
 
 function init(){
   document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
@@ -335,11 +361,14 @@ function init(){
     Promise.all([
       db.ref('bookings').once('value').then(s=>s.val()||{}).catch(()=>({})),
       db.ref('enquiries').once('value').then(s=>s.val()||{}).catch(()=>({})),
-      db.ref('shotLists').once('value').then(s=>s.val()||{}).catch(()=>({}))
-    ]).then(([bk,enq,lists])=>{
+      db.ref('shotLists').once('value').then(s=>s.val()||{}).catch(()=>({})),
+      db.ref('shotMoods').once('value').then(s=>s.val()||{}).catch(()=>({}))
+    ]).then(([bk,enq,lists,moodsIn])=>{
       shotListsRemote = lists||{};
+      moods = moodsIn||{};
       buildClientOptions(bk,enq);
       renderShotsIfReady();
+      updateMoodCard();
     }).catch(()=>buildClientOptions({},{}));
   }else{
     buildClientOptions({},{});
@@ -368,7 +397,9 @@ function buildClientOptions(bookings, enqs){
     '<option value="__other__">Not listed — type it in</option>';
   sel.onchange = () => {
     document.getElementById('otherWrap').style.display = sel.value==='__other__' ? 'block' : 'none';
+    updateMoodCard();
   };
+  document.getElementById('fClientOther').addEventListener('input', updateMoodCard);
 }
 
 function currentShots(){
