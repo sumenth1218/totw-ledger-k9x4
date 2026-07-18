@@ -256,9 +256,12 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .gate-card{max-width:380px;width:100%;text-align:center}
 .gate-card .eyebrow{margin-bottom:8px}
 .gate-card h2{font-family:var(--display);font-size:34px;font-weight:500;margin-bottom:18px}
-.gate-card input{width:100%;padding:13px;border:1px solid var(--ink);border-radius:6px;background:var(--card);font-family:var(--mono);font-size:15px;text-align:center;outline:none;margin-bottom:10px;letter-spacing:.2em}
+.gate-card input{width:100%;padding:13px;border:1px solid var(--ink);border-radius:6px;background:var(--card);font-family:var(--body);font-size:15px;text-align:left;outline:none;margin-bottom:10px;letter-spacing:normal}
 .gate-card button{width:100%;padding:13px;background:var(--ink);color:var(--paper);border:none;border-radius:6px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
 .gate-err{color:var(--sindoor);font-size:12.5px;margin-bottom:10px;display:none}
+.auth-note{font-size:12.5px;color:var(--ink-soft);margin:-8px 0 16px;line-height:1.5}
+.signout-btn{background:transparent;border:1px solid var(--line);border-radius:5px;color:var(--ink-soft);font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:6px 9px;cursor:pointer}
+.signout-btn:hover{border-color:var(--ink-soft);color:var(--ink)}
 
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--paper);padding:12px 22px;border-radius:99px;font-family:var(--mono);font-size:12px;transition:transform .3s ease;z-index:60;max-width:92vw;text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -401,19 +404,11 @@ h1 em{font-style:italic;color:var(--sindoor)}
   <div class="gate-card">
     <div class="eyebrow">Tale of Two Weddings</div>
     <h2>Studio Ledger</h2>
-    <p class="gate-err" id="gateErr">That's not it. Try again.</p>
-    <input type="password" id="gateCode" placeholder="ACCESS CODE" autocomplete="off">
-    <button onclick="tryGate()">Enter</button>
-  </div>
-</div>
-
-<!-- ===================== NAME PROMPT ===================== -->
-<div class="who" id="who" style="display:none">
-  <div class="gate-card">
-    <div class="eyebrow">Before you start</div>
-    <h2>Who's editing?</h2>
-    <input type="text" id="whoName" placeholder="Your name" autocomplete="off" style="letter-spacing:normal;font-family:var(--body)">
-    <button onclick="setWho()">Continue</button>
+    <p class="auth-note">Private access for Sumenth and Mahima.</p>
+    <p class="gate-err" id="gateErr"></p>
+    <input type="email" id="loginEmail" placeholder="Email address" autocomplete="username">
+    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+    <button id="loginBtn" onclick="signInLedger()">Sign in</button>
   </div>
 </div>
 
@@ -429,6 +424,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
       <span><i class="chip booked"></i>Booked</span>
       <span><i class="chip free"></i>Free</span>
       <span><i class="chip" style="background:transparent;border:2px solid var(--teal)"></i>Enquiry interest</span>
+      <button class="signout-btn" onclick="signOutLedger()">Sign out</button>
     </div>
   </div>
   <div class="sync-banner" id="syncBanner"></div>
@@ -737,18 +733,13 @@ h1 em{font-style:italic;color:var(--sindoor)}
 
 <!-- Firebase (loads only if configured below) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
-/* ============================================================
-   CONFIG — the only part you ever touch.
-   1. ACCESS_CODE: the code your team types to open the page.
-      Set to "" to disable the gate.
-   2. FIREBASE: paste your config from the Firebase console here.
-      Leave as null to run in local-only mode (no team sync).
-   ============================================================ */
+/* Firebase web configuration. Access is enforced by Authentication and
+   Realtime Database Security Rules, not by a password stored in this file. */
 const CONFIG = {
-  ACCESS_CODE: "TOTW2026",
   FIREBASE: {
     apiKey: "AIzaSyCV14o1M9eUANLRxG_JrDZH2aGfqY3kjA4",
     authDomain: "tot-ledger.firebaseapp.com",
@@ -760,92 +751,9 @@ const CONFIG = {
   }
 };
 
-/* ---------------- baked-in bookings (TOTW 2026 sheet, June 2026) ---------------- */
-const BAKED = [
-[1,11,"Swathi","Cradle ceremony","Hyderabad"],
-[2,4,"Varsha & Darshan","Lagna Patrika, Haldi, Sangeet","Bangalore"],
-[2,5,"Varsha & Darshan","Bride Mehendi","Bangalore"],
-[2,6,"Varsha & Darshan","Chapra Pooja / Groom Haldi","Bangalore"],
-[2,6,"Komal & Preet","Bhyaat & Interviews","Hyderabad"],
-[2,7,"Varsha & Darshan","Reception","Bangalore"],
-[2,8,"Komal & Preet","Haldi","Hyderabad"],
-[2,8,"Varsha & Darshan","Wedding","Bangalore"],
-[2,9,"Komal & Preet","Mehendi","Hyderabad"],
-[2,10,"Komal & Preet","Baarat, Reception & Pheras","Hyderabad"],
-[2,11,"Komal & Preet","Bidaai","Hyderabad"],
-[2,18,"Preethi & Chethan","Mehendi","Anantapur"],
-[2,19,"Preethi & Chethan","Bride Making & Sangeet","Anantapur"],
-[2,20,"Meghana & Smaran","Lagna Patrika","Hyderabad"],
-[2,20,"Preethi & Chethan","Wedding","Anantapur"],
-[2,22,"Mohan & Varshini","Engagement","Hyderabad"],
-[3,1,"Mohan & Varshini","Haldi & Sangeet","Hyderabad"],
-[3,4,"Meghana & Smaran","Bride & Groom Making, Haldi","Hyderabad"],
-[3,4,"Mohan & Varshini","Bride Making","Kurnool"],
-[3,5,"Mohan & Varshini","Groom Making","Karimnagar"],
-[3,5,"Lakshmi & Shiva","Rituals & Wedding","Vijayawada"],
-[3,5,"Meghana & Smaran","Wedding","Hyderabad"],
-[3,6,"Mohan & Varshini","Wedding","Hyderabad"],
-[3,9,"Shivani & Kashyap","Proposal Shoot","Phuket"],
-[3,12,"Kavya & Bharath","Wedding","Hyderabad"],
-[3,18,"Meghana & Smaran","Reception","Hyderabad"],
-[3,20,"Shivani & Kashyap","Engagement","Eluru"],
-[4,8,"Tanvi & Vamshi","Pre-Wedding","—"],
-[4,11,"Shivani & Kashyap","Cocktail","Hyderabad"],
-[4,20,"Shivani & Kashyap","Bride & Groom Making","Eluru / Hyd"],
-[4,21,"Shivani & Kashyap","Wedding","Eluru"],
-[4,22,"Shivani & Kashyap","Wedding (contd.)","Eluru"],
-[4,23,"Anusha & Suraj","Lagna Patrika","Hyderabad"],
-[4,24,"Shivani & Kashyap","Vratham","Hyderabad"],
-[5,5,"Simran & Noel","Ladies Sangeet","Hyderabad"],
-[5,6,"Mugdha & Vijay","Mehendi","Hyderabad"],
-[5,7,"Mugdha & Vijay","Groom Making & Edurukollu","Hyderabad"],
-[5,8,"Mugdha & Vijay","Wedding","Hyderabad"],
-[5,9,"Simran & Noel","Mehendi, Cocktail & Sangeet","Hyderabad"],
-[5,10,"Simran & Noel","Haldi + Wedding","Hyderabad"],
-[5,13,"Sameepa & Sri Raj","Pasupu Danchadam","Anantapur"],
-[5,17,"Vedika & Devansh","Post Wedding","Hyderabad"],
-[5,30,"Kavya & Bharath","Interview","Hyderabad"],
-[6,24,"Mishrita & Charan","Mangalsnanam, Haldi & Mehendi","Tirupati"],
-[6,25,"Mishrita & Charan","Bride Making, Pradhanam & Sangeet","Tirupati"],
-[6,25,"Sushmitha & Bharath","Engagement","Hyderabad"],
-[6,26,"Mishrita & Charan","Nalugu & Wedding","Tirupati"],
-[6,29,"Zoya","Haldi","—"],
-[6,30,"Zoya","Mehendi & Sanchak","—"],
-[7,2,"Zoya","Shaadi","—"],
-[7,3,"Zoya","Walima","—"],
-[8,10,"Nidhi & Archit","Pre-Wedding","Hyderabad"],
-[8,11,"Nidhi & Archit","Pre-Wedding","Hyderabad"],
-[8,13,"Nidhi & Archit","Mehendi","Hyderabad"],
-[8,14,"Nidhi & Archit","Haldi & Sangeet","Hyderabad"],
-[8,15,"Nidhi & Archit","Bride & Groom Making, Vratam","Hyderabad"],
-[8,16,"Nidhi & Archit","Baarat, Wedding & Rituals","Shamshabad"],
-[8,21,"Sameepa & Sri Raj","Haldi & Mehendi","Anantapur"],
-[8,22,"Sameepa & Sri Raj","Bride Making & Sangeet","Anantapur"],
-[8,23,"Sameepa & Sri Raj","Wedding","Anantapur"],
-[10,29,"Vipin & Prathyusha","Mehendi","Dallas"],
-[10,30,"Vipin & Prathyusha","Sangeet & Cocktail","Dallas"],
-[10,30,"Dhiraj & Subhasya","Engagement","Tenali"],
-[10,31,"Vipin & Prathyusha","Haldi & Makings","Dallas"],
-[11,1,"Vipin & Prathyusha","Wedding","Dallas"],
-[11,16,"Sushmitha & Bharath","Bride Making","Hyderabad"],
-[11,17,"Sushmitha & Bharath","Bride Making","Hyderabad"],
-[11,18,"Sushmitha & Bharath","Wedding","Hyderabad"],
-[11,19,"Shreyashi & Sachith","Mehendi & Pooja","Ayana Resort, Hyd"],
-[11,19,"Manisha & Prakash","Pre-Wedding","Michigan, USA"],
-[11,20,"Manisha & Prakash","Mehendi","Michigan, USA"],
-[11,20,"Shreyashi & Sachith","Haldi, Sangeet & After Party","Ayana Resort, Hyd"],
-[11,21,"Manisha & Prakash","Haldi & Makings","Michigan, USA"],
-[11,21,"Shreyashi & Sachith","Rituals, Baarat & Wedding","Ayana Resort, Hyd"],
-[11,22,"Manisha & Prakash","Wedding","Michigan, USA"],
-[11,24,"Dhiraj & Subhasya","Mehendi & Sangeet","Kurnool"],
-[11,25,"Sireesha & Vineeth","Sangeet","Hyderabad"],
-[11,25,"Dhiraj & Subhasya","Groom Making & Mangalsnanam","Kurnool"],
-[11,26,"Dhiraj & Subhasya","Bride Making, Haldi & Wedding","Tenali"],
-[11,29,"Sireesha & Vineeth","Haldi & Mehendi","Hyderabad"],
-[12,2,"Sireesha & Vineeth","Bride & Groom Making","Hyderabad / Kodad"],
-[12,3,"Sireesha & Vineeth","Wedding","Hyderabad"]
-];
-const TBD = {8:"+2 undated pre-weddings (Nidhi & Archit · Sameepa & Sri Raj)",11:"+2 undated shoots (Sireesha & Vineeth pre-wed · Dhiraj & Subhasya pre-wed)"};
+/* Protected calendar data loads from Firebase after owner sign-in. */
+let BAKED = [];
+let TBD = {};
 const MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 /* ---------------- state ---------------- */
@@ -879,86 +787,109 @@ let openPerson = null;    // team member key whose shoot list is expanded
 let openPlanPerson = null; // planner: team member whose schedule is expanded
 let selCat = "WARM";
 let filterCat = "ALL";
-let editor = localStorage.getItem('totw_editor') || "";
-let db = null, liveMode = false;
+let editor = "";
+let db = null, auth = null, liveMode = false, appStarted = false;
+let seedLoaded = false, bookingsLoaded = false, enquiriesLoaded = false;
+let crewEventsLast = "";
 
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const p2 = n => String(n).padStart(2,'0');
 const fmt = iso => {const[y,m,d]=iso.split('-').map(Number);return MN[m-1].slice(0,3)+" "+d;};
 const stamp = () => new Date().toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
 
-/* ---------------- gate + editor name ---------------- */
+/* ---------------- verified owner access ---------------- */
+function authError(message){
+  const el=document.getElementById('gateErr');
+  el.textContent=message;
+  el.style.display='block';
+}
 function boot(){
-  if(CONFIG.ACCESS_CODE && localStorage.getItem('totw_gate')!==CONFIG.ACCESS_CODE){
+  try{
+    firebase.initializeApp(CONFIG.FIREBASE);
+    auth=firebase.auth();
+    db=firebase.database();
+  }catch(e){
     document.getElementById('gate').style.display='flex';
-    document.getElementById('gateCode').addEventListener('keydown',e=>{if(e.key==='Enter')tryGate();});
+    authError('Could not connect to the studio database. Reload and try again.');
     return;
   }
-  afterGate();
+  ['loginEmail','loginPassword'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')signInLedger();}));
+  auth.onAuthStateChanged(user=>{
+    if(!user){
+      document.getElementById('gate').style.display='flex';
+      return;
+    }
+    db.ref('admins/'+user.uid).once('value').then(s=>{
+      if(s.val()!==true) throw new Error('not-approved');
+      editor=user.email||'Owner';
+      document.getElementById('gate').style.display='none';
+      start();
+    }).catch(()=>{
+      auth.signOut();
+      authError('This account is not approved for the Studio Ledger.');
+    });
+  });
 }
-function tryGate(){
-  const v=document.getElementById('gateCode').value.trim();
-  if(v===CONFIG.ACCESS_CODE){
-    localStorage.setItem('totw_gate',v);
-    document.getElementById('gate').style.display='none';
-    afterGate();
-  } else {
-    document.getElementById('gateErr').style.display='block';
-  }
+function signInLedger(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value;
+  const btn=document.getElementById('loginBtn');
+  if(!email||!password){authError('Enter your email address and password.');return;}
+  document.getElementById('gateErr').style.display='none';
+  btn.disabled=true;btn.textContent='Signing in…';
+  auth.signInWithEmailAndPassword(email,password).catch(()=>{
+    authError('The email address or password is incorrect.');
+  }).finally(()=>{btn.disabled=false;btn.textContent='Sign in';});
 }
-function afterGate(){
-  if(!editor){
-    document.getElementById('who').style.display='flex';
-    document.getElementById('whoName').addEventListener('keydown',e=>{if(e.key==='Enter')setWho();});
-    return;
-  }
-  start();
-}
-function setWho(){
-  const v=document.getElementById('whoName').value.trim();
-  if(!v)return;
-  editor=v;
-  localStorage.setItem('totw_editor',v);
-  document.getElementById('who').style.display='none';
-  start();
+function signOutLedger(){
+  if(!auth)return;
+  auth.signOut().then(()=>location.reload());
 }
 
 /* ---------------- storage layer ---------------- */
 function start(){
+  if(appStarted)return;
+  appStarted=true;
   setCat("WARM");
-  if(CONFIG.FIREBASE && window.firebase){
-    try{
-      firebase.initializeApp(CONFIG.FIREBASE);
-      db=firebase.database();
-      liveMode=true;
-      banner('live','Live sync on — every change saves instantly and appears for the whole team.');
-      db.ref('bookings').on('value',s=>{teamBookings=s.val()||{};refresh();});
-      db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};refresh();});
-      db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
-      db.ref('prod').on('value',s=>{prods=s.val()||{};renderProdAll();});
-      db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
-      db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();});
-      db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();});
-      db.ref('sentSnaps').on('value',s=>{sentSnaps=s.val()||{};renderPlanTeam();});
-      db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();});
-      db.ref('shotLists').on('value',s=>{shotLists=s.val()||{};loadShotEd();});
-      db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();});
-      document.getElementById('footNote').textContent='Shared live ledger. Signed in as '+editor+'.';
-      return;
-    }catch(e){ console.warn('Firebase init failed',e); }
-  }
-  // local fallback
-  banner('local','Local mode — changes save on this device only. Add the Firebase config to turn on team sync.');
-  try{teamBookings=JSON.parse(localStorage.getItem('totw_bk')||'{}');}catch(e){teamBookings={};}
-  try{enquiries=JSON.parse(localStorage.getItem('totw_enq')||'{}');}catch(e){enquiries={};}
-  try{activity=JSON.parse(localStorage.getItem('totw_act')||'{}');}catch(e){activity={};}
-  try{prods=JSON.parse(localStorage.getItem('totw_prod')||'{}');}catch(e){prods={};}
-  try{people=JSON.parse(localStorage.getItem('totw_people')||'{}');}catch(e){people={};}
-  try{plans=JSON.parse(localStorage.getItem('totw_plan')||'{}');}catch(e){plans={};}
-  try{planHidden=JSON.parse(localStorage.getItem('totw_planhide')||'{}');}catch(e){planHidden={};}
-  try{sentSnaps=JSON.parse(localStorage.getItem('totw_sentsnaps')||'{}');}catch(e){sentSnaps={};}
-  document.getElementById('footNote').textContent='Local mode. Editing as '+editor+'.';
-  refresh();renderActivity();
+  liveMode=true;
+  banner('live','Private live sync on. Signed in as '+editor+'.');
+  db.ref('calendarSeed').on('value',s=>{const v=s.val()||[];BAKED=Array.isArray(v)?v:Object.values(v);seedLoaded=true;refresh();publishCrewEvents();});
+  db.ref('calendarNotes').on('value',s=>{TBD=s.val()||{};renderCalendar();});
+  db.ref('rosterSeed').on('value',s=>{const v=s.val()||[];ROSTER_SEED=Array.isArray(v)?v:Object.values(v);});
+  db.ref('bookings').on('value',s=>{teamBookings=s.val()||{};bookingsLoaded=true;refresh();publishCrewEvents();});
+  db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};enquiriesLoaded=true;refresh();publishCrewEvents();});
+  db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
+  db.ref('prod').on('value',s=>{prods=s.val()||{};renderProdAll();});
+  db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
+  db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();});
+  db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();});
+  db.ref('sentSnaps').on('value',s=>{sentSnaps=s.val()||{};renderPlanTeam();});
+  db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();});
+  db.ref('shotLists').on('value',s=>{shotLists=s.val()||{};loadShotEd();});
+  db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();});
+  document.getElementById('footNote').textContent='Private shared ledger. Signed in as '+editor+'.';
+}
+function publishCrewEvents(){
+  if(!seedLoaded||!bookingsLoaded||!enquiriesLoaded||!db)return;
+  const today=new Date();today.setHours(0,0,0,0);
+  const map={};
+  const add=(iso,name)=>{
+    if(!iso||!name)return;
+    const d=new Date(iso+'T00:00:00');
+    if(isNaN(d)||d<today)return;
+    const n=String(name).trim();
+    if(n&&(!map[n]||iso<map[n]))map[n]=iso;
+  };
+  BAKED.forEach(r=>add(`2026-${p2(r[0])}-${p2(r[1])}`,r[2]));
+  Object.values(teamBookings).forEach(b=>{if(b&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c);});
+  Object.values(enquiries).forEach(x=>{if(x&&x.status==='BOOKED')(x.dates||[]).forEach(iso=>add(iso,x.name));});
+  const out={};
+  Object.entries(map).sort((a,b)=>a[1].localeCompare(b[1])).slice(0,3).forEach(([client,date],i)=>{out['e'+i]={client,date};});
+  const next=JSON.stringify(out);
+  if(next===crewEventsLast)return;
+  crewEventsLast=next;
+  db.ref('crewEvents').set(out).catch(e=>console.warn('Crew event publish failed',e));
 }
 function banner(kind,msg){
   const b=document.getElementById('syncBanner');
@@ -2754,7 +2685,7 @@ function planNeed(key,role){
   writePlan(key);
   renderPlan();
 }
-const ROSTER_SEED=[{"iso":"2026-06-24","couple":"Mishrita & Charan","event":"Mangalsnanam & Bride haldi","loc":"Tirupathi","cells":{"cp":"Sri ram & Sumenth","cv":"Akash & Sujith","tp":"Pruidhvi","tv":"Pruidhvi","ex":""}},{"iso":"2026-06-24","couple":"Mishrita & Charan","event":"Mehendi","loc":"Tirupathi","cells":{"cp":"","cv":"","tp":"Pruidhvi","tv":"Pruidhvi","ex":""}},{"iso":"2026-06-25","couple":"Sushmitha & Bharath","event":"Engagement","loc":"Hyderabad","cells":{"cp":"Shoib","cv":"","tp":"Pruidhvi","tv":"","ex":""}},{"iso":"2026-06-25","couple":"Mishrita & Charan","event":"Bride Making & Pradhanam","loc":"Tirupathi","cells":{"cp":"Sri ram","cv":"","tp":"Pruidhvi","tv":"Pruidhvi","ex":""}},{"iso":"2026-06-25","couple":"Mishrita & Charan","event":"Sangeet","loc":"Tirupathi","cells":{"cp":"Sri ram & Sumenth","cv":"Akash & Sujith","tp":"Pruidhvi","tv":"Pruidhvi","ex":"Drone"}},{"iso":"2026-06-26","couple":"Mishrita & Charan","event":"Nalugu","loc":"Tirupathi","cells":{"cp":"","cv":"","tp":"Pruidhvi","tv":"Pruidhvi","ex":""}},{"iso":"2026-06-26","couple":"Mishrita & Charan","event":"Wedding","loc":"Tirupathi","cells":{"cp":"Sri ram & Sumenth","cv":"Akash & Sujith","tp":"Pruidhvi","tv":"Pruidhvi","ex":"Drone & Live"}},{"iso":"2026-06-29","couple":"Zoya","event":"Haldi","loc":"Interview of bride & Family & Friends","cells":{"cp":"Shoib","cv":"Akash","tp":"","tv":"","ex":""}},{"iso":"2026-07-01","couple":"Zoya","event":"Sanchak","loc":"","cells":{"cp":"Prudhvi","cv":"Prudhvi","tp":"","tv":"","ex":""}},{"iso":"2026-07-01","couple":"Ramani & Snehith","event":"Sreemantham","loc":"Hyderabad","cells":{"cp":"Shoib","cv":"Raghava","tp":"Sai Charan","tv":"","ex":""}},{"iso":"2026-07-02","couple":"Zoya","event":"Shaadi","loc":"5pm bride portraits at home","cells":{"cp":"Shoib + Sumenth","cv":"Akash + Prudhvi","tp":"2P Sai Charan","tv":"1V Sai Charan","ex":"Drone Sai Charan"}},{"iso":"2026-07-03","couple":"Zoya","event":"Walima","loc":"","cells":{"cp":"Shoib","cv":"Akash","tp":"2P Sai Charan","tv":"1V Sai Charan","ex":"Drone Sai Charan"}},{"iso":"2026-07-05","couple":"Varsha & Achyuth","event":"Engagement","loc":"Hyderabad","cells":{"cp":"Sumenth & Shoib","cv":"Raghava","tp":"1P Sai Charan","tv":"1V Sai Charan","ex":""}},{"iso":"2026-08-10","couple":"Nidhi & Archit","event":"Pre-Wedding","loc":"Hyderabad","cells":{"cp":"Sumenth","cv":"Akash","tp":"","tv":"","ex":""}},{"iso":"2026-08-10","couple":"Sameepa & Sri Raj","event":"Pre-Wedding","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-08-13","couple":"Nidhi & Archit","event":"Mehendi","loc":"Hyderabad","cells":{"cp":"Sumenth & 1","cv":"Prithvi + 1","tp":"","tv":"","ex":""}},{"iso":"2026-08-14","couple":"Nidhi & Archit","event":"Haldi & Sangeet","loc":"Hyderabad","cells":{"cp":"Sumenth & 1","cv":"Prithvi + 1","tp":"1","tv":"1","ex":"Drone"}},{"iso":"2026-08-14","couple":"Vaishnavi & Sai Teja","event":"Bride Making","loc":"","cells":{"cp":"Paul","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-15","couple":"Nidhi & Archit","event":"Bride Making & Vratam","loc":"Hyderabad","cells":{"cp":"Sumenth & 1","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-15","couple":"Nidhi & Archit","event":"Groom Making","loc":"Hyderabad","cells":{"cp":"Sumenth & 1","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-15","couple":"Vaishnavi & Sai Teja","event":"Edurukollu","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-15","couple":"Vaishnavi & Sai Teja","event":"Haldi & Sangeet","loc":"","cells":{"cp":"Paul","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-16","couple":"Nidhi & Archit","event":"Rituals, Baarat, Wedding, Rituals & Baarat","loc":"Shamshabad","cells":{"cp":"Sumenth & 1","cv":"Prithvi + 1","tp":"1","tv":"1","ex":"Drone"}},{"iso":"2026-08-16","couple":"Vaishnavi & Sai Teja","event":"Wedding","loc":"","cells":{"cp":"Paul","cv":"1","tp":"1","tv":"1","ex":"Drone, Live"}},{"iso":"2026-08-18","couple":"Ridhima & Maheedhar","event":"Bride Haldi","loc":"","cells":{"cp":"Paul","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-08-19","couple":"Ridhima & Maheedhar","event":"Bride pasupu & Bonalu","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-19","couple":"Ridhima & Maheedhar","event":"Groom Haldi","loc":"","cells":{"cp":"Paul","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-08-20","couple":"Ridhima & Maheedhar","event":"Bride Making","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-20","couple":"Ridhima & Maheedhar","event":"Groom Making","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-21","couple":"Sameepa & Sri Raj","event":"Haldi & Mehendi","loc":"Anantapur","cells":{"cp":"2","cv":"Raghava","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-21","couple":"Ridhima & Maheedhar","event":"Vratam & Bride Mehendi","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-21","couple":"Ridhima & Maheedhar","event":"Groom Making & Mehendi","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-22","couple":"Sameepa & Sri Raj","event":"Bride Making & Sangeet","loc":"Anantapur","cells":{"cp":"2","cv":"Raghava","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-22","couple":"Ridhima & Maheedhar","event":"Bride Making","loc":"","cells":{"cp":"Paul","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-22","couple":"Ridhima & Maheedhar","event":"Groom making & Bonnalu","loc":"","cells":{"cp":"1","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-23","couple":"Sameepa & Sri Raj","event":"Wedding","loc":"Anantapur","cells":{"cp":"2","cv":"Raghava","tp":"1","tv":"1","ex":"Drone"}},{"iso":"2026-08-23","couple":"Ridhima & Maheedhar","event":"Wedding","loc":"","cells":{"cp":"Paul + 1","cv":"2","tp":"2","tv":"1","ex":"Drone"}},{"iso":"2026-08-24","couple":"Ridhima & Maheedhar","event":"Vratam","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-25","couple":"Varsha & Achyuth","event":"Cocktail","loc":"Hyderabad","cells":{"cp":"Paul + 1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-08-26","couple":"Ridhima & Maheedhar","event":"Reception","loc":"","cells":{"cp":"Paul + 1","cv":"1","tp":"2","tv":"2","ex":"Drone"}},{"iso":"2026-08-26","couple":"Varsha & Achyuth","event":"Haldi & Mehendi","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-27","couple":"Ridhima & Maheedhar","event":"Chinnaindulu","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-28","couple":"Varsha & Achyuth","event":"Bride Making","loc":"Hyderabad","cells":{"cp":"Paul","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-28","couple":"Ridhima & Maheedhar","event":"Kalayanam","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-28","couple":"Varsha & Achyuth","event":"Groom Making","loc":"Hyderabad","cells":{"cp":"1","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-29","couple":"Varsha & Achyuth","event":"Bride Making - II","loc":"Hyderabad","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-29","couple":"Varsha & Achyuth","event":"Groom Making - II","loc":"Hyderabad","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-30","couple":"Varsha & Achyuth","event":"Wedding","loc":"Hyderabad","cells":{"cp":"Paul + 1","cv":"2","tp":"2","tv":"1","ex":"Drone, 2 LED & Live"}},{"iso":"2026-09-01","couple":"Varsha & Achyuth","event":"Reception","loc":"Hyderabad","cells":{"cp":"Paul","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-28","couple":"Charisma & Pranav","event":"Bride Making","loc":"Hyderabad","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-28","couple":"Charisma & Pranav","event":"Groom Making","loc":"Hyderabad","cells":{"cp":"","cv":"","tp":"2","tv":"1","ex":""}},{"iso":"2026-10-29","couple":"Vipin & Prathyusha","event":"Mehendi","loc":"Dallas","cells":{"cp":"Sumenth","cv":"Kaushik","tp":"Ujwal","tv":"1","ex":""}},{"iso":"2026-10-29","couple":"Charisma & Pranav","event":"Haldi","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-29","couple":"Charisma & Pranav","event":"Sundowner","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-10-30","couple":"Vipin & Prathyusha","event":"Sangeet & Cocktail","loc":"Dallas","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-30","couple":"Charisma & Pranav","event":"Wedding","loc":"Hyderabad","cells":{"cp":"2","cv":"1","tp":"1","tv":"1","ex":"Drone"}},{"iso":"2026-10-30","couple":"Charisma & Pranav","event":"Cocktail/Sangeet","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-30","couple":"Dhiraj & Subhasya","event":"Engagement","loc":"Tenali AP","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-31","couple":"Vipin & Prathyusha","event":"Haldi & Bride Making & Groom Making","loc":"Dallas","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-01","couple":"Vipin & Prathyusha","event":"Wedding","loc":"Dallas","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-16","couple":"Sushmitha & Bharath","event":"Bride Making","loc":"Hyderabad","cells":{"cp":"1","cv":"","tp":"1","tv":"","ex":""}},{"iso":"2026-11-17","couple":"Sushmitha & Bharath","event":"Bride Making","loc":"Hyderabad","cells":{"cp":"1","cv":"","tp":"1","tv":"","ex":""}},{"iso":"2026-11-18","couple":"Sushmitha & Bharath","event":"Wedding","loc":"Hyderabad","cells":{"cp":"2","cv":"2","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-19","couple":"Shreyashi & Sachith","event":"Mehendi","loc":"Ayana Resort - Hyd","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-11-19","couple":"Shreyashi & Sachith","event":"Pooja","loc":"Ayana Resort - Hyd","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-19","couple":"Manisha & Prakash","event":"Pre wedding","loc":"USA - MICHIGAN","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-11-20","couple":"Manisha & Prakash","event":"Mehendi","loc":"USA - MICHIGAN","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-11-20","couple":"Shreyashi & Sachith","event":"Haldi, Sangeet & After party","loc":"Ayana Resort - Hyd","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-21","couple":"Manisha & Prakash","event":"Haldi, Bride & Groom Making","loc":"USA - MICHIGAN","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-11-21","couple":"Shreyashi & Sachith","event":"Rituals","loc":"Ayana Resort - Hyd","cells":{"cp":"","cv":"","tp":"2","tv":"2","ex":""}},{"iso":"2026-11-21","couple":"Shreyashi & Sachith","event":"Baarat & Wedding","loc":"Ayana Resort - Hyd","cells":{"cp":"2","cv":"2","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-22","couple":"Manisha & Prakash","event":"Wedding","loc":"USA - MICHIGAN","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-11-24","couple":"Dhiraj & Subhasya","event":"Mehendi & Sangeet","loc":"Kurnool","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-25","couple":"Sireesha & Vineeth","event":"Sangeet","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":"Drone"}},{"iso":"2026-11-25","couple":"Dhiraj & Subhasya","event":"Groom Making & Mangalsnanam","loc":"Kurnool","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-26","couple":"Dhiraj & Subhasya","event":"Bride Making & Haldi","loc":"Tenali AP","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-26","couple":"Dhiraj & Subhasya","event":"Wedding","loc":"Tenali AP","cells":{"cp":"2","cv":"2","tp":"1","tv":"1","ex":"Live streaming"}},{"iso":"2026-11-29","couple":"Sireesha & Vineeth","event":"Haldi","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-29","couple":"Sireesha & Vineeth","event":"Mehendi","loc":"Hyderabad","cells":{"cp":"1","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-12-02","couple":"Sireesha & Vineeth","event":"Bride Making","loc":"Hyderabad","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-12-02","couple":"Sireesha & Vineeth","event":"Groom Making","loc":"Kodad","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-12-03","couple":"Sireesha & Vineeth","event":"Wedding","loc":"Hyderabad","cells":{"cp":"2","cv":"1","tp":"1","tv":"1","ex":"Drone"}}];
+let ROSTER_SEED = [];
 function importRoster(){
   if(typeof ROSTER_SEED==='undefined')return;
   const styleFor={cp:'Candid Photo',cv:'Candid Video',tp:'Traditional Photo',tv:'Traditional Video',ex:''};

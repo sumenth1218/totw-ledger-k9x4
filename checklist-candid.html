@@ -151,92 +151,7 @@ const FIREBASE = {
   appId: "1:595678125258:web:01fef3d4661b6f52346833"
 };
 
-/* Baked 2026 calendar — same source the ledger uses. Firebase bookings and
-   booked enquiries are merged on top, so team-added weddings appear too. */
-const BAKED = [
-[1,11,"Swathi","Cradle ceremony","Hyderabad"],
-[2,4,"Varsha & Darshan","Lagna Patrika, Haldi, Sangeet","Bangalore"],
-[2,5,"Varsha & Darshan","Bride Mehendi","Bangalore"],
-[2,6,"Varsha & Darshan","Chapra Pooja / Groom Haldi","Bangalore"],
-[2,6,"Komal & Preet","Bhyaat & Interviews","Hyderabad"],
-[2,7,"Varsha & Darshan","Reception","Bangalore"],
-[2,8,"Komal & Preet","Haldi","Hyderabad"],
-[2,8,"Varsha & Darshan","Wedding","Bangalore"],
-[2,9,"Komal & Preet","Mehendi","Hyderabad"],
-[2,10,"Komal & Preet","Baarat, Reception & Pheras","Hyderabad"],
-[2,11,"Komal & Preet","Bidaai","Hyderabad"],
-[2,18,"Preethi & Chethan","Mehendi","Anantapur"],
-[2,19,"Preethi & Chethan","Bride Making & Sangeet","Anantapur"],
-[2,20,"Meghana & Smaran","Lagna Patrika","Hyderabad"],
-[2,20,"Preethi & Chethan","Wedding","Anantapur"],
-[2,22,"Mohan & Varshini","Engagement","Hyderabad"],
-[3,1,"Mohan & Varshini","Haldi & Sangeet","Hyderabad"],
-[3,4,"Meghana & Smaran","Bride & Groom Making, Haldi","Hyderabad"],
-[3,4,"Mohan & Varshini","Bride Making","Kurnool"],
-[3,5,"Mohan & Varshini","Groom Making","Karimnagar"],
-[3,5,"Lakshmi & Shiva","Rituals & Wedding","Vijayawada"],
-[3,5,"Meghana & Smaran","Wedding","Hyderabad"],
-[3,6,"Mohan & Varshini","Wedding","Hyderabad"],
-[3,9,"Shivani & Kashyap","Proposal Shoot","Phuket"],
-[3,12,"Kavya & Bharath","Wedding","Hyderabad"],
-[3,18,"Meghana & Smaran","Reception","Hyderabad"],
-[3,20,"Shivani & Kashyap","Engagement","Eluru"],
-[4,8,"Tanvi & Vamshi","Pre-Wedding","—"],
-[4,11,"Shivani & Kashyap","Cocktail","Hyderabad"],
-[4,20,"Shivani & Kashyap","Bride & Groom Making","Eluru / Hyd"],
-[4,21,"Shivani & Kashyap","Wedding","Eluru"],
-[4,22,"Shivani & Kashyap","Wedding (contd.)","Eluru"],
-[4,23,"Anusha & Suraj","Lagna Patrika","Hyderabad"],
-[4,24,"Shivani & Kashyap","Vratham","Hyderabad"],
-[5,5,"Simran & Noel","Ladies Sangeet","Hyderabad"],
-[5,6,"Mugdha & Vijay","Mehendi","Hyderabad"],
-[5,7,"Mugdha & Vijay","Groom Making & Edurukollu","Hyderabad"],
-[5,8,"Mugdha & Vijay","Wedding","Hyderabad"],
-[5,9,"Simran & Noel","Mehendi, Cocktail & Sangeet","Hyderabad"],
-[5,10,"Simran & Noel","Haldi + Wedding","Hyderabad"],
-[5,13,"Sameepa & Sri Raj","Pasupu Danchadam","Anantapur"],
-[5,17,"Vedika & Devansh","Post Wedding","Hyderabad"],
-[5,30,"Kavya & Bharath","Interview","Hyderabad"],
-[6,24,"Mishrita & Charan","Mangalsnanam, Haldi & Mehendi","Tirupati"],
-[6,25,"Mishrita & Charan","Bride Making, Pradhanam & Sangeet","Tirupati"],
-[6,25,"Sushmitha & Bharath","Engagement","Hyderabad"],
-[6,26,"Mishrita & Charan","Nalugu & Wedding","Tirupati"],
-[6,29,"Zoya","Haldi","—"],
-[6,30,"Zoya","Mehendi & Sanchak","—"],
-[7,2,"Zoya","Shaadi","—"],
-[7,3,"Zoya","Walima","—"],
-[8,10,"Nidhi & Archit","Pre-Wedding","Hyderabad"],
-[8,11,"Nidhi & Archit","Pre-Wedding","Hyderabad"],
-[8,13,"Nidhi & Archit","Mehendi","Hyderabad"],
-[8,14,"Nidhi & Archit","Haldi & Sangeet","Hyderabad"],
-[8,15,"Nidhi & Archit","Bride & Groom Making, Vratam","Hyderabad"],
-[8,16,"Nidhi & Archit","Baarat, Wedding & Rituals","Shamshabad"],
-[8,21,"Sameepa & Sri Raj","Haldi & Mehendi","Anantapur"],
-[8,22,"Sameepa & Sri Raj","Bride Making & Sangeet","Anantapur"],
-[8,23,"Sameepa & Sri Raj","Wedding","Anantapur"],
-[10,29,"Vipin & Prathyusha","Mehendi","Dallas"],
-[10,30,"Vipin & Prathyusha","Sangeet & Cocktail","Dallas"],
-[10,30,"Dhiraj & Subhasya","Engagement","Tenali"],
-[10,31,"Vipin & Prathyusha","Haldi & Makings","Dallas"],
-[11,1,"Vipin & Prathyusha","Wedding","Dallas"],
-[11,16,"Sushmitha & Bharath","Bride Making","Hyderabad"],
-[11,17,"Sushmitha & Bharath","Bride Making","Hyderabad"],
-[11,18,"Sushmitha & Bharath","Wedding","Hyderabad"],
-[11,19,"Shreyashi & Sachith","Mehendi & Pooja","Ayana Resort, Hyd"],
-[11,19,"Manisha & Prakash","Pre-Wedding","Michigan, USA"],
-[11,20,"Manisha & Prakash","Mehendi","Michigan, USA"],
-[11,20,"Shreyashi & Sachith","Haldi, Sangeet & After Party","Ayana Resort, Hyd"],
-[11,21,"Manisha & Prakash","Haldi & Makings","Michigan, USA"],
-[11,21,"Shreyashi & Sachith","Rituals, Baarat & Wedding","Ayana Resort, Hyd"],
-[11,22,"Manisha & Prakash","Wedding","Michigan, USA"],
-[11,24,"Dhiraj & Subhasya","Mehendi & Sangeet","Kurnool"],
-[11,25,"Sireesha & Vineeth","Sangeet","Hyderabad"],
-[11,25,"Dhiraj & Subhasya","Groom Making & Mangalsnanam","Kurnool"],
-[11,26,"Dhiraj & Subhasya","Bride Making, Haldi & Wedding","Tenali"],
-[11,29,"Sireesha & Vineeth","Haldi & Mehendi","Hyderabad"],
-[12,2,"Sireesha & Vineeth","Bride & Groom Making","Hyderabad / Kodad"],
-[12,3,"Sireesha & Vineeth","Wedding","Hyderabad"]
-];
+/* Upcoming couples load from the limited public crewEvents node. */
 
 const DEFAULT_SHOTS = {
   "haldi": {
@@ -329,7 +244,6 @@ const DEFAULT_SHOTS = {
   }
 };
 
-const p2 = n => String(n).padStart(2,'0');
 const MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const fmtIso = iso => {const[y,m,d]=iso.split('-').map(Number);return MN[m-1].slice(0,3)+" "+d;};
 
@@ -359,23 +273,22 @@ function init(){
   }catch(e){ console.warn('Firebase failed', e); }
   if(db){
     Promise.all([
-      db.ref('bookings').once('value').then(s=>s.val()||{}).catch(()=>({})),
-      db.ref('enquiries').once('value').then(s=>s.val()||{}).catch(()=>({})),
+      db.ref('crewEvents').once('value').then(s=>s.val()||{}).catch(()=>({})),
       db.ref('shotLists').once('value').then(s=>s.val()||{}).catch(()=>({})),
       db.ref('shotMoods').once('value').then(s=>s.val()||{}).catch(()=>({}))
-    ]).then(([bk,enq,lists,moodsIn])=>{
+    ]).then(([events,lists,moodsIn])=>{
       shotListsRemote = lists||{};
       moods = moodsIn||{};
-      buildClientOptions(bk,enq);
+      buildClientOptions(events);
       renderShotsIfReady();
       updateMoodCard();
-    }).catch(()=>buildClientOptions({},{}));
+    }).catch(()=>buildClientOptions({}));
   }else{
-    buildClientOptions({},{});
+    buildClientOptions({});
   }
 }
 
-function buildClientOptions(bookings, enqs){
+function buildClientOptions(events){
   const today = new Date(); today.setHours(0,0,0,0);
   const map = {}; // couple -> earliest upcoming iso
   const add = (iso, name) => {
@@ -386,9 +299,7 @@ function buildClientOptions(bookings, enqs){
     if(!k) return;
     if(!map[k] || iso < map[k]) map[k] = iso;
   };
-  BAKED.forEach(r => add(`2026-${p2(r[0])}-${p2(r[1])}`, r[2]));
-  Object.values(bookings||{}).forEach(b => { if(b && b.m && b.d) add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`, b.c); });
-  Object.values(enqs||{}).forEach(x => { if(x && x.status==='BOOKED') (x.dates||[]).forEach(iso => add(iso, x.name)); });
+  Object.values(events||{}).forEach(x => { if(x) add(x.date, x.client); });
 
   const upcoming = Object.entries(map).sort((a,b)=>a[1]<b[1]?-1:1).slice(0,3);
   const sel = document.getElementById('fClient');
@@ -475,7 +386,7 @@ function submitChecklist(){
     items: items.map(x=>({t:x.t, done:!!x.done})),
     tickedCount: items.filter(x=>x.done).length,
     totalCount: items.length,
-    submittedAt: Date.now()
+    submittedAt: firebase.database.ServerValue.TIMESTAMP
   }).then(()=>{
     document.getElementById('form').style.display='none';
     document.getElementById('doneSub').textContent = `${client} · ${type} · ${fmtIso(date)} · ${items.filter(x=>x.done).length}/${items.length} shots ticked`;
