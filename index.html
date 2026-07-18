@@ -406,9 +406,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
     <h2>Studio Ledger</h2>
     <p class="auth-note">Private access for Sumenth and Mahima.</p>
     <p class="gate-err" id="gateErr"></p>
-    <input type="email" id="loginEmail" placeholder="Email address" autocomplete="username">
-    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
-    <button id="loginBtn" onclick="signInLedger()">Sign in</button>
+    <button id="loginBtn" onclick="signInLedger()">Continue with Google</button>
   </div>
 </div>
 
@@ -814,7 +812,6 @@ function boot(){
     authError('Could not connect to the studio database. Reload and try again.');
     return;
   }
-  ['loginEmail','loginPassword'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')signInLedger();}));
   auth.onAuthStateChanged(user=>{
     if(!user){
       document.getElementById('gate').style.display='flex';
@@ -832,15 +829,19 @@ function boot(){
   });
 }
 function signInLedger(){
-  const email=document.getElementById('loginEmail').value.trim();
-  const password=document.getElementById('loginPassword').value;
   const btn=document.getElementById('loginBtn');
-  if(!email||!password){authError('Enter your email address and password.');return;}
   document.getElementById('gateErr').style.display='none';
   btn.disabled=true;btn.textContent='Signing in…';
-  auth.signInWithEmailAndPassword(email,password).catch(()=>{
-    authError('The email address or password is incorrect.');
-  }).finally(()=>{btn.disabled=false;btn.textContent='Sign in';});
+  const provider=new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:'select_account'});
+  auth.signInWithPopup(provider).catch(error=>{
+    if(error&&error.code==='auth/popup-blocked'){
+      return auth.signInWithRedirect(provider);
+    }
+    if(!error||error.code!=='auth/popup-closed-by-user'){
+      authError('Google sign-in could not be completed. Please try again.');
+    }
+  }).finally(()=>{btn.disabled=false;btn.textContent='Continue with Google';});
 }
 function signOutLedger(){
   if(!auth)return;
