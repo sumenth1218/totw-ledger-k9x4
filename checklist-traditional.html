@@ -272,7 +272,7 @@ function buildClientOptions(events){
   };
   Object.values(events||{}).forEach(x => { if(x) add(x.date, x.client); });
 
-  const upcoming = Object.entries(map).sort((a,b)=>a[1]<b[1]?-1:1).slice(0,3);
+  const upcoming = Object.entries(map).sort((a,b)=>a[1].localeCompare(b[1])||a[0].localeCompare(b[0]));
   const sel = document.getElementById('fClient');
   sel.innerHTML = '<option value="">Select the couple…</option>' +
     upcoming.map(([name,iso])=>`<option value="${name.replace(/"/g,'&quot;')}">${name} — from ${fmtIso(iso)}</option>`).join('') +

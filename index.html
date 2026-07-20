@@ -807,6 +807,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
     <div class="field"><label for="ciCouple">Couple</label><input id="ciCouple" list="ciCouples" type="text" placeholder="Select a booked couple" onchange="ciCoupleChanged()"><datalist id="ciCouples"></datalist></div>
     <div class="field"><label for="ciDate">Event date</label><select id="ciDate" onchange="ciDateChanged()"><option value="">Select date</option></select></div>
     <div class="field"><label for="ciEvent">Event name</label><input id="ciEvent" type="text" placeholder="Wedding, Haldi, Sangeet…"></div>
+    <div class="ci-map-ok" id="ciPlannerResult"></div>
     <div class="field"><label for="ciChecklist">Checklist to unlock</label><select id="ciChecklist"><option>Haldi</option><option>Mehndi</option><option>Sangeet</option><option selected>Ceremony</option><option>Reception</option><option value="None">No checklist</option></select></div>
     <div class="field"><label for="ciMapLink">Google Maps link</label><input id="ciMapLink" type="url" placeholder="Paste the full Google Maps link" onblur="ciParseMap()"></div>
     <div class="ci-map-ok" id="ciMapResult"></div>
@@ -993,7 +994,7 @@ function start(){
   db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
   db.ref('prod').on('value',s=>{prods=s.val()||{};renderProdAll();});
   db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
-  db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();});
+  db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();renderCheckinFormOptions();renderMoodSec();publishCrewEvents();});
   db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();});
   db.ref('sentSnaps').on('value',s=>{sentSnaps=s.val()||{};renderPlanTeam();});
   db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();});
@@ -1018,8 +1019,9 @@ function publishCrewEvents(){
   BAKED.forEach(r=>add(`2026-${p2(r[0])}-${p2(r[1])}`,r[2]));
   Object.values(teamBookings).forEach(b=>{if(b&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c);});
   Object.values(enquiries).forEach(x=>{if(x&&x.status==='BOOKED')(x.dates||[]).forEach(iso=>add(iso,x.name));});
+  Object.values(plans).forEach(p=>{if(p&&p.iso)add(p.iso,p.couple);});
   const out={};
-  Object.entries(map).sort((a,b)=>a[1].localeCompare(b[1])).slice(0,3).forEach(([client,date],i)=>{out['e'+i]={client,date};});
+  Object.entries(map).sort((a,b)=>a[1].localeCompare(b[1])||a[0].localeCompare(b[0])).forEach(([client,date],i)=>{out['e'+i]={client,date};});
   const next=JSON.stringify(out);
   if(next===crewEventsLast)return;
   crewEventsLast=next;
@@ -1979,6 +1981,10 @@ function calendarCoupleMap(){
   };
   BAKED.forEach(([m,d,c,e])=>add(c,m,d,e,2026));
   Object.values(teamBookings).forEach(b=>add(b.c,b.m,b.d,b.e,b.y||2026));
+  Object.values(plans).forEach(p=>{
+    const m=String(p&&p.iso||'').match(/^(20\d{2})-(\d{2})-(\d{2})$/);
+    if(m&&p.couple)add(p.couple,+m[2],+m[3],p.event,+m[1]);
+  });
   Object.keys(map).forEach(n=>map[n].dates.sort());
   return map;
 }
@@ -3261,7 +3267,8 @@ function upcomingCouplesAdmin(){
   BAKED.forEach(r=>add(`2026-${p2(r[0])}-${p2(r[1])}`,r[2]));
   Object.values(teamBookings||{}).forEach(b=>{if(b&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c);});
   Object.values(enquiries||{}).forEach(x=>{if(x&&x.status==='BOOKED')(x.dates||[]).forEach(iso=>add(iso,x.name));});
-  return Object.entries(map).sort((a,b)=>a[1]<b[1]?-1:1);
+  Object.values(plans||{}).forEach(p=>{if(p&&p.iso)add(p.iso,p.couple);});
+  return Object.entries(map).sort((a,b)=>a[1].localeCompare(b[1])||a[0].localeCompare(b[0]));
 }
 
 function toggleMoodSec(){
@@ -3336,6 +3343,7 @@ const ciPhone=v=>String(v||'').replace(/\D/g,'');
 const ciFmtTime=t=>{if(!t)return '—';const[h,m]=t.split(':').map(Number),ap=h>=12?'PM':'AM';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`;};
 const ciClock=ms=>ms?new Date(ms).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}):'—';
 const ciDateLong=iso=>{if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);return `${MN[m-1]} ${d}, ${y}`;};
+const ciTodayIso=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;};
 const ciTeamType=role=>{const r=String(role||'').toLowerCase();return r.includes('traditional')?'traditional':r.includes('candid')?'candid':'';};
 function ciDuration(start,end){if(!start||!end)return 'Pending actual start';let n=Math.max(0,Math.round((end-start)/60000)),h=Math.floor(n/60),m=n%60;return `${h}h ${m}m${n>420?' · Over 7 hrs':''}`;}
 
@@ -3366,7 +3374,11 @@ async function deleteCrewProfile(uid){
   }catch(err){toast('Could not delete this crew profile. Please try again.');}
 }
 function renderCheckinFormOptions(){
-  const dl=document.getElementById('ciCouples');if(dl){const map=calendarCoupleMap();dl.innerHTML=Object.keys(map).sort().map(n=>`<option value="${esc(n)}">`).join('');}
+  const dl=document.getElementById('ciCouples');if(dl){
+    const map=calendarCoupleMap(),today=ciTodayIso();
+    const list=Object.entries(map).map(([name,x])=>({name,next:(x.dates||[]).filter(d=>d>=today).sort()[0]})).filter(x=>x.next).sort((a,b)=>a.next.localeCompare(b.next)||a.name.localeCompare(b.name));
+    dl.innerHTML=list.map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.next))}">`).join('');
+  }
   renderCheckinTeam();
 }
 function renderCheckinTeam(selected){
@@ -3382,13 +3394,39 @@ function ciDefaultReportChanged(){
   document.querySelectorAll('.ci-person-time').forEach(x=>{if(!x.dataset.custom)x.value=v;});
 }
 function ciCoupleChanged(){
-  const name=document.getElementById('ciCouple').value.trim(),sel=document.getElementById('ciDate'),map=calendarCoupleMap(),x=map[name];
-  sel.innerHTML='<option value="">Select date</option>'+((x&&x.dates)||[]).map(d=>`<option value="${d}">${esc(ciDateLong(d))}</option>`).join('');
-  if(x&&x.dates.length===1){sel.value=x.dates[0];ciDateChanged();}
+  const name=document.getElementById('ciCouple').value.trim(),sel=document.getElementById('ciDate'),map=calendarCoupleMap(),x=map[name],dates=((x&&x.dates)||[]).filter(d=>d>=ciTodayIso()).sort();
+  sel.innerHTML='<option value="">Select date</option>'+dates.map(d=>`<option value="${d}">${esc(ciDateLong(d))}</option>`).join('');
+  document.getElementById('ciPlannerResult').classList.remove('on');
+  if(dates.length===1){sel.value=dates[0];ciDateChanged();}else renderCheckinTeam({});
+}
+function ciPlannerRow(couple,date){
+  const n=String(couple||'').trim().toLowerCase();
+  return Object.values(plans||{}).find(p=>p&&p.iso===date&&String(p.couple||'').trim().toLowerCase()===n)||null;
+}
+function ciApplyPlannerRow(row){
+  const box=document.getElementById('ciPlannerResult');
+  if(!row){box.classList.remove('on');renderCheckinTeam({});return;}
+  const roleMap={cp:'Candid Photographer',cv:'Candid Cinematographer',tp:'Traditional Photographer',tv:'Traditional Videographer',ex:'Other'},selected={},missing=[],matched=[];
+  Object.entries(roleMap).forEach(([key,role])=>planNames((row.cells&&row.cells[key])||'').forEach(name=>{
+    const hit=Object.entries(crewProfiles||{}).find(([,p])=>String(p.name||'').trim().toLowerCase()===name.toLowerCase());
+    if(hit){selected[hit[0]]={role,reportTime:''};matched.push(name);}else missing.push(name);
+  }));
+  renderCheckinTeam(selected);
+  const notes=['Imported from Crew Planner.'];
+  if(matched.length)notes.push(`${matched.length} registered crew selected.`);
+  if(missing.length)notes.push(`Not registered yet: ${[...new Set(missing)].join(', ')}.`);
+  if(row.loc){
+    const mapData=ciMapData(row.loc);
+    if(mapData){document.getElementById('ciMapLink').value=row.loc;ciParseMap();notes.push('Google Maps location imported.');}
+    else notes.push(`Planner venue: ${row.loc}. Paste its full Google Maps link below for GPS.`);
+  }
+  box.className='ci-map-ok on';box.textContent=notes.join(' ');
 }
 function ciDateChanged(){
   const name=document.getElementById('ciCouple').value.trim(),date=document.getElementById('ciDate').value,map=calendarCoupleMap(),evs=(map[name]&&map[name].events&&map[name].events[date])||[];
-  if(evs.length)document.getElementById('ciEvent').value=evs.join(' + ');
+  const row=ciPlannerRow(name,date),plannerEvent=row&&row.event&&row.event!=='—'?row.event:'';
+  if(plannerEvent||evs.length)document.getElementById('ciEvent').value=plannerEvent||evs.join(' + ');
+  ciApplyPlannerRow(row);
   ciInferChecklist(document.getElementById('ciEvent').value);
 }
 function ciInferChecklist(eventName){
@@ -3414,7 +3452,7 @@ function ciParseMap(){
 }
 function resetCheckinForm(){
   ['ciEditId','ciCouple','ciEvent','ciMapLink','ciVenueLat','ciVenueLng','ciVenueName','ciReport','ciScheduled'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('ciDate').innerHTML='<option value="">Select date</option>';document.getElementById('ciChecklist').value='Ceremony';document.getElementById('ciMapResult').classList.remove('on');document.getElementById('ciFormResult').className='check-result';document.getElementById('ciFormTitle').textContent='New crew shoot';renderCheckinTeam({});
+  document.getElementById('ciDate').innerHTML='<option value="">Select date</option>';document.getElementById('ciChecklist').value='Ceremony';document.getElementById('ciMapResult').classList.remove('on');document.getElementById('ciPlannerResult').classList.remove('on');document.getElementById('ciFormResult').className='check-result';document.getElementById('ciFormTitle').textContent='New crew shoot';renderCheckinTeam({});
 }
 function toggleCheckinForm(show){const f=document.getElementById('ciForm');if(show){if(!f.style.display||f.style.display==='none')resetCheckinForm();f.style.display='block';f.scrollIntoView({behavior:'smooth',block:'start'});}else{f.style.display='none';resetCheckinForm();}}
 function editCheckinEvent(id){
@@ -3439,8 +3477,9 @@ function copyCheckinLink(id){copyText(ciCrewUrl(id),'Event link copied.');}
 async function deleteCheckinEvent(id){
   const e=checkinEvents[id];if(!e)return;
   if(!confirm(`Permanently delete ${e.couple} — ${e.eventName}?\n\nThis removes the shoot link, assignments, confirmations, GPS check-ins, working hours and linked checklist submissions.`))return;
-  const updates={};updates[`crewCheckins/events/${id}`]=null;updates[`crewCheckins/attendance/${id}`]=null;
-  Object.keys(e.crew||{}).forEach(uid=>{updates[`crewCheckins/assignments/${uid}/${id}`]=null;updates[`shotChecklists/ci_${id}_${uid}`]=null;});
+  const updates={};updates[`crewCheckins/events/${id}`]=null;
+  const uids=new Set([...Object.keys(e.crew||{}),...Object.keys(checkinAttendance[id]||{})]);
+  uids.forEach(uid=>{updates[`crewCheckins/assignments/${uid}/${id}`]=null;updates[`crewCheckins/attendance/${id}/${uid}`]=null;updates[`shotChecklists/ci_${id}_${uid}`]=null;});
   try{await db.ref().update(updates);delete checkinEvents[id];delete checkinAttendance[id];renderCheckinEvents();toast('Crew event and its test records were deleted.');log(`deleted crew check-in event: ${e.couple} — ${e.eventName}`);}catch(err){toast('Could not delete the event. Please try again.');}
 }
 function ciLocalValue(ms){if(!ms)return '';const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;}
