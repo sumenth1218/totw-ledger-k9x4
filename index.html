@@ -85,6 +85,20 @@ h1 em{font-style:italic;color:var(--sindoor)}
 #gpop u:last-child{margin-bottom:0}
 .tbd-note{margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--amber);border-top:1px dashed var(--line);padding-top:8px}
 
+.demand-box{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.demand-box summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;cursor:pointer}
+.demand-box summary::-webkit-details-marker{display:none}
+.demand-title{font-family:var(--display);font-size:22px;font-weight:600}
+.demand-meta{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.demand-box[open] .demand-meta{color:var(--sindoor)}
+.demand-body{border-top:1px solid var(--line);padding:16px 18px 18px}
+.demand-select{width:100%;max-width:280px;padding:10px 12px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);font-family:var(--body);font-size:13px;outline:none}
+.demand-list{margin-top:12px;border-top:1px solid var(--line)}
+.demand-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 2px;border-bottom:1px solid var(--line)}
+.demand-row b{font-size:14px;font-weight:600}
+.demand-count{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--sindoor);white-space:nowrap}
+.demand-empty{padding:16px 2px 2px;color:var(--ink-soft);font-style:italic;font-family:var(--display);font-size:16px}
+
 .detail{position:fixed;inset:0;background:rgba(27,26,23,.45);display:none;align-items:flex-end;justify-content:center;z-index:50;padding:16px}
 .detail.open{display:flex}
 @media(min-width:700px){.detail{align-items:center}}
@@ -441,6 +455,16 @@ h1 em{font-style:italic;color:var(--sindoor)}
 <div class="main">
   <div class="cal-col">
     <div class="months" id="months"></div>
+    <details class="demand-box" id="demandBox">
+      <summary>
+        <span class="demand-title">In-Demand Wedding Dates</span>
+        <span class="demand-meta">Select month ▾</span>
+      </summary>
+      <div class="demand-body">
+        <select class="demand-select" id="demandMonth" onchange="renderWeddingDemand()" aria-label="Select month for in-demand wedding dates"></select>
+        <div class="demand-list" id="demandList"></div>
+      </div>
+    </details>
     <div class="activity" id="activity">
       <div class="act-head" onclick="toggleAct()">
         <h2>Recent activity</h2>
@@ -935,7 +959,7 @@ function rebuildIndex(){
     });
   });
 }
-function refresh(){rebuildIndex();renderStrip();renderCalendar();renderEnquiries();renderChips('enq');renderChips('bk');renderMiniCal('enq');renderMiniCal('bk');renderProdAll();}
+function refresh(){rebuildIndex();renderStrip();renderCalendar();renderWeddingDemand();renderEnquiries();renderChips('enq');renderChips('bk');renderMiniCal('enq');renderMiniCal('bk');renderProdAll();}
 
 function renderStrip(){
   const bookedDays=Object.keys(byDate).filter(k=>k.indexOf(calYear+'-')===0).length;
@@ -965,7 +989,7 @@ function setCalYear(y){
   const a=document.getElementById('yrT2026'),b=document.getElementById('yrT2027');
   if(a)a.classList.toggle('on',y===2026);
   if(b)b.classList.toggle('on',y===2027);
-  renderStrip();renderCalendar();
+  renderStrip();renderCalendar();renderWeddingDemand(true);
 }
 function renderCalendar(){
   const today=new Date();
@@ -996,6 +1020,34 @@ function renderCalendar(){
       ${calYear===2026&&TBD[m+1]?`<div class="tbd-note">${TBD[m+1]}</div>`:''}`;
     el.appendChild(div);
   }
+}
+
+function renderWeddingDemand(resetMonth){
+  const sel=document.getElementById('demandMonth');
+  const list=document.getElementById('demandList');
+  if(!sel||!list)return;
+  const prev=resetMonth?'':sel.value;
+  const now=new Date();
+  const fallback=(now.getFullYear()===calYear?now.getMonth():0);
+  sel.innerHTML=MN.map((name,i)=>`<option value="${i}">${name} ${calYear}</option>`).join('');
+  sel.value=prev!==''?prev:String(fallback);
+  const month=Number(sel.value);
+  const counts={};
+  Object.values(enquiries).forEach(x=>{
+    const eventMap=x&&x.dateEvents;
+    if(!eventMap)return;
+    Object.entries(eventMap).forEach(([date,events])=>{
+      const parts=date.split('-').map(Number);
+      if(parts[0]!==calYear||parts[1]!==month+1)return;
+      const isWedding=(Array.isArray(events)?events:[]).some(e=>String(e).trim().toLowerCase()==='wedding');
+      if(isWedding)counts[date]=(counts[date]||0)+1;
+    });
+  });
+  const rows=Object.entries(counts).filter(([,count])=>count>2).sort((a,b)=>a[0].localeCompare(b[0]));
+  list.innerHTML=rows.length?rows.map(([date,count])=>{
+    const day=Number(date.slice(8,10));
+    return `<div class="demand-row"><b>${MN[month]} ${day}, ${calYear}</b><span class="demand-count">${count} wedding enquiries</span></div>`;
+  }).join(''):'<div class="demand-empty">No in-demand wedding dates this month.</div>';
 }
 
 /* ---------------- day detail ---------------- */
