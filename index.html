@@ -76,8 +76,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .day.enq1{box-shadow:0 0 0 1.5px var(--teal);cursor:pointer}
 .day.enq2{box-shadow:0 0 0 2.5px var(--teal);cursor:pointer}
 .day.enq3{box-shadow:0 0 0 3.5px var(--teal);cursor:pointer}
-.day.demand{background:var(--amber);color:#FFF9EC;border-color:#8E621D;box-shadow:0 0 0 2px #E3C47C;cursor:pointer;font-weight:600}
-.day.demand:hover{background:#91651F}
 
 .has-pop{cursor:pointer}
 #gpop{display:none;position:fixed;background:var(--ink);color:var(--paper);border-radius:8px;padding:11px 13px;width:232px;z-index:80;box-shadow:0 10px 28px rgba(27,26,23,.35)}
@@ -997,7 +995,6 @@ function setCalYear(y){
 function renderCalendar(){
   const today=new Date();
   const isThisYear=today.getFullYear()===calYear;
-  const demand=weddingDemandMap();
   const el=document.getElementById('months');
   el.innerHTML='';
   for(let m=0;m<12;m++){
@@ -1010,11 +1007,10 @@ function renderCalendar(){
       const booked=!!evts;
       if(booked)count++;
       const ec=Math.min(enqByDate[calYear+"-"+(m+1)+"-"+d]||0,3);
-      const inDemand=(demand[`${calYear}-${p2(m+1)}-${p2(d)}`]||0)>2;
-      const clickable=booked||ec>0||inDemand;
+      const clickable=booked||ec>0;
       const isToday=isThisYear&&today.getMonth()===m&&today.getDate()===d;
       const isPast=isThisYear&&new Date(calYear,m,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
-      cells+=`<i class="day ${booked?'booked':'free'}${ec?' enq'+ec:''}${inDemand?' demand':''}${isToday?' today':''}${isPast&&!booked?' past':''}"${clickable?` onclick="openDetail(${calYear},${m+1},${d})"`:''}>${d}</i>`;
+      cells+=`<i class="day ${booked?'booked':'free'}${ec?' enq'+ec:''}${isToday?' today':''}${isPast&&!booked?' past':''}"${clickable?` onclick="openDetail(${calYear},${m+1},${d})"`:''}>${d}</i>`;
     }
     const div=document.createElement('div');
     div.className='month'+(count?' is-busy':'');
