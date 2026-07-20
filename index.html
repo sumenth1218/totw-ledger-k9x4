@@ -330,6 +330,15 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .stage-row:last-child{border-bottom:none}
 .stage-l{display:flex;align-items:center;gap:9px}
 .stage-row input[type=checkbox]{width:17px;height:17px;accent-color:var(--leaf);flex:none}
+.stage-r{display:flex;align-items:center;gap:8px;flex:none}
+.stage-del{border:none;background:transparent;color:#9A958A;font-size:17px;line-height:1;cursor:pointer;padding:2px 3px}
+.stage-del:hover{color:var(--sindoor)}
+.stage-add-form{margin-top:10px;padding:12px;border:1px dashed var(--line);border-radius:7px;background:#FBFAF6;display:grid;grid-template-columns:minmax(160px,1fr) 150px 150px;gap:8px}
+.stage-add-form input,.stage-add-form select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);font:12.5px var(--body)}
+.stage-add-foot{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.stage-pdf-check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-soft)}
+.stage-pdf-check input{width:15px;height:15px;accent-color:var(--leaf)}
+@media(max-width:700px){.stage-add-form{grid-template-columns:1fr}.stage-add-foot{grid-column:1}.stage-row{align-items:flex-start}.stage-r{flex-wrap:wrap;justify-content:flex-end}}
 .sdue{font-family:var(--mono);font-size:10px;letter-spacing:.06em;white-space:nowrap}
 .sdue.ok{color:var(--leaf)}.sdue.warn{color:#854F0B}.sdue.bad{color:var(--sindoor)}.sdue.cl{color:#534AB7}.sdue.mut{color:var(--ink-soft)}
 .cw{color:#534AB7}
@@ -819,6 +828,7 @@ let openCost = {};       // {prodId:{role:bool,person:bool,day:bool}} cost expan
 let pkgOpen = new Set();  // prod ids with package field revealed
 let openPerson = null;    // team member key whose shoot list is expanded
 let openPlanPerson = null; // planner: team member whose schedule is expanded
+let stageAddFor = null;   // production record with the custom-deliverable form open
 let selCat = "WARM";
 let filterCat = "ALL";
 let editor = "";
@@ -1632,21 +1642,27 @@ function stagesFor(p){
   const anyTradVideo=has('Traditional Video');
   const anyCandidVideo=has('Candid Video');
   // One line per deliverable type, for the whole couple. Deadlines: sneak from first day, rest from last day.
-  if(anyCandidPhoto)out.push({k:'sneak',l:'Sneak peek',o:'Sumenth',due:f?f+2*DAYMS:null});
-  if(anyCandidPhoto||anyTradPhoto)out.push({k:'cull',l:'Culling',o:'Mahima',due:l?l+7*DAYMS:null});
-  if(anyCandidPhoto)out.push({k:'cphoto',l:'Candid photos',o:'Sumenth',due:l?l+14*DAYMS:null,gate:1});
-  if(anyTradPhoto)out.push({k:'tphoto',l:'Traditional photos',o:'Team',due:l?l+14*DAYMS:null,gate:1});
-  if(anyCandidVideo)out.push({k:'teaser',l:'Candid teaser',o:'Team',due:l?l+90*DAYMS:null,gate:1});
-  if(anyCandidVideo)out.push({k:'cfilm',l:'Candid film',o:'Team',due:l?l+90*DAYMS:null,gate:1});
-  if(anyTradVideo)out.push({k:'tvideo',l:'Traditional video',o:'Team',due:l?l+90*DAYMS:null,gate:1});
+  if(anyCandidPhoto)out.push({k:'sneak',l:'Sneak peek',o:'Sumenth',due:f?f+2*DAYMS:null,clientPdf:true});
+  if(anyCandidPhoto||anyTradPhoto)out.push({k:'cull',l:'Culling',o:'Mahima',due:l?l+7*DAYMS:null,clientPdf:false});
+  if(anyCandidPhoto)out.push({k:'cphoto',l:'Candid photos',o:'Sumenth',due:l?l+14*DAYMS:null,gate:1,clientPdf:true});
+  if(anyTradPhoto)out.push({k:'tphoto',l:'Traditional photos',o:'Team',due:l?l+14*DAYMS:null,gate:1,clientPdf:true});
+  if(anyCandidVideo)out.push({k:'teaser',l:'Candid teaser',o:'Team',due:l?l+90*DAYMS:null,gate:1,clientPdf:true});
+  if(anyCandidVideo)out.push({k:'cfilm',l:'Candid film',o:'Team',due:l?l+90*DAYMS:null,gate:1,clientPdf:true});
+  if(anyTradVideo)out.push({k:'tvideo',l:'Traditional video',o:'Team',due:l?l+90*DAYMS:null,gate:1,clientPdf:true});
   if(p.deliv&&p.deliv.album){
     const n=+p.albumCount>0?+p.albumCount:1;
     const suffix=n>1?` \u00d7${n}`:'';
-    out.push({k:'albumsel',l:'Album selection'+suffix,o:'Client',client:1});
-    out.push({k:'albumdes',l:'Album design'+suffix,o:'Sumenth'});
-    out.push({k:'albumappr',l:'Album approval'+suffix,o:'Client',client:1,gate:1});
+    out.push({k:'albumsel',l:'Album selection'+suffix,o:'Client',client:1,album:1,clientPdf:false});
+    out.push({k:'albumdes',l:'Album design'+suffix,o:'Sumenth',album:1,clientPdf:false});
+    out.push({k:'albumappr',l:'Album approval'+suffix,o:'Client',client:1,gate:1,album:1,clientPdf:false});
   }
-  return out;
+  const hidden=p.stageHidden||{};
+  const defaults=out.filter(s=>!hidden[s.k]);
+  const custom=(p.customStages||[]).map(x=>({
+    k:x.k,l:x.l,o:x.o||'Team',due:x.due?Date.parse(x.due):null,
+    custom:1,client:x.o==='Client'?1:0,clientPdf:x.clientPdf!==false
+  }));
+  return defaults.concat(custom);
 }
 const PRAISE=[
  (l,e)=>`${l} delivered ${e}. This is why they pay the premium.`,
@@ -1917,26 +1933,9 @@ function prodIssues(p,now){
   });
   return out;
 }
-function doubleBookings(){
-  const map={};
-  Object.values(prods).forEach(p=>{
-    (p.days||[]).forEach(d=>{
-      (d.roles||[]).forEach(r=>{
-        if(!r.person)return;
-        const k=d.date+'|'+r.person.trim().toLowerCase();
-        (map[k]=map[k]||new Set()).add(p.couple);
-      });
-    });
-  });
-  return Object.entries(map).filter(([k,s])=>s.size>1).map(([k,s])=>{
-    const parts=k.split('|');
-    return {sev:'r',t:`Crew clash: ${parts[1]} is on ${[...s].join(' and ')} on ${fmt(parts[0])}.`,key:k};
-  });
-}
-function prodSevRank(p,now,dbl){
+function prodSevRank(p,now){
   const iss=prodIssues(p,now);
-  const hasClash=dbl.some(x=>[...x.t.matchAll(/./g)].length&&x.t.includes(p.couple));
-  if(iss.some(i=>i.sev==='r')||hasClash)return 0;
+  if(iss.some(i=>i.sev==='r'))return 0;
   if(iss.length)return 1;
   return 2;
 }
@@ -1946,10 +1945,8 @@ function renderProd(){
   const el=document.getElementById('prodList');
   if(!el)return;
   const now=Date.now();
-  const dbl=doubleBookings();
-  const dblSet=new Set(dbl.map(x=>x.key));
   const list=Object.entries(prods).sort((a,b)=>{
-    const ra=prodSevRank(a[1],now,dbl),rb=prodSevRank(b[1],now,dbl);
+    const ra=prodSevRank(a[1],now),rb=prodSevRank(b[1],now);
     if(ra!==rb)return ra-rb;
     return (b[1].t||0)-(a[1].t||0);
   });
@@ -1957,11 +1954,11 @@ function renderProd(){
   if(cnt)cnt.textContent=list.length?list.length+' ACTIVE':'';
   if(!list.length){el.innerHTML='<div class="empty">No weddings in production yet. The next booked couple starts here.</div>';return;}
   el.innerHTML=list.map(([id,p])=>{
-    const rank=prodSevRank(p,now,dbl);
+    const rank=prodSevRank(p,now);
     const dot=rank===0?'r':rank===1?'a':'g';
     if(openProdId!==id)
       return `<div class="p-row" onclick="openProd('${id}')"><span class="nm">${esc(p.couple)}</span><span style="display:flex;align-items:center"><i class="dot ${dot}"></i><span style="color:var(--ink-soft);font-size:13px">▸</span></span></div>`;
-    return prodCard(id,p,now,dblSet,dot);
+    return prodCard(id,p,now,dot);
   }).join('');
   if(pdayFor&&prods[pdayFor]&&openProdId===pdayFor){
     const cal=document.getElementById('pdayCal');
@@ -1973,12 +1970,11 @@ function addDayMode(id){
   pdayFor=pdayFor===id?null:id;
   renderProd();
 }
-function dayCard(id,p,d,di,now,dblSet){
+function dayCard(id,p,d,di,now){
   const al=dayDataAlarm(d,now);
   const {total,ok,all}=dayCardsOk(d);
   const evs=d.events||[];
   const rolesHtml=(d.roles||[]).map((r,ri)=>{
-    const clash=r.person&&dblSet.has(d.date+'|'+r.person.trim().toLowerCase());
     const cards=(r.cards||[]).map((c,ci)=>{
       const okc=c.a&&c.b&&c.v;
       return `<span class="cardc ${okc?'okc':''}">Card-${ci+1}
@@ -1993,7 +1989,6 @@ function dayCard(id,p,d,di,now,dblSet){
         <input class="person" list="dlPeople" type="text" placeholder="Who shot" value="${esc(r.person||'')}" onchange="rSet('${id}',${di},${ri},'person',this.value)">
         <input class="payin" type="number" placeholder="₹ pay" value="${r.pay||''}" onchange="rSet('${id}',${di},${ri},'pay',this.value)">
         <button class="xs" onclick="rDel('${id}',${di},${ri})">×</button>
-        ${clash?'<span class="st-pill LOST" style="margin-left:0;vertical-align:0">CLASH</span>':''}
       </div>
       <div class="cardchips">${NODATA.has(r.role)?'<span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft)">No data to copy</span>':cards+`<button class="xs" style="border:1px dashed var(--line);border-radius:6px;padding:3px 8px;font-size:10px;font-family:var(--mono)" onclick="cAdd('${id}',${di},${ri})">+ CARD</button>`}</div>
     </div>`;
@@ -2022,8 +2017,8 @@ function dayCard(id,p,d,di,now,dblSet){
     <div class="fmt-row"><input type="checkbox" ${d.fmt?'checked':''} ${all?'':'disabled'} onchange="dSet('${id}',${di},'fmt',this.checked)"><span style="${all?'':'color:var(--ink-soft)'}">Cards formatted${all?'':' — locked until every card is on both disks and verified'}</span>${total?`<span class="sdue ${all?'ok':'warn'}" style="margin-left:auto">${ok}/${total} CARDS SAFE</span>`:''}</div>
   </div>`;
 }
-function prodCard(id,p,now,dblSet,dot){
-  const daysHtml=(p.days||[]).map((d,di)=>dayCard(id,p,d,di,now,dblSet)).join('');
+function prodCard(id,p,now,dot){
+  const daysHtml=(p.days||[]).map((d,di)=>dayCard(id,p,d,di,now)).join('');
   const stages=stagesFor(p);
   const stagesHtml=stages.map((s,idx)=>{
     const st=(p.stages||{})[s.k]||{};
@@ -2032,7 +2027,7 @@ function prodCard(id,p,now,dblSet,dot){
     if(st.done)right=`<span class="sdue ok">DONE${st.at?' · '+esc(st.at):''}</span>`;
     else if(s.client)right=`<span class="sdue cl">WAITING ${clientWaitDays(p,stages,idx,now)}D</span>`;
     else right=`<span class="sdue ${ss.cls}">${ss.txt}</span>`;
-    return `<div class="stage-row"><span class="stage-l"><input type="checkbox" ${st.done?'checked':''} onchange="stageTog('${id}','${s.k}',this.checked)"><span class="${s.client?'cw':''}">${s.l} — ${s.client?'client':s.o}</span></span>${right}</div>`;
+    return `<div class="stage-row"><span class="stage-l"><input type="checkbox" ${st.done?'checked':''} onchange="stageTog('${id}','${s.k}',this.checked)"><span class="${s.client?'cw':''}">${esc(s.l)} — ${esc(s.client?'client':s.o)}</span></span><span class="stage-r">${right}<button class="stage-del" onclick="stageDel('${id}','${s.k}')" title="Remove this deliverable">×</button></span></div>`;
   }).join('');
   const cost=crewCost(p);
   const gbTot=(p.days||[]).reduce((t,d)=>t+(+d.gb||0),0);
@@ -2062,6 +2057,13 @@ function prodCard(id,p,now,dblSet,dot){
     <div id="pdayCal" style="margin-top:8px;max-width:340px"></div>
     <div class="p-sec">Pipeline</div>
     ${stagesHtml||'<div style="font-size:13px;color:var(--ink-soft)">No deliverables yet — they appear as you log who shot each day.</div>'}
+    <button class="btn-mini" style="margin-top:10px;background:transparent;border:1px dashed var(--line);color:var(--ink-soft)" onclick="stageAddToggle('${id}')">${stageAddFor===id?'Cancel':'+ Deliverable'}</button>
+    ${stageAddFor===id?`<div class="stage-add-form">
+      <input id="stageName-${id}" type="text" placeholder="Deliverable name">
+      <select id="stageOwner-${id}"><option>Sumenth</option><option>Mahima</option><option>Team</option><option>Client</option></select>
+      <input id="stageDue-${id}" type="date" title="Intended delivery date">
+      <div class="stage-add-foot"><label class="stage-pdf-check"><input id="stagePdf-${id}" type="checkbox" checked> Include in client delivery PDF</label><button class="btn-mini" onclick="stageAddSave('${id}')">Save deliverable</button></div>
+    </div>`:''}
     ${p.deliv&&p.deliv.album?`<div style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12.5px;color:var(--ink-soft)"><span>Albums</span><input type="number" min="1" value="${+p.albumCount>0?+p.albumCount:1}" onchange="albumCountSet('${id}',this.value)" style="width:60px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;text-align:right;background:#fff;color:var(--ink)"></div>`:''}
     <div class="p-sec">Crew cost — ${inr(cost.total)}</div>
     ${cost.total>0||(p.days||[]).some(d=>(d.roles||[]).length)?`
@@ -2070,8 +2072,8 @@ function prodCard(id,p,now,dblSet,dot){
     ${costExp('day','By day',(p.days||[]).length+' day'+((p.days||[]).length!==1?'s':''),dayRows)}
     <div style="margin-top:9px">${pkgHtml}</div>
     `:'<div style="font-size:13px;color:var(--ink-soft)">Crew costs appear as you log ₹ pay against who shot each day.</div>'}
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px">
-      <button class="xs" onclick="exportCouplePDF('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">EXPORT PDF</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:15px">
+      <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="xs" onclick="exportCouplePDF('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">FINANCE PDF</button><button class="xs" onclick="exportDeliveryPDF('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">DELIVERY PDF</button></span>
       <button class="xs" id="pdel-${id}" onclick="armDelProd('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">DELETE</button>
     </div>
   </div>`;
@@ -2213,6 +2215,37 @@ function stageTog(id,k,checked){
   }
   writeProd(id);
 }
+function stageAddToggle(id){
+  stageAddFor=stageAddFor===id?null:id;
+  renderProd();
+}
+function stageAddSave(id){
+  const p=prods[id];if(!p)return;
+  const name=(document.getElementById('stageName-'+id).value||'').trim();
+  const owner=document.getElementById('stageOwner-'+id).value||'Team';
+  const due=document.getElementById('stageDue-'+id).value||'';
+  const clientPdf=document.getElementById('stagePdf-'+id).checked;
+  if(!name){toast('Enter a deliverable name.');return;}
+  p.customStages=p.customStages||[];
+  p.customStages.push({k:uid('s'),l:name,o:owner,due,clientPdf});
+  stageAddFor=null;
+  writeProd(id);
+  log(`added deliverable ${name} for ${p.couple}`);
+  toast('Deliverable added.');
+}
+function stageDel(id,k){
+  const p=prods[id];if(!p)return;
+  const s=stagesFor(p).find(x=>x.k===k);if(!s)return;
+  if(s.custom)p.customStages=(p.customStages||[]).filter(x=>x.k!==k);
+  else{
+    p.stageHidden=p.stageHidden||{};
+    p.stageHidden[k]=true;
+  }
+  if(p.stages)delete p.stages[k];
+  writeProd(id);
+  log(`removed deliverable ${s.l} from ${p.couple}`);
+  toast('Deliverable removed.');
+}
 let delArmId=null,delArmT=null;
 function armDelProd(id){
   if(delArmId===id){
@@ -2239,7 +2272,6 @@ function renderProdAlerts(){
   const now=Date.now();
   let all=[];
   Object.values(prods).forEach(p=>{all=all.concat(prodIssues(p,now));});
-  all=all.concat(doubleBookings());
   all.sort((a,b)=>(a.sev==='r'?0:1)-(b.sev==='r'?0:1));
   el.innerHTML=all.length?all.map(x=>`<div class="alert ${x.sev}">${esc(x.t)}</div>`).join(''):'<div class="empty">Nothing needs attention.</div>';
   const sec=document.getElementById('alertSec');
@@ -2370,6 +2402,42 @@ function openPrint(title,inner){
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>${PDF_CSS}</head><body>${inner}</body></html>`);
   w.document.close();
   setTimeout(()=>{w.focus();w.print();},350);
+}
+function fullDate(v){
+  if(!v)return '—';
+  const d=new Date(v);
+  if(isNaN(d))return '—';
+  return d.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+}
+function exportDeliveryPDF(id){
+  const p=prods[id];if(!p)return;
+  const stages=stagesFor(p).filter(s=>s.clientPdf&&!s.album);
+  if(!stages.length){toast('No client deliverables are included in this PDF.');return;}
+  const pending=stages.filter(s=>!((p.stages||{})[s.k]||{}).done);
+  if(pending.length){toast('Complete all client deliverables before exporting.');return;}
+  const intended=stages.map(s=>s.due||0).filter(Boolean);
+  const actual=stages.map(s=>+(((p.stages||{})[s.k]||{}).doneT)||0).filter(Boolean);
+  const intendedFinal=intended.length?Math.max(...intended):null;
+  const actualFinal=actual.length?Math.max(...actual):null;
+  const days=(p.days||[]).slice().sort((a,b)=>a.date<b.date?-1:1);
+  const eventRows=days.map(d=>`<tr><td>${esc(fullDate(d.date))}</td><td>${esc((d.events||[]).join(' + ')||'Wedding celebration')}</td></tr>`).join()||'<tr><td colspan="2" class="muted">Wedding dates were not recorded.</td></tr>';
+  const deliveryRows=stages.map(s=>{
+    const st=(p.stages||{})[s.k]||{};
+    return `<tr><td>${esc(s.l)}</td><td>${esc(fullDate(s.due))}</td><td>${esc(fullDate(st.doneT))}</td></tr>`;
+  }).join('');
+  const inner=`
+    <div class="brand">Tale of Two Weddings</div>
+    <h1>Delivery summary</h1>
+    <div class="sub">Prepared for ${esc(p.couple)}</div>
+    <div class="band"><div class="b"><div class="k">Intended wedding delivery date</div><div class="v">${esc(fullDate(intendedFinal))}</div></div><div class="b"><div class="k">Actual delivery date</div><div class="v">${esc(fullDate(actualFinal))}</div></div></div>
+    <h2>Wedding dates</h2>
+    <table><tr><th>Date</th><th>Celebration</th></tr>${eventRows}</table>
+    <h2>Completed deliverables</h2>
+    <table><tr><th>Deliverable</th><th>Intended delivery</th><th>Actual delivery</th></tr>${deliveryRows}</table>
+    <p style="margin-top:28px;line-height:1.7">All digital deliverables listed above have been completed and shared.</p>
+    <p style="line-height:1.7">Thank you for trusting Tale of Two Weddings with your celebration.</p>
+    <div class="sub" style="margin-top:28px">Generated ${esc(fullDate(Date.now()))}</div>`;
+  openPrint(`TOTW — Delivery summary — ${p.couple}`,inner);
 }
 function exportCouplePDF(id){
   const p=prods[id];if(!p)return;
