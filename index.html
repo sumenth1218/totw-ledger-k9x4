@@ -247,9 +247,9 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .cl-date-edit h3{font-size:14px;font-weight:600;margin-bottom:9px}
 .cl-date-row{display:grid;grid-template-columns:minmax(140px,190px) 1fr auto;gap:8px;align-items:center;margin-top:7px}
 .cl-date-row input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font-family:var(--mono);font-size:11.5px}
-.cl-date-row span{font-size:12px;color:var(--ink-soft);min-width:0}
+.cl-date-row input.cl-event-in{font-family:var(--body);font-size:12.5px}
 .cl-date-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
-@media(max-width:650px){.cl-date-row{grid-template-columns:1fr auto}.cl-date-row span{grid-column:1/-1;grid-row:2}.cl-row{flex-wrap:wrap}.cl-row small{order:4;flex-basis:100%;text-align:left}}
+@media(max-width:650px){.cl-date-row{grid-template-columns:1fr auto}.cl-date-row input.cl-event-in{grid-column:1/2}.cl-row{flex-wrap:wrap}.cl-row small{order:4;flex-basis:100%;text-align:left}}
 .snooze{background:var(--amber);border:none;color:#FFF8EA;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:7px 13px;border-radius:99px;cursor:pointer;margin-top:9px}
 .snooze:hover{background:#96691F}
 .st-pill{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;padding:3px 9px;border-radius:99px;margin-left:7px;vertical-align:2px;font-weight:500}
@@ -1478,9 +1478,7 @@ function renderClosed(closed){
     const when=x.closedAt?new Date(x.closedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'';
     if(bookedDateEdit&&bookedDateEdit.id===id){
       const rows=bookedDateEdit.rows.map((r,i)=>{
-        const evs=(x.dateEvents&&x.dateEvents[r.old])||[];
-        const label=evs.length?evs.join(' + '):(x.type||'Wedding');
-        return `<div class="cl-date-row"><input type="date" value="${esc(r.date||'')}" onchange="bookedDateSet(${i},this.value)"><span>${esc(label)}${r.old&&r.old!==r.date?' · moved from '+fmt(r.old):''}</span><button class="cl-btn" onclick="bookedDateRemove(${i})" title="Remove date">×</button></div>`;
+        return `<div class="cl-date-row"><input type="date" value="${esc(r.date||'')}" onchange="bookedDateSet(${i},this.value)"><input class="cl-event-in" type="text" value="${esc(r.event||'')}" placeholder="Event name" oninput="bookedEventSet(${i},this.value)" title="Use + between multiple events"><button class="cl-btn" onclick="bookedDateRemove(${i})" title="Remove date">×</button></div>`;
       }).join('');
       return `<div class="cl-date-edit"><h3>${esc(x.name)} · Edit confirmed dates</h3>${rows||'<div style="font-size:12px;color:var(--ink-soft)">No dates. Add one below.</div>'}<div class="cl-date-actions"><button class="cl-btn" onclick="bookedDateAdd()">+ Date</button><button class="btn-mini" onclick="saveBookedDates()">Save dates</button><button class="cl-btn" onclick="cancelBookedDates()">Cancel</button></div></div>`;
     }
@@ -1495,16 +1493,24 @@ function renderClosed(closed){
 }
 function startBookedDateEdit(id){
   const x=enquiries[id];if(!x||x.status!=='BOOKED')return;
-  bookedDateEdit={id,rows:(x.dates||[]).slice().sort().map(d=>({old:d,date:d}))};
+  bookedDateEdit={id,rows:(x.dates||[]).slice().sort().map(d=>{
+    const evs=(x.dateEvents&&x.dateEvents[d])||[];
+    return {old:d,date:d,event:evs.length?evs.join(' + '):(x.type||'Wedding')};
+  })};
   renderEnquiries();
 }
 function bookedDateSet(i,v){
   if(!bookedDateEdit||!bookedDateEdit.rows[i])return;
   bookedDateEdit.rows[i].date=v;
 }
+function bookedEventSet(i,v){
+  if(!bookedDateEdit||!bookedDateEdit.rows[i])return;
+  bookedDateEdit.rows[i].event=v;
+}
 function bookedDateAdd(){
   if(!bookedDateEdit)return;
-  bookedDateEdit.rows.push({old:'',date:''});
+  const x=enquiries[bookedDateEdit.id];
+  bookedDateEdit.rows.push({old:'',date:'',event:(x&&x.type)||'Wedding'});
   renderEnquiries();
 }
 function bookedDateRemove(i){
@@ -1520,16 +1526,17 @@ function saveBookedDates(){
   if(!bookedDateEdit)return;
   const id=bookedDateEdit.id,x=enquiries[id];
   if(!x||x.status!=='BOOKED'){bookedDateEdit=null;renderEnquiries();return;}
-  const rows=bookedDateEdit.rows.map(r=>({old:r.old||'',date:r.date||''}));
+  const rows=bookedDateEdit.rows.map(r=>({old:r.old||'',date:r.date||'',event:(r.event||'').trim()}));
   if(!rows.length){toast('Keep at least one confirmed date.');return;}
   if(rows.some(r=>!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||isNaN(Date.parse(r.date)))){toast('Enter a valid date on every row.');return;}
+  if(rows.some(r=>!r.event)){toast('Enter an event name for every confirmed date.');return;}
   const newDates=rows.map(r=>r.date);
   if(new Set(newDates).size!==newDates.length){toast('The same date is entered more than once.');return;}
   const oldDates=(x.dates||[]).slice();
   const oldSet=new Set(oldDates);
   const nextEvents={};
   rows.forEach(r=>{
-    const evs=(x.dateEvents&&r.old&&x.dateEvents[r.old])||[];
+    const evs=r.event.split(' + ').map(e=>e.trim()).filter(Boolean);
     if(evs.length)nextEvents[r.date]=[...new Set([...(nextEvents[r.date]||[]),...evs])];
   });
   const dayMap=new Map(rows.filter(r=>r.old).map(r=>[r.old,r.date]));
@@ -1541,7 +1548,7 @@ function saveBookedDates(){
     (p.days||[]).forEach(d=>{
       if(!oldSet.has(d.date)){revised.push(d);return;}
       const nd=dayMap.get(d.date);
-      if(nd)revised.push({...d,date:nd});
+      if(nd)revised.push({...d,date:nd,events:(nextEvents[nd]||[]).slice()});
     });
     rows.forEach(r=>{
       if(!revised.some(d=>d.date===r.date))revised.push({date:r.date,events:(nextEvents[r.date]||[]).slice(),gb:0,roles:[],fmt:false});
