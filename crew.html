@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F6F3EC">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="TOTW Crew">
+<title>TOTW Crew</title>
+<link rel="manifest" href="crew-manifest.webmanifest">
+<link rel="icon" href="crew-icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="crew-icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F3EC;--card:#FFFDF8;--ink:#171713;--soft:#706C62;--line:#DDD8CC;
+  --gold:#9B722A;--gold-soft:#F1E8D6;--leaf:#536B52;--leaf-soft:#E5EBE2;
+  --red:#A33B2C;--red-soft:#F4DFDA;--shadow:0 18px 50px rgba(31,27,20,.08);
+  --display:'Cormorant Garamond',Georgia,serif;--body:'Inter',-apple-system,sans-serif;--mono:'Spline Sans Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;background:var(--paper)}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button,input,select{font:inherit}
+button{touch-action:manipulation}
+.shell{width:min(100%,520px);margin:0 auto;min-height:100vh;padding:22px 18px 42px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}
+.brand{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);line-height:1.5}
+.user-pill{border:1px solid var(--line);background:rgba(255,255,255,.5);border-radius:999px;padding:7px 10px;font-family:var(--mono);font-size:9px;color:var(--soft);max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.screen{display:none}.screen.on{display:block;animation:rise .28s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
+h1{font-family:var(--display);font-size:42px;line-height:.98;font-weight:600;letter-spacing:-.02em}
+h2{font-family:var(--display);font-size:29px;font-weight:600;line-height:1.05}
+.lead{font-size:13.5px;color:var(--soft);line-height:1.65;margin-top:11px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+.card+.card{margin-top:12px}
+.auth-card{margin-top:24px;padding:24px}
+.primary,.secondary,.quiet,.danger{width:100%;border-radius:12px;padding:14px 16px;border:0;cursor:pointer;font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;transition:transform .15s,opacity .15s,background .15s}
+.primary{background:var(--ink);color:#fff}.primary:active,.secondary:active{transform:scale(.985)}
+.primary:disabled,.secondary:disabled{opacity:.42;cursor:default}
+.secondary{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.quiet{background:var(--gold-soft);color:#76551E}
+.danger{background:var(--red-soft);color:var(--red)}
+.field{margin-top:15px}.field label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--soft);margin-bottom:6px}
+.field input,.field select{width:100%;border:1px solid var(--line);background:#fff;border-radius:11px;padding:12px 13px;color:var(--ink);outline:none}
+.field input:focus,.field select:focus{border-color:var(--gold)}
+.error{display:none;background:var(--red-soft);color:var(--red);border-radius:11px;padding:11px 13px;font-size:12.5px;line-height:1.45;margin-top:13px}.error.on{display:block}
+.dashboard-head{margin-bottom:20px}
+.shoot-list{display:grid;gap:11px}.shoot-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;cursor:pointer;box-shadow:0 8px 28px rgba(31,27,20,.05);transition:transform .15s,border-color .15s}
+.shoot-card:active{transform:scale(.99)}.shoot-card .date{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.shoot-card h3{font-family:var(--display);font-size:25px;font-weight:600;margin-top:4px}.shoot-card p{font-size:12.5px;color:var(--soft);margin-top:3px}
+.status{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:999px;margin-top:12px;background:#EEEAE2;color:var(--soft)}
+.status:before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}.status.ok{background:var(--leaf-soft);color:var(--leaf)}.status.late{background:var(--red-soft);color:var(--red)}
+.event-head{margin-bottom:18px}.event-head .back{border:0;background:none;color:var(--soft);font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:0 0 16px;cursor:pointer}
+.event-sub{font-family:var(--display);font-size:20px;color:var(--gold);margin-top:5px}
+.detail-grid{display:grid;gap:0}.detail-row{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid var(--line)}.detail-row:last-child{border-bottom:0}
+.ico{width:34px;height:34px;border-radius:50%;background:var(--gold-soft);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:15px}
+.detail-row small{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin-bottom:2px}.detail-row b{font-size:13px;font-weight:600}.detail-row em{font-style:normal;font-size:12px;color:var(--soft)}
+.link-button{border:0;background:none;color:var(--gold);font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.section-title{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--soft);margin:24px 2px 9px}
+.assignment{display:flex;align-items:center;gap:13px}.avatar{width:44px;height:44px;border-radius:50%;background:var(--gold-soft);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:21px;font-weight:600;flex:none}.assignment b{display:block;font-size:14px}.assignment span{font-size:12px;color:var(--soft)}
+.team-row{display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.team-row:last-child{border-bottom:0}.team-row .avatar{width:36px;height:36px;font-size:16px}.team-row b{font-size:12.5px;display:block}.team-row small{font-size:10.5px;color:var(--soft)}
+.contact-actions{display:flex;gap:7px}.round-link{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold);text-decoration:none;font-size:13px}
+.action-stack{display:grid;gap:9px;margin-top:14px}
+.confirm-note{text-align:center;font-size:11px;color:var(--soft);margin-top:9px}
+.success{background:linear-gradient(145deg,#61785F,#455C46);color:#fff;border:0;text-align:center;padding:25px 20px}.success .mark{width:55px;height:55px;border:1.5px solid rgba(255,255,255,.8);border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:25px}.success h2{font-family:var(--body);font-size:22px;font-weight:500}.success p{font-size:12px;color:rgba(255,255,255,.78);margin-top:7px}
+.late-card{background:var(--red-soft);border-color:#E0B9B1;color:var(--red);text-align:center}.late-card h2{font-family:var(--body);font-size:20px}.late-card p{font-size:12.5px;margin-top:8px;line-height:1.5}
+.resource{display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:center}.resource+.resource{margin-top:10px}.resource .ricon{width:46px;height:46px;border-radius:50%;background:var(--leaf-soft);color:var(--leaf);display:flex;align-items:center;justify-content:center;font-size:21px}.resource b{display:block;font-size:13.5px}.resource small{font-size:11px;color:var(--soft)}
+.locked{opacity:.55}.locked .ricon{background:#EEEAE2;color:var(--soft)}
+.checklist{display:grid;gap:8px;margin-top:10px}.shot{display:flex;align-items:flex-start;gap:11px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer}.shot .box{width:21px;height:21px;border:1.5px solid #BDB7AA;border-radius:6px;flex:none;position:relative}.shot span:last-child{font-size:12.5px;line-height:1.45}.shot.on{background:var(--leaf-soft);border-color:#BFCDBB}.shot.on .box{background:var(--leaf);border-color:var(--leaf)}.shot.on .box:after{content:'';position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(43deg)}
+.progress{height:5px;background:#EAE6DE;border-radius:99px;overflow:hidden;margin-top:11px}.progress i{display:block;height:100%;background:var(--leaf);width:0;transition:width .2s}.progress-label{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;color:var(--soft);margin-top:7px;text-align:right}
+.loading{text-align:center;padding:54px 10px;color:var(--soft);font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.empty{text-align:center;padding:28px 16px;color:var(--soft);font-family:var(--display);font-size:18px;font-style:italic}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,18px);background:var(--ink);color:#fff;padding:11px 15px;border-radius:10px;font-size:11.5px;opacity:0;pointer-events:none;transition:.22s;z-index:20;max-width:calc(100% - 34px);text-align:center}.toast.on{opacity:1;transform:translate(-50%,0)}
+.signout{margin-top:28px;border:0;background:none;color:var(--soft);font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;width:100%;padding:10px}
+@media(max-width:370px){.shell{padding-left:13px;padding-right:13px}h1{font-size:38px}.detail-row{grid-template-columns:34px 1fr}.detail-row>a{grid-column:2}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="top">
+    <div class="brand">Tale of Two Weddings<br>Crew</div>
+    <button class="user-pill" id="userPill" style="display:none" onclick="signOutCrew()"></button>
+  </div>
+
+  <section class="screen on" id="loadingScreen"><div class="loading">Preparing your crew space…</div></section>
+
+  <section class="screen" id="loginScreen">
+    <div class="eyebrow">Private crew access</div>
+    <h1>Your shoots,<br>in one place.</h1>
+    <p class="lead">Sign in once to see your assignments, venue details, team contacts and GPS check-in.</p>
+    <div class="card auth-card">
+      <button class="primary" id="googleBtn" onclick="signInCrew()">Continue with Google</button>
+      <div class="error" id="loginError"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="profileScreen">
+    <div class="eyebrow">One-time setup</div>
+    <h1>Create your<br>crew profile.</h1>
+    <p class="lead">Use the same name and number you share with the studio. This profile will be used for all future assignments.</p>
+    <div class="card auth-card">
+      <div class="field"><label>Your name</label><input id="profileName" autocomplete="name" placeholder="Full name"></div>
+      <div class="field"><label>Contact number</label><input id="profilePhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="10-digit mobile number"></div>
+      <div class="field"><label>Default role</label><select id="profileRole">
+        <option>Candid Photographer</option><option>Candid Cinematographer</option><option>Traditional Photographer</option><option>Traditional Videographer</option><option>Drone Operator</option><option>LED Assistant</option><option>Other</option>
+      </select></div>
+      <button class="primary" style="margin-top:18px" onclick="saveProfile()">Save profile</button>
+      <div class="error" id="profileError"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="dashboardScreen">
+    <div class="dashboard-head"><div class="eyebrow">Upcoming assignments</div><h1 id="helloTitle">Your shoots.</h1><p class="lead">Open an assignment to confirm the reporting time and venue.</p></div>
+    <div class="shoot-list" id="shootList"></div>
+    <button class="signout" onclick="signOutCrew()">Sign out</button>
+  </section>
+
+  <section class="screen" id="eventScreen">
+    <div class="event-head"><button class="back" onclick="showDashboard()">‹ All assignments</button><div class="eyebrow" id="eventDate"></div><h1 id="eventCouple"></h1><div class="event-sub" id="eventName"></div></div>
+    <div id="eventBody"></div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+const FIREBASE={
+  apiKey:"AIzaSyCV14o1M9eUANLRxG_JrDZH2aGfqY3kjA4",authDomain:"tot-ledger.firebaseapp.com",
+  databaseURL:"https://tot-ledger-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"tot-ledger",
+  storageBucket:"tot-ledger.firebasestorage.app",messagingSenderId:"595678125258",appId:"1:595678125258:web:01fef3d4661b6f52346833"
+};
+const DEFAULT_SHOTS={
+ haldi:{traditional:["Wide shot of the haldi setup before guests arrive","Parents applying haldi first (formal frame)","Group shot of all family members present","Close-up of the haldi thali and props","Bride/groom solo portrait with haldi on face and hands"],candid:["Reaction shots as haldi is applied (laughing, flinching, crying)","Siblings and cousins smearing haldi playfully","Someone getting ambushed with a haldi handful","Candid mother-daughter or father-son moment","Details: haldi-covered hands, petals, marigold garlands"]},
+ mehndi:{traditional:["Wide of the mehndi setup and seating","Artist's hands applying the design (macro)","Finished mehndi — both hands, both feet","Family group photo","Bride solo portrait showing full mehndi"],candid:["Bride's face mid-application (boredom, excitement, chatting)","Friends dancing or singing in the background","Guests showing off their own mehndi","Grandparents watching from the side","The groom's name hidden in the design, if there is one"]},
+ sangeet:{traditional:["Stage and decor wide before the crowd fills in","Each performance group, posed after their act","Couple's entry","Family dance formal frame","Couple portrait against the stage backdrop"],candid:["Mid-dance action, unscripted joining-in moments","Someone missing a step and laughing about it","Couple reacting to performances from their seats","Backstage nerves before a performance","Kids dancing at the edge of the floor"]},
+ ceremony:{traditional:["Mandap wide shot before the couple arrives","Baraat / entry formal sequence","Jaimala","Kanyadaan","Saptapadi / pheras","Sindoor","Mangalsutra","Priest and family during key rituals","Formal couple portrait post-ceremony","Full family group photo"],candid:["Bride's expression right before she is led in","Groom's reaction seeing the bride","Parents' faces during kanyadaan","Tears, laughter, or nerves during rituals","Guests reacting in real time","Mangalsutra close-up","Feet during pheras","Hands during rituals"]},
+ reception:{traditional:["Stage and decor wide before guests enter","Couple's grand entry","Formal portraits with each side of the family","Cake cutting / ring ceremony if included","Couple solo portraits on the stage"],candid:["Guests' reactions during the entry","First dance or impromptu dancing","Couple in conversation with guests","Kids running around, elders seated and observing","Final goodbye hugs and farewell moments"]}
+};
+const MN=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eventParam=new URLSearchParams(location.search).get('event')||'';
+let auth=null,db=null,user=null,profile=null,assignments={},events={},attendanceMap={},activeId='',activeEvent=null,attendance={},shotLists={},shotMoods={},items=[],attendanceWrite=Promise.resolve();
+
+function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id===id));window.scrollTo(0,0)}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.remove('on'),2800)}
+function showError(id,msg){const el=document.getElementById(id);el.textContent=msg;el.classList.add('on')}
+function initials(name){return String(name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
+function fmtDate(iso){if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);return `${MN[m-1]} ${d}, ${y}`}
+function fmtTime(t){if(!t)return '—';const[h,m]=t.split(':').map(Number),ap=h>=12?'PM':'AM';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`}
+function fmtClock(ms){if(!ms)return '—';return new Date(ms).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})}
+function teamType(role){const r=String(role||'').toLowerCase();if(r.includes('traditional'))return 'traditional';if(r.includes('candid'))return 'candid';return ''}
+function moodKey(name){return String(name||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_')}
+function phoneDigits(v){return String(v||'').replace(/\D/g,'')}
+function waPhone(v){const n=phoneDigits(v);return n.length===10?'91'+n:n}
+function distanceM(a,b,c,d){const R=6371000,p=x=>x*Math.PI/180,dp=p(c-a),dl=p(d-b),q=Math.sin(dp/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
+function durationText(start,end){if(!start||!end)return 'Working duration will appear once the actual shoot start is confirmed.';let m=Math.max(0,Math.round((end-start)/60000)),h=Math.floor(m/60);m%=60;return `Total shoot duration: ${h?`${h} hr${h===1?'':'s'} `:''}${m} min`;}
+
+function boot(){
+ try{firebase.initializeApp(FIREBASE);auth=firebase.auth();db=firebase.database()}catch(e){screen('loginScreen');showError('loginError','Could not connect. Reload and try again.');return}
+ auth.onAuthStateChanged(async u=>{
+   user=u||null;
+   if(!u){document.getElementById('userPill').style.display='none';screen('loginScreen');return}
+   document.getElementById('userPill').style.display='block';document.getElementById('userPill').textContent=u.email||'Signed in';
+   try{
+     const s=await db.ref('crewProfiles/'+u.uid).once('value');profile=s.val()||null;
+     if(!profile){document.getElementById('profileName').value=u.displayName||'';screen('profileScreen');return}
+     await loadDashboard();
+   }catch(e){screen('loginScreen');showError('loginError','Your crew access could not be loaded. Please try again.')}
+ });
+}
+function signInCrew(){
+ const b=document.getElementById('googleBtn');b.disabled=true;b.textContent='Signing in…';
+ const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
+ auth.signInWithPopup(p).catch(e=>{if(e.code==='auth/popup-blocked')return auth.signInWithRedirect(p);if(e.code!=='auth/popup-closed-by-user')showError('loginError','Google sign-in could not be completed.');}).finally(()=>{b.disabled=false;b.textContent='Continue with Google'});
+}
+function signOutCrew(){auth.signOut().then(()=>location.href='crew.html')}
+async function saveProfile(){
+ const name=document.getElementById('profileName').value.trim(),phone=phoneDigits(document.getElementById('profilePhone').value),role=document.getElementById('profileRole').value;
+ if(!name||phone.length<10){showError('profileError','Please enter your name and a valid mobile number.');return}
+ profile={name,phone,role,email:user.email||'',updatedAt:firebase.database.ServerValue.TIMESTAMP};
+ try{await db.ref('crewProfiles/'+user.uid).set(profile);toast('Profile saved');await loadDashboard()}catch(e){showError('profileError','Could not save your profile. Please try again.')}
+}
+async function loadDashboard(){
+ screen('loadingScreen');
+ const [a,l,m]=await Promise.all([db.ref('crewCheckins/assignments/'+user.uid).once('value'),db.ref('shotLists').once('value'),db.ref('shotMoods').once('value')]);
+ assignments=a.val()||{};shotLists=l.val()||{};shotMoods=m.val()||{};events={};
+ const ids=Object.keys(assignments).filter(k=>assignments[k]===true);
+ await Promise.all(ids.map(async id=>{try{const [s,a]=await Promise.all([db.ref('crewCheckins/events/'+id).once('value'),db.ref(`crewCheckins/attendance/${id}/${user.uid}`).once('value')]);if(s.exists())events[id]=s.val();attendanceMap[id]=a.val()||{};}catch(e){}}));
+ document.getElementById('helloTitle').textContent=`Hello, ${(profile.name||'').split(' ')[0]||'there'}.`;
+ renderDashboard();
+ if(eventParam&&events[eventParam])openEvent(eventParam);else screen('dashboardScreen');
+}
+function renderDashboard(){
+ const el=document.getElementById('shootList');
+ const list=Object.entries(events).sort((a,b)=>`${a[1].date} ${a[1].scheduledStart}`.localeCompare(`${b[1].date} ${b[1].scheduledStart}`));
+ if(!list.length){el.innerHTML='<div class="card empty">No assignments have been shared with you yet.</div>';return}
+ el.innerHTML=list.map(([id,e])=>{
+   const at=attendanceMap[id]||{};
+   let label='Needs confirmation',cl='';if(at.checkedOutAt){label='Completed';cl='ok'}else if(at.checkedInAt){label=at.late?'Checked in late':'Checked in';cl=at.late?'late':'ok'}else if(at.confirmedAt){label='Confirmed';cl='ok'}
+   return `<article class="shoot-card" onclick="openEvent('${esc(id)}')"><div class="date">${esc(fmtDate(e.date))} · ${esc(fmtTime((e.crew||{})[user.uid]?.reportTime||e.reportingTime))}</div><h3>${esc(e.couple)}</h3><p>${esc(e.eventName)} · ${esc(e.venueName||'Venue')}</p><span class="status ${cl}">${label}</span></article>`;
+ }).join('');
+}
+function showDashboard(){activeId='';activeEvent=null;history.replaceState({},'',location.pathname);renderDashboard();screen('dashboardScreen')}
+async function openEvent(id){
+ if(!events[id])return;activeId=id;activeEvent=events[id];history.replaceState({},'',`?event=${encodeURIComponent(id)}`);screen('loadingScreen');
+ const s=await db.ref(`crewCheckins/attendance/${id}/${user.uid}`).once('value');attendance=s.val()||{};attendanceMap[id]=attendance;
+ document.getElementById('eventDate').textContent=fmtDate(activeEvent.date);document.getElementById('eventCouple').textContent=activeEvent.couple;document.getElementById('eventName').textContent=activeEvent.eventName;
+ renderEvent();screen('eventScreen');if(!attendance.openedAt)persistAttendance({openedAt:Date.now()}).catch(()=>{});
+}
+function currentCrew(){return (activeEvent.crew||{})[user.uid]||{name:profile.name,phone:profile.phone,role:profile.role,reportTime:activeEvent.reportingTime}}
+function detailCard(){
+ const me=currentCrew(),maps=activeEvent.mapsUrl||'#';
+ return `<div class="card"><div class="detail-grid">
+  <div class="detail-row"><div class="ico">◷</div><div><small>Reporting time</small><b>${esc(fmtTime(me.reportTime||activeEvent.reportingTime))}</b></div></div>
+  <div class="detail-row"><div class="ico">⌁</div><div><small>Scheduled shoot start</small><b>${esc(fmtTime(activeEvent.scheduledStart))}</b></div></div>
+  <div class="detail-row"><div class="ico">⌖</div><div><small>Venue</small><b>${esc(activeEvent.venueName||'Open location')}</b></div><a class="link-button" href="${esc(maps)}" target="_blank" rel="noopener">Directions</a></div>
+ </div></div>`;
+}
+function assignmentCards(){
+ const me=currentCrew(),team=Object.entries(activeEvent.crew||{});
+ const rows=team.map(([uid,x])=>{const ph=waPhone(x.phone);return `<div class="team-row"><div class="avatar">${esc(initials(x.name))}</div><div><b>${esc(x.name)}${uid===user.uid?' · You':''}</b><small>${esc(x.role)}</small></div><div class="contact-actions"><a class="round-link" aria-label="Call ${esc(x.name)}" href="tel:${esc(phoneDigits(x.phone))}">☎</a><a class="round-link" aria-label="WhatsApp ${esc(x.name)}" href="https://wa.me/${esc(ph)}" target="_blank" rel="noopener">◉</a></div></div>`}).join('');
+ return `<div class="section-title">Your assignment</div><div class="card assignment"><div class="avatar">${esc(initials(me.name))}</div><div><b>${esc(me.name)}</b><span>${esc(me.role)}</span></div></div><div class="section-title">Team for this event</div><div class="card">${rows}</div>`;
+}
+function renderEvent(){
+ const out=document.getElementById('eventBody');
+ let html=detailCard()+assignmentCards();
+ if(!attendance.confirmedAt){
+   html+=`<div class="action-stack"><button class="primary" onclick="confirmAssignment()">Confirm Assignment</button></div><p class="confirm-note">Confirm that you have seen the reporting time and venue.</p>`;
+ }else if(!attendance.checkedInAt){
+   html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" id="checkBtn" onclick="checkIn()">Check In</button></div><p class="confirm-note">GPS verification is available within 500 m of the venue.</p>`;
+   html+=lockedResources();
+ }else{
+   html+=attendanceStatus()+resources();
+ }
+ out.innerHTML=html;updateProgress();
+}
+function lockedResources(){return `<div class="section-title">Shoot resources</div><div class="card resource locked"><div class="ricon">▣</div><div><b>Shoot checklist</b><small>Available after venue check-in</small></div><span>🔒</span></div>`}
+function attendanceStatus(){
+ if(attendance.late)return `<div class="section-title">Arrival</div><div class="card late-card"><h2>You checked in ${Math.max(1,attendance.lateMinutes||1)} minutes late.</h2><p>Please be on time next time.</p></div>`;
+ return `<div class="section-title">Arrival</div><div class="card success"><div class="mark">✓</div><h2>Checked in — On time</h2><p>Check-in recorded at ${esc(fmtClock(attendance.checkedInAt))}</p></div>`;
+}
+function resources(){
+ const me=currentCrew(),team=teamType(me.role),type=String(activeEvent.checklistType||'').toLowerCase();
+ const remote=shotLists[type]&&shotLists[type][team],arr=Array.isArray(remote)?remote:(remote&&typeof remote==='object'?Object.values(remote):(DEFAULT_SHOTS[type]&&DEFAULT_SHOTS[type][team])||[]);
+ if(!items.length&&arr.length)items=arr.map(t=>({t,done:false}));
+ if(Array.isArray(attendance.checklistItems)&&attendance.checklistItems.length&&!items.length)items=attendance.checklistItems.map(x=>({t:x.t,done:!!x.done}));
+ const mood=team==='candid'&&shotMoods[moodKey(activeEvent.couple)]&&shotMoods[moodKey(activeEvent.couple)].url;
+ let html='<div class="section-title">Shoot resources</div>';
+ if(items.length)html+=`<div class="card"><div class="resource"><div class="ricon">▣</div><div><b>${esc(activeEvent.checklistType)} shoot checklist</b><small>Tick as you cover each shot</small></div></div><div class="progress"><i id="progressBar"></i></div><div class="progress-label" id="progressLabel"></div><div class="checklist">${items.map((x,i)=>`<div class="shot ${x.done?'on':''}" onclick="toggleShot(${i})"><span class="box"></span><span>${esc(x.t)}</span></div>`).join('')}</div></div>`;
+ if(mood)html+=`<a class="card resource" style="text-decoration:none;color:inherit;display:grid" href="${esc(mood)}" target="_blank" rel="noopener"><div class="ricon">P</div><div><b>Visual Reference Board</b><small>Open Pinterest board</small></div><span>›</span></a>`;
+ if(!items.length&&!mood)html+=`<div class="card empty">No shoot resources are assigned to your role.</div>`;
+ if(!attendance.checkedOutAt)html+=`<div class="action-stack"><button class="secondary" onclick="checkOut()">Check Out</button></div><p class="confirm-note">Working hours begin from the actual shoot start.</p>`;
+ else html+=`<div class="card" style="margin-top:12px;text-align:center"><div class="eyebrow">Checked out at ${esc(fmtClock(attendance.checkedOutAt))}</div><h2 style="font-size:24px">Coverage completed</h2><p class="lead" style="margin-top:7px">${esc(durationText(activeEvent.actualStartAt,attendance.checkedOutAt))}</p></div>`;
+ return html;
+}
+function updateProgress(){const b=document.getElementById('progressBar'),l=document.getElementById('progressLabel');if(!b||!l)return;const n=items.filter(x=>x.done).length;b.style.width=`${items.length?n/items.length*100:0}%`;l.textContent=`${n} of ${items.length} ticked`}
+function persistAttendance(next){attendance={...attendance,...next,updatedAt:Date.now()};attendanceMap[activeId]=attendance;const snapshot=JSON.parse(JSON.stringify(attendance));attendanceWrite=attendanceWrite.catch(()=>{}).then(()=>db.ref(`crewCheckins/attendance/${activeId}/${user.uid}`).set(snapshot));return attendanceWrite;}
+async function confirmAssignment(){try{await persistAttendance({confirmedAt:Date.now()});toast('Assignment confirmed');renderEvent()}catch(e){toast('Could not confirm. Please try again.') }}
+function checkIn(){
+ const b=document.getElementById('checkBtn');b.disabled=true;b.textContent='Checking location…';
+ if(!navigator.geolocation){toast('Location is not available on this phone.');b.disabled=false;b.textContent='Check In';return}
+ navigator.geolocation.getCurrentPosition(async pos=>{
+   const lat=pos.coords.latitude,lng=pos.coords.longitude,d=distanceM(lat,lng,+activeEvent.venueLat,+activeEvent.venueLng);
+   if(!isFinite(d)||d>500){toast(`You are ${d>1000?(d/1000).toFixed(1)+' km':Math.round(d)+' m'} from the venue. Check-in is available within 500 m.`);b.disabled=false;b.textContent='Check In';return}
+   const now=Date.now(),me=currentCrew(),deadline=new Date(`${activeEvent.date}T${me.reportTime||activeEvent.reportingTime}:00`).getTime(),late=now>deadline,lateMinutes=late?Math.max(1,Math.ceil((now-deadline)/60000)):0;
+   try{await persistAttendance({confirmedAt:attendance.confirmedAt||now,checkedInAt:now,checkinLat:lat,checkinLng:lng,gpsAccuracy:Math.round(pos.coords.accuracy||0),distanceM:Math.round(d),late,lateMinutes});toast(late?'Checked in late':'Checked in — on time');items=[];renderEvent()}catch(e){toast('Could not save check-in. Please try again.');b.disabled=false;b.textContent='Check In'}
+ },err=>{const msg=err.code===1?'Please allow location access to check in.':'Could not confirm your location. Please try again.';toast(msg);b.disabled=false;b.textContent='Check In'},{enableHighAccuracy:true,timeout:18000,maximumAge:0});
+}
+function toggleShot(i){if(attendance.checkedOutAt)return;items[i].done=!items[i].done;attendance.checklistItems=items;persistAttendance({checklistItems:items}).catch(()=>{});renderEvent()}
+async function checkOut(){
+ if(!confirm('Are you sure you have completed your coverage for this event?'))return;
+ const now=Date.now();
+ try{const latest=await db.ref(`crewCheckins/events/${activeId}`).once('value');if(latest.exists()){activeEvent=latest.val();events[activeId]=activeEvent;}await persistAttendance({checkedOutAt:now,checklistItems:items});await submitLegacyChecklist(now);toast('Checked out successfully');renderEvent()}catch(e){toast('Could not check out. Please try again.')}
+}
+async function submitLegacyChecklist(checkedOutAt){
+ const me=currentCrew(),team=teamType(me.role);if(!activeEvent.actualStartAt||!items.length||!team||!activeEvent.checklistType||activeEvent.checklistType==='None')return;
+ const tm=ms=>{const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${p(d.getHours())}:${p(d.getMinutes())}`;};
+ const sub={client:activeEvent.couple,eventType:activeEvent.checklistType,eventDate:activeEvent.date,team,crewName:me.name,startTime:tm(activeEvent.actualStartAt),endTime:tm(checkedOutAt),items:items.map(x=>({t:x.t,done:!!x.done})),tickedCount:items.filter(x=>x.done).length,totalCount:items.length,submittedAt:Date.now()};
+ try{await db.ref(`shotChecklists/ci_${activeId}_${user.uid}`).set(sub)}catch(e){}
+}
+boot();
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
