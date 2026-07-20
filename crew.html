@@ -10,8 +10,8 @@
 <meta name="apple-mobile-web-app-title" content="TOTW Crew">
 <title>TOTW Crew</title>
 <link rel="manifest" href="crew-manifest.webmanifest">
-<link rel="icon" href="crew-icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="crew-icon-180.png">
+<link rel="icon" href="totw-logo-square.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="totw-logo-square.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -28,7 +28,9 @@ button,input,select{font:inherit}
 button{touch-action:manipulation}
 .shell{width:min(100%,520px);margin:0 auto;min-height:100vh;padding:22px 18px 42px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}
-.brand{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);line-height:1.5}
+.brand{display:flex;align-items:center;gap:9px;color:var(--gold)}
+.brand img{display:block;width:118px;height:auto}
+.brand span{font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;border-left:1px solid var(--line);padding-left:9px}
 .user-pill{border:1px solid var(--line);background:rgba(255,255,255,.5);border-radius:999px;padding:7px 10px;font-family:var(--mono);font-size:9px;color:var(--soft);max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .screen{display:none}.screen.on{display:block;animation:rise .28s ease both}
 @keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
@@ -83,8 +85,8 @@ h2{font-family:var(--display);font-size:29px;font-weight:600;line-height:1.05}
 <body>
 <main class="shell">
   <div class="top">
-    <div class="brand">Tale of Two Weddings<br>Crew</div>
-    <button class="user-pill" id="userPill" style="display:none" onclick="signOutCrew()"></button>
+    <div class="brand"><img src="totw-logo-black.png" alt="Tale of Two Photos &amp; Films"><span>Crew</span></div>
+    <div class="user-pill" id="userPill" style="display:none"></div>
   </div>
 
   <section class="screen on" id="loadingScreen"><div class="loading">Preparing your crew space…</div></section>
@@ -112,6 +114,7 @@ h2{font-family:var(--display);font-size:29px;font-weight:600;line-height:1.05}
       <button class="primary" style="margin-top:18px" onclick="saveProfile()">Save profile</button>
       <div class="error" id="profileError"></div>
     </div>
+    <button class="signout" onclick="signOutCrew()">Use a different Google account</button>
   </section>
 
   <section class="screen" id="dashboardScreen">
@@ -162,8 +165,9 @@ function waPhone(v){const n=phoneDigits(v);return n.length===10?'91'+n:n}
 function distanceM(a,b,c,d){const R=6371000,p=x=>x*Math.PI/180,dp=p(c-a),dl=p(d-b),q=Math.sin(dp/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
 function durationText(start,end){if(!start||!end)return 'Working duration will appear once the actual shoot start is confirmed.';let m=Math.max(0,Math.round((end-start)/60000)),h=Math.floor(m/60);m%=60;return `Total shoot duration: ${h?`${h} hr${h===1?'':'s'} `:''}${m} min`;}
 
-function boot(){
+async function boot(){
  try{firebase.initializeApp(FIREBASE);auth=firebase.auth();db=firebase.database()}catch(e){screen('loginScreen');showError('loginError','Could not connect. Reload and try again.');return}
+ try{await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)}catch(e){}
  auth.onAuthStateChanged(async u=>{
    user=u||null;
    if(!u){document.getElementById('userPill').style.display='none';screen('loginScreen');return}
@@ -180,7 +184,10 @@ function signInCrew(){
  const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
  auth.signInWithPopup(p).catch(e=>{if(e.code==='auth/popup-blocked')return auth.signInWithRedirect(p);if(e.code!=='auth/popup-closed-by-user')showError('loginError','Google sign-in could not be completed.');}).finally(()=>{b.disabled=false;b.textContent='Continue with Google'});
 }
-function signOutCrew(){auth.signOut().then(()=>location.href='crew.html')}
+function signOutCrew(){
+ if(!confirm('Sign out of the Tale of Two crew app on this device?'))return;
+ auth.signOut().then(()=>location.href='crew.html');
+}
 async function saveProfile(){
  const name=document.getElementById('profileName').value.trim(),phone=phoneDigits(document.getElementById('profilePhone').value),role=document.getElementById('profileRole').value;
  if(!name||phone.length<10){showError('profileError','Please enter your name and a valid mobile number.');return}

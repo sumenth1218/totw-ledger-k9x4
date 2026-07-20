@@ -459,7 +459,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .ci-start{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;background:#F7F4ED;border-radius:8px;padding:11px;margin-top:12px}.ci-start label{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:4px}.ci-start input{padding:8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
 .ci-hours{font-family:var(--mono);font-size:9px;color:var(--ink-soft)}
 .ci-note{padding:12px 14px;border-radius:8px;background:var(--amber-soft);color:#76551E;font-size:12px;line-height:1.55;margin-bottom:14px}
-.ci-modal{position:fixed;inset:0;background:rgba(27,26,23,.48);display:none;align-items:flex-end;justify-content:center;z-index:90;padding:14px}.ci-modal.open{display:flex}.ci-modal-card{background:var(--card);border-radius:12px;width:min(100%,520px);padding:22px;max-height:86vh;overflow:auto}.ci-modal-card h3{font-family:var(--display);font-size:27px}.ci-profile-list{display:grid;gap:8px;margin-top:12px}.ci-profile{border:1px solid var(--line);border-radius:8px;padding:11px}.ci-profile b{font-size:13px}.ci-profile small{display:block;font-size:11px;color:var(--ink-soft);margin-top:2px}
+.ci-modal{position:fixed;inset:0;background:rgba(27,26,23,.48);display:none;align-items:flex-end;justify-content:center;z-index:90;padding:14px}.ci-modal.open{display:flex}.ci-modal-card{background:var(--card);border-radius:12px;width:min(100%,520px);padding:22px;max-height:86vh;overflow:auto}.ci-modal-card h3{font-family:var(--display);font-size:27px}.ci-profile-list{display:grid;gap:8px;margin-top:12px}.ci-profile{border:1px solid var(--line);border-radius:8px;padding:11px;display:flex;align-items:center;justify-content:space-between;gap:12px}.ci-profile-main{min-width:0}.ci-profile b{font-size:13px}.ci-profile small{display:block;font-size:11px;color:var(--ink-soft);margin-top:2px;overflow-wrap:anywhere}.ci-profile-delete{flex:none;border:1px solid #D9B8B1;background:var(--sindoor-soft);color:var(--sindoor);border-radius:6px;padding:7px 9px;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 @media(max-width:820px){
   .vtabs{overflow-x:auto;justify-content:flex-start}.vtabs button{font-size:9px;padding:9px 10px;letter-spacing:.04em;min-width:100px;flex:none}
   .plan-wrap{padding:0 14px}
@@ -3349,7 +3349,21 @@ function closeCrewProfiles(){document.getElementById('ciProfilesModal').classLis
 function renderCrewProfiles(){
   const el=document.getElementById('ciProfileList');if(!el)return;
   const list=Object.entries(crewProfiles||{}).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
-  el.innerHTML=list.length?list.map(([id,p])=>`<div class="ci-profile"><b>${esc(p.name||'Unnamed')}</b><small>${esc(p.role||'Role not set')} · ${esc(p.phone||'No phone')}</small><small>${esc(p.email||'')}</small></div>`).join(''):'<div class="empty">No crew members registered yet.</div>';
+  el.innerHTML=list.length?list.map(([id,p])=>`<div class="ci-profile"><div class="ci-profile-main"><b>${esc(p.name||'Unnamed')}</b><small>${esc(p.role||'Role not set')} · ${esc(p.phone||'No phone')}</small><small>${esc(p.email||'')}</small></div><button class="ci-profile-delete" onclick="deleteCrewProfile('${esc(id)}')">Delete</button></div>`).join(''):'<div class="empty">No crew members registered yet.</div>';
+}
+async function deleteCrewProfile(uid){
+  const p=crewProfiles[uid];if(!p)return;
+  if(!confirm(`Delete ${p.name||'this crew member'} from Registered Crew?\n\nThey will be removed from upcoming and uncompleted shoots. Genuine completed attendance will be preserved.`))return;
+  const updates={};updates[`crewProfiles/${uid}`]=null;
+  Object.entries(checkinEvents||{}).forEach(([eventId,e])=>{
+    if(!e||!e.crew||!e.crew[uid])return;
+    const a=(checkinAttendance[eventId]&&checkinAttendance[eventId][uid])||{},completed=!!(a.checkedInAt||a.checkedOutAt);
+    updates[`crewCheckins/assignments/${uid}/${eventId}`]=null;
+    if(!completed){updates[`crewCheckins/events/${eventId}/crew/${uid}`]=null;updates[`crewCheckins/attendance/${eventId}/${uid}`]=null;}
+  });
+  try{
+    await db.ref().update(updates);delete crewProfiles[uid];renderCrewProfiles();renderCheckinTeam();toast(`${p.name||'Crew member'} deleted.`);log(`deleted registered crew profile: ${p.name||uid}`);
+  }catch(err){toast('Could not delete this crew profile. Please try again.');}
 }
 function renderCheckinFormOptions(){
   const dl=document.getElementById('ciCouples');if(dl){const map=calendarCoupleMap();dl.innerHTML=Object.keys(map).sort().map(n=>`<option value="${esc(n)}">`).join('');}
@@ -3423,7 +3437,11 @@ function shareCheckinEvent(id,open=true){
 }
 function copyCheckinLink(id){copyText(ciCrewUrl(id),'Event link copied.');}
 async function deleteCheckinEvent(id){
-  const e=checkinEvents[id];if(!e||!confirm(`Delete the crew check-in event for ${e.couple} — ${e.eventName}?`))return;const updates={};updates[`crewCheckins/events/${id}`]=null;updates[`crewCheckins/attendance/${id}`]=null;Object.keys(e.crew||{}).forEach(uid=>updates[`crewCheckins/assignments/${uid}/${id}`]=null);try{await db.ref().update(updates);toast('Crew event deleted.')}catch(e){toast('Could not delete the event.');}
+  const e=checkinEvents[id];if(!e)return;
+  if(!confirm(`Permanently delete ${e.couple} — ${e.eventName}?\n\nThis removes the shoot link, assignments, confirmations, GPS check-ins, working hours and linked checklist submissions.`))return;
+  const updates={};updates[`crewCheckins/events/${id}`]=null;updates[`crewCheckins/attendance/${id}`]=null;
+  Object.keys(e.crew||{}).forEach(uid=>{updates[`crewCheckins/assignments/${uid}/${id}`]=null;updates[`shotChecklists/ci_${id}_${uid}`]=null;});
+  try{await db.ref().update(updates);delete checkinEvents[id];delete checkinAttendance[id];renderCheckinEvents();toast('Crew event and its test records were deleted.');log(`deleted crew check-in event: ${e.couple} — ${e.eventName}`);}catch(err){toast('Could not delete the event. Please try again.');}
 }
 function ciLocalValue(ms){if(!ms)return '';const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;}
 function ciStartNow(id){const input=document.getElementById('ciStart_'+id);if(input)input.value=ciLocalValue(Date.now());saveActualStart(id);}
