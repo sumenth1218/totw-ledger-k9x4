@@ -78,7 +78,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .day.enq3{box-shadow:0 0 0 3.5px var(--teal);cursor:pointer}
 
 .has-pop{cursor:pointer}
-#gpop{display:none;position:fixed;background:var(--ink);color:var(--paper);border-radius:8px;padding:11px 13px;width:232px;z-index:80;box-shadow:0 10px 28px rgba(27,26,23,.35)}
+#gpop{display:none;position:fixed;background:var(--ink);color:var(--paper);border-radius:8px;padding:11px 13px;width:232px;z-index:80;box-shadow:0 10px 28px rgba(27,26,23,.35);animation:popIn .14s ease-out}
 #gpop em{font-style:normal;display:block;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#D9A79E;margin-bottom:6px}
 #gpop b{display:block;font-size:12.5px;font-weight:600;line-height:1.3}
 #gpop u{text-decoration:none;font-size:11px;color:#B9B4A8;display:block;margin-bottom:6px;line-height:1.35}
@@ -94,9 +94,20 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .demand-body{border-top:1px solid var(--line);padding:16px 18px 18px}
 .demand-select{width:100%;max-width:280px;padding:10px 12px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);font-family:var(--body);font-size:13px;outline:none}
 .demand-list{margin-top:12px;border-top:1px solid var(--line)}
-.demand-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 2px;border-bottom:1px solid var(--line)}
-.demand-row b{font-size:14px;font-weight:600}
-.demand-count{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--sindoor);white-space:nowrap}
+.demand-item{border-bottom:1px solid var(--line)}
+.demand-item summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 8px;cursor:pointer;border-radius:5px;transition:background .16s ease,padding .16s ease}
+.demand-item summary::-webkit-details-marker{display:none}
+.demand-item summary b{font-size:14px;font-weight:600}
+.demand-item summary:hover{background:#F5F1E8;padding-left:12px;padding-right:12px}
+.demand-count{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--sindoor);white-space:nowrap;transition:color .16s ease}
+.demand-item[open] .demand-count{color:var(--amber)}
+.demand-names{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:4px 12px 16px;animation:demandReveal .18s ease-out}
+.demand-names h4{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
+.demand-names p{font-size:12.5px;line-height:1.55;color:var(--ink);margin:0}
+.demand-none{color:var(--ink-soft)!important;font-style:italic}
+@media(max-width:560px){.demand-names{grid-template-columns:1fr;gap:10px}.demand-count{white-space:normal;text-align:right}}
+@keyframes demandReveal{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 .demand-empty{padding:16px 2px 2px;color:var(--ink-soft);font-style:italic;font-family:var(--display);font-size:16px}
 
 .detail{position:fixed;inset:0;background:rgba(27,26,23,.45);display:none;align-items:flex-end;justify-content:center;z-index:50;padding:16px}
@@ -1034,23 +1045,32 @@ function isWeddingDayEvent(v){
   return /\bwedding\b|\bshaadi\b|\bpheras?\b|\bmuhurt(?:ham|am)\b|\bnikah\b/.test(s);
 }
 function weddingDemandMap(){
-  const map={};
-  const add=(date,couple)=>{
-    const name=String(couple||'').trim().toLowerCase();
+  const booked={},leads={},labels={};
+  const add=(map,date,couple)=>{
+    const label=String(couple||'').trim();
+    const name=label.toLowerCase();
     if(!date||!name)return;
     (map[date]=map[date]||new Set()).add(name);
+    if(!labels[name])labels[name]=label;
   };
-  BAKED.forEach(([m,d,c,e])=>{if(isWeddingDayEvent(e))add(`2026-${p2(m)}-${p2(d)}`,c);});
+  BAKED.forEach(([m,d,c,e])=>{if(isWeddingDayEvent(e))add(booked,`2026-${p2(m)}-${p2(d)}`,c);});
   Object.values(teamBookings).forEach(b=>{
-    if(b&&b.m&&b.d&&isWeddingDayEvent(b.e))add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c);
+    if(b&&b.m&&b.d&&isWeddingDayEvent(b.e))add(booked,`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c);
   });
   Object.values(enquiries).forEach(x=>{
     Object.entries((x&&x.dateEvents)||{}).forEach(([date,events])=>{
-      if(eventValues(events).some(isWeddingDayEvent))add(date,x.name);
+      if(eventValues(events).some(isWeddingDayEvent))add(x.status==='BOOKED'?booked:leads,date,x.name);
     });
   });
   const out={};
-  Object.entries(map).forEach(([date,names])=>out[date]=names.size);
+  new Set([...Object.keys(booked),...Object.keys(leads)]).forEach(date=>{
+    const b=booked[date]||new Set();
+    const q=leads[date]||new Set();
+    b.forEach(name=>q.delete(name));
+    const bookedNames=[...b].map(name=>labels[name]||name).sort((a,b)=>a.localeCompare(b));
+    const enquiryNames=[...q].map(name=>labels[name]||name).sort((a,b)=>a.localeCompare(b));
+    out[date]={booked:b.size,enquiries:q.size,total:b.size+q.size,bookedNames,enquiryNames};
+  });
   return out;
 }
 
@@ -1065,14 +1085,19 @@ function renderWeddingDemand(resetMonth){
   sel.value=prev!==''?prev:String(fallback);
   const month=Number(sel.value);
   const counts=weddingDemandMap();
-  const rows=Object.entries(counts).filter(([,count])=>count>2).sort((a,b)=>a[0].localeCompare(b[0]));
+  const rows=Object.entries(counts).filter(([,count])=>count.total>2).sort((a,b)=>a[0].localeCompare(b[0]));
   const monthRows=rows.filter(([date])=>{
     const parts=date.split('-').map(Number);
     return parts[0]===calYear&&parts[1]===month+1;
   });
   list.innerHTML=monthRows.length?monthRows.map(([date,count])=>{
     const day=Number(date.slice(8,10));
-    return `<div class="demand-row"><b>${MN[month]} ${day}, ${calYear}</b><span class="demand-count">${count} weddings</span></div>`;
+    const bl=count.booked===1?'booking':'booked';
+    const ql=count.enquiries===1?'enquiry':'enquiries';
+    const hover=[count.bookedNames.length?'Booked: '+count.bookedNames.join(', '):'',count.enquiryNames.length?'Enquiries: '+count.enquiryNames.join(', '):''].filter(Boolean).join(' | ');
+    const bNames=count.bookedNames.length?count.bookedNames.map(esc).join('<br>'):'<span class="demand-none">None</span>';
+    const qNames=count.enquiryNames.length?count.enquiryNames.map(esc).join('<br>'):'<span class="demand-none">None</span>';
+    return `<details class="demand-item"><summary title="${esc(hover)}"><b>${MN[month]} ${day}, ${calYear}</b><span class="demand-count">${count.booked} ${bl} · ${count.enquiries} ${ql} ▾</span></summary><div class="demand-names"><div><h4>Booked</h4><p>${bNames}</p></div><div><h4>Enquiries</h4><p>${qNames}</p></div></div></details>`;
   }).join(''):'<div class="demand-empty">No in-demand wedding dates this month.</div>';
 }
 
@@ -1150,7 +1175,7 @@ function renderMiniCal(kind){
   for(let d=1;d<=dim;d++){
     const v=iso(mo+1,d,yr);
     const booked=!!byDate[yr+"-"+(mo+1)+"-"+d];
-    const inDemand=(demand[v]||0)>2;
+    const inDemand=((demand[v]&&demand[v].total)||0)>2;
     cells+=`<i class="mc-d${sel.has(v)?' sel':''}${booked?' bk':''}${inDemand?' demand':''}" onclick="mcToggle('${kind}','${v}')">${d}</i>`;
   }
   el.innerHTML=`<div class="mc-h">
@@ -1221,9 +1246,9 @@ function renderChips(kind){
 function popHtml(isoStr){
   if(!isoStr)return'';
   const[y,m,d]=isoStr.split('-').map(Number);
-  const evts=byDate[m+"-"+d]||[];
+  const evts=byDate[y+"-"+m+"-"+d]||[];
   if(!evts.length)return'';
-  return `<em>Clashes with · ${MN[m-1]} ${d}</em>`+evts.map(x=>
+  return `<em>Clashes with · ${MN[m-1]} ${d}${y!==2026?' · '+y:''}</em>`+evts.map(x=>
     `<b>${esc(x.c)}</b><u>${esc(x.e)}${x.l&&x.l!=="—"?" · "+esc(x.l):""}</u>`).join('');
 }
 const gpop=document.createElement('div');
