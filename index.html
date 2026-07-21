@@ -648,7 +648,8 @@ h1 em{font-style:italic;color:var(--sindoor)}
     <button type="button" class="cf-add" onclick="addClientDraftEvent()">+ Add another event</button>
     <p class="hint" style="margin:12px 0 0">Choose the getting-ready questions separately inside each event above.</p>
     <div class="check-result" id="cfCreateResult"></div>
-    <button class="btn-main teal" onclick="createClientForm()">Create link from this setup</button>
+    <button class="btn-main teal" id="cfSaveButton" onclick="createClientForm()">Create link from this setup</button>
+    <button class="btn-main" id="cfCancelEdit" style="display:none;margin-top:8px;background:#35332D;color:#C5C0B5" onclick="cancelClientFormEdit()">Cancel editing</button>
    </section>
    <section><div class="cf-list" id="cfList"><div class="cf-empty">No client forms created yet.</div></div></section>
   </div>
@@ -930,6 +931,7 @@ let clientForms = {};     // private client links and their pre-filled Planner e
 let clientSubmissions = {}; // client-entered timings, venues and optional details
 let clientApprovals = {}; // owner-only review status
 let clientFormDraft = []; // editable setup before a private link exists
+let clientFormEditId = null; // existing private link currently being edited
 let planRowMeta = {};    // runtime: rowKey -> identity for editors
 let openProdId = null;
 let evEdit = null;       // enquiry date-event editor {id,date}
@@ -3493,8 +3495,9 @@ function clientCouples(){
   Object.values(plans||{}).forEach(p=>{if(!p||!p.iso||p.iso<today||!p.couple)return;const k=String(p.couple).trim().toLowerCase(),old=map.get(k);if(!old||p.iso<old.next)map.set(k,{name:String(p.couple).trim(),next:p.iso});});
   return [...map.values()].sort((a,b)=>a.next.localeCompare(b.next)||a.name.localeCompare(b.name));
 }
+function refreshClientCoupleOptions(){const dl=document.getElementById('cfCouples');if(dl)dl.innerHTML=clientCouples().map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.next))}">`).join('');}
 function previewClientFormEvents(){
-  const dl=document.getElementById('cfCouples');if(dl)dl.innerHTML=clientCouples().map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.next))}">`).join('');
+  refreshClientCoupleOptions();if(clientFormEditId)return;
   const el=document.getElementById('cfEventPreview');if(!el)return;const couple=document.getElementById('cfCouple')?.value.trim()||'';
   clientFormDraft=clientPlannerEvents(couple).map(x=>({...x,questions:{contact:false,brideReady:false,groomReady:false,notes:false}}));renderClientFormDraft();
 }
@@ -3506,28 +3509,37 @@ function updateClientDraftEvent(i,key,value){if(clientFormDraft[i])clientFormDra
 function updateClientDraftQuestion(i,key,value){if(clientFormDraft[i]){clientFormDraft[i].questions=clientFormDraft[i].questions||{};clientFormDraft[i].questions[key]=!!value;}}
 function removeClientDraftEvent(i){clientFormDraft.splice(i,1);renderClientFormDraft();}
 function addClientDraftEvent(){clientFormDraft.push({name:'',date:clientFormDraft.at(-1)?.date||ciTodayIso(),questions:{contact:false,brideReady:false,groomReady:false,notes:false}});renderClientFormDraft();setTimeout(()=>document.querySelector('#cfEventPreview .cf-preview-event:last-child input')?.focus(),0);}
+function resetClientFormEditor(){clientFormEditId=null;clientFormDraft=[];document.getElementById('cfCouple').value='';renderClientFormDraft();document.getElementById('cfSaveButton').textContent='Create link from this setup';document.getElementById('cfCancelEdit').style.display='none';document.getElementById('cfCreateResult').className='check-result';}
+function cancelClientFormEdit(){resetClientFormEditor();}
+function editClientForm(id){
+  const f=clientForms[id];if(!f)return;clientFormEditId=id;document.getElementById('cfCouple').value=f.couple||'';
+  clientFormDraft=Object.entries(f.events||{}).sort((a,b)=>(a[1].order||0)-(b[1].order||0)).map(([eventId,e])=>({_id:eventId,name:e.name||'',date:e.date||'',questions:{contact:!!e.questions?.contact,brideReady:!!e.questions?.brideReady,groomReady:!!e.questions?.groomReady,notes:!!e.questions?.notes}}));
+  renderClientFormDraft();document.getElementById('cfSaveButton').textContent='Save changes to this link';document.getElementById('cfCancelEdit').style.display='block';const result=document.getElementById('cfCreateResult');result.className='check-result show ok';result.innerHTML='<b>Editing existing link</b>The private URL will stay the same. Unchanged client answers will be preserved.';document.querySelector('.cf-create')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
 async function createClientForm(){
-  const result=document.getElementById('cfCreateResult'),couple=document.getElementById('cfCouple').value.trim(),rows=clientFormDraft.map(x=>({name:String(x.name||'').trim(),date:String(x.date||''),questions:{contact:!!x.questions?.contact,brideReady:!!x.questions?.brideReady,groomReady:!!x.questions?.groomReady,notes:!!x.questions?.notes}})).filter(x=>x.name&&x.date).sort((a,b)=>a.date.localeCompare(b.date));
+  const result=document.getElementById('cfCreateResult'),couple=document.getElementById('cfCouple').value.trim(),rows=clientFormDraft.map(x=>({_id:x._id||'',name:String(x.name||'').trim(),date:String(x.date||''),questions:{contact:!!x.questions?.contact,brideReady:!!x.questions?.brideReady,groomReady:!!x.questions?.groomReady,notes:!!x.questions?.notes}})).filter(x=>x.name&&x.date).sort((a,b)=>a.date.localeCompare(b.date));
   if(!couple||!rows.length){result.className='check-result show clash';result.innerHTML='<b>Complete the setup</b>Add at least one event with its name and date.';return;}
   if(rows.length!==clientFormDraft.length){result.className='check-result show clash';result.innerHTML='<b>One event is incomplete</b>Every event needs a name and date, or remove that row.';return;}
-  const existing=Object.entries(clientForms||{}).find(([,f])=>f&&f.open!==false&&String(f.couple||'').trim().toLowerCase()===couple.toLowerCase());
+  const existing=Object.entries(clientForms||{}).find(([fid,f])=>fid!==clientFormEditId&&f&&f.open!==false&&String(f.couple||'').trim().toLowerCase()===couple.toLowerCase());
   if(existing){copyText(clientPortalUrl(existing[0]),'Existing client link copied.');result.className='check-result show ok';result.innerHTML='<b>Existing link copied</b>This couple already has an open form.';return;}
-  const id=newClientToken(),events={};rows.forEach((x,i)=>events['e'+(i+1)]={name:x.name,date:x.date,order:i+1,questions:x.questions});
-  const form={couple,events,open:true,createdAt:Date.now(),createdBy:'Tale of Two',updatedAt:Date.now()};
-  try{await db.ref('clientForms/'+id).set(form);copyText(clientPortalUrl(id),'Private client link copied.');document.getElementById('cfCouple').value='';clientFormDraft=[];renderClientFormDraft();result.className='check-result show ok';result.innerHTML='<b>Private link ready</b>Your customised setup was saved and the link was copied.';log(`created customised client event-details link: ${couple}`);}catch(e){result.className='check-result show clash';result.innerHTML='<b>Could not create link</b>Please try again.';}
+  const id=clientFormEditId||newClientToken(),old=clientForms[id]||{},events={},used=new Set(),reserved=new Set(rows.map(x=>x._id).filter(Boolean));let next=1;
+  rows.forEach((x,i)=>{let eventId=x._id&&!used.has(x._id)?x._id:'';while(!eventId||used.has(eventId)||(!x._id&&reserved.has(eventId))){eventId='e'+next++;}used.add(eventId);events[eventId]={name:x.name,date:x.date,order:i+1,questions:x.questions};});
+  const editing=!!clientFormEditId,form={couple,events,open:true,locked:false,createdAt:old.createdAt||Date.now(),createdBy:old.createdBy||'Tale of Two',updatedAt:Date.now()},updates={};updates[`clientForms/${id}`]=form;
+  if(editing){updates[`clientApprovals/${id}`]=null;updates[`clientSubmissions/${id}/submittedAt`]=null;Object.keys((clientSubmissions[id]&&clientSubmissions[id].events)||{}).forEach(eventId=>{if(!events[eventId])updates[`clientSubmissions/${id}/events/${eventId}`]=null;});}
+  try{await db.ref().update(updates);const url=clientPortalUrl(id);resetClientFormEditor();copyText(url,editing?'Updated private link copied.':'Private client link copied.');result.className='check-result show ok';result.innerHTML=editing?'<b>Link updated</b>The same private URL is ready. Existing answers for unchanged events were preserved.':'<b>Private link ready</b>Your customised setup was saved and the link was copied.';log(`${editing?'updated':'created'} customised client event-details link: ${couple}`);}catch(e){result.className='check-result show clash';result.innerHTML=`<b>Could not ${editing?'update':'create'} link</b>${esc(e.message||'Please try again.')}`;}
 }
 function clientEventDone(x){return !!(x&&x.startTime&&x.endTime&&x.venueName&&x.mapsUrl);}
-function clientSubmissionStatus(id){const s=clientSubmissions[id]||{},a=clientApprovals[id]||{};if(a.status==='approved')return ['Approved','approved'];if(s.submittedAt)return ['Submitted','submitted'];if(Object.keys(s.events||{}).length)return ['In progress',''];return ['Not started',''];}
+function clientSubmissionStatus(id){const f=clientForms[id]||{},s=clientSubmissions[id]||{},a=clientApprovals[id]||{};if(f.open===false)return ['Closed',''];if(a.status==='approved')return ['Approved','approved'];if(s.submittedAt)return ['Submitted','submitted'];if(Object.keys(s.events||{}).length)return ['In progress',''];return ['Not started',''];}
 function clientShareText(id){const f=clientForms[id];return f?`Hello ${f.couple},\n\nTo help us plan your photography and film team smoothly, please complete the event details in this private link. Your event names and dates are already filled in, and it should take less than 5 minutes.\n\n${clientPortalUrl(id)}\n\nYou can save and return to it if needed. Thank you!`:'';}
 function shareClientForm(id){const t=clientShareText(id);if(t)window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank','noopener');}
 function toggleClientReview(id){const el=document.getElementById('cfReview_'+id);if(el)el.style.display=el.style.display==='none'?'block':'none';}
 function renderClientForms(){
-  previewClientFormEvents();const el=document.getElementById('cfList');if(!el)return;
-  const list=Object.entries(clientForms||{}).filter(([,f])=>f&&f.open!==false).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+  refreshClientCoupleOptions();const el=document.getElementById('cfList');if(!el)return;
+  const list=Object.entries(clientForms||{}).filter(([,f])=>!!f).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
   if(!list.length){el.innerHTML='<div class="cf-empty">No client forms created yet.</div>';return;}
   el.innerHTML=list.map(([id,f])=>{const sub=clientSubmissions[id]||{},events=Object.entries(f.events||{}).sort((a,b)=>(a[1].order||0)-(b[1].order||0)),done=events.filter(([k])=>clientEventDone((sub.events||{})[k])).length,[label,cl]=clientSubmissionStatus(id),submitted=!!sub.submittedAt;
     const review=events.map(([k,e])=>{const x=(sub.events||{})[k]||{};return `<div class="cf-review-event"><b>${esc(e.name)} · ${esc(ciDateLong(e.date))}</b><small>${esc(ciFmtTime(x.startTime))} – ${esc(ciFmtTime(x.endTime))} · ${esc(x.venueName||'Venue missing')}</small><small>${x.mapsUrl?`<a href="${esc(x.mapsUrl)}" target="_blank" rel="noopener">Open Maps ↗</a>`:'Maps link missing'}${x.contactName?` · ${esc(x.contactName)} ${esc(x.contactPhone||'')}`:''}</small>${x.notes?`<small>${esc(x.notes)}</small>`:''}</div>`;}).join('');
-    return `<article class="cf-card"><div class="cf-card-top"><div><h3>${esc(f.couple)}</h3><div class="cf-meta">${events.length} events · ${done}/${events.length} complete · Created ${esc(new Date(f.createdAt||Date.now()).toLocaleDateString('en-IN',{day:'numeric',month:'short'}))}</div></div><span class="cf-status ${cl}">${label}</span></div><div class="cf-card-actions"><button class="btn-mini" onclick="shareClientForm('${id}')">WhatsApp</button><button class="btn-mini" onclick="copyText(clientPortalUrl('${id}'),'Private client link copied.')">Copy link</button><button class="btn-mini" onclick="toggleClientReview('${id}')">Review</button>${submitted&&cl!=='approved'?`<button class="btn-mini" onclick="approveClientForm('${id}')">Approve & publish</button>`:''}<button class="btn-mini" onclick="closeClientForm('${id}')">Close</button></div><div class="cf-review" id="cfReview_${id}" style="display:${submitted?'block':'none'}">${review||'<div class="empty">The couple has not entered details yet.</div>'}</div></article>`;
+    return `<article class="cf-card"><div class="cf-card-top"><div><h3>${esc(f.couple)}</h3><div class="cf-meta">${events.length} events · ${done}/${events.length} complete · Created ${esc(new Date(f.createdAt||Date.now()).toLocaleDateString('en-IN',{day:'numeric',month:'short'}))}</div></div><span class="cf-status ${cl}">${label}</span></div><div class="cf-card-actions">${f.open!==false?`<button class="btn-mini" onclick="shareClientForm('${id}')">WhatsApp</button>`:''}<button class="btn-mini" onclick="copyText(clientPortalUrl('${id}'),'Private client link copied.')">Copy link</button><button class="btn-mini" onclick="toggleClientReview('${id}')">Review</button><button class="btn-mini" onclick="editClientForm('${id}')">Edit</button>${submitted&&cl!=='approved'&&f.open!==false?`<button class="btn-mini" onclick="approveClientForm('${id}')">Approve & publish</button>`:''}${f.open!==false?`<button class="btn-mini" onclick="closeClientForm('${id}')">Close</button>`:''}<button class="btn-mini" onclick="deleteClientForm('${id}')">Delete</button></div><div class="cf-review" id="cfReview_${id}" style="display:${submitted?'block':'none'}">${review||'<div class="empty">The couple has not entered details yet.</div>'}</div></article>`;
   }).join('');
 }
 function approvedClientEvent(couple,date,eventName){
@@ -3548,6 +3560,12 @@ async function approveClientForm(id){
   try{await db.ref().update(updates);toast('Approved details published to matching crew shoots.');log(`approved client event details: ${f.couple}`);}catch(e){toast('Could not approve these details. Try again.');}
 }
 async function closeClientForm(id){const f=clientForms[id];if(!f||!confirm(`Close ${f.couple}'s client link? The saved submission will be kept.`))return;try{await db.ref(`clientForms/${id}/open`).set(false);toast('Client link closed.');}catch(e){toast('Could not close the link.');}}
+async function deleteClientForm(id){
+  const f=clientForms[id];if(!f)return;const approved=(clientApprovals[id]||{}).status==='approved';
+  if(!confirm(`Permanently delete ${f.couple}'s generated link?\n\nThis removes the private link and all answers saved through it.${approved?' Details already copied into existing Check-ins will remain there.':''}`))return;
+  const updates={};updates[`clientForms/${id}`]=null;updates[`clientSubmissions/${id}`]=null;updates[`clientApprovals/${id}`]=null;
+  try{await db.ref().update(updates);if(clientFormEditId===id)resetClientFormEditor();toast('Generated client link deleted permanently.');log(`deleted client event-details link: ${f.couple}`);}catch(e){toast('Could not delete the link. Please try again.');}
+}
 const ciTeamType=role=>{const r=String(role||'').toLowerCase();return r.includes('traditional')?'traditional':r.includes('candid')?'candid':'';};
 function ciDuration(start,end){if(!start||!end)return 'Pending actual start';let n=Math.max(0,Math.round((end-start)/60000)),h=Math.floor(n/60),m=n%60;return `${h}h ${m}m${n>420?' · Over 7 hrs':''}`;}
 function ciCardStatus(a){
@@ -3584,11 +3602,16 @@ async function deleteCrewProfile(uid){
     await db.ref().update(updates);delete crewProfiles[uid];renderCrewProfiles();renderCheckinTeam();toast(`${p.name||'Crew member'} deleted.`);log(`deleted registered crew profile: ${p.name||uid}`);
   }catch(err){toast('Could not delete this crew profile. Please try again.');}
 }
+function approvedClientCheckinRows(couple=''){
+  const who=String(couple||'').trim().toLowerCase(),today=ciTodayIso(),rows=[];
+  Object.entries(clientForms||{}).forEach(([id,f])=>{if(!f||(clientApprovals[id]||{}).status!=='approved'||(who&&String(f.couple||'').trim().toLowerCase()!==who))return;Object.entries(f.events||{}).forEach(([eventId,e])=>{if(!e||!e.date||e.date<today)return;rows.push({formId:id,eventId,couple:String(f.couple||'').trim(),date:e.date,name:e.name||'',details:((clientSubmissions[id]&&clientSubmissions[id].events)||{})[eventId]||{}});});});
+  return rows.sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name));
+}
 function renderCheckinFormOptions(){
   const dl=document.getElementById('ciCouples');if(dl){
     const map=calendarCoupleMap(),today=ciTodayIso();
-    const list=Object.entries(map).map(([name,x])=>({name,next:(x.dates||[]).filter(d=>d>=today).sort()[0]})).filter(x=>x.next).sort((a,b)=>a.next.localeCompare(b.next)||a.name.localeCompare(b.name));
-    dl.innerHTML=list.map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.next))}">`).join('');
+    const merged=new Map();Object.entries(map).forEach(([name,x])=>{const next=(x.dates||[]).filter(d=>d>=today).sort()[0];if(next)merged.set(name.toLowerCase(),{name,next});});approvedClientCheckinRows().forEach(x=>{const k=x.couple.toLowerCase(),old=merged.get(k);if(!old||x.date<old.next)merged.set(k,{name:x.couple,next:x.date});});
+    const list=[...merged.values()].sort((a,b)=>a.next.localeCompare(b.next)||a.name.localeCompare(b.name));dl.innerHTML=list.map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.next))}">`).join('');
   }
   refreshShotTypeOptions();
   renderCheckinTeam();
@@ -3607,7 +3630,7 @@ function ciDefaultReportChanged(){
   document.querySelectorAll('.ci-person-time').forEach(x=>{if(!x.dataset.custom)x.value=v;});
 }
 function ciCoupleChanged(){
-  const name=document.getElementById('ciCouple').value.trim(),sel=document.getElementById('ciDate'),map=calendarCoupleMap(),x=map[name],dates=((x&&x.dates)||[]).filter(d=>d>=ciTodayIso()).sort();
+  const name=document.getElementById('ciCouple').value.trim(),sel=document.getElementById('ciDate'),map=calendarCoupleMap(),x=Object.entries(map).find(([k])=>k.toLowerCase()===name.toLowerCase())?.[1],dates=[...new Set([...(x&&x.dates||[]),...approvedClientCheckinRows(name).map(r=>r.date)])].filter(d=>d>=ciTodayIso()).sort();
   sel.innerHTML='<option value="">Select date</option>'+dates.map(d=>`<option value="${d}">${esc(ciDateLong(d))}</option>`).join('');
   document.getElementById('ciPlannerResult').classList.remove('on');
   if(dates.length===1){sel.value=dates[0];ciDateChanged();}else renderCheckinTeam({});
@@ -3636,7 +3659,7 @@ function ciApplyPlannerRow(row){
   box.className='ci-map-ok on';box.textContent=notes.join(' ');
 }
 function ciDateChanged(){
-  const name=document.getElementById('ciCouple').value.trim(),date=document.getElementById('ciDate').value,map=calendarCoupleMap(),evs=(map[name]&&map[name].events&&map[name].events[date])||[];
+  const name=document.getElementById('ciCouple').value.trim(),date=document.getElementById('ciDate').value,map=calendarCoupleMap(),mx=Object.entries(map).find(([k])=>k.toLowerCase()===name.toLowerCase())?.[1],evs=[...((mx&&mx.events&&mx.events[date])||[]),...approvedClientCheckinRows(name).filter(r=>r.date===date).map(r=>r.name)];
   const row=ciPlannerRow(name,date),plannerEvent=row&&row.event&&row.event!=='—'?row.event:'';
   const choices=uniqueEventTypes([plannerEvent,...evs]);
   const eventInput=document.getElementById('ciEvent');
