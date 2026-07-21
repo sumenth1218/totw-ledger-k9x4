@@ -246,7 +246,12 @@ function detailCard(){
  return `<div class="card"><div class="detail-grid">
   <div class="detail-row"><div class="ico">◷</div><div><small>Reporting time</small><b>${esc(fmtTime(me.reportTime||activeEvent.reportingTime))}</b></div></div>
   <div class="detail-row"><div class="ico">⌁</div><div><small>Scheduled shoot start</small><b>${esc(fmtTime(activeEvent.scheduledStart))}</b></div></div>
+  ${activeEvent.functionStart?`<div class="detail-row"><div class="ico">◇</div><div><small>Function timing</small><b>${esc(fmtTime(activeEvent.functionStart))}${activeEvent.functionEnd?' – '+esc(fmtTime(activeEvent.functionEnd)):''}</b></div></div>`:''}
   <div class="detail-row"><div class="ico">⌖</div><div><small>Venue</small><b>${esc(activeEvent.venueName||'Open location')}</b></div><a class="link-button" href="${esc(maps)}" target="_blank" rel="noopener">Directions</a></div>
+  ${activeEvent.brideReadyLocation?`<div class="detail-row"><div class="ico">B</div><div><small>Bride getting ready</small><b>${esc(activeEvent.brideReadyLocation)}</b></div></div>`:''}
+  ${activeEvent.groomReadyLocation?`<div class="detail-row"><div class="ico">G</div><div><small>Groom getting ready</small><b>${esc(activeEvent.groomReadyLocation)}</b></div></div>`:''}
+  ${activeEvent.clientContactName?`<div class="detail-row"><div class="ico">☎</div><div><small>On-site contact</small><b>${esc(activeEvent.clientContactName)}</b>${activeEvent.clientContactPhone?`<em>${esc(activeEvent.clientContactPhone)}</em>`:''}</div>${activeEvent.clientContactPhone?`<a class="link-button" href="tel:${esc(phoneDigits(activeEvent.clientContactPhone))}">Call</a>`:''}</div>`:''}
+  ${activeEvent.clientNotes?`<div class="detail-row"><div class="ico">i</div><div><small>Important note</small><b>${esc(activeEvent.clientNotes)}</b></div></div>`:''}
  </div></div>`;
 }
 function assignmentCards(){
