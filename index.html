@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>TOTW — Studio Ledger</title>
+<title>Tale of Two Weddings — Studio Ledger</title>
+<link rel="icon" href="totw-logo-square.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="totw-logo-square.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -2644,7 +2646,7 @@ function exportDeliveryPDF(id){
     <p style="margin-top:28px;line-height:1.7">All digital deliverables listed above have been completed and shared.</p>
     <p style="line-height:1.7">Thank you for trusting Tale of Two Weddings with your celebration.</p>
     <div class="sub" style="margin-top:28px">Generated ${esc(fullDate(Date.now()))}</div>`;
-  openPrint(`TOTW — Delivery summary — ${p.couple}`,inner);
+  openPrint(`Tale of Two Weddings — Delivery summary — ${p.couple}`,inner);
 }
 function exportCouplePDF(id){
   const p=prods[id];if(!p)return;
@@ -2675,7 +2677,7 @@ function exportCouplePDF(id){
     <h2>Cost by person</h2>
     <table>${personRows}</table>
     <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>`;
-  openPrint(`TOTW — ${p.couple}`,inner);
+  openPrint(`Tale of Two Weddings — ${p.couple}`,inner);
 }
 function exportSeasonPDF(){
   const from=document.getElementById('seasonFrom').value||'2026-01-01';
@@ -2721,7 +2723,7 @@ function exportSeasonPDF(){
     <h2>Total paid per person</h2>
     <table>${personRows}</table>
     <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>`;
-  openPrint(`TOTW — Season ${from} to ${to}`,inner);
+  openPrint(`Tale of Two Weddings — Season ${from} to ${to}`,inner);
 }
 
 /* ---- enquiry date-event tags ---- */
@@ -3258,16 +3260,46 @@ const shotListKey = name => safeKey(name);
 const moodKey = (couple,eventName,eventDate) => safeKey(`${couple}|${eventName}|${eventDate}`);
 const prettyShotType = key => String(key||'').replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 
+function eventTypeParts(value){
+  let raw=String(value||'').trim();
+  if(!raw||raw==='—')return [];
+  raw=raw
+    .replace(/bride\s*(?:&|and)\s*groom\s+makings?/gi,'Bride Making + Groom Making')
+    .replace(/bride\s*(?:&|and)\s*groom\s+haldi/gi,'Bride Haldi + Groom Haldi')
+    .replace(/after\s*party/gi,'After Party')
+    .replace(/pre\s*[- ]\s*wedding/gi,'Pre-Wedding');
+  const aliases={
+    'mehendi':'Mehndi','mehandi':'Mehndi','mehndi':'Mehndi','haldi':'Haldi',
+    'sangeet':'Sangeet','wedding':'Wedding','reception':'Reception','ceremony':'Ceremony',
+    'cocktail':'Cocktail','ritual':'Rituals','rituals':'Rituals','sundowner':'Sundowner',
+    'after party':'After Party','pre-wedding':'Pre-Wedding','bride making':'Bride Making',
+    'groom making':'Groom Making','bride haldi':'Bride Haldi','groom haldi':'Groom Haldi',
+    'chapra pooja':'Chapra Pooja','lagna patrika':'Lagna Patrika','mangalsnanam':'Mangalsnanam'
+  };
+  return raw.split(/\s*(?:\+|,|\/|&)\s*/).map(part=>{
+    const clean=part.trim().replace(/\s+/g,' '),key=clean.toLowerCase();
+    return aliases[key]||clean.replace(/\b\w/g,c=>c.toUpperCase());
+  }).filter(Boolean);
+}
+
+function uniqueEventTypes(values){
+  const found=new Map();
+  values.forEach(value=>eventTypeParts(value).forEach(name=>{
+    const key=name.toLowerCase().replace(/[^a-z0-9]+/g,'');
+    if(key&&!found.has(key))found.set(key,name);
+  }));
+  return [...found.values()].sort((a,b)=>a.localeCompare(b));
+}
+
 function refreshShotTypeOptions(){
   const el=document.getElementById('shotTypeOptions');if(!el)return;
-  const names=new Set(['Haldi','Mehndi','Sangeet','Ceremony','Reception']);
-  const add=n=>{n=String(n||'').trim();if(n&&n!=='—')names.add(n);};
-  Object.keys(shotLists||{}).forEach(k=>names.add(prettyShotType(k)));
-  Object.values(checkinEvents||{}).forEach(e=>{if(e&&e.eventName)names.add(e.eventName);});
-  BAKED.forEach(r=>add(r[3]));
-  Object.values(teamBookings||{}).forEach(b=>add(b&&b.e));
-  Object.values(plans||{}).forEach(p=>add(p&&p.event));
-  el.innerHTML=[...names].sort().map(n=>`<option value="${esc(n)}">`).join('');
+  const values=['Haldi','Mehndi','Sangeet','Ceremony','Reception'];
+  Object.keys(shotLists||{}).forEach(k=>values.push(prettyShotType(k)));
+  Object.values(checkinEvents||{}).forEach(e=>values.push(e&&e.eventName));
+  BAKED.forEach(r=>values.push(r[3]));
+  Object.values(teamBookings||{}).forEach(b=>values.push(b&&b.e));
+  Object.values(plans||{}).forEach(p=>values.push(p&&p.event));
+  el.innerHTML=uniqueEventTypes(values).map(n=>`<option value="${esc(n)}">`).join('');
 }
 
 function upcomingCouplesAdmin(){
@@ -3468,8 +3500,16 @@ function ciApplyPlannerRow(row){
 function ciDateChanged(){
   const name=document.getElementById('ciCouple').value.trim(),date=document.getElementById('ciDate').value,map=calendarCoupleMap(),evs=(map[name]&&map[name].events&&map[name].events[date])||[];
   const row=ciPlannerRow(name,date),plannerEvent=row&&row.event&&row.event!=='—'?row.event:'';
-  if(plannerEvent||evs.length)document.getElementById('ciEvent').value=plannerEvent||evs.join(' + ');
+  const choices=uniqueEventTypes([plannerEvent,...evs]);
+  const eventInput=document.getElementById('ciEvent');
+  if(choices.length===1)eventInput.value=choices[0];
+  else if(choices.length>1)eventInput.value='';
   ciApplyPlannerRow(row);
+  if(choices.length>1){
+    const box=document.getElementById('ciPlannerResult');
+    box.className='ci-map-ok on';
+    box.textContent=`Planner has ${choices.join(', ')}. Choose the one event you are creating this check-in for.`;
+  }
   ciChecklistStatus();
 }
 function ciListExists(eventName,team){

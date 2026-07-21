@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>TOTW — Traditional Shot Checklist</title>
+<title>Tale of Two Weddings — Traditional Shot Checklist</title>
+<link rel="icon" href="totw-logo-square.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="totw-logo-square.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -118,7 +120,7 @@ footer{margin-top:44px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1
   <p style="margin-top:6px">You can close this page now.</p>
 </div>
 
-<footer>TOTW · Shot Checklist · Traditional</footer>
+<footer>Tale of Two Weddings · Shot Checklist · Traditional</footer>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -258,10 +260,17 @@ function init(){
 }
 
 function buildEventTypes(){
-  const names=new Set(['Haldi','Mehndi','Sangeet','Ceremony','Reception']);
-  Object.keys(shotListsRemote||{}).forEach(k=>names.add(String(k).replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase())));
-  Object.values(crewEventsRemote||{}).forEach(e=>{const n=String(e&&e.event||'').trim();if(n&&n!=='—')names.add(n);});
-  document.getElementById('eventTypes').innerHTML=[...names].sort().map(n=>`<option value="${n.replace(/"/g,'&quot;')}">`).join('');
+  const values=['Haldi','Mehndi','Sangeet','Ceremony','Reception'];
+  Object.keys(shotListsRemote||{}).forEach(k=>values.push(String(k).replace(/[-_]+/g,' ')));
+  Object.values(crewEventsRemote||{}).forEach(e=>values.push(e&&e.event));
+  const aliases={mehendi:'Mehndi',mehandi:'Mehndi',mehndi:'Mehndi','after party':'After Party','pre-wedding':'Pre-Wedding'};
+  const names=new Map();
+  values.forEach(value=>String(value||'').replace(/bride\s*(?:&|and)\s*groom\s+makings?/gi,'Bride Making + Groom Making').split(/\s*(?:\+|,|\/|&)\s*/).forEach(part=>{
+    const clean=part.trim().replace(/\s+/g,' ');if(!clean||clean==='—')return;
+    const name=aliases[clean.toLowerCase()]||clean.replace(/\b\w/g,c=>c.toUpperCase());
+    const key=name.toLowerCase().replace(/[^a-z0-9]+/g,'');if(!names.has(key))names.set(key,name);
+  }));
+  document.getElementById('eventTypes').innerHTML=[...names.values()].sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n.replace(/"/g,'&quot;')}">`).join('');
 }
 
 function buildClientOptions(events){
