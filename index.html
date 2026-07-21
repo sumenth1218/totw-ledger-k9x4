@@ -780,9 +780,10 @@ h1 em{font-style:italic;color:var(--sindoor)}
     <div class="act-body">
       <p class="hint" style="margin:10px 0 8px">Enter the exact event name used in Check-ins—such as Pre-Wedding—then add one shot per line. Already-submitted checklists keep their original list.</p>
       <div style="display:flex;gap:8px;margin-bottom:10px">
-        <input id="shotEdType" list="shotTypeOptions" value="Haldi" oninput="loadShotEd()" placeholder="Exact event name" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:180px">
-        <select id="shotEdTeam" onchange="loadShotEd()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
-          <option value="traditional">Traditional</option><option value="candid">Candid</option>
+        <input id="shotEdType" list="shotEditTypeOptions" value="Haldi" oninput="loadShotEd()" placeholder="Upcoming event name" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:180px">
+        <datalist id="shotEditTypeOptions"></datalist>
+        <select id="shotEdTeam" onchange="refreshShotEditTypeOptions();loadShotEd()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+          <option value="candid">Candid</option><option value="traditional">Traditional</option>
         </select>
       </div>
       <textarea id="shotEdArea" rows="10" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:var(--body);font-size:14px;color:var(--ink);line-height:1.6;resize:vertical"></textarea>
@@ -1009,7 +1010,7 @@ function start(){
 function publishCrewEvents(){
   if(!seedLoaded||!bookingsLoaded||!enquiriesLoaded||!db)return;
   const today=new Date();today.setHours(0,0,0,0);
-  const rows=[],seen=new Set();
+  const rows=new Map();
   const add=(iso,name,eventName)=>{
     if(!iso||!name)return;
     const d=new Date(iso+'T00:00:00');
@@ -1017,15 +1018,15 @@ function publishCrewEvents(){
     const client=String(name).trim(),event=String(eventName||'').trim();
     if(!client)return;
     const key=[iso,client.toLowerCase(),event.toLowerCase()].join('|');
-    if(seen.has(key))return;
-    seen.add(key);rows.push({client,date:iso,...(event&&event!=='—'?{event}: {})});
+    const planner=plannerRowForEvent(iso,client,event),teams=planTeamFlags(planner);
+    rows.set(key,{client,date:iso,...(event&&event!=='—'?{event}: {}),teams});
   };
   BAKED.forEach(r=>add(`2026-${p2(r[0])}-${p2(r[1])}`,r[2],r[3]));
   Object.values(teamBookings).forEach(b=>{if(b&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c,b.e);});
   Object.values(plans).forEach(p=>{if(p&&p.iso)add(p.iso,p.couple,p.event);});
   Object.values(enquiries).forEach(x=>{if(x&&x.status==='BOOKED')(x.dates||[]).forEach(iso=>add(iso,x.name,''));});
   const out={};
-  rows.sort((a,b)=>a.date.localeCompare(b.date)||a.client.localeCompare(b.client)||String(a.event||'').localeCompare(String(b.event||''))).forEach((row,i)=>{out['e'+i]=row;});
+  [...rows.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.client.localeCompare(b.client)||String(a.event||'').localeCompare(String(b.event||''))).forEach((row,i)=>{out['e'+i]=row;});
   const next=JSON.stringify(out);
   if(next===crewEventsLast)return;
   crewEventsLast=next;
@@ -3291,15 +3292,48 @@ function uniqueEventTypes(values){
   return [...found.values()].sort((a,b)=>a.localeCompare(b));
 }
 
+function planTeamFlags(plan){
+  const cells=(plan&&plan.cells)||{},need=(plan&&plan.need)||{};
+  const candid=!!(String(cells.cp||'').trim()||String(cells.cv||'').trim()||need.cp||need.cv);
+  const traditional=!!(String(cells.tp||'').trim()||String(cells.tv||'').trim()||need.tp||need.tv);
+  return candid||traditional?{candid,traditional}:{candid:true,traditional:true};
+}
+
+function plannerRowForEvent(iso,couple,eventName){
+  const who=String(couple||'').trim().toLowerCase(),eventKey=shotListKey(eventName);
+  const same=Object.values(plans||{}).filter(p=>p&&p.iso===iso&&String(p.couple||'').trim().toLowerCase()===who);
+  return same.find(p=>shotListKey(p.event)===eventKey)||same[0]||null;
+}
+
+function upcomingEventTypes(team){
+  const today=ciTodayIso(),found=new Map();
+  const add=(iso,couple,value)=>{
+    if(!iso||iso<today)return;
+    const flags=planTeamFlags(plannerRowForEvent(iso,couple,value));
+    if(team&&!flags[team])return;
+    eventTypeParts(value).forEach(name=>{
+      const key=name.toLowerCase().replace(/[^a-z0-9]+/g,'');
+      const old=found.get(key);
+      if(key&&(!old||iso<old.iso))found.set(key,{name,iso});
+    });
+  };
+  BAKED.forEach(r=>add(`2026-${p2(r[0])}-${p2(r[1])}`,r[2],r[3]));
+  Object.values(teamBookings||{}).forEach(b=>{if(b&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c,b.e);});
+  Object.values(plans||{}).forEach(p=>{if(p&&p.iso)add(p.iso,p.couple,p.event);});
+  Object.values(checkinEvents||{}).forEach(e=>{if(e&&e.date)add(e.date,e.couple,e.eventName);});
+  return [...found.values()].sort((a,b)=>a.iso.localeCompare(b.iso)||a.name.localeCompare(b.name));
+}
+
 function refreshShotTypeOptions(){
   const el=document.getElementById('shotTypeOptions');if(!el)return;
-  const values=['Haldi','Mehndi','Sangeet','Ceremony','Reception'];
-  Object.keys(shotLists||{}).forEach(k=>values.push(prettyShotType(k)));
-  Object.values(checkinEvents||{}).forEach(e=>values.push(e&&e.eventName));
-  BAKED.forEach(r=>values.push(r[3]));
-  Object.values(teamBookings||{}).forEach(b=>values.push(b&&b.e));
-  Object.values(plans||{}).forEach(p=>values.push(p&&p.event));
-  el.innerHTML=uniqueEventTypes(values).map(n=>`<option value="${esc(n)}">`).join('');
+  el.innerHTML=upcomingEventTypes().map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.iso))}">`).join('');
+  refreshShotEditTypeOptions();
+}
+
+function refreshShotEditTypeOptions(){
+  const el=document.getElementById('shotEditTypeOptions'),team=document.getElementById('shotEdTeam')?.value||'candid';
+  if(!el)return;
+  el.innerHTML=upcomingEventTypes(team).map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.iso))}">`).join('');
 }
 
 function upcomingCouplesAdmin(){

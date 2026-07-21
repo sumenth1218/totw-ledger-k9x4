@@ -242,6 +242,7 @@ const DEFAULT_SHOTS = {
 
 const MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const fmtIso = iso => {const[y,m,d]=iso.split('-').map(Number);return MN[m-1].slice(0,3)+" "+d;};
+const todayIso = () => {const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;};
 
 let db=null, shotListsRemote={}, crewEventsRemote={}, items=[], moods={};
 
@@ -265,7 +266,7 @@ function updateMoodCard(){
 }
 
 function init(){
-  document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('fDate').value = todayIso();
   try{
     firebase.initializeApp(FIREBASE);
     db = firebase.database();
@@ -289,18 +290,26 @@ function init(){
   }
 }
 
-function buildEventTypes(){
-  const values=['Haldi','Mehndi','Sangeet','Ceremony','Reception'];
-  Object.keys(shotListsRemote||{}).forEach(k=>values.push(String(k).replace(/[-_]+/g,' ')));
-  Object.values(crewEventsRemote||{}).forEach(e=>values.push(e&&e.event));
+function eventIsForTeam(e){
+  return !e||!e.teams||e.teams[TEAM]!==false;
+}
+
+function buildEventTypes(client){
+  const today=todayIso(),names=new Map();
   const aliases={mehendi:'Mehndi',mehandi:'Mehndi',mehndi:'Mehndi','after party':'After Party','pre-wedding':'Pre-Wedding'};
-  const names=new Map();
-  values.forEach(value=>String(value||'').replace(/bride\s*(?:&|and)\s*groom\s+makings?/gi,'Bride Making + Groom Making').split(/\s*(?:\+|,|\/|&)\s*/).forEach(part=>{
+  Object.values(crewEventsRemote||{}).filter(e=>e&&e.date>=today&&eventIsForTeam(e)&&(!client||client==='__other__'||e.client===client)).forEach(e=>String(e.event||'').replace(/bride\s*(?:&|and)\s*groom\s+makings?/gi,'Bride Making + Groom Making').split(/\s*(?:\+|,|\/|&)\s*/).forEach(part=>{
     const clean=part.trim().replace(/\s+/g,' ');if(!clean||clean==='—')return;
     const name=aliases[clean.toLowerCase()]||clean.replace(/\b\w/g,c=>c.toUpperCase());
-    const key=name.toLowerCase().replace(/[^a-z0-9]+/g,'');if(!names.has(key))names.set(key,name);
+    const key=name.toLowerCase().replace(/[^a-z0-9]+/g,'');
+    const old=names.get(key);if(!old||e.date<old.date)names.set(key,{name,date:e.date});
   }));
-  document.getElementById('eventTypes').innerHTML=[...names.values()].sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n.replace(/"/g,'&quot;')}">`).join('');
+  const ordered=[...names.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name));
+  document.getElementById('eventTypes').innerHTML=ordered.map(x=>`<option value="${x.name.replace(/"/g,'&quot;')}" label="${fmtIso(x.date)}">`).join('');
+  if(client&&client!=='__other__'){
+    if(ordered.length===1)document.getElementById('fType').value=ordered[0].name;
+    const dates=Object.values(crewEventsRemote||{}).filter(e=>e&&e.client===client&&e.date>=today&&eventIsForTeam(e)).map(e=>e.date).sort();
+    if(dates.length)document.getElementById('fDate').value=dates[0];
+  }
 }
 
 function buildClientOptions(events){
@@ -314,7 +323,7 @@ function buildClientOptions(events){
     if(!k) return;
     if(!map[k] || iso < map[k]) map[k] = iso;
   };
-  Object.values(events||{}).forEach(x => { if(x) add(x.date, x.client); });
+  Object.values(events||{}).forEach(x => { if(x&&eventIsForTeam(x)) add(x.date, x.client); });
 
   const upcoming = Object.entries(map).sort((a,b)=>a[1].localeCompare(b[1])||a[0].localeCompare(b[0]));
   const sel = document.getElementById('fClient');
@@ -323,6 +332,8 @@ function buildClientOptions(events){
     '<option value="__other__">Not listed — type it in</option>';
   sel.onchange = () => {
     document.getElementById('otherWrap').style.display = sel.value==='__other__' ? 'block' : 'none';
+    buildEventTypes(sel.value);
+    renderShotsIfReady();
     updateMoodCard();
   };
   document.getElementById('fClientOther').addEventListener('input', updateMoodCard);
