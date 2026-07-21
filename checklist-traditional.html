@@ -78,14 +78,8 @@ footer{margin-top:44px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1
   </div>
   <div class="field">
     <label for="fType">Event type</label>
-    <select id="fType">
-      <option value="">Select the event…</option>
-      <option value="Haldi">Haldi</option>
-      <option value="Mehndi">Mehndi</option>
-      <option value="Sangeet">Sangeet</option>
-      <option value="Ceremony">Wedding Ceremony</option>
-      <option value="Reception">Reception</option>
-    </select>
+    <input id="fType" list="eventTypes" placeholder="Exact event name, e.g. Pre-Wedding" autocomplete="off">
+    <datalist id="eventTypes"></datalist>
   </div>
   <div class="field">
     <label for="fCrew">Your name</label>
@@ -237,7 +231,9 @@ const DEFAULT_SHOTS = {
 const MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const fmtIso = iso => {const[y,m,d]=iso.split('-').map(Number);return MN[m-1].slice(0,3)+" "+d;};
 
-let db=null, shotListsRemote={}, items=[];
+let db=null, shotListsRemote={}, crewEventsRemote={}, items=[];
+const safeKey = value => String(value||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_').replace(/\s+/g,'-');
+const shotListKey = name => safeKey(name);
 
 function init(){
   document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
@@ -250,13 +246,22 @@ function init(){
       db.ref('crewEvents').once('value').then(s=>s.val()||{}).catch(()=>({})),
       db.ref('shotLists').once('value').then(s=>s.val()||{}).catch(()=>({}))
     ]).then(([events,lists])=>{
+      crewEventsRemote = events||{};
       shotListsRemote = lists||{};
+      buildEventTypes();
       buildClientOptions(events);
       renderShotsIfReady();
     }).catch(()=>buildClientOptions({}));
   }else{
     buildClientOptions({});
   }
+}
+
+function buildEventTypes(){
+  const names=new Set(['Haldi','Mehndi','Sangeet','Ceremony','Reception']);
+  Object.keys(shotListsRemote||{}).forEach(k=>names.add(String(k).replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase())));
+  Object.values(crewEventsRemote||{}).forEach(e=>{const n=String(e&&e.event||'').trim();if(n&&n!=='—')names.add(n);});
+  document.getElementById('eventTypes').innerHTML=[...names].sort().map(n=>`<option value="${n.replace(/"/g,'&quot;')}">`).join('');
 }
 
 function buildClientOptions(events){
@@ -283,18 +288,18 @@ function buildClientOptions(events){
 }
 
 function currentShots(){
-  const type = document.getElementById('fType').value;
+  const type = document.getElementById('fType').value.trim();
   if(!type) return null;
-  const key = type.toLowerCase();
+  const key = shotListKey(type);
   const remote = shotListsRemote && shotListsRemote[key] && shotListsRemote[key][TEAM];
   const arr = (Array.isArray(remote) && remote.length) ? remote
             : (remote && typeof remote==='object') ? Object.values(remote)
-            : (DEFAULT_SHOTS[key] && DEFAULT_SHOTS[key][TEAM]) || [];
+            : [];
   return arr;
 }
 
 function renderShotsIfReady(){
-  const type = document.getElementById('fType').value;
+  const type = document.getElementById('fType').value.trim();
   const wrap = document.getElementById('shotsWrap');
   if(!type){ wrap.style.display='none'; items=[]; return; }
   const arr = currentShots() || [];
@@ -306,7 +311,7 @@ function renderShotsIfReady(){
   updateCount();
   wrap.style.display='block';
 }
-document.getElementById('fType').addEventListener('change', renderShotsIfReady);
+document.getElementById('fType').addEventListener('input', renderShotsIfReady);
 
 function tog(i){
   items[i].done = !items[i].done;
@@ -322,7 +327,7 @@ function submitChecklist(){
   const err = document.getElementById('err');
   const selVal = document.getElementById('fClient').value;
   const client = selVal==='__other__' ? document.getElementById('fClientOther').value.trim() : selVal;
-  const type = document.getElementById('fType').value;
+  const type = document.getElementById('fType').value.trim();
   const crew = document.getElementById('fCrew').value.trim();
   const date = document.getElementById('fDate').value;
   const start = document.getElementById('fStart').value;
@@ -335,6 +340,7 @@ function submitChecklist(){
   if(!date) missing.push('event date');
   if(!start) missing.push('start time');
   if(!end) missing.push('close time');
+  if(type && !items.length) missing.push(`an exact “${type}” checklist`);
   if(missing.length){
     err.textContent = 'Still needed: ' + missing.join(', ') + '.';
     err.classList.add('show');

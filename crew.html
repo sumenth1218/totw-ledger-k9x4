@@ -75,6 +75,7 @@ h2{font-family:var(--display);font-size:29px;font-weight:600;line-height:1.05}
 .locked{opacity:.55}.locked .ricon{background:#EEEAE2;color:var(--soft)}
 .checklist{display:grid;gap:8px;margin-top:10px}.shot{display:flex;align-items:flex-start;gap:11px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer}.shot .box{width:21px;height:21px;border:1.5px solid #BDB7AA;border-radius:6px;flex:none;position:relative}.shot span:last-child{font-size:12.5px;line-height:1.45}.shot.on{background:var(--leaf-soft);border-color:#BFCDBB}.shot.on .box{background:var(--leaf);border-color:var(--leaf)}.shot.on .box:after{content:'';position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(43deg)}
 .progress{height:5px;background:#EAE6DE;border-radius:99px;overflow:hidden;margin-top:11px}.progress i{display:block;height:100%;background:var(--leaf);width:0;transition:width .2s}.progress-label{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;color:var(--soft);margin-top:7px;text-align:right}
+.card-flow{margin-top:12px}.card-flow h3{font-family:var(--body);font-size:14px;font-weight:600}.card-flow p{font-size:11.5px;color:var(--soft);line-height:1.5;margin-top:5px}.card-flow .choice{display:grid;gap:8px;margin-top:12px}.card-flow .choice label{display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid var(--line);border-radius:11px;background:#fff;font-size:12px;line-height:1.4}.card-flow .choice input{margin-top:2px;accent-color:var(--gold)}.card-status{margin-top:12px;background:var(--gold-soft);border-color:#DFCDA9}.card-status strong{display:block;font-size:14px}.card-status span{display:block;font-size:11.5px;color:#76551E;margin-top:5px;line-height:1.5}.two-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.two-buttons button{padding-left:8px;padding-right:8px}
 .loading{text-align:center;padding:54px 10px;color:var(--soft);font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase}
 .empty{text-align:center;padding:28px 16px;color:var(--soft);font-family:var(--display);font-size:18px;font-style:italic}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,18px);background:var(--ink);color:#fff;padding:11px 15px;border-radius:10px;font-size:11.5px;opacity:0;pointer-events:none;transition:.22s;z-index:20;max-width:calc(100% - 34px);text-align:center}.toast.on{opacity:1;transform:translate(-50%,0)}
@@ -159,7 +160,9 @@ function fmtDate(iso){if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);
 function fmtTime(t){if(!t)return '—';const[h,m]=t.split(':').map(Number),ap=h>=12?'PM':'AM';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`}
 function fmtClock(ms){if(!ms)return '—';return new Date(ms).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})}
 function teamType(role){const r=String(role||'').toLowerCase();if(r.includes('traditional'))return 'traditional';if(r.includes('candid'))return 'candid';return ''}
-function moodKey(name){return String(name||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_')}
+function safeKey(value){return String(value||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_').replace(/\s+/g,'-')}
+function shotListKey(name){return safeKey(name)}
+function moodKey(couple,eventName,eventDate){return safeKey(`${couple}|${eventName}|${eventDate}`)}
 function phoneDigits(v){return String(v||'').replace(/\D/g,'')}
 function waPhone(v){const n=phoneDigits(v);return n.length===10?'91'+n:n}
 function distanceM(a,b,c,d){const R=6371000,p=x=>x*Math.PI/180,dp=p(c-a),dl=p(d-b),q=Math.sin(dp/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
@@ -216,7 +219,7 @@ function renderDashboard(){
 }
 function showDashboard(){activeId='';activeEvent=null;history.replaceState({},'',location.pathname);renderDashboard();screen('dashboardScreen')}
 async function openEvent(id){
- if(!events[id])return;activeId=id;activeEvent=events[id];history.replaceState({},'',`?event=${encodeURIComponent(id)}`);screen('loadingScreen');
+ if(!events[id])return;activeId=id;activeEvent=events[id];items=[];history.replaceState({},'',`?event=${encodeURIComponent(id)}`);screen('loadingScreen');
  const s=await db.ref(`crewCheckins/attendance/${id}/${user.uid}`).once('value');attendance=s.val()||{};attendanceMap[id]=attendance;
  document.getElementById('eventDate').textContent=fmtDate(activeEvent.date);document.getElementById('eventCouple').textContent=activeEvent.couple;document.getElementById('eventName').textContent=activeEvent.eventName;
  renderEvent();screen('eventScreen');if(!attendance.openedAt)persistAttendance({openedAt:Date.now()}).catch(()=>{});
@@ -232,7 +235,7 @@ function detailCard(){
 }
 function assignmentCards(){
  const me=currentCrew(),team=Object.entries(activeEvent.crew||{});
- const rows=team.map(([uid,x])=>{const ph=waPhone(x.phone);return `<div class="team-row"><div class="avatar">${esc(initials(x.name))}</div><div><b>${esc(x.name)}${uid===user.uid?' · You':''}</b><small>${esc(x.role)}</small></div><div class="contact-actions"><a class="round-link" aria-label="Call ${esc(x.name)}" href="tel:${esc(phoneDigits(x.phone))}">☎</a><a class="round-link" aria-label="WhatsApp ${esc(x.name)}" href="https://wa.me/${esc(ph)}" target="_blank" rel="noopener">◉</a></div></div>`}).join('');
+ const rows=team.map(([uid,x])=>{const ph=waPhone(x.phone);return `<div class="team-row"><div class="avatar">${esc(initials(x.name))}</div><div><b>${esc(x.name)}${uid===user.uid?' · You':''}${x.isLead?' · Lead':''}</b><small>${esc(x.role)}</small></div><div class="contact-actions"><a class="round-link" aria-label="Call ${esc(x.name)}" href="tel:${esc(phoneDigits(x.phone))}">☎</a><a class="round-link" aria-label="WhatsApp ${esc(x.name)}" href="https://wa.me/${esc(ph)}" target="_blank" rel="noopener">◉</a></div></div>`}).join('');
  return `<div class="section-title">Your assignment</div><div class="card assignment"><div class="avatar">${esc(initials(me.name))}</div><div><b>${esc(me.name)}</b><span>${esc(me.role)}</span></div></div><div class="section-title">Team for this event</div><div class="card">${rows}</div>`;
 }
 function renderEvent(){
@@ -254,17 +257,18 @@ function attendanceStatus(){
  return `<div class="section-title">Arrival</div><div class="card success"><div class="mark">✓</div><h2>Checked in — On time</h2><p>Check-in recorded at ${esc(fmtClock(attendance.checkedInAt))}</p></div>`;
 }
 function resources(){
- const me=currentCrew(),team=teamType(me.role),type=String(activeEvent.checklistType||'').toLowerCase();
- const remote=shotLists[type]&&shotLists[type][team],arr=Array.isArray(remote)?remote:(remote&&typeof remote==='object'?Object.values(remote):(DEFAULT_SHOTS[type]&&DEFAULT_SHOTS[type][team])||[]);
+ const me=currentCrew(),team=teamType(me.role),type=shotListKey(activeEvent.eventName||activeEvent.checklistType||'');
+ const remote=shotLists[type]&&shotLists[type][team],arr=Array.isArray(remote)?remote:(remote&&typeof remote==='object'?Object.values(remote):[]);
+ const saved=Array.isArray(attendance.checklistItems)?attendance.checklistItems:Object.values(attendance.checklistItems||{});
+ if(!items.length&&saved.length)items=saved.map(x=>({t:x.t,done:!!x.done}));
  if(!items.length&&arr.length)items=arr.map(t=>({t,done:false}));
- if(Array.isArray(attendance.checklistItems)&&attendance.checklistItems.length&&!items.length)items=attendance.checklistItems.map(x=>({t:x.t,done:!!x.done}));
- const mood=team==='candid'&&shotMoods[moodKey(activeEvent.couple)]&&shotMoods[moodKey(activeEvent.couple)].url;
+ const moodEntry=team==='candid'&&shotMoods[moodKey(activeEvent.couple,activeEvent.eventName,activeEvent.date)],mood=moodEntry&&moodEntry.url;
  let html='<div class="section-title">Shoot resources</div>';
- if(items.length)html+=`<div class="card"><div class="resource"><div class="ricon">▣</div><div><b>${esc(activeEvent.checklistType)} shoot checklist</b><small>Tick as you cover each shot</small></div></div><div class="progress"><i id="progressBar"></i></div><div class="progress-label" id="progressLabel"></div><div class="checklist">${items.map((x,i)=>`<div class="shot ${x.done?'on':''}" onclick="toggleShot(${i})"><span class="box"></span><span>${esc(x.t)}</span></div>`).join('')}</div></div>`;
+ if(items.length)html+=`<div class="card"><div class="resource"><div class="ricon">▣</div><div><b>${esc(activeEvent.eventName||activeEvent.checklistType)} shoot checklist</b><small>Tick as you cover each shot</small></div></div><div class="progress"><i id="progressBar"></i></div><div class="progress-label" id="progressLabel"></div><div class="checklist">${items.map((x,i)=>`<div class="shot ${x.done?'on':''}" onclick="toggleShot(${i})"><span class="box"></span><span>${esc(x.t)}</span></div>`).join('')}</div></div>`;
  if(mood)html+=`<a class="card resource" style="text-decoration:none;color:inherit;display:grid" href="${esc(mood)}" target="_blank" rel="noopener"><div class="ricon">P</div><div><b>Visual Reference Board</b><small>Open Pinterest board</small></div><span>›</span></a>`;
  if(!items.length&&!mood)html+=`<div class="card empty">No shoot resources are assigned to your role.</div>`;
- if(!attendance.checkedOutAt)html+=`<div class="action-stack"><button class="secondary" onclick="checkOut()">Check Out</button></div><p class="confirm-note">Working hours begin from the actual shoot start.</p>`;
- else html+=`<div class="card" style="margin-top:12px;text-align:center"><div class="eyebrow">Checked out at ${esc(fmtClock(attendance.checkedOutAt))}</div><h2 style="font-size:24px">Coverage completed</h2><p class="lead" style="margin-top:7px">${esc(durationText(activeEvent.actualStartAt,attendance.checkedOutAt))}</p></div>`;
+ if(!attendance.checkedOutAt)html+=checkoutForm();
+ else html+=completedCards();
  return html;
 }
 function updateProgress(){const b=document.getElementById('progressBar'),l=document.getElementById('progressLabel');if(!b||!l)return;const n=items.filter(x=>x.done).length;b.style.width=`${items.length?n/items.length*100:0}%`;l.textContent=`${n} of ${items.length} ticked`}
@@ -281,15 +285,31 @@ function checkIn(){
  },err=>{const msg=err.code===1?'Please allow location access to check in.':'Could not confirm your location. Please try again.';toast(msg);b.disabled=false;b.textContent='Check In'},{enableHighAccuracy:true,timeout:18000,maximumAge:0});
 }
 function toggleShot(i){if(attendance.checkedOutAt)return;items[i].done=!items[i].done;attendance.checklistItems=items;persistAttendance({checklistItems:items}).catch(()=>{});renderEvent()}
-async function checkOut(){
- if(!confirm('Are you sure you have completed your coverage for this event?'))return;
- const now=Date.now();
- try{const latest=await db.ref(`crewCheckins/events/${activeId}`).once('value');if(latest.exists()){activeEvent=latest.val();events[activeId]=activeEvent;}await persistAttendance({checkedOutAt:now,checklistItems:items});await submitLegacyChecklist(now);toast('Checked out successfully');renderEvent()}catch(e){toast('Could not check out. Please try again.')}
+function checkoutForm(){
+ return `<div class="section-title">Memory cards</div><div class="card card-flow"><h3>Close this event</h3><p>Record the cards used and what happened to them after the shoot.</p><div class="field"><label>Cards used</label><input id="cardsUsed" type="number" inputmode="numeric" min="0" max="100" value="${attendance.cardsUsed==null?'':esc(attendance.cardsUsed)}" placeholder="e.g. 4"></div><div class="choice"><label><input type="radio" name="cardCustody" value="copying_with_me" onchange="toggleCustodyFields()"> <span><b>Copying with me</b><br>I am taking the cards with me.</span></label><label><input type="radio" name="cardCustody" value="handed_over" onchange="toggleCustodyFields()"> <span><b>Handed over</b><br>Enter the name of the person who received them.</span></label></div><div class="field" id="handoverField" style="display:none"><label>Handed over to</label><input id="handoverName" type="text" maxlength="120" autocomplete="name" placeholder="Person's name"></div><div class="action-stack"><button class="secondary" onclick="completeCheckOut()">Confirm &amp; Check Out</button></div><p class="confirm-note">Working hours begin from the actual shoot start.</p></div>`;
+}
+function toggleCustodyFields(){const v=document.querySelector('input[name="cardCustody"]:checked')?.value||'',f=document.getElementById('handoverField');if(f)f.style.display=v==='handed_over'?'block':'none';}
+async function completeCheckOut(){
+ const cardsUsed=Number(document.getElementById('cardsUsed')?.value),cardCustody=document.querySelector('input[name="cardCustody"]:checked')?.value||'',handoverName=(document.getElementById('handoverName')?.value||'').trim();
+ if(!Number.isInteger(cardsUsed)||cardsUsed<0||cardsUsed>100){toast('Enter how many memory cards were used.');return;}
+ if(!cardCustody){toast('Choose whether the cards are with you or handed over.');return;}
+ if(cardCustody==='handed_over'&&!handoverName){toast('Enter the name of the person who received the cards.');return;}
+ if(!confirm('Confirm the memory-card details and complete checkout?'))return;
+ const now=Date.now(),next={checkedOutAt:now,checklistItems:items,cardsUsed,cardCustody};
+ if(cardCustody==='handed_over')Object.assign(next,{handedToName:handoverName,handoverAt:now});
+ try{const latest=await db.ref(`crewCheckins/events/${activeId}`).once('value');if(latest.exists()){activeEvent=latest.val();events[activeId]=activeEvent;}await persistAttendance(next);await submitLegacyChecklist(now);toast(cardCustody==='handed_over'?'Checked out · Handover recorded':'Checked out · Cards with you');renderEvent()}catch(e){toast('Could not check out. Please try again.')}
+}
+function completedCards(){
+ const used=attendance.cardsUsed==null?'—':attendance.cardsUsed;
+ let detail=`${used} card${used===1?'':'s'} used.`;
+ if(attendance.cardCustody==='handed_over'||attendance.cardCustody==='handed_to_lead')detail=`${used} card${used===1?'':'s'} handed to ${esc(attendance.handedToName||'the named person')}${attendance.handoverAt?' at '+esc(fmtClock(attendance.handoverAt)):''}.`;
+ else if(attendance.cardCustody==='copying_with_me'||attendance.cardCustody==='taking_with_me')detail=`${used} card${used===1?'':'s'} taken by you for copying.`;
+ return `<div class="card" style="margin-top:12px;text-align:center"><div class="eyebrow">Checked out at ${esc(fmtClock(attendance.checkedOutAt))}</div><h2 style="font-size:24px">Coverage completed</h2><p class="lead" style="margin-top:7px">${esc(durationText(activeEvent.actualStartAt,attendance.checkedOutAt))}</p></div><div class="card card-status"><strong>Memory-card status</strong><span>${detail}</span></div>`;
 }
 async function submitLegacyChecklist(checkedOutAt){
- const me=currentCrew(),team=teamType(me.role);if(!activeEvent.actualStartAt||!items.length||!team||!activeEvent.checklistType||activeEvent.checklistType==='None')return;
+ const me=currentCrew(),team=teamType(me.role),eventType=activeEvent.eventName||activeEvent.checklistType;if(!activeEvent.actualStartAt||!items.length||!team||!eventType)return;
  const tm=ms=>{const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${p(d.getHours())}:${p(d.getMinutes())}`;};
- const sub={client:activeEvent.couple,eventType:activeEvent.checklistType,eventDate:activeEvent.date,team,crewName:me.name,startTime:tm(activeEvent.actualStartAt),endTime:tm(checkedOutAt),items:items.map(x=>({t:x.t,done:!!x.done})),tickedCount:items.filter(x=>x.done).length,totalCount:items.length,submittedAt:Date.now()};
+ const sub={client:activeEvent.couple,eventType,eventDate:activeEvent.date,team,crewName:me.name,startTime:tm(activeEvent.actualStartAt),endTime:tm(checkedOutAt),items:items.map(x=>({t:x.t,done:!!x.done})),tickedCount:items.filter(x=>x.done).length,totalCount:items.length,submittedAt:Date.now()};
  try{await db.ref(`shotChecklists/ci_${activeId}_${user.uid}`).set(sub)}catch(e){}
 }
 boot();
