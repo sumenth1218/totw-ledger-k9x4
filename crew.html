@@ -176,6 +176,8 @@ function isEmbeddedBrowser(){return /\b(Instagram|FBAN|FBAV|FB_IAB|WhatsApp|Line
 function initials(name){return String(name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
 function fmtDate(iso){if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);return `${MN[m-1]} ${d}, ${y}`}
 function fmtTime(t){if(!t)return '—';const[h,m]=t.split(':').map(Number),ap=h>=12?'PM':'AM';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`}
+function addHoursToTime(t,hours=7){if(!t)return '';const parts=String(t).trim().match(/^(\d{1,2}):(\d{2})(?:\s*([AP]M))?$/i);if(!parts)return '';let h=+parts[1],m=+parts[2];if(parts[3]){h%=12;if(parts[3].toUpperCase()==='PM')h+=12}return `${String((h+hours)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`}
+function eventTimingRange(t){const end=addHoursToTime(t,7);return end?`${fmtTime(t)} – ${fmtTime(end)}`:fmtTime(t)}
 function assignmentTime(e){return (e.crew||{})[user.uid]?.reportTime||e.reportingTime||e.scheduledStart||e.functionStart||'23:59'}
 function assignmentMinutes(e){const t=String(assignmentTime(e)).trim(),m=t.match(/^(\d{1,2}):(\d{2})(?:\s*([AP]M))?/i);if(!m)return 1439;let h=+m[1],min=+m[2];if(m[3]){h%=12;if(m[3].toUpperCase()==='PM')h+=12}return h*60+min}
 function fmtClock(ms){if(!ms)return '—';return new Date(ms).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})}
@@ -258,7 +260,7 @@ function detailCard(){
  return `<div class="card"><div class="detail-grid">
   <div class="detail-row"><div class="ico">◷</div><div><small>Reporting time</small><b>${esc(fmtTime(me.reportTime||activeEvent.reportingTime))}</b></div></div>
   <div class="detail-row"><div class="ico">⌁</div><div><small>Scheduled shoot start</small><b>${esc(fmtTime(activeEvent.scheduledStart))}</b></div></div>
-  ${activeEvent.functionStart?`<div class="detail-row"><div class="ico">◇</div><div><small>Event timings</small><b>${esc(fmtTime(activeEvent.functionStart))}</b></div></div>`:''}
+  ${activeEvent.functionStart?`<div class="detail-row"><div class="ico">◇</div><div><small>Event timings</small><b>${esc(eventTimingRange(activeEvent.functionStart))}</b></div></div>`:''}
   <div class="detail-row"><div class="ico">⌖</div><div><small>Venue</small><b>${esc(activeEvent.venueName||'Venue to be updated')}</b></div>${activeEvent.mapsUrl?`<a class="link-button" href="${esc(maps)}" target="_blank" rel="noopener">Directions</a>`:'<span class="status late">Maps pending</span>'}</div>
   ${activeEvent.brideReadyLocation?`<div class="detail-row"><div class="ico">B</div><div><small>Bride getting ready</small><b>${esc(activeEvent.brideReadyLocation)}</b></div></div>`:''}
   ${activeEvent.groomReadyLocation?`<div class="detail-row"><div class="ico">G</div><div><small>Groom getting ready</small><b>${esc(activeEvent.groomReadyLocation)}</b></div></div>`:''}
