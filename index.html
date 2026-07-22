@@ -3341,6 +3341,9 @@ const EVENT_BOARD_TYPES=[
   ['reception','Reception'],
   ['couple-portraits','Couple Portraits']
 ];
+function eventBoardKey(name){
+  return ({'bride making':'bride-making','bride getting ready':'bride-making','groom making':'groom-making','groom getting ready':'groom-making','haldi':'haldi','pellikuthuru':'haldi','mangala snanam':'haldi','mehndi':'mehndi','mehendi':'mehndi','sangeet':'sangeet-cocktail','cocktail':'sangeet-cocktail','after party':'sangeet-cocktail','after-party':'sangeet-cocktail','engagement':'engagement','edurukollu':'wedding','ceremony':'wedding','wedding ceremony':'wedding','wedding':'wedding','muhurtham':'wedding','pheras':'wedding','reception':'reception','couple portraits':'couple-portraits'})[String(name||'').trim().toLowerCase()]||'';
+}
 
 function toggleEventBoardsSec(){
   const s=document.getElementById('eventBoardsSec');
@@ -3890,7 +3893,7 @@ async function saveCheckinEvent(){
   try{await db.ref().update(updates);checkinEvents[id]=event;log(`${old.couple?'updated':'created'} crew check-in event: ${couple} — ${eventName}`);toast(mapsUrl?'Event link ready.':'Event saved — remember to add the Maps link.');toggleCheckinForm(false);setTimeout(()=>shareCheckinEvent(id,false),120);}catch(e){res.className='check-result show clash';res.innerHTML='<b>Could not save</b>Please try again.';}
 }
 function eventShareText(id){const e=checkinEvents[id];if(!e)return '';return `Hi team, sharing tomorrow’s shoot details.\n\n${e.couple} — ${e.eventName}\nReporting time: ${ciFmtTime(e.reportingTime)}\nScheduled shoot start: ${ciFmtTime(e.functionStart||e.scheduledStart)}\nVenue: ${e.venueName||'Open the link for directions'}\n\nPlease open the link and confirm your assignment:\n${ciCrewUrl(id)}`;}
-function ciEventNames(e){const a=Array.isArray(e&&e.eventNames)?e.eventNames:Object.values(e&&e.eventNames||{});return a.length?a:[e&&(e.eventName||e.checklistType)||'Event'];}
+function ciEventNames(e){const raw=e&&e.eventNames,a=Array.isArray(raw)?raw:(raw&&typeof raw==='object'?Object.values(raw):[]);return a.length?a:[e&&(e.eventName||e.checklistType)||'Event'];}
 function shareCheckinEvent(id,open=true){
   const text=eventShareText(id);if(!text)return;if(open)window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener');else copyText(text,'WhatsApp message copied.');
 }
@@ -3951,7 +3954,7 @@ async function saveCiResources(id){
 }
 function renderCheckinEvents(){
   const el=document.getElementById('ciEventList');if(!el)return;renderCheckinFormOptions();
-  const list=Object.entries(checkinEvents||{}).sort((a,b)=>`${a[1].date} ${a[1].scheduledStart}`.localeCompare(`${b[1].date} ${b[1].scheduledStart}`));
+  const list=Object.entries(checkinEvents||{}).filter(([,e])=>e&&typeof e==='object').sort((a,b)=>`${a[1].date||''} ${a[1].scheduledStart||''}`.localeCompare(`${b[1].date||''} ${b[1].scheduledStart||''}`));
   const today=new Date();today.setHours(0,0,0,0);const tomorrow=new Date(today);tomorrow.setDate(today.getDate()+1);const tomorrowIso=tomorrow.toISOString().slice(0,10),shareDue=list.filter(([,e])=>e.date===tomorrowIso);
   const note=document.getElementById('ciTomorrowNote');if(note){note.style.display=shareDue.length?'':'none';note.innerHTML=shareDue.length?`<b>Tomorrow:</b> ${shareDue.map(([id,e])=>`${esc(e.couple)} — ${esc(e.eventName)} <button class="btn-mini" style="margin-left:6px" onclick="shareCheckinEvent('${id}')">Share with team</button>`).join(' · ')}`:'';}
   if(!list.length){el.innerHTML='<div class="empty">No crew check-in events yet.</div>';return;}
