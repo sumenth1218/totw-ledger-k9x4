@@ -1,4 +1,4 @@
-const CACHE='tale-of-two-crew-v3';
+const CACHE='tale-of-two-crew-v4';
 const SHELL=['./crew.html','./crew-manifest.webmanifest','./totw-logo-black.png','./totw-logo-white.png','./totw-logo-square.jpg','./crew-icon-180.png','./crew-icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
