@@ -71,7 +71,9 @@ h2{font-family:var(--display);font-size:29px;font-weight:600;line-height:1.05}
 .shoot-list{display:grid;gap:11px}.shoot-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;cursor:pointer;box-shadow:0 8px 28px rgba(31,27,20,.05);transition:transform .15s,border-color .15s}
 .shoot-card:active{transform:scale(.99)}.shoot-card .date{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
 .shoot-card h3{font-family:var(--display);font-size:25px;font-weight:600;margin-top:4px}.shoot-card p{font-size:12.5px;color:var(--soft);margin-top:3px}
+.client-groups{display:grid;gap:12px}.client-group{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 28px rgba(31,27,20,.05);overflow:hidden}.client-group>summary{list-style:none;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:18px;cursor:pointer}.client-group>summary::-webkit-details-marker{display:none}.client-group-title{min-width:0}.client-group-title .date{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}.client-group-title h3{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.05;margin-top:5px}.client-group-title p{font-size:11.5px;color:var(--soft);line-height:1.45;margin-top:5px}.client-group-toggle{width:31px;height:31px;border-radius:50%;border:1px solid var(--line);display:grid;place-content:center;color:var(--soft);font-size:15px;flex:none;transition:transform .18s}.client-group[open] .client-group-toggle{transform:rotate(180deg)}.client-events{display:grid;gap:9px;padding:0 10px 10px}.client-events .shoot-card{box-shadow:none;border-radius:13px;padding:15px;background:#FBF9F3}.client-events .shoot-card h3{font-family:var(--body);font-size:16px;font-weight:650;line-height:1.25}.client-events .shoot-card p{font-size:11.5px;line-height:1.45}.client-events .shoot-card .date{font-size:8.5px}
 .completed-shoots{margin-top:28px;border-top:1px solid var(--line);padding-top:10px}.completed-shoots summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px;cursor:pointer;font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--soft)}.completed-shoots summary::-webkit-details-marker{display:none}.completed-shoots summary:after{content:'+';width:27px;height:27px;border-radius:50%;background:var(--gold-soft);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--body);font-size:17px;line-height:1;flex:none}.completed-shoots[open] summary:after{content:'−'}.completed-shoots summary span{margin-left:auto;font-family:var(--body);font-size:10px;letter-spacing:0;text-transform:none}.completed-shoots .shoot-list{padding-top:3px}.completed-shoots .shoot-card{box-shadow:none;background:rgba(255,253,248,.7)}
+.completed-shoots .client-groups{padding-top:3px}.completed-shoots .client-group{box-shadow:none;background:rgba(255,253,248,.7)}.completed-shoots .client-group>summary{font-family:var(--body);letter-spacing:0;text-transform:none;color:var(--ink);padding:17px}.completed-shoots .client-group>summary:after{display:none}
 .status{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:999px;margin-top:12px;background:#EEEAE2;color:var(--soft)}
 .status:before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}.status.ok{background:var(--leaf-soft);color:var(--leaf)}.status.late{background:var(--red-soft);color:var(--red)}
 .event-head{margin-bottom:18px}.event-head .back{border:0;background:none;color:var(--soft);font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:0 0 16px;cursor:pointer}
@@ -137,7 +139,7 @@ h2{font-family:var(--display);font-size:29px;font-weight:600;line-height:1.05}
   </section>
 
   <section class="screen" id="dashboardScreen">
-    <div class="dashboard-head"><div class="eyebrow">Upcoming assignments</div><h1 id="helloTitle">Your shoots.</h1><p class="lead">Open an assignment to confirm the reporting time and venue.</p></div>
+    <div class="dashboard-head"><div class="eyebrow">Upcoming assignments</div><h1 id="helloTitle">Your shoots.</h1><p class="lead">Open a client to view your events, arrival time and venue.</p></div>
     <div class="shoot-list" id="shootList"></div>
     <button class="signout" onclick="signOutCrew()">Sign out</button>
   </section>
@@ -179,7 +181,7 @@ function fmtDate(iso){if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);
 function fmtTime(t){if(!t)return '—';const[h,m]=t.split(':').map(Number),ap=h>=12?'PM':'AM';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`}
 function addHoursToTime(t,hours=7){if(!t)return '';const parts=String(t).trim().match(/^(\d{1,2}):(\d{2})(?:\s*([AP]M))?$/i);if(!parts)return '';let h=+parts[1],m=+parts[2];if(parts[3]){h%=12;if(parts[3].toUpperCase()==='PM')h+=12}return `${String((h+hours)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`}
 function eventTimingRange(t){const end=addHoursToTime(t,7);return end?`${fmtTime(t)} – ${fmtTime(end)}`:fmtTime(t)}
-function assignmentTime(e){return (e.crew||{})[user.uid]?.reportTime||e.reportingTime||e.scheduledStart||e.functionStart||'23:59'}
+function assignmentTime(e){const me=(e.crew||{})[user.uid]||{};return me.arrivalTime||me.reportTime||e.reportingTime||e.scheduledStart||e.functionStart||'23:59'}
 function assignmentMinutes(e){const t=String(assignmentTime(e)).trim(),m=t.match(/^(\d{1,2}):(\d{2})(?:\s*([AP]M))?/i);if(!m)return 1439;let h=+m[1],min=+m[2];if(m[3]){h%=12;if(m[3].toUpperCase()==='PM')h+=12}return h*60+min}
 function fmtClock(ms){if(!ms)return '—';return new Date(ms).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})}
 function teamType(role){const r=String(role||'').toLowerCase();if(r.includes('traditional'))return 'traditional';if(r.includes('candid'))return 'candid';return ''}
@@ -245,11 +247,12 @@ function renderDashboard(){
  const card=([id,e])=>{
    const at=attendanceMap[id]||{};
    const dayState=eventDayState(e.date);let label=dayState==='today'?'Ready for check-in':'Upcoming',cl='';if(at.checkedOutAt){label='Completed';cl='ok'}else if(at.checkedInAt){label='In progress';cl='ok'}else if(at.confirmedAt&&dayState==='today'){label='Ready for check-in';cl='ok'}else if(at.confirmedAt){label='Upcoming · Confirmed';cl='ok'}
-   return `<article class="shoot-card" onclick="openEvent('${esc(id)}')"><div class="date">${esc(fmtDate(e.date))} · ${esc(fmtTime(assignmentTime(e)))}</div><h3>${esc(e.couple)}</h3><p>${esc(e.eventName)} · ${esc(e.venueName||'Venue')}</p><span class="status ${cl}">${label}</span></article>`;
+   return `<article class="shoot-card" onclick="openEvent('${esc(id)}')"><div class="date">${esc(fmtDate(e.date))} · ${esc(fmtTime(assignmentTime(e)))}</div><h3>${esc(e.eventName||'Event')}</h3><p>${esc(e.venueName||'Venue')}</p><span class="status ${cl}">${label}</span></article>`;
  };
+ const grouped=items=>{const groups=new Map();items.forEach(item=>{const couple=String(item[1].couple||'Unnamed client').trim()||'Unnamed client',key=couple.toLowerCase();if(!groups.has(key))groups.set(key,{couple,items:[]});groups.get(key).items.push(item);});return `<div class="client-groups">${[...groups.values()].map(group=>{const dates=[...new Set(group.items.map(([,e])=>e.date).filter(Boolean))].sort(),dateLabel=!dates.length?'Dates pending':dates.length===1?fmtDate(dates[0]):`${fmtDate(dates[0])} – ${fmtDate(dates[dates.length-1])}`,confirmed=group.items.filter(([id])=>(attendanceMap[id]||{}).confirmedAt).length,inProgress=group.items.filter(([id])=>(attendanceMap[id]||{}).checkedInAt&&!(attendanceMap[id]||{}).checkedOutAt).length,summary=[`${group.items.length} ${group.items.length===1?'event':'events'}`,inProgress?`${inProgress} in progress`:'',confirmed?`${confirmed} confirmed`:''].filter(Boolean).join(' · ');return `<details class="client-group"><summary><div class="client-group-title"><div class="date">${esc(dateLabel)}</div><h3>${esc(group.couple)}</h3><p>${esc(summary)}</p></div><span class="client-group-toggle">⌄</span></summary><div class="client-events">${group.items.map(card).join('')}</div></details>`;}).join('')}</div>`;};
  const active=list.filter(([id])=>!(attendanceMap[id]||{}).checkedOutAt),completed=list.filter(([id])=>(attendanceMap[id]||{}).checkedOutAt).reverse();
- const activeHtml=active.length?active.map(card).join(''):'<div class="card empty">No active assignments.</div>';
- const completedHtml=completed.length?`<details class="completed-shoots"><summary>Completed shoots <span>${completed.length} ${completed.length===1?'shoot':'shoots'}</span></summary><div class="shoot-list">${completed.map(card).join('')}</div></details>`:'';
+ const activeHtml=active.length?grouped(active):'<div class="card empty">No active assignments.</div>';
+ const completedHtml=completed.length?`<details class="completed-shoots"><summary>Completed shoots <span>${completed.length} ${completed.length===1?'shoot':'shoots'}</span></summary>${grouped(completed)}</details>`:'';
  el.innerHTML=activeHtml+completedHtml;
 }
 function showDashboard(){activeId='';activeEvent=null;history.replaceState({},'',location.pathname);renderDashboard();screen('dashboardScreen')}
@@ -259,11 +262,11 @@ async function openEvent(id){
  document.getElementById('eventDate').textContent=fmtDate(activeEvent.date);document.getElementById('eventCouple').textContent=activeEvent.couple;document.getElementById('eventName').textContent=eventNamesFor(activeEvent).join(' + ');
  renderEvent();screen('eventScreen');if(!attendance.openedAt)persistAttendance({openedAt:Date.now()}).catch(()=>{});
 }
-function currentCrew(){return (activeEvent.crew||{})[user.uid]||{name:profile.name,phone:profile.phone,role:profile.role,reportTime:activeEvent.reportingTime}}
+function currentCrew(){return (activeEvent.crew||{})[user.uid]||{name:profile.name,phone:profile.phone,role:profile.role,arrivalTime:activeEvent.reportingTime,reportTime:activeEvent.reportingTime}}
 function detailCard(){
  const me=currentCrew(),maps=activeEvent.mapsUrl||'#';
  return `<div class="card"><div class="detail-grid">
-  <div class="detail-row"><div class="ico">◷</div><div><small>Reporting time</small><b>${esc(fmtTime(me.reportTime||activeEvent.reportingTime))}</b></div></div>
+  <div class="detail-row"><div class="ico">◷</div><div><small>Arrival time</small><b>${esc(fmtTime(me.arrivalTime||me.reportTime||activeEvent.reportingTime))}</b></div></div>
   <div class="detail-row"><div class="ico">⌁</div><div><small>Scheduled shoot start</small><b>${esc(fmtTime(activeEvent.functionStart||activeEvent.scheduledStart))}</b></div></div>
   ${activeEvent.functionStart?`<div class="detail-row"><div class="ico">◇</div><div><small>Event timings</small><b>${esc(eventTimingRange(activeEvent.functionStart))}</b></div></div>`:''}
   <div class="detail-row"><div class="ico">⌖</div><div><small>Venue</small><b>${esc(activeEvent.venueName||'Venue to be updated')}</b></div>${activeEvent.mapsUrl?`<a class="link-button" href="${esc(maps)}" target="_blank" rel="noopener">Directions</a>`:'<span class="status late">Maps pending</span>'}</div>
@@ -289,7 +292,7 @@ function renderEvent(){
  let html='';
  if(!attendance.confirmedAt){
    html=detailCard()+assignmentCards();
-   html+=`<div class="action-stack"><button class="primary" onclick="confirmAssignment()">Confirm Assignment</button></div><p class="confirm-note">Confirm that you have seen the reporting time and venue.</p>`;
+   html+=`<div class="action-stack"><button class="primary" onclick="confirmAssignment()">Confirm Assignment</button></div><p class="confirm-note">Confirm that you have seen the arrival time and venue.</p>`;
  }else if(!attendance.checkedInAt){
    html=detailCard()+assignmentCards();const hasLocation=!!activeEvent.mapsUrl;
    const dayState=eventDayState(activeEvent.date);
@@ -331,7 +334,7 @@ function checkIn(){
  navigator.geolocation.getCurrentPosition(async pos=>{
    const lat=pos.coords.latitude,lng=pos.coords.longitude,hasPin=Number.isFinite(+activeEvent.venueLat)&&Number.isFinite(+activeEvent.venueLng);let d=hasPin?distanceM(lat,lng,+activeEvent.venueLat,+activeEvent.venueLng):0;
    if(!isFinite(d)||d>500){toast(`You are ${d>1000?(d/1000).toFixed(1)+' km':Math.round(d)+' m'} from the venue. Check-in is available within 500 m.`);b.disabled=false;b.textContent='Check In';return}
-   const now=Date.now(),me=currentCrew(),deadline=new Date(`${activeEvent.date}T${me.reportTime||activeEvent.reportingTime}:00`).getTime(),late=now>deadline,lateMinutes=late?Math.max(1,Math.ceil((now-deadline)/60000)):0;
+   const now=Date.now(),me=currentCrew(),deadline=new Date(`${activeEvent.date}T${me.arrivalTime||me.reportTime||activeEvent.reportingTime}:00`).getTime(),late=now>deadline,lateMinutes=late?Math.max(1,Math.ceil((now-deadline)/60000)):0;
    try{if(!hasPin){try{const eventRef=db.ref(`crewCheckins/events/${activeId}`),pin=await eventRef.child('venueGps').transaction(value=>value||{lat,lng,setAt:now,setBy:user.uid}),fixed=pin.snapshot&&pin.snapshot.val();if(fixed){activeEvent.venueLat=+fixed.lat;activeEvent.venueLng=+fixed.lng;events[activeId]=activeEvent;await eventRef.update({venueLat:+fixed.lat,venueLng:+fixed.lng});d=distanceM(lat,lng,+fixed.lat,+fixed.lng);}}catch(pinError){d=0;}}await persistAttendance({confirmedAt:attendance.confirmedAt||now,checkedInAt:now,checkinLat:lat,checkinLng:lng,gpsAccuracy:Math.round(pos.coords.accuracy||0),distanceM:Math.round(d),late,lateMinutes});toast(late?'Checked in late':'Checked in — on time');items=[];renderEvent()}catch(e){toast('Could not save check-in. Please try again.');b.disabled=false;b.textContent='Check In'}
  },err=>{const msg=err.code===1?'Please allow location access to check in.':'Could not confirm your location. Please try again.';toast(msg);b.disabled=false;b.textContent='Check In'},{enableHighAccuracy:true,timeout:18000,maximumAge:0});
 }
