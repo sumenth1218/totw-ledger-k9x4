@@ -171,6 +171,7 @@ let auth=null,db=null,user=null,profile=null,assignments={},events={},attendance
 function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id===id));window.scrollTo(0,0)}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.remove('on'),2800)}
 function showError(id,msg){const el=document.getElementById(id);el.textContent=msg;el.classList.add('on')}
+function isEmbeddedBrowser(){return /\b(Instagram|FBAN|FBAV|FB_IAB|WhatsApp|Line\/|wv\b)/i.test(navigator.userAgent||'')}
 function initials(name){return String(name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
 function fmtDate(iso){if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);return `${MN[m-1]} ${d}, ${y}`}
 function fmtTime(t){if(!t)return '—';const[h,m]=t.split(':').map(Number),ap=h>=12?'PM':'AM';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`}
@@ -189,7 +190,7 @@ async function boot(){
  try{await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)}catch(e){}
  auth.onAuthStateChanged(async u=>{
    user=u||null;
-   if(!u){document.getElementById('userPill').style.display='none';screen('loginScreen');return}
+   if(!u){document.getElementById('userPill').style.display='none';screen('loginScreen');if(isEmbeddedBrowser())showError('loginError','Open this same link in Safari or Chrome to continue. Secure Google sign-in does not work inside WhatsApp or Instagram.');return}
    document.getElementById('userPill').style.display='block';document.getElementById('userPill').textContent=u.email||'Signed in';
    try{
      const s=await db.ref('crewProfiles/'+u.uid).once('value');profile=s.val()||null;
@@ -199,9 +200,13 @@ async function boot(){
  });
 }
 function signInCrew(){
+ if(isEmbeddedBrowser()){
+   showError('loginError','Please open this same link in Safari or Chrome to sign in. WhatsApp and Instagram browsers cannot complete the secure Google login.');
+   return;
+ }
  const b=document.getElementById('googleBtn');b.disabled=true;b.textContent='Signing in…';
  const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
- auth.signInWithPopup(p).catch(e=>{if(e.code==='auth/popup-blocked')return auth.signInWithRedirect(p);if(e.code!=='auth/popup-closed-by-user')showError('loginError','Google sign-in could not be completed.');}).finally(()=>{b.disabled=false;b.textContent='Continue with Google'});
+ auth.signInWithPopup(p).catch(e=>{if(e.code==='auth/popup-blocked')showError('loginError','Google sign-in was blocked. Please open this link directly in Safari or Chrome and try again.');else if(e.code!=='auth/popup-closed-by-user')showError('loginError','Google sign-in could not be completed.');}).finally(()=>{b.disabled=false;b.textContent='Continue with Google'});
 }
 function signOutCrew(){
  if(!confirm('Sign out of the Tale of Two crew app on this device?'))return;
@@ -225,7 +230,7 @@ async function loadDashboard(){
 }
 function renderDashboard(){
  const el=document.getElementById('shootList');
- const list=Object.entries(events).sort((a,b)=>`${a[1].date} ${a[1].scheduledStart}`.localeCompare(`${b[1].date} ${b[1].scheduledStart}`));
+ const list=Object.entries(events).sort((a,b)=>`${a[1].date||''} ${a[1].scheduledStart||a[1].functionStart||'23:59'}`.localeCompare(`${b[1].date||''} ${b[1].scheduledStart||b[1].functionStart||'23:59'}`));
  if(!list.length){el.innerHTML='<div class="card empty">No assignments have been shared with you yet.</div>';return}
  el.innerHTML=list.map(([id,e])=>{
    const at=attendanceMap[id]||{};
@@ -247,7 +252,7 @@ function detailCard(){
   <div class="detail-row"><div class="ico">◷</div><div><small>Reporting time</small><b>${esc(fmtTime(me.reportTime||activeEvent.reportingTime))}</b></div></div>
   <div class="detail-row"><div class="ico">⌁</div><div><small>Scheduled shoot start</small><b>${esc(fmtTime(activeEvent.scheduledStart))}</b></div></div>
   ${activeEvent.functionStart?`<div class="detail-row"><div class="ico">◇</div><div><small>Function timing</small><b>${esc(fmtTime(activeEvent.functionStart))}${activeEvent.functionEnd?' – '+esc(fmtTime(activeEvent.functionEnd)):''}</b></div></div>`:''}
-  <div class="detail-row"><div class="ico">⌖</div><div><small>Venue</small><b>${esc(activeEvent.venueName||'Open location')}</b></div><a class="link-button" href="${esc(maps)}" target="_blank" rel="noopener">Directions</a></div>
+  <div class="detail-row"><div class="ico">⌖</div><div><small>Venue</small><b>${esc(activeEvent.venueName||'Venue to be updated')}</b></div>${activeEvent.mapsUrl?`<a class="link-button" href="${esc(maps)}" target="_blank" rel="noopener">Directions</a>`:'<span class="status late">Maps pending</span>'}</div>
   ${activeEvent.brideReadyLocation?`<div class="detail-row"><div class="ico">B</div><div><small>Bride getting ready</small><b>${esc(activeEvent.brideReadyLocation)}</b></div></div>`:''}
   ${activeEvent.groomReadyLocation?`<div class="detail-row"><div class="ico">G</div><div><small>Groom getting ready</small><b>${esc(activeEvent.groomReadyLocation)}</b></div></div>`:''}
   ${activeEvent.clientContactName?`<div class="detail-row"><div class="ico">☎</div><div><small>On-site contact</small><b>${esc(activeEvent.clientContactName)}</b>${activeEvent.clientContactPhone?`<em>${esc(activeEvent.clientContactPhone)}</em>`:''}</div>${activeEvent.clientContactPhone?`<a class="link-button" href="tel:${esc(phoneDigits(activeEvent.clientContactPhone))}">Call</a>`:''}</div>`:''}
@@ -265,7 +270,8 @@ function renderEvent(){
  if(!attendance.confirmedAt){
    html+=`<div class="action-stack"><button class="primary" onclick="confirmAssignment()">Confirm Assignment</button></div><p class="confirm-note">Confirm that you have seen the reporting time and venue.</p>`;
  }else if(!attendance.checkedInAt){
-   html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" id="checkBtn" onclick="checkIn()">Check In</button></div><p class="confirm-note">GPS verification is available within 500 m of the venue.</p>`;
+   const hasLocation=Number.isFinite(+activeEvent.venueLat)&&Number.isFinite(+activeEvent.venueLng)&&!!activeEvent.mapsUrl;
+   html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" id="checkBtn" ${hasLocation?'onclick="checkIn()"':'disabled'}>${hasLocation?'Check In':'Maps link pending'}</button></div><p class="confirm-note">${hasLocation?'GPS verification is available within 500 m of the venue.':'Tale of Two will update the venue link before check-in.'}</p>`;
    html+=lockedResources();
  }else{
    html+=attendanceStatus()+resources();
