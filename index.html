@@ -3704,6 +3704,8 @@ function copyText(text,msg){
 function copyCrewRegistrationLink(){copyText(ciCrewUrl(),'Crew registration link copied.');}
 function openCrewProfiles(){renderCrewProfiles();document.getElementById('ciProfilesModal').classList.add('open');}
 function closeCrewProfiles(){crewProfileEditUid='';document.getElementById('ciProfilesModal').classList.remove('open');}
+document.getElementById('ciProfilesModal').addEventListener('click',e=>{if(e.target.id==='ciProfilesModal')closeCrewProfiles();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('ciProfilesModal').classList.contains('open'))closeCrewProfiles();});
 let crewProfileEditUid='',crewProfileGroupsOpen=new Set();
 function crewProfileGroup(p){return String(p&&p.role||'').toLowerCase().includes('traditional')?'traditional':'candid';}
 function toggleCrewProfileGroup(key){crewProfileGroupsOpen.has(key)?crewProfileGroupsOpen.delete(key):crewProfileGroupsOpen.add(key);renderCrewProfiles();}
