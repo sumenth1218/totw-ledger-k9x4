@@ -244,7 +244,7 @@ function renderDashboard(){
  if(!list.length){el.innerHTML='<div class="card empty">No assignments have been shared with you yet.</div>';return}
  const card=([id,e])=>{
    const at=attendanceMap[id]||{};
-   let label='Needs confirmation',cl='';if(at.checkedOutAt){label='Completed';cl='ok'}else if(at.checkedInAt){label=at.late?'Checked in late':'Checked in';cl=at.late?'late':'ok'}else if(at.confirmedAt){label='Confirmed';cl='ok'}
+   const dayState=eventDayState(e.date);let label=dayState==='today'?'Ready for check-in':'Upcoming',cl='';if(at.checkedOutAt){label='Completed';cl='ok'}else if(at.checkedInAt){label='In progress';cl='ok'}else if(at.confirmedAt&&dayState==='today'){label='Ready for check-in';cl='ok'}else if(at.confirmedAt){label='Upcoming · Confirmed';cl='ok'}
    return `<article class="shoot-card" onclick="openEvent('${esc(id)}')"><div class="date">${esc(fmtDate(e.date))} · ${esc(fmtTime(assignmentTime(e)))}</div><h3>${esc(e.couple)}</h3><p>${esc(e.eventName)} · ${esc(e.venueName||'Venue')}</p><span class="status ${cl}">${label}</span></article>`;
  };
  const active=list.filter(([id])=>!(attendanceMap[id]||{}).checkedOutAt),completed=list.filter(([id])=>(attendanceMap[id]||{}).checkedOutAt).reverse();
@@ -279,20 +279,28 @@ function assignmentCards(){
  const teamCount=team.length;
  return `<div class="section-title">Your assignment</div><div class="card assignment"><div class="avatar">${esc(initials(me.name))}</div><div><b>${esc(me.name)}</b><span>${esc(me.role)}</span></div></div><div class="section-title">Team details</div><details class="card team-details"><summary><span>Team for this event</span><small>${teamCount} ${teamCount===1?'member':'members'}</small></summary><div class="team-rows">${rows}</div></details>`;
 }
+function contactDetails(){
+ const team=Object.entries(activeEvent.crew||{}),contactRow=activeEvent.clientContactName?`<div class="team-row"><div class="avatar">${esc(initials(activeEvent.clientContactName))}</div><div><b>${esc(activeEvent.clientContactName)}</b><small>On-site contact${activeEvent.clientContactPhone?' · '+esc(activeEvent.clientContactPhone):''}</small></div>${activeEvent.clientContactPhone?`<div class="contact-actions"><a class="round-link" aria-label="Call ${esc(activeEvent.clientContactName)}" href="tel:${esc(phoneDigits(activeEvent.clientContactPhone))}">☎</a><a class="round-link" aria-label="WhatsApp ${esc(activeEvent.clientContactName)}" href="https://wa.me/${esc(waPhone(activeEvent.clientContactPhone))}" target="_blank" rel="noopener">◉</a></div>`:''}</div>`:'';
+ const rows=team.map(([uid,x])=>{const ph=waPhone(x.phone);return `<div class="team-row"><div class="avatar">${esc(initials(x.name))}</div><div><b>${esc(x.name)}${uid===user.uid?' · You':''}${x.isLead?' · Lead':''}</b><small>${esc(x.role)}</small></div><div class="contact-actions"><a class="round-link" aria-label="Call ${esc(x.name)}" href="tel:${esc(phoneDigits(x.phone))}">☎</a><a class="round-link" aria-label="WhatsApp ${esc(x.name)}" href="https://wa.me/${esc(ph)}" target="_blank" rel="noopener">◉</a></div></div>`}).join('');
+ const count=team.length+(activeEvent.clientContactName?1:0);return `<div class="section-title">Contacts</div><details class="card team-details"><summary><span>Contact team</span><small>${count} ${count===1?'contact':'contacts'}</small></summary><div class="team-rows">${contactRow}${rows}</div></details>`;
+}
 function renderEvent(){
  const out=document.getElementById('eventBody');
- let html=detailCard()+assignmentCards();
+ let html='';
  if(!attendance.confirmedAt){
+   html=detailCard()+assignmentCards();
    html+=`<div class="action-stack"><button class="primary" onclick="confirmAssignment()">Confirm Assignment</button></div><p class="confirm-note">Confirm that you have seen the reporting time and venue.</p>`;
  }else if(!attendance.checkedInAt){
-   const hasLocation=Number.isFinite(+activeEvent.venueLat)&&Number.isFinite(+activeEvent.venueLng)&&!!activeEvent.mapsUrl;
+   html=detailCard()+assignmentCards();const hasLocation=!!activeEvent.mapsUrl;
    const dayState=eventDayState(activeEvent.date);
    if(dayState==='today')html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" id="checkBtn" ${hasLocation?'onclick="checkIn()"':'disabled'}>${hasLocation?'Check In':'Maps link pending'}</button></div>${hasLocation?'':'<p class="confirm-note">Tale of Two will update the venue link before check-in.</p>'}`;
    else if(dayState==='upcoming')html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" disabled>Check In available on ${esc(fmtDate(activeEvent.date))}</button></div>`;
    else html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" disabled>Event date has passed</button></div>`;
    html+=lockedResources();
+ }else if(!attendance.checkedOutAt){
+   html=resources()+contactDetails();
  }else{
-   html+=attendanceStatus()+resources();
+   html=completedCards();
  }
  out.innerHTML=html;updateProgress();
 }
@@ -320,10 +328,10 @@ function checkIn(){
  const b=document.getElementById('checkBtn');b.disabled=true;b.textContent='Checking location…';
  if(!navigator.geolocation){toast('Location is not available on this phone.');b.disabled=false;b.textContent='Check In';return}
  navigator.geolocation.getCurrentPosition(async pos=>{
-   const lat=pos.coords.latitude,lng=pos.coords.longitude,d=distanceM(lat,lng,+activeEvent.venueLat,+activeEvent.venueLng);
+   const lat=pos.coords.latitude,lng=pos.coords.longitude,hasPin=Number.isFinite(+activeEvent.venueLat)&&Number.isFinite(+activeEvent.venueLng);let d=hasPin?distanceM(lat,lng,+activeEvent.venueLat,+activeEvent.venueLng):0;
    if(!isFinite(d)||d>500){toast(`You are ${d>1000?(d/1000).toFixed(1)+' km':Math.round(d)+' m'} from the venue. Check-in is available within 500 m.`);b.disabled=false;b.textContent='Check In';return}
    const now=Date.now(),me=currentCrew(),deadline=new Date(`${activeEvent.date}T${me.reportTime||activeEvent.reportingTime}:00`).getTime(),late=now>deadline,lateMinutes=late?Math.max(1,Math.ceil((now-deadline)/60000)):0;
-   try{await persistAttendance({confirmedAt:attendance.confirmedAt||now,checkedInAt:now,checkinLat:lat,checkinLng:lng,gpsAccuracy:Math.round(pos.coords.accuracy||0),distanceM:Math.round(d),late,lateMinutes});toast(late?'Checked in late':'Checked in — on time');items=[];renderEvent()}catch(e){toast('Could not save check-in. Please try again.');b.disabled=false;b.textContent='Check In'}
+   try{if(!hasPin){try{const eventRef=db.ref(`crewCheckins/events/${activeId}`),pin=await eventRef.child('venueGps').transaction(value=>value||{lat,lng,setAt:now,setBy:user.uid}),fixed=pin.snapshot&&pin.snapshot.val();if(fixed){activeEvent.venueLat=+fixed.lat;activeEvent.venueLng=+fixed.lng;events[activeId]=activeEvent;await eventRef.update({venueLat:+fixed.lat,venueLng:+fixed.lng});d=distanceM(lat,lng,+fixed.lat,+fixed.lng);}}catch(pinError){d=0;}}await persistAttendance({confirmedAt:attendance.confirmedAt||now,checkedInAt:now,checkinLat:lat,checkinLng:lng,gpsAccuracy:Math.round(pos.coords.accuracy||0),distanceM:Math.round(d),late,lateMinutes});toast(late?'Checked in late':'Checked in — on time');items=[];renderEvent()}catch(e){toast('Could not save check-in. Please try again.');b.disabled=false;b.textContent='Check In'}
  },err=>{const msg=err.code===1?'Please allow location access to check in.':'Could not confirm your location. Please try again.';toast(msg);b.disabled=false;b.textContent='Check In'},{enableHighAccuracy:true,timeout:18000,maximumAge:0});
 }
 function toggleShot(key,i){if(attendance.checkedOutAt||!checklistSections[key]||!checklistSections[key].items[i])return;checklistSections[key].items[i].done=!checklistSections[key].items[i].done;items=Object.values(checklistSections).flatMap(x=>x.items||[]);persistAttendance({checklistSections,checklistItems:null}).catch(()=>{});renderEvent()}
