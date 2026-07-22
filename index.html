@@ -780,13 +780,33 @@ h1 em{font-style:italic;color:var(--sindoor)}
   <p class="hint" style="margin:10px 0 0">What the candid and traditional teams submitted from their checklist links — ticks, who filled it, and logged start and close times. Newest event first. Submissions are read-only; the crew can't see or edit anything here.</p>
   <div id="shotGroups" style="margin-top:14px"></div>
 
+  <div class="closed-sec open" id="eventBoardsSec" style="margin-top:26px">
+    <div class="act-head" onclick="toggleEventBoardsSec()">
+      <h2 style="font-size:20px">Common Pinterest boards</h2>
+      <span id="eventBoardsSecMeta">Hide ▾</span>
+    </div>
+    <div class="act-body">
+      <p class="hint" style="margin:10px 0 8px">Save one reusable inspiration board for each event category. The matching board automatically appears in both Candid and Traditional checklists for every couple.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <select id="eventBoardCategory" onchange="loadEventBoardEditor()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:190px"></select>
+        <input id="eventBoardName" placeholder="Board name" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:190px">
+        <input id="eventBoardUrl" type="url" placeholder="https://pinterest.com/…" style="flex:1;min-width:220px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:7px;margin:0;font-size:12px;text-transform:none;letter-spacing:0;color:var(--ink-soft)"><input id="eventBoardActive" type="checkbox" checked style="width:auto"> Active — show this board to the crew</label>
+        <button class="btn-mini" onclick="saveEventBoard()">Save common board</button>
+      </div>
+      <div id="eventBoardsList"></div>
+    </div>
+  </div>
+
   <div class="closed-sec open" id="moodSec" style="margin-top:26px">
     <div class="act-head" onclick="toggleMoodSec()">
-      <h2 style="font-size:20px">Mood boards — candid team</h2>
+      <h2 style="font-size:20px">Couple-specific event boards</h2>
       <span id="moodSecMeta">Hide ▾</span>
     </div>
     <div class="act-body">
-      <p class="hint" style="margin:10px 0 8px">Add the board to one exact event. It appears only for the same couple, event name and date after GPS check-in.</p>
+      <p class="hint" style="margin:10px 0 8px">Optional override for one exact couple, event and date. When saved, it appears above the common board in that event's checklist.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
         <select id="moodCouple" onchange="moodCoupleChanged()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:200px"></select>
         <select id="moodDate" onchange="moodDateChanged()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:160px"><option value="">Event date…</option></select>
@@ -927,6 +947,7 @@ let sentSnaps = {};      // personKey -> {at, items:{iso|couple:{iso,couple,even
 let shotSubs = {};       // shotChecklists: pushId -> {client,eventType,eventDate,team,crewName,startTime,endTime,items[],submittedAt}
 let shotLists = {};      // shotLists: eventKey -> {candid:[],traditional:[]} — editable defaults for the crew pages
 let shotMoods = {};      // shotMoods: groupKey -> {url} — mood board link per event
+let shotEventMoods = {}; // shotEventMoods: category -> {name,url,active} — common reusable event boards
 let crewProfiles = {};   // crewProfiles: Firebase uid -> one-time crew profile
 let checkinEvents = {};  // crewCheckins/events: event setup and team snapshot
 let checkinAttendance = {}; // crewCheckins/attendance: per-event, per-person status
@@ -1033,6 +1054,7 @@ function start(){
   db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();});
   db.ref('shotLists').on('value',s=>{shotLists=s.val()||{};loadShotEd();refreshShotTypeOptions();ciChecklistStatus();});
   db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();});
+  db.ref('shotEventMoods').on('value',s=>{shotEventMoods=s.val()||{};renderEventBoards();});
   db.ref('crewProfiles').on('value',s=>{crewProfiles=s.val()||{};renderCheckinTeam();renderCrewProfiles();});
   db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};renderCheckinEvents();});
   db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};renderCheckinEvents();});
@@ -2048,7 +2070,7 @@ function setView(v){
   hidePop();
   if(v==='prod')renderProdAll();
   if(v==='plan')renderPlan();
-  if(v==='shots'){renderShots();renderMoodSec();loadShotEd();}
+  if(v==='shots'){renderShots();renderEventBoards();renderMoodSec();loadShotEd();}
   if(v==='checkins'){renderCheckinFormOptions();renderCheckinEvents();}
   if(v==='clientforms'){renderClientForms();previewClientFormEvents();}
 }
@@ -3296,6 +3318,60 @@ function renderShots(){
 const safeKey = value => String(value||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_').replace(/\s+/g,'-');
 const shotListKey = name => safeKey(name);
 const moodKey = (couple,eventName,eventDate) => safeKey(`${couple}|${eventName}|${eventDate}`);
+const EVENT_BOARD_TYPES=[
+  ['bride-making','Bride Making'],
+  ['groom-making','Groom Making'],
+  ['haldi','Haldi / Pellikuthuru / Mangala Snanam'],
+  ['mehndi','Mehendi'],
+  ['sangeet-cocktail','Sangeet / Cocktail / After-party'],
+  ['engagement','Engagement'],
+  ['wedding','Wedding / Muhurtham / Pheras / Edurukollu'],
+  ['reception','Reception'],
+  ['couple-portraits','Couple Portraits']
+];
+
+function toggleEventBoardsSec(){
+  const s=document.getElementById('eventBoardsSec');
+  s.classList.toggle('open');
+  document.getElementById('eventBoardsSecMeta').textContent=s.classList.contains('open')?'Hide ▾':'Show ▸';
+}
+
+function renderEventBoards(){
+  const sel=document.getElementById('eventBoardCategory'),list=document.getElementById('eventBoardsList');
+  if(!sel||!list)return;
+  const keep=sel.value||EVENT_BOARD_TYPES[0][0];
+  sel.innerHTML=EVENT_BOARD_TYPES.map(([k,label])=>`<option value="${esc(k)}">${esc(label)}</option>`).join('');
+  sel.value=EVENT_BOARD_TYPES.some(([k])=>k===keep)?keep:EVENT_BOARD_TYPES[0][0];
+  const rows=EVENT_BOARD_TYPES.map(([k,label])=>{
+    const b=shotEventMoods[k]||{},has=!!b.url,active=b.active!==false;
+    return `<div class="cost-line"><span><b>${esc(b.name||label)}</b><br>${has?`<a href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.url.length>58?b.url.slice(0,58)+'…':b.url)}</a>`:'<small>No board saved</small>'}</span><span>${has?`<small style="color:${active?'var(--leaf)':'var(--ink-soft)'}">${active?'Active':'Inactive'}</small>`:''}</span></div>`;
+  }).join('');
+  list.innerHTML=rows;
+  loadEventBoardEditor();
+}
+
+function loadEventBoardEditor(){
+  const k=document.getElementById('eventBoardCategory')?.value;if(!k)return;
+  const def=EVENT_BOARD_TYPES.find(x=>x[0]===k),b=shotEventMoods[k]||{};
+  document.getElementById('eventBoardName').value=b.name||b.label||(def&&def[1])||'';
+  document.getElementById('eventBoardUrl').value=b.url||'';
+  document.getElementById('eventBoardActive').checked=b.active!==false;
+}
+
+function saveEventBoard(){
+  if(!liveMode){toast('Needs live sync to save.');return;}
+  const category=document.getElementById('eventBoardCategory').value;
+  const name=document.getElementById('eventBoardName').value.trim();
+  const url=document.getElementById('eventBoardUrl').value.trim();
+  const active=document.getElementById('eventBoardActive').checked;
+  if(!category){toast('Choose an event category.');return;}
+  if(!name){toast('Enter the board name.');return;}
+  if(!/^https?:\/\//i.test(url)){toast('Paste a complete Pinterest link starting with https://');return;}
+  db.ref('shotEventMoods/'+category).set({name,url,active,by:editor,at:stamp()}).then(()=>{
+    log(`saved common Pinterest board: ${name}`);
+    toast(`${name} board saved for every matching event.`);
+  }).catch(()=>toast('Could not save the board. Try again.'));
+}
 const prettyShotType = key => String(key||'').replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 
 function eventTypeParts(value){
