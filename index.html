@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Tale of Two Weddings — Studio Ledger</title>
-<link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
-<link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
+<title>TOTW — Studio Ledger</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -80,37 +78,12 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .day.enq3{box-shadow:0 0 0 3.5px var(--teal);cursor:pointer}
 
 .has-pop{cursor:pointer}
-#gpop{display:none;position:fixed;background:var(--ink);color:var(--paper);border-radius:8px;padding:11px 13px;width:232px;z-index:80;box-shadow:0 10px 28px rgba(27,26,23,.35);animation:popIn .14s ease-out}
+#gpop{display:none;position:fixed;background:var(--ink);color:var(--paper);border-radius:8px;padding:11px 13px;width:232px;z-index:80;box-shadow:0 10px 28px rgba(27,26,23,.35)}
 #gpop em{font-style:normal;display:block;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#D9A79E;margin-bottom:6px}
 #gpop b{display:block;font-size:12.5px;font-weight:600;line-height:1.3}
 #gpop u{text-decoration:none;font-size:11px;color:#B9B4A8;display:block;margin-bottom:6px;line-height:1.35}
 #gpop u:last-child{margin-bottom:0}
 .tbd-note{margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--amber);border-top:1px dashed var(--line);padding-top:8px}
-
-.demand-box{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:7px;overflow:hidden}
-.demand-box summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;cursor:pointer}
-.demand-box summary::-webkit-details-marker{display:none}
-.demand-title{font-family:var(--display);font-size:22px;font-weight:600}
-.demand-meta{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
-.demand-box[open] .demand-meta{color:var(--sindoor)}
-.demand-body{border-top:1px solid var(--line);padding:16px 18px 18px}
-.demand-select{width:100%;max-width:280px;padding:10px 12px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);font-family:var(--body);font-size:13px;outline:none}
-.demand-list{margin-top:12px;border-top:1px solid var(--line)}
-.demand-item{border-bottom:1px solid var(--line)}
-.demand-item summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 8px;cursor:pointer;border-radius:5px;transition:background .16s ease,padding .16s ease}
-.demand-item summary::-webkit-details-marker{display:none}
-.demand-item summary b{font-size:14px;font-weight:600}
-.demand-item summary:hover{background:#F5F1E8;padding-left:12px;padding-right:12px}
-.demand-count{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--sindoor);white-space:nowrap;transition:color .16s ease}
-.demand-item[open] .demand-count{color:var(--amber)}
-.demand-names{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:4px 12px 16px;animation:demandReveal .18s ease-out}
-.demand-names h4{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
-.demand-names p{font-size:12.5px;line-height:1.55;color:var(--ink);margin:0}
-.demand-none{color:var(--ink-soft)!important;font-style:italic}
-@media(max-width:560px){.demand-names{grid-template-columns:1fr;gap:10px}.demand-count{white-space:normal;text-align:right}}
-@keyframes demandReveal{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
-@keyframes popIn{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-.demand-empty{padding:16px 2px 2px;color:var(--ink-soft);font-style:italic;font-family:var(--display);font-size:16px}
 
 .detail{position:fixed;inset:0;background:rgba(27,26,23,.45);display:none;align-items:flex-end;justify-content:center;z-index:50;padding:16px}
 .detail.open{display:flex}
@@ -212,7 +185,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .mini-cal .mc-g u{text-decoration:none;font-family:var(--mono);font-size:8.5px;text-align:center;opacity:.55;padding-bottom:2px}
 .mini-cal .mc-g i{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;border-radius:4px;cursor:pointer;font-style:normal;user-select:none}
 .mini-cal .mc-g i.bk{color:#C97A6D;text-decoration:line-through}
-.mini-cal .mc-g i.demand{background:var(--amber);color:#FFF9EC;text-decoration:none;box-shadow:inset 0 0 0 1px #E3C47C;font-weight:600}
 .mini-cal.dark{color:var(--paper)}
 .mini-cal.dark .mc-g i:hover{background:#3A372F}
 .mini-cal.dark .mc-g i.sel{background:var(--paper);color:var(--ink);text-decoration:none;font-weight:500}
@@ -245,13 +217,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .cl-row small{font-family:var(--mono);font-size:10px;color:var(--ink-soft);flex:1;min-width:0;text-align:right}
 .cl-row .cl-btn{background:none;border:1px solid var(--line);border-radius:5px;color:var(--ink-soft);font-size:12px;cursor:pointer;padding:4px 9px;font-family:var(--mono);flex:none}
 .cl-row .cl-btn:hover{color:var(--ink);border-color:var(--ink-soft)}
-.cl-date-edit{padding:13px 2px 15px;border-bottom:1px solid var(--line);background:#FBFAF6}
-.cl-date-edit h3{font-size:14px;font-weight:600;margin-bottom:9px}
-.cl-date-row{display:grid;grid-template-columns:minmax(140px,190px) 1fr auto;gap:8px;align-items:center;margin-top:7px}
-.cl-date-row input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font-family:var(--mono);font-size:11.5px}
-.cl-date-row input.cl-event-in{font-family:var(--body);font-size:12.5px}
-.cl-date-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
-@media(max-width:650px){.cl-date-row{grid-template-columns:1fr auto}.cl-date-row input.cl-event-in{grid-column:1/2}.cl-row{flex-wrap:wrap}.cl-row small{order:4;flex-basis:100%;text-align:left}}
 .snooze{background:var(--amber);border:none;color:#FFF8EA;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:7px 13px;border-radius:99px;cursor:pointer;margin-top:9px}
 .snooze:hover{background:#96691F}
 .st-pill{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;padding:3px 9px;border-radius:99px;margin-left:7px;vertical-align:2px;font-weight:500}
@@ -291,12 +256,9 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .gate-card{max-width:380px;width:100%;text-align:center}
 .gate-card .eyebrow{margin-bottom:8px}
 .gate-card h2{font-family:var(--display);font-size:34px;font-weight:500;margin-bottom:18px}
-.gate-card input{width:100%;padding:13px;border:1px solid var(--ink);border-radius:6px;background:var(--card);font-family:var(--body);font-size:15px;text-align:left;outline:none;margin-bottom:10px;letter-spacing:normal}
+.gate-card input{width:100%;padding:13px;border:1px solid var(--ink);border-radius:6px;background:var(--card);font-family:var(--mono);font-size:15px;text-align:center;outline:none;margin-bottom:10px;letter-spacing:.2em}
 .gate-card button{width:100%;padding:13px;background:var(--ink);color:var(--paper);border:none;border-radius:6px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
 .gate-err{color:var(--sindoor);font-size:12.5px;margin-bottom:10px;display:none}
-.auth-note{font-size:12.5px;color:var(--ink-soft);margin:-8px 0 16px;line-height:1.5}
-.signout-btn{background:transparent;border:1px solid var(--line);border-radius:5px;color:var(--ink-soft);font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:6px 9px;cursor:pointer}
-.signout-btn:hover{border-color:var(--ink-soft);color:var(--ink)}
 
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--paper);padding:12px 22px;border-radius:99px;font-family:var(--mono);font-size:12px;transition:transform .3s ease;z-index:60;max-width:92vw;text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -339,15 +301,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .stage-row:last-child{border-bottom:none}
 .stage-l{display:flex;align-items:center;gap:9px}
 .stage-row input[type=checkbox]{width:17px;height:17px;accent-color:var(--leaf);flex:none}
-.stage-r{display:flex;align-items:center;gap:8px;flex:none}
-.stage-del{border:none;background:transparent;color:#9A958A;font-size:17px;line-height:1;cursor:pointer;padding:2px 3px}
-.stage-del:hover{color:var(--sindoor)}
-.stage-add-form{margin-top:10px;padding:12px;border:1px dashed var(--line);border-radius:7px;background:#FBFAF6;display:grid;grid-template-columns:minmax(160px,1fr) 150px 150px;gap:8px}
-.stage-add-form input,.stage-add-form select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);font:12.5px var(--body)}
-.stage-add-foot{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.stage-pdf-check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-soft)}
-.stage-pdf-check input{width:15px;height:15px;accent-color:var(--leaf)}
-@media(max-width:700px){.stage-add-form{grid-template-columns:1fr}.stage-add-foot{grid-column:1}.stage-row{align-items:flex-start}.stage-r{flex-wrap:wrap;justify-content:flex-end}}
 .sdue{font-family:var(--mono);font-size:10px;letter-spacing:.06em;white-space:nowrap}
 .sdue.ok{color:var(--leaf)}.sdue.warn{color:#854F0B}.sdue.bad{color:var(--sindoor)}.sdue.cl{color:#534AB7}.sdue.mut{color:var(--ink-soft)}
 .cw{color:#534AB7}
@@ -428,45 +381,8 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .tag-edit button{padding:0 12px;border:none;border-radius:5px;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;cursor:pointer;text-transform:uppercase}
 .dt-edit{font-size:10px;cursor:pointer;margin-left:4px;opacity:.6;font-style:normal}
 .dt-edit:hover{opacity:1}
-/* Crew check-ins is intentionally isolated from the Crew Planner. */
-.ci-wrap{padding:0 4px}
-.ci-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
-.ci-head h2{font-family:var(--display);font-size:32px;font-weight:600}
-.ci-head p{font-size:13px;color:var(--ink-soft);margin-top:4px;max-width:650px}
-.ci-actions{display:flex;gap:8px;flex-wrap:wrap}
-.ci-grid{display:grid;grid-template-columns:minmax(300px,390px) 1fr;gap:22px;align-items:start}
-.ci-form{background:var(--ink);color:var(--paper);border-radius:10px;padding:21px;position:sticky;top:12px}
-.ci-form h3{font-family:var(--display);font-size:25px;font-weight:500}
-.ci-form .hint{font-size:12px;color:#A39F95;margin:4px 0 15px;line-height:1.5}
-.ci-form .field label{color:#A39F95}
-.ci-form select{width:100%;padding:11px 12px;background:#2A2823;border:1px solid #44413A;border-radius:6px;color:var(--paper);font-family:var(--body);font-size:14px;outline:none}
-.ci-team-list{display:grid;gap:7px;margin-top:7px}
-.ci-person{border:1px solid #44413A;background:#24231F;border-radius:8px;padding:10px}
-.ci-person-top{display:flex;align-items:center;gap:9px}
-.ci-person-top input{width:17px;height:17px;accent-color:var(--amber);flex:none}
-.ci-person-top b{font-size:13px;flex:1}.ci-person-top small{font-size:10px;color:#A39F95}
-.ci-person-fields{display:grid;grid-template-columns:1fr 104px;gap:7px;margin-top:8px}
-.ci-person-fields select,.ci-person-fields input{padding:8px 9px!important;font-size:11px!important}
-.ci-lead{display:flex;align-items:center;gap:6px;margin-top:8px;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:#C7B988}.ci-lead input{width:15px;height:15px;accent-color:var(--amber)}
-.ci-map-ok{display:none;margin:7px 0 12px;padding:9px 10px;border-radius:6px;background:#28342B;color:#BFD8C3;font-size:11.5px;line-height:1.45}.ci-map-ok.on{display:block}
-.ci-empty{border:1px dashed #565248;border-radius:8px;color:#A39F95;padding:13px;font-size:12px;line-height:1.5}
-.ci-event-list{display:grid;gap:12px}
-.ci-event{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
-.ci-event-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-.ci-event-date{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)}
-.ci-event h3{font-family:var(--display);font-size:25px;font-weight:600;line-height:1.05;margin-top:3px}.ci-event h3 small{font-family:var(--body);font-size:12px;color:var(--ink-soft);font-weight:400;margin-left:5px}
-.ci-event-venue{font-size:12px;color:var(--ink-soft);margin-top:5px}
-.ci-event-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.ci-event-btns button,.ci-event-btns a{white-space:nowrap}
-.ci-statbar{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 9px}.ci-stat{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:99px;background:#EEEAE2;color:var(--ink-soft)}.ci-stat.ok{background:var(--leaf-soft);color:var(--leaf)}.ci-stat.late{background:var(--sindoor-soft);color:var(--sindoor)}
-.ci-roster{border-top:1px solid var(--line);margin-top:10px}.ci-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.ci-row b{font-size:12.5px;display:block}.ci-row small{font-size:10px;color:var(--ink-soft)}.ci-row-time{font-family:var(--mono);font-size:9.5px;color:var(--ink-soft);text-align:right}.ci-badge{font-family:var(--mono);font-size:8px;letter-spacing:.06em;text-transform:uppercase;padding:4px 7px;border-radius:99px;background:#EEEAE2;color:var(--ink-soft)}.ci-badge.ok{background:var(--leaf-soft);color:var(--leaf)}.ci-badge.late{background:var(--sindoor-soft);color:var(--sindoor)}
-.ci-start{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;background:#F7F4ED;border-radius:8px;padding:11px;margin-top:12px}.ci-start label{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:4px}.ci-start input{padding:8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
-.ci-hours{font-family:var(--mono);font-size:9px;color:var(--ink-soft)}
-.ci-note{padding:12px 14px;border-radius:8px;background:var(--amber-soft);color:#76551E;font-size:12px;line-height:1.55;margin-bottom:14px}
-.ci-modal{position:fixed;inset:0;background:rgba(27,26,23,.48);display:none;align-items:flex-end;justify-content:center;z-index:90;padding:14px}.ci-modal.open{display:flex}.ci-modal-card{background:var(--card);border-radius:12px;width:min(100%,520px);padding:22px;max-height:86vh;overflow:auto}.ci-modal-card h3{font-family:var(--display);font-size:27px}.ci-profile-list{display:grid;gap:8px;margin-top:12px}.ci-profile{border:1px solid var(--line);border-radius:8px;padding:11px;display:flex;align-items:center;justify-content:space-between;gap:12px}.ci-profile.editing{display:block}.ci-profile-main{min-width:0}.ci-profile b{font-size:13px}.ci-profile small{display:block;font-size:11px;color:var(--ink-soft);margin-top:2px;overflow-wrap:anywhere}.ci-profile-actions{display:flex;gap:6px;flex:none}.ci-profile-edit,.ci-profile-delete{flex:none;border-radius:6px;padding:7px 9px;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.ci-profile-edit{border:1px solid var(--line);background:#F4F0E8;color:var(--ink)}.ci-profile-delete{border:1px solid #D9B8B1;background:var(--sindoor-soft);color:var(--sindoor)}.ci-profile-form{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:2px}.ci-profile-form .field{margin:0}.ci-profile-form .wide{grid-column:1/-1}.ci-profile-form label{font-size:8px}.ci-profile-form input,.ci-profile-form select{width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font:12px var(--body)}.ci-profile-form-actions{grid-column:1/-1;display:flex;gap:7px;justify-content:flex-end;margin-top:2px}@media(max-width:560px){.ci-profile{align-items:flex-start}.ci-profile-actions{flex-direction:column}.ci-profile-form{grid-template-columns:1fr}.ci-profile-form .wide,.ci-profile-form-actions{grid-column:1}}
-.cf-wrap{max-width:1180px;margin:0 auto;padding:28px 20px 70px}.cf-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:22px}.cf-head h2{font-family:var(--display);font-size:34px}.cf-head p{color:var(--ink-soft);font-size:13px;margin-top:5px}.cf-grid{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}.cf-create{background:#25231F;color:var(--paper);border-radius:12px;padding:22px;position:sticky;top:16px}.cf-create h3{font-family:var(--display);font-size:27px}.cf-create .hint{color:#A8A398}.cf-create label{color:#BFB9AD}.cf-create input{background:#302E29!important;border-color:#49463F!important;color:#fff!important}.cf-events-preview{display:grid;gap:6px;margin:10px 0 14px}.cf-preview-row{display:flex;justify-content:space-between;gap:12px;padding:9px 10px;border:1px solid #454139;border-radius:7px;font-size:11px;color:#D6D0C5}.cf-list{display:grid;gap:12px}.cf-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 5px 18px rgba(35,29,22,.04)}.cf-card-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.cf-card h3{font-family:var(--display);font-size:25px}.cf-meta{font-size:11px;color:var(--ink-soft);margin-top:3px}.cf-status{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;border-radius:99px;padding:6px 9px;background:#EEEAE2;color:var(--ink-soft);white-space:nowrap}.cf-status.submitted{background:var(--amber-soft);color:#76551E}.cf-status.approved{background:var(--leaf-soft);color:var(--leaf)}.cf-status.changes{background:#f5e5dd;color:#8a402f}.cf-card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:13px}.cf-review{border-top:1px solid var(--line);margin-top:15px;padding-top:12px}.cf-review-event{border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:8px}.cf-review-event b{font-size:13px}.cf-review-event small{display:block;color:var(--ink-soft);line-height:1.55;margin-top:4px}.cf-empty{background:var(--card);border:1px dashed var(--line);padding:28px;border-radius:12px;text-align:center;color:var(--ink-soft);font-size:13px}.cf-contributors{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.cf-person{border-radius:99px;background:#f2ede5;padding:5px 8px;font-size:9px;color:var(--ink-soft)}.cf-change{margin-top:7px;border-left:2px solid #9b604e;background:#fbf2ed;padding:8px 9px;border-radius:0 7px 7px 0}.cf-change strong{display:block;font-size:9px;color:#874332;text-transform:uppercase;letter-spacing:.06em}.cf-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:5px}.cf-compare span{font-size:10px;line-height:1.4}.cf-compare em{display:block;color:var(--ink-soft);font-style:normal;font-size:8px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
-.cf-events-preview{gap:8px}.cf-preview-event{border:1px solid #454139;border-radius:8px;padding:8px;background:#2B2925}.cf-preview-row{display:grid;grid-template-columns:1fr 126px 28px;gap:7px;align-items:center}.cf-preview-row input{min-width:0;padding:9px 8px!important;font-size:11px!important}.cf-remove{border:0;background:transparent;color:#D6D0C5;font-size:18px;cursor:pointer;line-height:1}.cf-add{width:100%;border:1px dashed #5C574E;background:transparent;color:#D6D0C5;border-radius:7px;padding:9px;font:500 9px var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.cf-event-options{border-top:1px solid #454139;margin-top:8px;padding:9px 2px 2px}.cf-event-options>span{display:block;font:500 8px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#D7BE91;margin-bottom:4px}.cf-event-options>small{display:block;color:#9F998E;font-size:9px;line-height:1.45;margin-bottom:8px}.cf-options-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.cf-option{display:flex!important;align-items:center;gap:7px;color:#D6D0C5!important;font-size:10px!important;letter-spacing:0!important;text-transform:none!important}.cf-option input{width:auto!important;accent-color:var(--teal)}
 @media(max-width:820px){
-  .vtabs{overflow-x:auto;justify-content:flex-start}.vtabs button{font-size:9px;padding:9px 10px;letter-spacing:.04em;min-width:100px;flex:none}
+  .vtabs button{font-size:10px;padding:9px 4px;letter-spacing:.05em}
   .plan-wrap{padding:0 14px}
   .plan-table{table-layout:auto;width:auto;min-width:980px}
   .plan-table th.thd,.plan-table th.thc,.plan-table th.the,.plan-table th.thl,.plan-table th.thp{width:auto}
@@ -475,10 +391,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
   .plan-table td.pl{min-width:90px}
   .pcell input{width:92px;min-width:92px}
   .push-btn{padding:6px 8px;font-size:9px}
-  .ci-grid,.cf-grid{grid-template-columns:1fr}.ci-form,.cf-create{position:static}.ci-wrap{padding:0}.cf-wrap{padding:20px 14px 60px}.cf-head,.cf-card-top{display:block}.cf-status{display:inline-block;margin-top:9px}.ci-event-top{display:block}.ci-event-btns{justify-content:flex-start;margin-top:11px}.ci-row{grid-template-columns:1fr auto}.ci-row .ci-badge{grid-column:2}.ci-person-fields{grid-template-columns:1fr}
-}
-@media(max-width:560px){
-  .cf-wrap{padding:14px 8px 45px;max-width:100%;overflow:hidden}.cf-head{margin-bottom:14px}.cf-head h2{font-size:28px}.cf-head p{font-size:11.5px}.cf-grid{gap:10px}.cf-create{padding:15px;border-radius:10px}.cf-create h3{font-size:24px}.cf-card{padding:12px;border-radius:10px;min-width:0}.cf-card h3{font-size:22px;overflow-wrap:anywhere}.cf-meta{font-size:10px;line-height:1.45}.cf-card-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.cf-card-actions .btn-mini{width:100%;min-width:0;padding:8px 5px;font-size:7.5px;white-space:normal;line-height:1.25}.cf-review-event{padding:9px;overflow-wrap:anywhere}.cf-preview-row{grid-template-columns:minmax(0,1fr) 28px}.cf-preview-row input[type="date"]{grid-column:1}.cf-preview-row .cf-remove{grid-column:2;grid-row:1/3}.cf-options-grid{grid-template-columns:1fr}.cf-status{padding:5px 7px}.cf-empty{padding:18px 12px}
 }
 </style>
 </head>
@@ -489,9 +401,19 @@ h1 em{font-style:italic;color:var(--sindoor)}
   <div class="gate-card">
     <div class="eyebrow">Tale of Two Weddings</div>
     <h2>Studio Ledger</h2>
-    <p class="auth-note">Private access for Sumenth and Mahima.</p>
-    <p class="gate-err" id="gateErr"></p>
-    <button id="loginBtn" onclick="signInLedger()">Continue with Google</button>
+    <p class="gate-err" id="gateErr">That's not it. Try again.</p>
+    <input type="password" id="gateCode" placeholder="ACCESS CODE" autocomplete="off">
+    <button onclick="tryGate()">Enter</button>
+  </div>
+</div>
+
+<!-- ===================== NAME PROMPT ===================== -->
+<div class="who" id="who" style="display:none">
+  <div class="gate-card">
+    <div class="eyebrow">Before you start</div>
+    <h2>Who's editing?</h2>
+    <input type="text" id="whoName" placeholder="Your name" autocomplete="off" style="letter-spacing:normal;font-family:var(--body)">
+    <button onclick="setWho()">Continue</button>
   </div>
 </div>
 
@@ -507,7 +429,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
       <span><i class="chip booked"></i>Booked</span>
       <span><i class="chip free"></i>Free</span>
       <span><i class="chip" style="background:transparent;border:2px solid var(--teal)"></i>Enquiry interest</span>
-      <button class="signout-btn" onclick="signOutLedger()">Sign out</button>
     </div>
   </div>
   <div class="sync-banner" id="syncBanner"></div>
@@ -518,8 +439,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
   <button id="vtPlan" onclick="setView('plan')">Crew Planner</button>
   <button id="vtProd" onclick="setView('prod')">Production</button>
   <button id="vtShots" onclick="setView('shots')">Shot Lists</button>
-  <button id="vtCheckins" onclick="setView('checkins')">Check-ins</button>
-  <button id="vtClientForms" onclick="setView('clientforms')">Client Details</button>
 </div>
 
 <div id="tabLedger">
@@ -528,16 +447,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
 <div class="main">
   <div class="cal-col">
     <div class="months" id="months"></div>
-    <details class="demand-box" id="demandBox">
-      <summary>
-        <span class="demand-title">In-Demand Wedding Dates</span>
-        <span class="demand-meta">Select month ▾</span>
-      </summary>
-      <div class="demand-body">
-        <select class="demand-select" id="demandMonth" onchange="renderWeddingDemand()" aria-label="Select month for in-demand wedding dates"></select>
-        <div class="demand-list" id="demandList"></div>
-      </div>
-    </details>
     <div class="activity" id="activity">
       <div class="act-head" onclick="toggleAct()">
         <h2>Recent activity</h2>
@@ -637,26 +546,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
     </div>
   </aside>
 </div>
-</div>
-
-<div id="tabClientForms" style="display:none">
- <div class="cf-wrap">
-  <div class="cf-head"><div><h2>Client Event Details</h2><p>Create one private, pre-filled link per confirmed couple. Nothing reaches the crew until you approve it.</p></div></div>
-  <div class="cf-grid">
-   <section class="cf-create">
-    <h3>Prepare client link</h3>
-    <p class="hint" style="margin:6px 0 16px">Planner details are only a starting point. Review and customise everything before creating the private link.</p>
-    <div class="field"><label for="cfCouple">Confirmed couple</label><input id="cfCouple" list="cfCouples" type="text" placeholder="Select couple" onchange="previewClientFormEvents()"><datalist id="cfCouples"></datalist></div>
-    <div id="cfEventPreview" class="cf-events-preview"></div>
-    <button type="button" class="cf-add" onclick="addClientDraftEvent()">+ Add another event</button>
-    <p class="hint" style="margin:12px 0 0">Choose the getting-ready questions separately inside each event above.</p>
-    <div class="check-result" id="cfCreateResult"></div>
-    <button class="btn-main teal" id="cfSaveButton" onclick="createClientForm()">Create link from this setup</button>
-    <button class="btn-main" id="cfCancelEdit" style="display:none;margin-top:8px;background:#35332D;color:#C5C0B5" onclick="cancelClientFormEdit()">Cancel editing</button>
-   </section>
-   <section><div class="cf-list" id="cfList"><div class="cf-empty">No client forms created yet.</div></div></section>
-  </div>
- </div>
 </div>
 
 <div id="tabProd" style="display:none">
@@ -773,12 +662,32 @@ h1 em{font-style:italic;color:var(--sindoor)}
     <h2>Shot Checklists</h2>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <input id="shotFClient" placeholder="Filter by couple…" oninput="renderShots()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);width:170px">
-      <input id="shotFType" list="shotTypeOptions" placeholder="All events" oninput="renderShots()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);width:150px">
-      <datalist id="shotTypeOptions"></datalist>
+      <select id="shotFType" onchange="renderShots()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+        <option value="">All events</option>
+        <option>Bride Making</option><option>Groom Making</option><option>Haldi</option><option>Pellikuthuru</option><option>Mehndi</option><option>Sangeet</option><option>Cocktail</option><option>Edurukollu</option><option>Ceremony</option><option>Reception</option>
+      </select>
     </div>
   </div>
   <p class="hint" style="margin:10px 0 0">What the candid and traditional teams submitted from their checklist links — ticks, who filled it, and logged start and close times. Newest event first. Submissions are read-only; the crew can't see or edit anything here.</p>
   <div id="shotGroups" style="margin-top:14px"></div>
+
+  <div class="closed-sec open" id="eventMoodSec" style="margin-top:26px">
+    <div class="act-head" onclick="toggleEventMoodSec()">
+      <h2 style="font-size:20px">Master Pinterest boards — candid team</h2>
+      <span id="eventMoodSecMeta">Hide ▾</span>
+    </div>
+    <div class="act-body">
+      <p class="hint" style="margin:10px 0 8px">Save each board once. The candid checklist automatically shows the matching board for every couple and event.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <select id="eventMoodType" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:200px">
+          <option value="bride-making">Bride Making</option><option value="groom-making">Groom Making</option><option value="haldi">Haldi &amp; Pellikuthuru</option><option value="mehndi">Mehendi</option><option value="sangeet-cocktail">Sangeet &amp; Cocktail</option><option value="wedding">Wedding &amp; Rituals</option><option value="reception">Reception</option>
+        </select>
+        <input id="eventMoodUrl" type="url" placeholder="https://pinterest.com/…" style="flex:1;min-width:220px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+        <button class="btn-mini" onclick="saveEventMoodBoard()">Save board</button>
+      </div>
+      <div id="eventMoodList"></div>
+    </div>
+  </div>
 
   <div class="closed-sec open" id="moodSec" style="margin-top:26px">
     <div class="act-head" onclick="toggleMoodSec()">
@@ -786,11 +695,9 @@ h1 em{font-style:italic;color:var(--sindoor)}
       <span id="moodSecMeta">Hide ▾</span>
     </div>
     <div class="act-body">
-      <p class="hint" style="margin:10px 0 8px">Add the board to one exact event. It appears only for the same couple, event name and date after GPS check-in.</p>
+      <p class="hint" style="margin:10px 0 8px">Pin a Pinterest board (or any link) to a couple. The candid team sees it at the top of their checklist the moment they pick that couple — no submission needed first.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-        <select id="moodCouple" onchange="moodCoupleChanged()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:200px"></select>
-        <select id="moodDate" onchange="moodDateChanged()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:160px"><option value="">Event date…</option></select>
-        <input id="moodEvent" list="shotTypeOptions" placeholder="Exact event name" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:170px">
+        <select id="moodCouple" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:200px"></select>
         <input id="moodUrl" type="url" placeholder="https://pinterest.com/…" style="flex:1;min-width:220px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
         <button class="btn-mini" onclick="saveMoodBoard()">Save board</button>
       </div>
@@ -804,12 +711,13 @@ h1 em{font-style:italic;color:var(--sindoor)}
       <span id="shotEditMeta">Show ▸</span>
     </div>
     <div class="act-body">
-      <p class="hint" style="margin:10px 0 8px">Enter the exact event name used in Check-ins—such as Pre-Wedding—then add one shot per line. Already-submitted checklists keep their original list.</p>
+      <p class="hint" style="margin:10px 0 8px">One shot per line. Saving updates the checklist the crew sees from now on — already-submitted checklists keep the list they were shot against.</p>
       <div style="display:flex;gap:8px;margin-bottom:10px">
-        <input id="shotEdType" list="shotEditTypeOptions" value="Haldi" oninput="loadShotEd()" placeholder="Upcoming event name" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:180px">
-        <datalist id="shotEditTypeOptions"></datalist>
-        <select id="shotEdTeam" onchange="refreshShotEditTypeOptions();loadShotEd()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
-          <option value="candid">Candid</option><option value="traditional">Traditional</option>
+        <select id="shotEdType" onchange="loadShotEd()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+          <option value="haldi">Haldi</option><option value="mehndi">Mehndi</option><option value="sangeet">Sangeet</option><option value="ceremony">Ceremony</option><option value="reception">Reception</option>
+        </select>
+        <select id="shotEdTeam" onchange="loadShotEd()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+          <option value="traditional">Traditional</option><option value="candid">Candid</option>
         </select>
       </div>
       <textarea id="shotEdArea" rows="10" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:var(--body);font-size:14px;color:var(--ink);line-height:1.6;resize:vertical"></textarea>
@@ -818,44 +726,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
   </div>
  </div>
 </div>
-
-<div id="tabCheckins" style="display:none">
- <div class="ci-wrap">
-  <div class="ci-head">
-    <div><h2>Crew Check-ins</h2><p>Create one event link, share it with the full team the previous day, and see confirmations, GPS arrivals and working hours here.</p></div>
-    <div class="ci-actions"><button class="btn-mini" onclick="copyCrewRegistrationLink()">Copy crew registration link</button><button class="btn-mini" onclick="openCrewProfiles()">Registered crew</button><button class="btn-mini" onclick="toggleCheckinForm(true)">+ New shoot</button></div>
-  </div>
-  <div class="ci-note" id="ciTomorrowNote" style="display:none"></div>
-  <div class="ci-grid">
-   <section class="ci-form" id="ciForm" style="display:none">
-    <h3 id="ciFormTitle">New crew shoot</h3>
-    <p class="hint">The crew receives one shared event link. Their own Google sign-in identifies their name, role and attendance.</p>
-    <input id="ciEditId" type="hidden">
-    <input id="ciVenueLat" type="hidden"><input id="ciVenueLng" type="hidden"><input id="ciVenueName" type="hidden">
-    <div class="field"><label for="ciCouple">Couple</label><input id="ciCouple" list="ciCouples" type="text" placeholder="Select a booked couple" onchange="ciCoupleChanged()"><datalist id="ciCouples"></datalist></div>
-    <div class="field"><label for="ciDate">Event date</label><select id="ciDate" onchange="ciDateChanged()"><option value="">Select date</option></select></div>
-    <div class="field"><label for="ciEvent">Event name</label><input id="ciEvent" list="shotTypeOptions" type="text" placeholder="Wedding, Haldi, Pre-Wedding…" oninput="ciEventChanged()"></div>
-    <div class="ci-map-ok" id="ciPlannerResult"></div>
-    <div class="ci-map-ok" id="ciChecklistResult"></div>
-    <div class="field"><label for="ciMapLink">Google Maps link</label><input id="ciMapLink" type="url" placeholder="Paste the full Google Maps link" onblur="ciParseMap()"></div>
-    <div class="ci-map-ok" id="ciMapResult"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div class="field"><label for="ciReport">Default reporting</label><input id="ciReport" type="time" onchange="ciDefaultReportChanged()"></div>
-      <div class="field"><label for="ciScheduled">Scheduled start</label><input id="ciScheduled" type="time"></div>
-    </div>
-    <div class="field"><label>Assigned team</label><div class="ci-team-list" id="ciTeamList"></div></div>
-    <div class="check-result" id="ciFormResult"></div>
-    <button class="btn-main teal" onclick="saveCheckinEvent()">Save &amp; create link</button>
-    <button class="btn-main" style="margin-top:8px;background:#35332D;color:#C5C0B5" onclick="toggleCheckinForm(false)">Cancel</button>
-   </section>
-   <section><div class="ci-event-list" id="ciEventList"><div class="empty">No crew check-in events yet.</div></div></section>
-  </div>
- </div>
-</div>
-</div>
-
-<div class="ci-modal" id="ciProfilesModal">
- <div class="ci-modal-card"><div style="display:flex;justify-content:space-between;gap:12px;align-items:start"><div><h3>Registered crew</h3><p class="hint" style="margin-top:4px">Crew members appear here after opening the permanent registration link and signing in once.</p></div><button class="btn-mini" onclick="closeCrewProfiles()">Close</button></div><div class="ci-profile-list" id="ciProfileList"></div></div>
 </div>
 
 <div class="detail" id="detail">
@@ -885,13 +755,18 @@ h1 em{font-style:italic;color:var(--sindoor)}
 
 <!-- Firebase (loads only if configured below) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
-/* Firebase web configuration. Access is enforced by Authentication and
-   Realtime Database Security Rules, not by a password stored in this file. */
+/* ============================================================
+   CONFIG — the only part you ever touch.
+   1. ACCESS_CODE: the code your team types to open the page.
+      Set to "" to disable the gate.
+   2. FIREBASE: paste your config from the Firebase console here.
+      Leave as null to run in local-only mode (no team sync).
+   ============================================================ */
 const CONFIG = {
+  ACCESS_CODE: "TOTW2026",
   FIREBASE: {
     apiKey: "AIzaSyCV14o1M9eUANLRxG_JrDZH2aGfqY3kjA4",
     authDomain: "tot-ledger.firebaseapp.com",
@@ -903,9 +778,92 @@ const CONFIG = {
   }
 };
 
-/* Protected calendar data loads from Firebase after owner sign-in. */
-let BAKED = [];
-let TBD = {};
+/* ---------------- baked-in bookings (TOTW 2026 sheet, June 2026) ---------------- */
+const BAKED = [
+[1,11,"Swathi","Cradle ceremony","Hyderabad"],
+[2,4,"Varsha & Darshan","Lagna Patrika, Haldi, Sangeet","Bangalore"],
+[2,5,"Varsha & Darshan","Bride Mehendi","Bangalore"],
+[2,6,"Varsha & Darshan","Chapra Pooja / Groom Haldi","Bangalore"],
+[2,6,"Komal & Preet","Bhyaat & Interviews","Hyderabad"],
+[2,7,"Varsha & Darshan","Reception","Bangalore"],
+[2,8,"Komal & Preet","Haldi","Hyderabad"],
+[2,8,"Varsha & Darshan","Wedding","Bangalore"],
+[2,9,"Komal & Preet","Mehendi","Hyderabad"],
+[2,10,"Komal & Preet","Baarat, Reception & Pheras","Hyderabad"],
+[2,11,"Komal & Preet","Bidaai","Hyderabad"],
+[2,18,"Preethi & Chethan","Mehendi","Anantapur"],
+[2,19,"Preethi & Chethan","Bride Making & Sangeet","Anantapur"],
+[2,20,"Meghana & Smaran","Lagna Patrika","Hyderabad"],
+[2,20,"Preethi & Chethan","Wedding","Anantapur"],
+[2,22,"Mohan & Varshini","Engagement","Hyderabad"],
+[3,1,"Mohan & Varshini","Haldi & Sangeet","Hyderabad"],
+[3,4,"Meghana & Smaran","Bride & Groom Making, Haldi","Hyderabad"],
+[3,4,"Mohan & Varshini","Bride Making","Kurnool"],
+[3,5,"Mohan & Varshini","Groom Making","Karimnagar"],
+[3,5,"Lakshmi & Shiva","Rituals & Wedding","Vijayawada"],
+[3,5,"Meghana & Smaran","Wedding","Hyderabad"],
+[3,6,"Mohan & Varshini","Wedding","Hyderabad"],
+[3,9,"Shivani & Kashyap","Proposal Shoot","Phuket"],
+[3,12,"Kavya & Bharath","Wedding","Hyderabad"],
+[3,18,"Meghana & Smaran","Reception","Hyderabad"],
+[3,20,"Shivani & Kashyap","Engagement","Eluru"],
+[4,8,"Tanvi & Vamshi","Pre-Wedding","—"],
+[4,11,"Shivani & Kashyap","Cocktail","Hyderabad"],
+[4,20,"Shivani & Kashyap","Bride & Groom Making","Eluru / Hyd"],
+[4,21,"Shivani & Kashyap","Wedding","Eluru"],
+[4,22,"Shivani & Kashyap","Wedding (contd.)","Eluru"],
+[4,23,"Anusha & Suraj","Lagna Patrika","Hyderabad"],
+[4,24,"Shivani & Kashyap","Vratham","Hyderabad"],
+[5,5,"Simran & Noel","Ladies Sangeet","Hyderabad"],
+[5,6,"Mugdha & Vijay","Mehendi","Hyderabad"],
+[5,7,"Mugdha & Vijay","Groom Making & Edurukollu","Hyderabad"],
+[5,8,"Mugdha & Vijay","Wedding","Hyderabad"],
+[5,9,"Simran & Noel","Mehendi, Cocktail & Sangeet","Hyderabad"],
+[5,10,"Simran & Noel","Haldi + Wedding","Hyderabad"],
+[5,13,"Sameepa & Sri Raj","Pasupu Danchadam","Anantapur"],
+[5,17,"Vedika & Devansh","Post Wedding","Hyderabad"],
+[5,30,"Kavya & Bharath","Interview","Hyderabad"],
+[6,24,"Mishrita & Charan","Mangalsnanam, Haldi & Mehendi","Tirupati"],
+[6,25,"Mishrita & Charan","Bride Making, Pradhanam & Sangeet","Tirupati"],
+[6,25,"Sushmitha & Bharath","Engagement","Hyderabad"],
+[6,26,"Mishrita & Charan","Nalugu & Wedding","Tirupati"],
+[6,29,"Zoya","Haldi","—"],
+[6,30,"Zoya","Mehendi & Sanchak","—"],
+[7,2,"Zoya","Shaadi","—"],
+[7,3,"Zoya","Walima","—"],
+[8,10,"Nidhi & Archit","Pre-Wedding","Hyderabad"],
+[8,11,"Nidhi & Archit","Pre-Wedding","Hyderabad"],
+[8,13,"Nidhi & Archit","Mehendi","Hyderabad"],
+[8,14,"Nidhi & Archit","Haldi & Sangeet","Hyderabad"],
+[8,15,"Nidhi & Archit","Bride & Groom Making, Vratam","Hyderabad"],
+[8,16,"Nidhi & Archit","Baarat, Wedding & Rituals","Shamshabad"],
+[8,21,"Sameepa & Sri Raj","Haldi & Mehendi","Anantapur"],
+[8,22,"Sameepa & Sri Raj","Bride Making & Sangeet","Anantapur"],
+[8,23,"Sameepa & Sri Raj","Wedding","Anantapur"],
+[10,29,"Vipin & Prathyusha","Mehendi","Dallas"],
+[10,30,"Vipin & Prathyusha","Sangeet & Cocktail","Dallas"],
+[10,30,"Dhiraj & Subhasya","Engagement","Tenali"],
+[10,31,"Vipin & Prathyusha","Haldi & Makings","Dallas"],
+[11,1,"Vipin & Prathyusha","Wedding","Dallas"],
+[11,16,"Sushmitha & Bharath","Bride Making","Hyderabad"],
+[11,17,"Sushmitha & Bharath","Bride Making","Hyderabad"],
+[11,18,"Sushmitha & Bharath","Wedding","Hyderabad"],
+[11,19,"Shreyashi & Sachith","Mehendi & Pooja","Ayana Resort, Hyd"],
+[11,19,"Manisha & Prakash","Pre-Wedding","Michigan, USA"],
+[11,20,"Manisha & Prakash","Mehendi","Michigan, USA"],
+[11,20,"Shreyashi & Sachith","Haldi, Sangeet & After Party","Ayana Resort, Hyd"],
+[11,21,"Manisha & Prakash","Haldi & Makings","Michigan, USA"],
+[11,21,"Shreyashi & Sachith","Rituals, Baarat & Wedding","Ayana Resort, Hyd"],
+[11,22,"Manisha & Prakash","Wedding","Michigan, USA"],
+[11,24,"Dhiraj & Subhasya","Mehendi & Sangeet","Kurnool"],
+[11,25,"Sireesha & Vineeth","Sangeet","Hyderabad"],
+[11,25,"Dhiraj & Subhasya","Groom Making & Mangalsnanam","Kurnool"],
+[11,26,"Dhiraj & Subhasya","Bride Making, Haldi & Wedding","Tenali"],
+[11,29,"Sireesha & Vineeth","Haldi & Mehendi","Hyderabad"],
+[12,2,"Sireesha & Vineeth","Bride & Groom Making","Hyderabad / Kodad"],
+[12,3,"Sireesha & Vineeth","Wedding","Hyderabad"]
+];
+const TBD = {8:"+2 undated pre-weddings (Nidhi & Archit · Sameepa & Sri Raj)",11:"+2 undated shoots (Sireesha & Vineeth pre-wed · Dhiraj & Subhasya pre-wed)"};
 const MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 /* ---------------- state ---------------- */
@@ -918,7 +876,6 @@ let enqDates = [];       // dates staged in the enquiry form
 let bkDates = [];        // dates staged in the block form
 let calYear = 2026;      // year shown on the Dates & Enquiries calendar
 let editState = null;    // in-place edit state {id,name,type,dates}
-let bookedDateEdit = null; // booked closed enquiry date editor {id,rows:[{old,date}]}
 let prods = {};          // production records
 let people = {};         // crew registry name->style
 let plans = {};          // crew planner rows: rowKey -> {iso,couple,event,loc,cells:{},need:{}}
@@ -926,15 +883,8 @@ let planHidden = {};     // rowKey -> true; deleted planner rows (survives sheet
 let sentSnaps = {};      // personKey -> {at, items:{iso|couple:{iso,couple,event,role}}} — last-sent schedule baselines (survives sheet sync)
 let shotSubs = {};       // shotChecklists: pushId -> {client,eventType,eventDate,team,crewName,startTime,endTime,items[],submittedAt}
 let shotLists = {};      // shotLists: eventKey -> {candid:[],traditional:[]} — editable defaults for the crew pages
-let shotMoods = {};      // shotMoods: groupKey -> {url} — mood board link per event
-let crewProfiles = {};   // crewProfiles: Firebase uid -> one-time crew profile
-let checkinEvents = {};  // crewCheckins/events: event setup and team snapshot
-let checkinAttendance = {}; // crewCheckins/attendance: per-event, per-person status
-let clientForms = {};     // private client links and their pre-filled Planner events
-let clientSubmissions = {}; // client-entered timings, venues and optional details
-let clientApprovals = {}; // owner-only review status
-let clientFormDraft = []; // editable setup before a private link exists
-let clientFormEditId = null; // existing private link currently being edited
+let shotMoods = {};      // shotMoods: coupleKey -> {url,couple} — optional couple-specific board
+let shotEventMoods = {}; // shotEventMoods: event board key -> {url,label}
 let planRowMeta = {};    // runtime: rowKey -> identity for editors
 let openProdId = null;
 let evEdit = null;       // enquiry date-event editor {id,date}
@@ -946,125 +896,89 @@ let openCost = {};       // {prodId:{role:bool,person:bool,day:bool}} cost expan
 let pkgOpen = new Set();  // prod ids with package field revealed
 let openPerson = null;    // team member key whose shoot list is expanded
 let openPlanPerson = null; // planner: team member whose schedule is expanded
-let stageAddFor = null;   // production record with the custom-deliverable form open
 let selCat = "WARM";
 let filterCat = "ALL";
-let editor = "";
-let db = null, auth = null, liveMode = false, appStarted = false;
-let seedLoaded = false, bookingsLoaded = false, enquiriesLoaded = false;
-let crewEventsLast = "";
+let editor = localStorage.getItem('totw_editor') || "";
+let db = null, liveMode = false;
 
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-const p2 = n => String(n).padStart(2,'0');
 const fmt = iso => {const[y,m,d]=iso.split('-').map(Number);return MN[m-1].slice(0,3)+" "+d;};
 const stamp = () => new Date().toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
 
-/* ---------------- verified owner access ---------------- */
-function authError(message){
-  const el=document.getElementById('gateErr');
-  el.textContent=message;
-  el.style.display='block';
-}
+/* ---------------- gate + editor name ---------------- */
 function boot(){
-  try{
-    firebase.initializeApp(CONFIG.FIREBASE);
-    auth=firebase.auth();
-    db=firebase.database();
-  }catch(e){
+  if(CONFIG.ACCESS_CODE && localStorage.getItem('totw_gate')!==CONFIG.ACCESS_CODE){
     document.getElementById('gate').style.display='flex';
-    authError('Could not connect to the studio database. Reload and try again.');
+    document.getElementById('gateCode').addEventListener('keydown',e=>{if(e.key==='Enter')tryGate();});
     return;
   }
-  auth.onAuthStateChanged(user=>{
-    if(!user){
-      document.getElementById('gate').style.display='flex';
-      return;
-    }
-    db.ref('admins/'+user.uid).once('value').then(s=>{
-      if(s.val()!==true) throw new Error('not-approved');
-      editor=user.email||'Owner';
-      document.getElementById('gate').style.display='none';
-      start();
-    }).catch(()=>{
-      auth.signOut();
-      authError('This account is not approved for the Studio Ledger.');
-    });
-  });
+  afterGate();
 }
-function signInLedger(){
-  const btn=document.getElementById('loginBtn');
-  document.getElementById('gateErr').style.display='none';
-  btn.disabled=true;btn.textContent='Signing in…';
-  const provider=new firebase.auth.GoogleAuthProvider();
-  provider.setCustomParameters({prompt:'select_account'});
-  auth.signInWithPopup(provider).catch(error=>{
-    if(error&&error.code==='auth/popup-blocked'){
-      return auth.signInWithRedirect(provider);
-    }
-    if(!error||error.code!=='auth/popup-closed-by-user'){
-      authError('Google sign-in could not be completed. Please try again.');
-    }
-  }).finally(()=>{btn.disabled=false;btn.textContent='Continue with Google';});
+function tryGate(){
+  const v=document.getElementById('gateCode').value.trim();
+  if(v===CONFIG.ACCESS_CODE){
+    localStorage.setItem('totw_gate',v);
+    document.getElementById('gate').style.display='none';
+    afterGate();
+  } else {
+    document.getElementById('gateErr').style.display='block';
+  }
 }
-function signOutLedger(){
-  if(!auth)return;
-  auth.signOut().then(()=>location.reload());
+function afterGate(){
+  if(!editor){
+    document.getElementById('who').style.display='flex';
+    document.getElementById('whoName').addEventListener('keydown',e=>{if(e.key==='Enter')setWho();});
+    return;
+  }
+  start();
+}
+function setWho(){
+  const v=document.getElementById('whoName').value.trim();
+  if(!v)return;
+  editor=v;
+  localStorage.setItem('totw_editor',v);
+  document.getElementById('who').style.display='none';
+  start();
 }
 
 /* ---------------- storage layer ---------------- */
 function start(){
-  if(appStarted)return;
-  appStarted=true;
   setCat("WARM");
-  liveMode=true;
-  banner('live','Private live sync on. Signed in as '+editor+'.');
-  db.ref('calendarSeed').on('value',s=>{const v=s.val()||[];BAKED=Array.isArray(v)?v:Object.values(v);seedLoaded=true;refresh();publishCrewEvents();});
-  db.ref('calendarNotes').on('value',s=>{TBD=s.val()||{};renderCalendar();});
-  db.ref('rosterSeed').on('value',s=>{const v=s.val()||[];ROSTER_SEED=Array.isArray(v)?v:Object.values(v);});
-  db.ref('bookings').on('value',s=>{teamBookings=s.val()||{};bookingsLoaded=true;refresh();publishCrewEvents();});
-  db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};enquiriesLoaded=true;refresh();publishCrewEvents();});
-  db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
-  db.ref('prod').on('value',s=>{prods=s.val()||{};renderProdAll();});
-  db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
-  db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();renderCheckinFormOptions();renderMoodSec();previewClientFormEvents();publishCrewEvents();});
-  db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();});
-  db.ref('sentSnaps').on('value',s=>{sentSnaps=s.val()||{};renderPlanTeam();});
-  db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();});
-  db.ref('shotLists').on('value',s=>{shotLists=s.val()||{};loadShotEd();refreshShotTypeOptions();ciChecklistStatus();});
-  db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();});
-  db.ref('crewProfiles').on('value',s=>{crewProfiles=s.val()||{};renderCheckinTeam();renderCrewProfiles();});
-  db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};renderCheckinEvents();});
-  db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};renderCheckinEvents();});
-  db.ref('clientForms').on('value',s=>{clientForms=s.val()||{};renderClientForms();});
-  db.ref('clientSubmissions').on('value',s=>{clientSubmissions=s.val()||{};renderClientForms();});
-  db.ref('clientApprovals').on('value',s=>{clientApprovals=s.val()||{};renderClientForms();});
-  document.getElementById('footNote').textContent='Private shared ledger. Signed in as '+editor+'.';
-}
-function publishCrewEvents(){
-  if(!seedLoaded||!bookingsLoaded||!enquiriesLoaded||!db)return;
-  const today=new Date();today.setHours(0,0,0,0);
-  const rows=new Map();
-  const add=(iso,name,eventName)=>{
-    if(!iso||!name)return;
-    const d=new Date(iso+'T00:00:00');
-    if(isNaN(d)||d<today)return;
-    const client=String(name).trim(),event=String(eventName||'').trim();
-    if(!client)return;
-    const key=[iso,client.toLowerCase(),event.toLowerCase()].join('|');
-    const planner=plannerRowForEvent(iso,client,event),teams=planTeamFlags(planner);
-    rows.set(key,{client,date:iso,...(event&&event!=='—'?{event}: {}),teams});
-  };
-  BAKED.forEach(r=>add(`2026-${p2(r[0])}-${p2(r[1])}`,r[2],r[3]));
-  Object.values(teamBookings).forEach(b=>{if(b&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c,b.e);});
-  Object.values(plans).forEach(p=>{if(p&&p.iso)add(p.iso,p.couple,p.event);});
-  Object.values(enquiries).forEach(x=>{if(x&&x.status==='BOOKED')(x.dates||[]).forEach(iso=>add(iso,x.name,''));});
-  const out={};
-  [...rows.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.client.localeCompare(b.client)||String(a.event||'').localeCompare(String(b.event||''))).forEach((row,i)=>{out['e'+i]=row;});
-  const next=JSON.stringify(out);
-  if(next===crewEventsLast)return;
-  crewEventsLast=next;
-  db.ref('crewEvents').set(out).catch(e=>console.warn('Crew event publish failed',e));
+  if(CONFIG.FIREBASE && window.firebase){
+    try{
+      firebase.initializeApp(CONFIG.FIREBASE);
+      db=firebase.database();
+      liveMode=true;
+      banner('live','Live sync on — every change saves instantly and appears for the whole team.');
+      db.ref('bookings').on('value',s=>{teamBookings=s.val()||{};refresh();});
+      db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};refresh();});
+      db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
+      db.ref('prod').on('value',s=>{prods=s.val()||{};renderProdAll();});
+      db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
+      db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();});
+      db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();});
+      db.ref('sentSnaps').on('value',s=>{sentSnaps=s.val()||{};renderPlanTeam();});
+      db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();});
+      db.ref('shotLists').on('value',s=>{shotLists=s.val()||{};loadShotEd();});
+      db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();});
+      db.ref('shotEventMoods').on('value',s=>{shotEventMoods=s.val()||{};renderEventMoodSec();});
+      document.getElementById('footNote').textContent='Shared live ledger. Signed in as '+editor+'.';
+      return;
+    }catch(e){ console.warn('Firebase init failed',e); }
+  }
+  // local fallback
+  banner('local','Local mode — changes save on this device only. Add the Firebase config to turn on team sync.');
+  try{teamBookings=JSON.parse(localStorage.getItem('totw_bk')||'{}');}catch(e){teamBookings={};}
+  try{enquiries=JSON.parse(localStorage.getItem('totw_enq')||'{}');}catch(e){enquiries={};}
+  try{activity=JSON.parse(localStorage.getItem('totw_act')||'{}');}catch(e){activity={};}
+  try{prods=JSON.parse(localStorage.getItem('totw_prod')||'{}');}catch(e){prods={};}
+  try{people=JSON.parse(localStorage.getItem('totw_people')||'{}');}catch(e){people={};}
+  try{plans=JSON.parse(localStorage.getItem('totw_plan')||'{}');}catch(e){plans={};}
+  try{planHidden=JSON.parse(localStorage.getItem('totw_planhide')||'{}');}catch(e){planHidden={};}
+  try{sentSnaps=JSON.parse(localStorage.getItem('totw_sentsnaps')||'{}');}catch(e){sentSnaps={};}
+  document.getElementById('footNote').textContent='Local mode. Editing as '+editor+'.';
+  refresh();renderActivity();
 }
 function banner(kind,msg){
   const b=document.getElementById('syncBanner');
@@ -1109,7 +1023,7 @@ function rebuildIndex(){
     });
   });
 }
-function refresh(){rebuildIndex();renderStrip();renderCalendar();renderWeddingDemand();renderEnquiries();renderChips('enq');renderChips('bk');renderMiniCal('enq');renderMiniCal('bk');renderProdAll();}
+function refresh(){rebuildIndex();renderStrip();renderCalendar();renderEnquiries();renderChips('enq');renderChips('bk');renderMiniCal('enq');renderMiniCal('bk');renderProdAll();}
 
 function renderStrip(){
   const bookedDays=Object.keys(byDate).filter(k=>k.indexOf(calYear+'-')===0).length;
@@ -1139,7 +1053,7 @@ function setCalYear(y){
   const a=document.getElementById('yrT2026'),b=document.getElementById('yrT2027');
   if(a)a.classList.toggle('on',y===2026);
   if(b)b.classList.toggle('on',y===2027);
-  renderStrip();renderCalendar();renderWeddingDemand(true);
+  renderStrip();renderCalendar();
 }
 function renderCalendar(){
   const today=new Date();
@@ -1170,73 +1084,6 @@ function renderCalendar(){
       ${calYear===2026&&TBD[m+1]?`<div class="tbd-note">${TBD[m+1]}</div>`:''}`;
     el.appendChild(div);
   }
-}
-
-function eventValues(v){
-  if(Array.isArray(v))return v;
-  if(v&&typeof v==='object')return Object.values(v);
-  return v==null?[]:[v];
-}
-function isWeddingDayEvent(v){
-  const s=String(v||'').trim().toLowerCase();
-  if(!s||/\bpre[ -]?wedding\b|\bpost[ -]?wedding\b/.test(s))return false;
-  return /\bwedding\b|\bshaadi\b|\bpheras?\b|\bmuhurt(?:ham|am)\b|\bnikah\b/.test(s);
-}
-function weddingDemandMap(){
-  const booked={},leads={},labels={};
-  const add=(map,date,couple)=>{
-    const label=String(couple||'').trim();
-    const name=label.toLowerCase();
-    if(!date||!name)return;
-    (map[date]=map[date]||new Set()).add(name);
-    if(!labels[name])labels[name]=label;
-  };
-  BAKED.forEach(([m,d,c,e])=>{if(isWeddingDayEvent(e))add(booked,`2026-${p2(m)}-${p2(d)}`,c);});
-  Object.values(teamBookings).forEach(b=>{
-    if(b&&b.m&&b.d&&isWeddingDayEvent(b.e))add(booked,`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c);
-  });
-  Object.values(enquiries).forEach(x=>{
-    Object.entries((x&&x.dateEvents)||{}).forEach(([date,events])=>{
-      if(eventValues(events).some(isWeddingDayEvent))add(x.status==='BOOKED'?booked:leads,date,x.name);
-    });
-  });
-  const out={};
-  new Set([...Object.keys(booked),...Object.keys(leads)]).forEach(date=>{
-    const b=booked[date]||new Set();
-    const q=leads[date]||new Set();
-    b.forEach(name=>q.delete(name));
-    const bookedNames=[...b].map(name=>labels[name]||name).sort((a,b)=>a.localeCompare(b));
-    const enquiryNames=[...q].map(name=>labels[name]||name).sort((a,b)=>a.localeCompare(b));
-    out[date]={booked:b.size,enquiries:q.size,total:b.size+q.size,bookedNames,enquiryNames};
-  });
-  return out;
-}
-
-function renderWeddingDemand(resetMonth){
-  const sel=document.getElementById('demandMonth');
-  const list=document.getElementById('demandList');
-  if(!sel||!list)return;
-  const prev=resetMonth?'':sel.value;
-  const now=new Date();
-  const fallback=(now.getFullYear()===calYear?now.getMonth():0);
-  sel.innerHTML=MN.map((name,i)=>`<option value="${i}">${name} ${calYear}</option>`).join('');
-  sel.value=prev!==''?prev:String(fallback);
-  const month=Number(sel.value);
-  const counts=weddingDemandMap();
-  const rows=Object.entries(counts).filter(([,count])=>count.total>2).sort((a,b)=>a[0].localeCompare(b[0]));
-  const monthRows=rows.filter(([date])=>{
-    const parts=date.split('-').map(Number);
-    return parts[0]===calYear&&parts[1]===month+1;
-  });
-  list.innerHTML=monthRows.length?monthRows.map(([date,count])=>{
-    const day=Number(date.slice(8,10));
-    const bl=count.booked===1?'booking':'booked';
-    const ql=count.enquiries===1?'enquiry':'enquiries';
-    const hover=[count.bookedNames.length?'Booked: '+count.bookedNames.join(', '):'',count.enquiryNames.length?'Enquiries: '+count.enquiryNames.join(', '):''].filter(Boolean).join(' | ');
-    const bNames=count.bookedNames.length?count.bookedNames.map(esc).join('<br>'):'<span class="demand-none">None</span>';
-    const qNames=count.enquiryNames.length?count.enquiryNames.map(esc).join('<br>'):'<span class="demand-none">None</span>';
-    return `<details class="demand-item"><summary title="${esc(hover)}"><b>${MN[month]} ${day}, ${calYear}</b><span class="demand-count">${count.booked} ${bl} · ${count.enquiries} ${ql} ▾</span></summary><div class="demand-names"><div><h4>Booked</h4><p>${bNames}</p></div><div><h4>Enquiries</h4><p>${qNames}</p></div></div></details>`;
-  }).join(''):'<div class="demand-empty">No in-demand wedding dates this month.</div>';
 }
 
 /* ---------------- day detail ---------------- */
@@ -1305,7 +1152,6 @@ function renderMiniCal(kind){
   const mo=mcMonth[kind];
   const sel=new Set(miniTarget(kind));
   const yr=mcYear[kind];
-  const demand=weddingDemandMap();
   const dim=new Date(yr,mo+1,0).getDate();
   const off=(new Date(yr,mo,1).getDay()+6)%7;
   let cells='';
@@ -1313,8 +1159,7 @@ function renderMiniCal(kind){
   for(let d=1;d<=dim;d++){
     const v=iso(mo+1,d,yr);
     const booked=!!byDate[yr+"-"+(mo+1)+"-"+d];
-    const inDemand=((demand[v]&&demand[v].total)||0)>2;
-    cells+=`<i class="mc-d${sel.has(v)?' sel':''}${booked?' bk':''}${inDemand?' demand':''}" onclick="mcToggle('${kind}','${v}')">${d}</i>`;
+    cells+=`<i class="mc-d${sel.has(v)?' sel':''}${booked?' bk':''}" onclick="mcToggle('${kind}','${v}')">${d}</i>`;
   }
   el.innerHTML=`<div class="mc-h">
     <button onclick="mcNav('${kind}',-1)"${mo===0&&yr===2026?' disabled':''}>‹</button>
@@ -1384,9 +1229,9 @@ function renderChips(kind){
 function popHtml(isoStr){
   if(!isoStr)return'';
   const[y,m,d]=isoStr.split('-').map(Number);
-  const evts=byDate[y+"-"+m+"-"+d]||[];
+  const evts=byDate[m+"-"+d]||[];
   if(!evts.length)return'';
-  return `<em>Clashes with · ${MN[m-1]} ${d}${y!==2026?' · '+y:''}</em>`+evts.map(x=>
+  return `<em>Clashes with · ${MN[m-1]} ${d}</em>`+evts.map(x=>
     `<b>${esc(x.c)}</b><u>${esc(x.e)}${x.l&&x.l!=="—"?" · "+esc(x.l):""}</u>`).join('');
 }
 const gpop=document.createElement('div');
@@ -1596,122 +1441,13 @@ function renderClosed(closed){
   if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+` · ${closed.length}`;
   el.innerHTML=closed.length?closed.map(([id,x])=>{
     const when=x.closedAt?new Date(x.closedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'';
-    if(bookedDateEdit&&bookedDateEdit.id===id){
-      const rows=bookedDateEdit.rows.map((r,i)=>{
-        return `<div class="cl-date-row"><input type="date" value="${esc(r.date||'')}" onchange="bookedDateSet(${i},this.value)"><input class="cl-event-in" type="text" value="${esc(r.event||'')}" placeholder="Event name" oninput="bookedEventSet(${i},this.value)" title="Use + between multiple events"><button class="cl-btn" onclick="bookedDateRemove(${i})" title="Remove date">×</button></div>`;
-      }).join('');
-      return `<div class="cl-date-edit"><h3>${esc(x.name)} · Edit confirmed dates</h3>${rows||'<div style="font-size:12px;color:var(--ink-soft)">No dates. Add one below.</div>'}<div class="cl-date-actions"><button class="cl-btn" onclick="bookedDateAdd()">+ Date</button><button class="btn-mini" onclick="saveBookedDates()">Save dates</button><button class="cl-btn" onclick="cancelBookedDates()">Cancel</button></div></div>`;
-    }
     return `<div class="cl-row">
       <b>${esc(x.name)}</b><span class="st-pill ${x.status}" style="margin-left:0">${x.status}</span>
       <small>${x.type?esc(x.type)+' · ':''}${when?'closed '+when:''}</small>
-      ${x.status==='BOOKED'?`<button class="cl-btn" onclick="startBookedDateEdit('${id}')" title="Edit confirmed dates">✎</button>`:''}
       <button class="cl-btn" onclick="reopenEnq('${id}')" title="Reopen">↺</button>
       <button class="cl-btn" onclick="purgeEnq('${id}')" title="Delete permanently">×</button>
     </div>`;
   }).join(''):'<div class="empty">Nothing closed yet.</div>';
-}
-function startBookedDateEdit(id){
-  const x=enquiries[id];if(!x||x.status!=='BOOKED')return;
-  bookedDateEdit={id,rows:(x.dates||[]).slice().sort().map(d=>{
-    const evs=(x.dateEvents&&x.dateEvents[d])||[];
-    return {old:d,date:d,event:evs.length?evs.join(' + '):(x.type||'Wedding')};
-  })};
-  renderEnquiries();
-}
-function bookedDateSet(i,v){
-  if(!bookedDateEdit||!bookedDateEdit.rows[i])return;
-  bookedDateEdit.rows[i].date=v;
-}
-function bookedEventSet(i,v){
-  if(!bookedDateEdit||!bookedDateEdit.rows[i])return;
-  bookedDateEdit.rows[i].event=v;
-}
-function bookedDateAdd(){
-  if(!bookedDateEdit)return;
-  const x=enquiries[bookedDateEdit.id];
-  bookedDateEdit.rows.push({old:'',date:'',event:(x&&x.type)||'Wedding'});
-  renderEnquiries();
-}
-function bookedDateRemove(i){
-  if(!bookedDateEdit)return;
-  bookedDateEdit.rows.splice(i,1);
-  renderEnquiries();
-}
-function cancelBookedDates(){bookedDateEdit=null;renderEnquiries();}
-function bookingIso(b){
-  return `${b.y||2026}-${String(b.m).padStart(2,'0')}-${String(b.d).padStart(2,'0')}`;
-}
-function saveBookedDates(){
-  if(!bookedDateEdit)return;
-  const id=bookedDateEdit.id,x=enquiries[id];
-  if(!x||x.status!=='BOOKED'){bookedDateEdit=null;renderEnquiries();return;}
-  const rows=bookedDateEdit.rows.map(r=>({old:r.old||'',date:r.date||'',event:(r.event||'').trim()}));
-  if(!rows.length){toast('Keep at least one confirmed date.');return;}
-  if(rows.some(r=>!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||isNaN(Date.parse(r.date)))){toast('Enter a valid date on every row.');return;}
-  if(rows.some(r=>!r.event)){toast('Enter an event name for every confirmed date.');return;}
-  const newDates=rows.map(r=>r.date);
-  if(new Set(newDates).size!==newDates.length){toast('The same date is entered more than once.');return;}
-  const oldDates=(x.dates||[]).slice();
-  const oldSet=new Set(oldDates);
-  const nextEvents={};
-  rows.forEach(r=>{
-    const evs=r.event.split(' + ').map(e=>e.trim()).filter(Boolean);
-    if(evs.length)nextEvents[r.date]=[...new Set([...(nextEvents[r.date]||[]),...evs])];
-  });
-  const dayMap=new Map(rows.filter(r=>r.old).map(r=>[r.old,r.date]));
-  const prodChanges={};
-  const coupleKey=String(x.name||'').trim().toLowerCase();
-  for(const [pid,p] of Object.entries(prods)){
-    if(String(p.couple||'').trim().toLowerCase()!==coupleKey)continue;
-    const revised=[];
-    (p.days||[]).forEach(d=>{
-      if(!oldSet.has(d.date)){revised.push(d);return;}
-      const nd=dayMap.get(d.date);
-      if(nd)revised.push({...d,date:nd,events:(nextEvents[nd]||[]).slice()});
-    });
-    rows.forEach(r=>{
-      if(!revised.some(d=>d.date===r.date))revised.push({date:r.date,events:(nextEvents[r.date]||[]).slice(),gb:0,roles:[],fmt:false});
-    });
-    const dates=revised.map(d=>d.date);
-    if(new Set(dates).size!==dates.length){toast(`A Production shoot day already exists on one of the new dates for ${p.couple}.`);return;}
-    revised.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
-    prodChanges[pid]={...p,days:revised};
-  }
-  const nextX={...x,dates:newDates.slice().sort(),dateEvents:nextEvents};
-  const related=Object.entries(teamBookings).filter(([bid,b])=>{
-    const same=String(b.c||'').trim().toLowerCase()===coupleKey;
-    return b.fromEnq===id||(same&&oldSet.has(bookingIso(b)));
-  });
-  const relatedIds=new Set(related.map(([bid])=>bid));
-  const bookingAdds={};
-  newDates.forEach(v=>{
-    const[y,m,d]=v.split('-').map(Number);
-    const duplicate=Object.entries(teamBookings).some(([bid,b])=>!relatedIds.has(bid)&&String(b.c||'').trim().toLowerCase()===coupleKey&&bookingIso(b)===v);
-    if(duplicate)return;
-    const evs=nextEvents[v]||[];
-    bookingAdds[uid('b')]={y,m,d,c:x.name,e:evs.length?evs.join(' + '):(x.type||'Booking'),l:'—',by:editor,at:stamp(),fromEnq:id};
-  });
-  bookedDateEdit=null;
-  if(liveMode){
-    const updates={};
-    updates['enquiries/'+id]=nextX;
-    related.forEach(([bid])=>updates['bookings/'+bid]=null);
-    Object.entries(bookingAdds).forEach(([bid,b])=>updates['bookings/'+bid]=b);
-    Object.entries(prodChanges).forEach(([pid,p])=>updates['prod/'+pid]=p);
-    db.ref().update(updates).then(()=>{
-      log(`updated confirmed dates for ${x.name}: ${oldDates.map(fmt).join(', ')} to ${newDates.map(fmt).join(', ')}`);
-      toast('Confirmed dates updated everywhere.');
-    }).catch(()=>toast('Could not update the confirmed dates. Please try again.'));
-  }else{
-    enquiries[id]=nextX;
-    related.forEach(([bid])=>delete teamBookings[bid]);
-    Object.assign(teamBookings,bookingAdds);
-    Object.assign(prods,prodChanges);
-    saveEnquiries();saveBookings();localStorage.setItem('totw_prod',JSON.stringify(prods));
-    log(`updated confirmed dates for ${x.name}: ${oldDates.map(fmt).join(', ')} to ${newDates.map(fmt).join(', ')}`);
-    refresh();toast('Confirmed dates updated everywhere.');
-  }
 }
 function reopenEnq(id){
   const x=enquiries[id];if(!x)return;
@@ -1879,27 +1615,21 @@ function stagesFor(p){
   const anyTradVideo=has('Traditional Video');
   const anyCandidVideo=has('Candid Video');
   // One line per deliverable type, for the whole couple. Deadlines: sneak from first day, rest from last day.
-  if(anyCandidPhoto)out.push({k:'sneak',l:'Sneak peek',o:'Sumenth',due:f?f+2*DAYMS:null,clientPdf:true});
-  if(anyCandidPhoto||anyTradPhoto)out.push({k:'cull',l:'Culling',o:'Mahima',due:l?l+7*DAYMS:null,clientPdf:false});
-  if(anyCandidPhoto)out.push({k:'cphoto',l:'Candid photos',o:'Sumenth',due:l?l+14*DAYMS:null,gate:1,clientPdf:true});
-  if(anyTradPhoto)out.push({k:'tphoto',l:'Traditional photos',o:'Team',due:l?l+14*DAYMS:null,gate:1,clientPdf:true});
-  if(anyCandidVideo)out.push({k:'teaser',l:'Candid teaser',o:'Team',due:l?l+90*DAYMS:null,gate:1,clientPdf:true});
-  if(anyCandidVideo)out.push({k:'cfilm',l:'Candid film',o:'Team',due:l?l+90*DAYMS:null,gate:1,clientPdf:true});
-  if(anyTradVideo)out.push({k:'tvideo',l:'Traditional video',o:'Team',due:l?l+90*DAYMS:null,gate:1,clientPdf:true});
+  if(anyCandidPhoto)out.push({k:'sneak',l:'Sneak peek',o:'Sumenth',due:f?f+2*DAYMS:null});
+  if(anyCandidPhoto||anyTradPhoto)out.push({k:'cull',l:'Culling',o:'Mahima',due:l?l+7*DAYMS:null});
+  if(anyCandidPhoto)out.push({k:'cphoto',l:'Candid photos',o:'Sumenth',due:l?l+14*DAYMS:null,gate:1});
+  if(anyTradPhoto)out.push({k:'tphoto',l:'Traditional photos',o:'Team',due:l?l+14*DAYMS:null,gate:1});
+  if(anyCandidVideo)out.push({k:'teaser',l:'Candid teaser',o:'Team',due:l?l+90*DAYMS:null,gate:1});
+  if(anyCandidVideo)out.push({k:'cfilm',l:'Candid film',o:'Team',due:l?l+90*DAYMS:null,gate:1});
+  if(anyTradVideo)out.push({k:'tvideo',l:'Traditional video',o:'Team',due:l?l+90*DAYMS:null,gate:1});
   if(p.deliv&&p.deliv.album){
     const n=+p.albumCount>0?+p.albumCount:1;
     const suffix=n>1?` \u00d7${n}`:'';
-    out.push({k:'albumsel',l:'Album selection'+suffix,o:'Client',client:1,album:1,clientPdf:false});
-    out.push({k:'albumdes',l:'Album design'+suffix,o:'Sumenth',album:1,clientPdf:false});
-    out.push({k:'albumappr',l:'Album approval'+suffix,o:'Client',client:1,gate:1,album:1,clientPdf:false});
+    out.push({k:'albumsel',l:'Album selection'+suffix,o:'Client',client:1});
+    out.push({k:'albumdes',l:'Album design'+suffix,o:'Sumenth'});
+    out.push({k:'albumappr',l:'Album approval'+suffix,o:'Client',client:1,gate:1});
   }
-  const hidden=p.stageHidden||{};
-  const defaults=out.filter(s=>!hidden[s.k]);
-  const custom=(p.customStages||[]).map(x=>({
-    k:x.k,l:x.l,o:x.o||'Team',due:x.due?Date.parse(x.due):null,
-    custom:1,client:x.o==='Client'?1:0,clientPdf:x.clientPdf!==false
-  }));
-  return defaults.concat(custom);
+  return out;
 }
 const PRAISE=[
  (l,e)=>`${l} delivered ${e}. This is why they pay the premium.`,
@@ -2020,37 +1750,27 @@ function calendarCoupleMap(){
   };
   BAKED.forEach(([m,d,c,e])=>add(c,m,d,e,2026));
   Object.values(teamBookings).forEach(b=>add(b.c,b.m,b.d,b.e,b.y||2026));
-  Object.values(plans).forEach(p=>{
-    const m=String(p&&p.iso||'').match(/^(20\d{2})-(\d{2})-(\d{2})$/);
-    if(m&&p.couple)add(p.couple,+m[2],+m[3],p.event,+m[1]);
-  });
   Object.keys(map).forEach(n=>map[n].dates.sort());
   return map;
 }
 
 /* ---- view tabs ---- */
 function setView(v){
-  const led=document.getElementById('tabLedger'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots'),ci=document.getElementById('tabCheckins'),cf=document.getElementById('tabClientForms');
-  if(!led||!pr||!pl||!sh||!ci||!cf)return;
+  const led=document.getElementById('tabLedger'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots');
+  if(!led||!pr||!pl||!sh)return;
   document.getElementById('vtEnq').classList.toggle('on',v==='ledger');
   document.getElementById('vtPlan').classList.toggle('on',v==='plan');
   document.getElementById('vtProd').classList.toggle('on',v==='prod');
   document.getElementById('vtShots').classList.toggle('on',v==='shots');
-  document.getElementById('vtCheckins').classList.toggle('on',v==='checkins');
-  document.getElementById('vtClientForms').classList.toggle('on',v==='clientforms');
   led.style.display=v==='ledger'?'':'none';
   pl.style.display=v==='plan'?'':'none';
   pr.style.display=v==='prod'?'':'none';
   sh.style.display=v==='shots'?'':'none';
-  ci.style.display=v==='checkins'?'':'none';
-  cf.style.display=v==='clientforms'?'':'none';
   localStorage.setItem('totw_view',v);
   hidePop();
   if(v==='prod')renderProdAll();
   if(v==='plan')renderPlan();
   if(v==='shots'){renderShots();renderMoodSec();loadShotEd();}
-  if(v==='checkins'){renderCheckinFormOptions();renderCheckinEvents();}
-  if(v==='clientforms'){renderClientForms();previewClientFormEvents();}
 }
 function restoreView(){setView(localStorage.getItem('totw_view')||'ledger');}
 
@@ -2180,9 +1900,26 @@ function prodIssues(p,now){
   });
   return out;
 }
-function prodSevRank(p,now){
+function doubleBookings(){
+  const map={};
+  Object.values(prods).forEach(p=>{
+    (p.days||[]).forEach(d=>{
+      (d.roles||[]).forEach(r=>{
+        if(!r.person)return;
+        const k=d.date+'|'+r.person.trim().toLowerCase();
+        (map[k]=map[k]||new Set()).add(p.couple);
+      });
+    });
+  });
+  return Object.entries(map).filter(([k,s])=>s.size>1).map(([k,s])=>{
+    const parts=k.split('|');
+    return {sev:'r',t:`Crew clash: ${parts[1]} is on ${[...s].join(' and ')} on ${fmt(parts[0])}.`,key:k};
+  });
+}
+function prodSevRank(p,now,dbl){
   const iss=prodIssues(p,now);
-  if(iss.some(i=>i.sev==='r'))return 0;
+  const hasClash=dbl.some(x=>[...x.t.matchAll(/./g)].length&&x.t.includes(p.couple));
+  if(iss.some(i=>i.sev==='r')||hasClash)return 0;
   if(iss.length)return 1;
   return 2;
 }
@@ -2192,8 +1929,10 @@ function renderProd(){
   const el=document.getElementById('prodList');
   if(!el)return;
   const now=Date.now();
+  const dbl=doubleBookings();
+  const dblSet=new Set(dbl.map(x=>x.key));
   const list=Object.entries(prods).sort((a,b)=>{
-    const ra=prodSevRank(a[1],now),rb=prodSevRank(b[1],now);
+    const ra=prodSevRank(a[1],now,dbl),rb=prodSevRank(b[1],now,dbl);
     if(ra!==rb)return ra-rb;
     return (b[1].t||0)-(a[1].t||0);
   });
@@ -2201,11 +1940,11 @@ function renderProd(){
   if(cnt)cnt.textContent=list.length?list.length+' ACTIVE':'';
   if(!list.length){el.innerHTML='<div class="empty">No weddings in production yet. The next booked couple starts here.</div>';return;}
   el.innerHTML=list.map(([id,p])=>{
-    const rank=prodSevRank(p,now);
+    const rank=prodSevRank(p,now,dbl);
     const dot=rank===0?'r':rank===1?'a':'g';
     if(openProdId!==id)
       return `<div class="p-row" onclick="openProd('${id}')"><span class="nm">${esc(p.couple)}</span><span style="display:flex;align-items:center"><i class="dot ${dot}"></i><span style="color:var(--ink-soft);font-size:13px">▸</span></span></div>`;
-    return prodCard(id,p,now,dot);
+    return prodCard(id,p,now,dblSet,dot);
   }).join('');
   if(pdayFor&&prods[pdayFor]&&openProdId===pdayFor){
     const cal=document.getElementById('pdayCal');
@@ -2217,11 +1956,12 @@ function addDayMode(id){
   pdayFor=pdayFor===id?null:id;
   renderProd();
 }
-function dayCard(id,p,d,di,now){
+function dayCard(id,p,d,di,now,dblSet){
   const al=dayDataAlarm(d,now);
   const {total,ok,all}=dayCardsOk(d);
   const evs=d.events||[];
   const rolesHtml=(d.roles||[]).map((r,ri)=>{
+    const clash=r.person&&dblSet.has(d.date+'|'+r.person.trim().toLowerCase());
     const cards=(r.cards||[]).map((c,ci)=>{
       const okc=c.a&&c.b&&c.v;
       return `<span class="cardc ${okc?'okc':''}">Card-${ci+1}
@@ -2236,6 +1976,7 @@ function dayCard(id,p,d,di,now){
         <input class="person" list="dlPeople" type="text" placeholder="Who shot" value="${esc(r.person||'')}" onchange="rSet('${id}',${di},${ri},'person',this.value)">
         <input class="payin" type="number" placeholder="₹ pay" value="${r.pay||''}" onchange="rSet('${id}',${di},${ri},'pay',this.value)">
         <button class="xs" onclick="rDel('${id}',${di},${ri})">×</button>
+        ${clash?'<span class="st-pill LOST" style="margin-left:0;vertical-align:0">CLASH</span>':''}
       </div>
       <div class="cardchips">${NODATA.has(r.role)?'<span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft)">No data to copy</span>':cards+`<button class="xs" style="border:1px dashed var(--line);border-radius:6px;padding:3px 8px;font-size:10px;font-family:var(--mono)" onclick="cAdd('${id}',${di},${ri})">+ CARD</button>`}</div>
     </div>`;
@@ -2264,8 +2005,8 @@ function dayCard(id,p,d,di,now){
     <div class="fmt-row"><input type="checkbox" ${d.fmt?'checked':''} ${all?'':'disabled'} onchange="dSet('${id}',${di},'fmt',this.checked)"><span style="${all?'':'color:var(--ink-soft)'}">Cards formatted${all?'':' — locked until every card is on both disks and verified'}</span>${total?`<span class="sdue ${all?'ok':'warn'}" style="margin-left:auto">${ok}/${total} CARDS SAFE</span>`:''}</div>
   </div>`;
 }
-function prodCard(id,p,now,dot){
-  const daysHtml=(p.days||[]).map((d,di)=>dayCard(id,p,d,di,now)).join('');
+function prodCard(id,p,now,dblSet,dot){
+  const daysHtml=(p.days||[]).map((d,di)=>dayCard(id,p,d,di,now,dblSet)).join('');
   const stages=stagesFor(p);
   const stagesHtml=stages.map((s,idx)=>{
     const st=(p.stages||{})[s.k]||{};
@@ -2274,7 +2015,7 @@ function prodCard(id,p,now,dot){
     if(st.done)right=`<span class="sdue ok">DONE${st.at?' · '+esc(st.at):''}</span>`;
     else if(s.client)right=`<span class="sdue cl">WAITING ${clientWaitDays(p,stages,idx,now)}D</span>`;
     else right=`<span class="sdue ${ss.cls}">${ss.txt}</span>`;
-    return `<div class="stage-row"><span class="stage-l"><input type="checkbox" ${st.done?'checked':''} onchange="stageTog('${id}','${s.k}',this.checked)"><span class="${s.client?'cw':''}">${esc(s.l)} — ${esc(s.client?'client':s.o)}</span></span><span class="stage-r">${right}<button class="stage-del" onclick="stageDel('${id}','${s.k}')" title="Remove this deliverable">×</button></span></div>`;
+    return `<div class="stage-row"><span class="stage-l"><input type="checkbox" ${st.done?'checked':''} onchange="stageTog('${id}','${s.k}',this.checked)"><span class="${s.client?'cw':''}">${s.l} — ${s.client?'client':s.o}</span></span>${right}</div>`;
   }).join('');
   const cost=crewCost(p);
   const gbTot=(p.days||[]).reduce((t,d)=>t+(+d.gb||0),0);
@@ -2304,13 +2045,6 @@ function prodCard(id,p,now,dot){
     <div id="pdayCal" style="margin-top:8px;max-width:340px"></div>
     <div class="p-sec">Pipeline</div>
     ${stagesHtml||'<div style="font-size:13px;color:var(--ink-soft)">No deliverables yet — they appear as you log who shot each day.</div>'}
-    <button class="btn-mini" style="margin-top:10px;background:transparent;border:1px dashed var(--line);color:var(--ink-soft)" onclick="stageAddToggle('${id}')">${stageAddFor===id?'Cancel':'+ Deliverable'}</button>
-    ${stageAddFor===id?`<div class="stage-add-form">
-      <input id="stageName-${id}" type="text" placeholder="Deliverable name">
-      <select id="stageOwner-${id}"><option>Sumenth</option><option>Mahima</option><option>Team</option><option>Client</option></select>
-      <input id="stageDue-${id}" type="date" title="Intended delivery date">
-      <div class="stage-add-foot"><label class="stage-pdf-check"><input id="stagePdf-${id}" type="checkbox" checked> Include in client delivery PDF</label><button class="btn-mini" onclick="stageAddSave('${id}')">Save deliverable</button></div>
-    </div>`:''}
     ${p.deliv&&p.deliv.album?`<div style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12.5px;color:var(--ink-soft)"><span>Albums</span><input type="number" min="1" value="${+p.albumCount>0?+p.albumCount:1}" onchange="albumCountSet('${id}',this.value)" style="width:60px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;text-align:right;background:#fff;color:var(--ink)"></div>`:''}
     <div class="p-sec">Crew cost — ${inr(cost.total)}</div>
     ${cost.total>0||(p.days||[]).some(d=>(d.roles||[]).length)?`
@@ -2319,8 +2053,8 @@ function prodCard(id,p,now,dot){
     ${costExp('day','By day',(p.days||[]).length+' day'+((p.days||[]).length!==1?'s':''),dayRows)}
     <div style="margin-top:9px">${pkgHtml}</div>
     `:'<div style="font-size:13px;color:var(--ink-soft)">Crew costs appear as you log ₹ pay against who shot each day.</div>'}
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:15px">
-      <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="xs" onclick="exportCouplePDF('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">FINANCE PDF</button><button class="xs" onclick="exportDeliveryPDF('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">DELIVERY PDF</button></span>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px">
+      <button class="xs" onclick="exportCouplePDF('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">EXPORT PDF</button>
       <button class="xs" id="pdel-${id}" onclick="armDelProd('${id}')" style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:6px 10px">DELETE</button>
     </div>
   </div>`;
@@ -2462,37 +2196,6 @@ function stageTog(id,k,checked){
   }
   writeProd(id);
 }
-function stageAddToggle(id){
-  stageAddFor=stageAddFor===id?null:id;
-  renderProd();
-}
-function stageAddSave(id){
-  const p=prods[id];if(!p)return;
-  const name=(document.getElementById('stageName-'+id).value||'').trim();
-  const owner=document.getElementById('stageOwner-'+id).value||'Team';
-  const due=document.getElementById('stageDue-'+id).value||'';
-  const clientPdf=document.getElementById('stagePdf-'+id).checked;
-  if(!name){toast('Enter a deliverable name.');return;}
-  p.customStages=p.customStages||[];
-  p.customStages.push({k:uid('s'),l:name,o:owner,due,clientPdf});
-  stageAddFor=null;
-  writeProd(id);
-  log(`added deliverable ${name} for ${p.couple}`);
-  toast('Deliverable added.');
-}
-function stageDel(id,k){
-  const p=prods[id];if(!p)return;
-  const s=stagesFor(p).find(x=>x.k===k);if(!s)return;
-  if(s.custom)p.customStages=(p.customStages||[]).filter(x=>x.k!==k);
-  else{
-    p.stageHidden=p.stageHidden||{};
-    p.stageHidden[k]=true;
-  }
-  if(p.stages)delete p.stages[k];
-  writeProd(id);
-  log(`removed deliverable ${s.l} from ${p.couple}`);
-  toast('Deliverable removed.');
-}
 let delArmId=null,delArmT=null;
 function armDelProd(id){
   if(delArmId===id){
@@ -2519,6 +2222,7 @@ function renderProdAlerts(){
   const now=Date.now();
   let all=[];
   Object.values(prods).forEach(p=>{all=all.concat(prodIssues(p,now));});
+  all=all.concat(doubleBookings());
   all.sort((a,b)=>(a.sev==='r'?0:1)-(b.sev==='r'?0:1));
   el.innerHTML=all.length?all.map(x=>`<div class="alert ${x.sev}">${esc(x.t)}</div>`).join(''):'<div class="empty">Nothing needs attention.</div>';
   const sec=document.getElementById('alertSec');
@@ -2650,42 +2354,6 @@ function openPrint(title,inner){
   w.document.close();
   setTimeout(()=>{w.focus();w.print();},350);
 }
-function fullDate(v){
-  if(!v)return '—';
-  const d=new Date(v);
-  if(isNaN(d))return '—';
-  return d.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
-}
-function exportDeliveryPDF(id){
-  const p=prods[id];if(!p)return;
-  const stages=stagesFor(p).filter(s=>s.clientPdf&&!s.album);
-  if(!stages.length){toast('No client deliverables are included in this PDF.');return;}
-  const pending=stages.filter(s=>!((p.stages||{})[s.k]||{}).done);
-  if(pending.length){toast('Complete all client deliverables before exporting.');return;}
-  const intended=stages.map(s=>s.due||0).filter(Boolean);
-  const actual=stages.map(s=>+(((p.stages||{})[s.k]||{}).doneT)||0).filter(Boolean);
-  const intendedFinal=intended.length?Math.max(...intended):null;
-  const actualFinal=actual.length?Math.max(...actual):null;
-  const days=(p.days||[]).slice().sort((a,b)=>a.date<b.date?-1:1);
-  const eventRows=days.map(d=>`<tr><td>${esc(fullDate(d.date))}</td><td>${esc((d.events||[]).join(' + ')||'Wedding celebration')}</td></tr>`).join()||'<tr><td colspan="2" class="muted">Wedding dates were not recorded.</td></tr>';
-  const deliveryRows=stages.map(s=>{
-    const st=(p.stages||{})[s.k]||{};
-    return `<tr><td>${esc(s.l)}</td><td>${esc(fullDate(s.due))}</td><td>${esc(fullDate(st.doneT))}</td></tr>`;
-  }).join('');
-  const inner=`
-    <div class="brand">Tale of Two Weddings</div>
-    <h1>Delivery summary</h1>
-    <div class="sub">Prepared for ${esc(p.couple)}</div>
-    <div class="band"><div class="b"><div class="k">Intended wedding delivery date</div><div class="v">${esc(fullDate(intendedFinal))}</div></div><div class="b"><div class="k">Actual delivery date</div><div class="v">${esc(fullDate(actualFinal))}</div></div></div>
-    <h2>Wedding dates</h2>
-    <table><tr><th>Date</th><th>Celebration</th></tr>${eventRows}</table>
-    <h2>Completed deliverables</h2>
-    <table><tr><th>Deliverable</th><th>Intended delivery</th><th>Actual delivery</th></tr>${deliveryRows}</table>
-    <p style="margin-top:28px;line-height:1.7">All digital deliverables listed above have been completed and shared.</p>
-    <p style="line-height:1.7">Thank you for trusting Tale of Two Weddings with your celebration.</p>
-    <div class="sub" style="margin-top:28px">Generated ${esc(fullDate(Date.now()))}</div>`;
-  openPrint(`Tale of Two Weddings — Delivery summary — ${p.couple}`,inner);
-}
 function exportCouplePDF(id){
   const p=prods[id];if(!p)return;
   const cost=crewCost(p);
@@ -2715,7 +2383,7 @@ function exportCouplePDF(id){
     <h2>Cost by person</h2>
     <table>${personRows}</table>
     <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>`;
-  openPrint(`Tale of Two Weddings — ${p.couple}`,inner);
+  openPrint(`TOTW — ${p.couple}`,inner);
 }
 function exportSeasonPDF(){
   const from=document.getElementById('seasonFrom').value||'2026-01-01';
@@ -2761,7 +2429,7 @@ function exportSeasonPDF(){
     <h2>Total paid per person</h2>
     <table>${personRows}</table>
     <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>`;
-  openPrint(`Tale of Two Weddings — Season ${from} to ${to}`,inner);
+  openPrint(`TOTW — Season ${from} to ${to}`,inner);
 }
 
 /* ---- enquiry date-event tags ---- */
@@ -3106,7 +2774,7 @@ function planNeed(key,role){
   writePlan(key);
   renderPlan();
 }
-let ROSTER_SEED = [];
+const ROSTER_SEED=[{"iso":"2026-06-24","couple":"Mishrita & Charan","event":"Mangalsnanam & Bride haldi","loc":"Tirupathi","cells":{"cp":"Sri ram & Sumenth","cv":"Akash & Sujith","tp":"Pruidhvi","tv":"Pruidhvi","ex":""}},{"iso":"2026-06-24","couple":"Mishrita & Charan","event":"Mehendi","loc":"Tirupathi","cells":{"cp":"","cv":"","tp":"Pruidhvi","tv":"Pruidhvi","ex":""}},{"iso":"2026-06-25","couple":"Sushmitha & Bharath","event":"Engagement","loc":"Hyderabad","cells":{"cp":"Shoib","cv":"","tp":"Pruidhvi","tv":"","ex":""}},{"iso":"2026-06-25","couple":"Mishrita & Charan","event":"Bride Making & Pradhanam","loc":"Tirupathi","cells":{"cp":"Sri ram","cv":"","tp":"Pruidhvi","tv":"Pruidhvi","ex":""}},{"iso":"2026-06-25","couple":"Mishrita & Charan","event":"Sangeet","loc":"Tirupathi","cells":{"cp":"Sri ram & Sumenth","cv":"Akash & Sujith","tp":"Pruidhvi","tv":"Pruidhvi","ex":"Drone"}},{"iso":"2026-06-26","couple":"Mishrita & Charan","event":"Nalugu","loc":"Tirupathi","cells":{"cp":"","cv":"","tp":"Pruidhvi","tv":"Pruidhvi","ex":""}},{"iso":"2026-06-26","couple":"Mishrita & Charan","event":"Wedding","loc":"Tirupathi","cells":{"cp":"Sri ram & Sumenth","cv":"Akash & Sujith","tp":"Pruidhvi","tv":"Pruidhvi","ex":"Drone & Live"}},{"iso":"2026-06-29","couple":"Zoya","event":"Haldi","loc":"Interview of bride & Family & Friends","cells":{"cp":"Shoib","cv":"Akash","tp":"","tv":"","ex":""}},{"iso":"2026-07-01","couple":"Zoya","event":"Sanchak","loc":"","cells":{"cp":"Prudhvi","cv":"Prudhvi","tp":"","tv":"","ex":""}},{"iso":"2026-07-01","couple":"Ramani & Snehith","event":"Sreemantham","loc":"Hyderabad","cells":{"cp":"Shoib","cv":"Raghava","tp":"Sai Charan","tv":"","ex":""}},{"iso":"2026-07-02","couple":"Zoya","event":"Shaadi","loc":"5pm bride portraits at home","cells":{"cp":"Shoib + Sumenth","cv":"Akash + Prudhvi","tp":"2P Sai Charan","tv":"1V Sai Charan","ex":"Drone Sai Charan"}},{"iso":"2026-07-03","couple":"Zoya","event":"Walima","loc":"","cells":{"cp":"Shoib","cv":"Akash","tp":"2P Sai Charan","tv":"1V Sai Charan","ex":"Drone Sai Charan"}},{"iso":"2026-07-05","couple":"Varsha & Achyuth","event":"Engagement","loc":"Hyderabad","cells":{"cp":"Sumenth & Shoib","cv":"Raghava","tp":"1P Sai Charan","tv":"1V Sai Charan","ex":""}},{"iso":"2026-08-10","couple":"Nidhi & Archit","event":"Pre-Wedding","loc":"Hyderabad","cells":{"cp":"Sumenth","cv":"Akash","tp":"","tv":"","ex":""}},{"iso":"2026-08-10","couple":"Sameepa & Sri Raj","event":"Pre-Wedding","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-08-13","couple":"Nidhi & Archit","event":"Mehendi","loc":"Hyderabad","cells":{"cp":"Sumenth & 1","cv":"Prithvi + 1","tp":"","tv":"","ex":""}},{"iso":"2026-08-14","couple":"Nidhi & Archit","event":"Haldi & Sangeet","loc":"Hyderabad","cells":{"cp":"Sumenth & 1","cv":"Prithvi + 1","tp":"1","tv":"1","ex":"Drone"}},{"iso":"2026-08-14","couple":"Vaishnavi & Sai Teja","event":"Bride Making","loc":"","cells":{"cp":"Paul","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-15","couple":"Nidhi & Archit","event":"Bride Making & Vratam","loc":"Hyderabad","cells":{"cp":"Sumenth & 1","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-15","couple":"Nidhi & Archit","event":"Groom Making","loc":"Hyderabad","cells":{"cp":"Sumenth & 1","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-15","couple":"Vaishnavi & Sai Teja","event":"Edurukollu","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-15","couple":"Vaishnavi & Sai Teja","event":"Haldi & Sangeet","loc":"","cells":{"cp":"Paul","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-16","couple":"Nidhi & Archit","event":"Rituals, Baarat, Wedding, Rituals & Baarat","loc":"Shamshabad","cells":{"cp":"Sumenth & 1","cv":"Prithvi + 1","tp":"1","tv":"1","ex":"Drone"}},{"iso":"2026-08-16","couple":"Vaishnavi & Sai Teja","event":"Wedding","loc":"","cells":{"cp":"Paul","cv":"1","tp":"1","tv":"1","ex":"Drone, Live"}},{"iso":"2026-08-18","couple":"Ridhima & Maheedhar","event":"Bride Haldi","loc":"","cells":{"cp":"Paul","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-08-19","couple":"Ridhima & Maheedhar","event":"Bride pasupu & Bonalu","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-19","couple":"Ridhima & Maheedhar","event":"Groom Haldi","loc":"","cells":{"cp":"Paul","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-08-20","couple":"Ridhima & Maheedhar","event":"Bride Making","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-20","couple":"Ridhima & Maheedhar","event":"Groom Making","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-21","couple":"Sameepa & Sri Raj","event":"Haldi & Mehendi","loc":"Anantapur","cells":{"cp":"2","cv":"Raghava","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-21","couple":"Ridhima & Maheedhar","event":"Vratam & Bride Mehendi","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-21","couple":"Ridhima & Maheedhar","event":"Groom Making & Mehendi","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-22","couple":"Sameepa & Sri Raj","event":"Bride Making & Sangeet","loc":"Anantapur","cells":{"cp":"2","cv":"Raghava","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-22","couple":"Ridhima & Maheedhar","event":"Bride Making","loc":"","cells":{"cp":"Paul","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-22","couple":"Ridhima & Maheedhar","event":"Groom making & Bonnalu","loc":"","cells":{"cp":"1","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-23","couple":"Sameepa & Sri Raj","event":"Wedding","loc":"Anantapur","cells":{"cp":"2","cv":"Raghava","tp":"1","tv":"1","ex":"Drone"}},{"iso":"2026-08-23","couple":"Ridhima & Maheedhar","event":"Wedding","loc":"","cells":{"cp":"Paul + 1","cv":"2","tp":"2","tv":"1","ex":"Drone"}},{"iso":"2026-08-24","couple":"Ridhima & Maheedhar","event":"Vratam","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-25","couple":"Varsha & Achyuth","event":"Cocktail","loc":"Hyderabad","cells":{"cp":"Paul + 1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-08-26","couple":"Ridhima & Maheedhar","event":"Reception","loc":"","cells":{"cp":"Paul + 1","cv":"1","tp":"2","tv":"2","ex":"Drone"}},{"iso":"2026-08-26","couple":"Varsha & Achyuth","event":"Haldi & Mehendi","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-27","couple":"Ridhima & Maheedhar","event":"Chinnaindulu","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-28","couple":"Varsha & Achyuth","event":"Bride Making","loc":"Hyderabad","cells":{"cp":"Paul","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-28","couple":"Ridhima & Maheedhar","event":"Kalayanam","loc":"","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-28","couple":"Varsha & Achyuth","event":"Groom Making","loc":"Hyderabad","cells":{"cp":"1","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-29","couple":"Varsha & Achyuth","event":"Bride Making - II","loc":"Hyderabad","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-29","couple":"Varsha & Achyuth","event":"Groom Making - II","loc":"Hyderabad","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-08-30","couple":"Varsha & Achyuth","event":"Wedding","loc":"Hyderabad","cells":{"cp":"Paul + 1","cv":"2","tp":"2","tv":"1","ex":"Drone, 2 LED & Live"}},{"iso":"2026-09-01","couple":"Varsha & Achyuth","event":"Reception","loc":"Hyderabad","cells":{"cp":"Paul","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-28","couple":"Charisma & Pranav","event":"Bride Making","loc":"Hyderabad","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-28","couple":"Charisma & Pranav","event":"Groom Making","loc":"Hyderabad","cells":{"cp":"","cv":"","tp":"2","tv":"1","ex":""}},{"iso":"2026-10-29","couple":"Vipin & Prathyusha","event":"Mehendi","loc":"Dallas","cells":{"cp":"Sumenth","cv":"Kaushik","tp":"Ujwal","tv":"1","ex":""}},{"iso":"2026-10-29","couple":"Charisma & Pranav","event":"Haldi","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-29","couple":"Charisma & Pranav","event":"Sundowner","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-10-30","couple":"Vipin & Prathyusha","event":"Sangeet & Cocktail","loc":"Dallas","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-30","couple":"Charisma & Pranav","event":"Wedding","loc":"Hyderabad","cells":{"cp":"2","cv":"1","tp":"1","tv":"1","ex":"Drone"}},{"iso":"2026-10-30","couple":"Charisma & Pranav","event":"Cocktail/Sangeet","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-30","couple":"Dhiraj & Subhasya","event":"Engagement","loc":"Tenali AP","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-10-31","couple":"Vipin & Prathyusha","event":"Haldi & Bride Making & Groom Making","loc":"Dallas","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-01","couple":"Vipin & Prathyusha","event":"Wedding","loc":"Dallas","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-16","couple":"Sushmitha & Bharath","event":"Bride Making","loc":"Hyderabad","cells":{"cp":"1","cv":"","tp":"1","tv":"","ex":""}},{"iso":"2026-11-17","couple":"Sushmitha & Bharath","event":"Bride Making","loc":"Hyderabad","cells":{"cp":"1","cv":"","tp":"1","tv":"","ex":""}},{"iso":"2026-11-18","couple":"Sushmitha & Bharath","event":"Wedding","loc":"Hyderabad","cells":{"cp":"2","cv":"2","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-19","couple":"Shreyashi & Sachith","event":"Mehendi","loc":"Ayana Resort - Hyd","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-11-19","couple":"Shreyashi & Sachith","event":"Pooja","loc":"Ayana Resort - Hyd","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-19","couple":"Manisha & Prakash","event":"Pre wedding","loc":"USA - MICHIGAN","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-11-20","couple":"Manisha & Prakash","event":"Mehendi","loc":"USA - MICHIGAN","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-11-20","couple":"Shreyashi & Sachith","event":"Haldi, Sangeet & After party","loc":"Ayana Resort - Hyd","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-21","couple":"Manisha & Prakash","event":"Haldi, Bride & Groom Making","loc":"USA - MICHIGAN","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-11-21","couple":"Shreyashi & Sachith","event":"Rituals","loc":"Ayana Resort - Hyd","cells":{"cp":"","cv":"","tp":"2","tv":"2","ex":""}},{"iso":"2026-11-21","couple":"Shreyashi & Sachith","event":"Baarat & Wedding","loc":"Ayana Resort - Hyd","cells":{"cp":"2","cv":"2","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-22","couple":"Manisha & Prakash","event":"Wedding","loc":"USA - MICHIGAN","cells":{"cp":"1","cv":"1","tp":"","tv":"","ex":""}},{"iso":"2026-11-24","couple":"Dhiraj & Subhasya","event":"Mehendi & Sangeet","loc":"Kurnool","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-25","couple":"Sireesha & Vineeth","event":"Sangeet","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":"Drone"}},{"iso":"2026-11-25","couple":"Dhiraj & Subhasya","event":"Groom Making & Mangalsnanam","loc":"Kurnool","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-26","couple":"Dhiraj & Subhasya","event":"Bride Making & Haldi","loc":"Tenali AP","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-26","couple":"Dhiraj & Subhasya","event":"Wedding","loc":"Tenali AP","cells":{"cp":"2","cv":"2","tp":"1","tv":"1","ex":"Live streaming"}},{"iso":"2026-11-29","couple":"Sireesha & Vineeth","event":"Haldi","loc":"Hyderabad","cells":{"cp":"1","cv":"1","tp":"1","tv":"1","ex":""}},{"iso":"2026-11-29","couple":"Sireesha & Vineeth","event":"Mehendi","loc":"Hyderabad","cells":{"cp":"1","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-12-02","couple":"Sireesha & Vineeth","event":"Bride Making","loc":"Hyderabad","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-12-02","couple":"Sireesha & Vineeth","event":"Groom Making","loc":"Kodad","cells":{"cp":"","cv":"","tp":"1","tv":"1","ex":""}},{"iso":"2026-12-03","couple":"Sireesha & Vineeth","event":"Wedding","loc":"Hyderabad","cells":{"cp":"2","cv":"1","tp":"1","tv":"1","ex":"Drone"}}];
 function importRoster(){
   if(typeof ROSTER_SEED==='undefined')return;
   const styleFor={cp:'Candid Photo',cv:'Candid Video',tp:'Traditional Photo',tv:'Traditional Video',ex:''};
@@ -3255,14 +2923,14 @@ function renderShots(){
   Object.entries(shotSubs||{}).forEach(([id,s])=>{
     if(!s||!s.client)return;
     if(fc && !String(s.client).toLowerCase().includes(fc))return;
-    if(ft && shotListKey(s.eventType)!==shotListKey(ft))return;
+    if(ft && s.eventType!==ft)return;
     const k=shotGroupKey(s);
     (groups[k]=groups[k]||{client:s.client,eventType:s.eventType,eventDate:s.eventDate,subs:[]}).subs.push({...s,_id:id});
   });
   const list=Object.entries(groups).sort((a,b)=>a[1].eventDate<b[1].eventDate?1:-1);
   if(!list.length){el.innerHTML='<div class="empty">No checklists submitted yet. Send the crew their links before the next event and they show up here.</div>';return;}
   el.innerHTML=list.map(([gk,g])=>{
-    const mood=(shotMoods&&shotMoods[moodKey(g.client,g.eventType,g.eventDate)]&&shotMoods[moodKey(g.client,g.eventType,g.eventDate)].url)||'';
+    const mood=(shotMoods&&shotMoods[moodKey(g.client)]&&shotMoods[moodKey(g.client)].url)||'';
     const teamCol=team=>{
       const subs=g.subs.filter(s=>s.team===team).sort((a,b)=>(a.submittedAt||0)-(b.submittedAt||0));
       if(!subs.length)return `<div class="shot-team"><div class="shot-team-h ${team}">${team==='candid'?'Candid':'Traditional'}</div><div class="empty" style="padding:14px 4px">Not submitted yet.</div></div>`;
@@ -3293,84 +2961,36 @@ function renderShots(){
   }).join('');
 }
 
-const safeKey = value => String(value||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_').replace(/\s+/g,'-');
-const shotListKey = name => safeKey(name);
-const moodKey = (couple,eventName,eventDate) => safeKey(`${couple}|${eventName}|${eventDate}`);
-const prettyShotType = key => String(key||'').replace(/[-_]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+const moodKey = name => String(name||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_');
+const EVENT_MOOD_LABELS={'bride-making':'Bride Making','groom-making':'Groom Making',haldi:'Haldi & Pellikuthuru',mehndi:'Mehendi','sangeet-cocktail':'Sangeet & Cocktail',wedding:'Wedding & Rituals',reception:'Reception'};
 
-function eventTypeParts(value){
-  let raw=String(value||'').trim();
-  if(!raw||raw==='—')return [];
-  raw=raw
-    .replace(/bride\s*(?:&|and)\s*groom\s+makings?/gi,'Bride Making + Groom Making')
-    .replace(/bride\s*(?:&|and)\s*groom\s+haldi/gi,'Bride Haldi + Groom Haldi')
-    .replace(/after\s*party/gi,'After Party')
-    .replace(/pre\s*[- ]\s*wedding/gi,'Pre-Wedding');
-  const aliases={
-    'mehendi':'Mehndi','mehandi':'Mehndi','mehndi':'Mehndi','haldi':'Haldi',
-    'sangeet':'Sangeet','wedding':'Wedding','reception':'Reception','ceremony':'Ceremony',
-    'cocktail':'Cocktail','ritual':'Rituals','rituals':'Rituals','sundowner':'Sundowner',
-    'after party':'After Party','pre-wedding':'Pre-Wedding','bride making':'Bride Making',
-    'groom making':'Groom Making','bride haldi':'Bride Haldi','groom haldi':'Groom Haldi',
-    'chapra pooja':'Chapra Pooja','lagna patrika':'Lagna Patrika','mangalsnanam':'Mangalsnanam'
-  };
-  return raw.split(/\s*(?:\+|,|\/|&)\s*/).map(part=>{
-    const clean=part.trim().replace(/\s+/g,' '),key=clean.toLowerCase();
-    return aliases[key]||clean.replace(/\b\w/g,c=>c.toUpperCase());
-  }).filter(Boolean);
+function toggleEventMoodSec(){
+  const s=document.getElementById('eventMoodSec');
+  s.classList.toggle('open');
+  document.getElementById('eventMoodSecMeta').textContent=s.classList.contains('open')?'Hide ▾':'Show ▸';
 }
-
-function uniqueEventTypes(values){
-  const found=new Map();
-  values.forEach(value=>eventTypeParts(value).forEach(name=>{
-    const key=name.toLowerCase().replace(/[^a-z0-9]+/g,'');
-    if(key&&!found.has(key))found.set(key,name);
-  }));
-  return [...found.values()].sort((a,b)=>a.localeCompare(b));
+function renderEventMoodSec(){
+  const list=document.getElementById('eventMoodList'); if(!list)return;
+  const entries=Object.entries(shotEventMoods||{}).filter(([k,v])=>v&&v.url);
+  if(!entries.length){list.innerHTML='<div class="empty" style="padding:10px 4px">No master boards saved yet.</div>';return;}
+  list.innerHTML=entries.sort((a,b)=>(EVENT_MOOD_LABELS[a[0]]||a[0]).localeCompare(EVENT_MOOD_LABELS[b[0]]||b[0])).map(([k,v])=>
+    `<div class="cost-line"><span><b>${esc(EVENT_MOOD_LABELS[k]||v.label||k)}</b> · <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url.length>52?v.url.slice(0,52)+'…':v.url)}</a></span><span><button class="btn-mini" onclick="removeEventMoodBoard('${esc(k)}')">Remove</button></span></div>`
+  ).join('');
 }
-
-function planTeamFlags(plan){
-  const cells=(plan&&plan.cells)||{},need=(plan&&plan.need)||{};
-  const candid=!!(String(cells.cp||'').trim()||String(cells.cv||'').trim()||need.cp||need.cv);
-  const traditional=!!(String(cells.tp||'').trim()||String(cells.tv||'').trim()||need.tp||need.tv);
-  return candid||traditional?{candid,traditional}:{candid:true,traditional:true};
+function saveEventMoodBoard(){
+  if(!liveMode){toast('Needs live sync to save.');return;}
+  const k=document.getElementById('eventMoodType').value;
+  const url=(document.getElementById('eventMoodUrl').value||'').trim();
+  if(!url){toast('Paste the board link.');return;}
+  db.ref('shotEventMoods/'+k).set({url,label:EVENT_MOOD_LABELS[k]||k,by:editor,at:stamp()});
+  document.getElementById('eventMoodUrl').value='';
+  log('saved master mood board for '+(EVENT_MOOD_LABELS[k]||k));
+  toast('Master board saved. The candid checklist will show it automatically.');
 }
-
-function plannerRowForEvent(iso,couple,eventName){
-  const who=String(couple||'').trim().toLowerCase(),eventKey=shotListKey(eventName);
-  const same=Object.values(plans||{}).filter(p=>p&&p.iso===iso&&String(p.couple||'').trim().toLowerCase()===who);
-  return same.find(p=>shotListKey(p.event)===eventKey)||same[0]||null;
-}
-
-function upcomingEventTypes(team){
-  const today=ciTodayIso(),found=new Map();
-  const add=(iso,couple,value)=>{
-    if(!iso||iso<today)return;
-    const flags=planTeamFlags(plannerRowForEvent(iso,couple,value));
-    if(team&&!flags[team])return;
-    eventTypeParts(value).forEach(name=>{
-      const key=name.toLowerCase().replace(/[^a-z0-9]+/g,'');
-      const old=found.get(key);
-      if(key&&(!old||iso<old.iso))found.set(key,{name,iso});
-    });
-  };
-  BAKED.forEach(r=>add(`2026-${p2(r[0])}-${p2(r[1])}`,r[2],r[3]));
-  Object.values(teamBookings||{}).forEach(b=>{if(b&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c,b.e);});
-  Object.values(plans||{}).forEach(p=>{if(p&&p.iso)add(p.iso,p.couple,p.event);});
-  Object.values(checkinEvents||{}).forEach(e=>{if(e&&e.date)add(e.date,e.couple,e.eventName);});
-  return [...found.values()].sort((a,b)=>a.iso.localeCompare(b.iso)||a.name.localeCompare(b.name));
-}
-
-function refreshShotTypeOptions(){
-  const el=document.getElementById('shotTypeOptions');if(!el)return;
-  el.innerHTML=upcomingEventTypes().map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.iso))}">`).join('');
-  refreshShotEditTypeOptions();
-}
-
-function refreshShotEditTypeOptions(){
-  const el=document.getElementById('shotEditTypeOptions'),team=document.getElementById('shotEdTeam')?.value||'candid';
-  if(!el)return;
-  el.innerHTML=upcomingEventTypes(team).map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.iso))}">`).join('');
+function removeEventMoodBoard(k){
+  if(!liveMode)return;
+  db.ref('shotEventMoods/'+k).remove();
+  toast('Master board removed.');
 }
 
 function upcomingCouplesAdmin(){
@@ -3387,8 +3007,7 @@ function upcomingCouplesAdmin(){
   BAKED.forEach(r=>add(`2026-${p2(r[0])}-${p2(r[1])}`,r[2]));
   Object.values(teamBookings||{}).forEach(b=>{if(b&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c);});
   Object.values(enquiries||{}).forEach(x=>{if(x&&x.status==='BOOKED')(x.dates||[]).forEach(iso=>add(iso,x.name));});
-  Object.values(plans||{}).forEach(p=>{if(p&&p.iso)add(p.iso,p.couple);});
-  return Object.entries(map).sort((a,b)=>a[1].localeCompare(b[1])||a[0].localeCompare(b[0]));
+  return Object.entries(map).sort((a,b)=>a[1]<b[1]?-1:1);
 }
 
 function toggleMoodSec(){
@@ -3403,40 +3022,24 @@ function renderMoodSec(){
   const ups=upcomingCouplesAdmin();
   sel.innerHTML='<option value="">Pick the couple…</option>'+ups.map(([n,iso])=>`<option value="${esc(n)}">${esc(n)} — from ${esc(fmt(iso))}</option>`).join('');
   if(keep)sel.value=keep;
-  refreshShotTypeOptions();
   const list=document.getElementById('moodList');
   const entries=Object.entries(shotMoods||{}).filter(([k,v])=>v&&v.url);
   if(!entries.length){list.innerHTML='<div class="empty" style="padding:10px 4px">No boards saved yet.</div>';return;}
-  list.innerHTML=entries.sort((a,b)=>String(a[1].eventDate||'').localeCompare(String(b[1].eventDate||''))).map(([k,v])=>
-    `<div class="cost-line"><span><b>${esc(v.couple||k)}</b> · ${esc(v.eventName||'Legacy general board')}${v.eventDate?' · '+esc(ciDateLong(v.eventDate)):''}<br><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url.length>52?v.url.slice(0,52)+'…':v.url)}</a>${!v.eventName||!v.eventDate?' <small style="color:var(--sindoor)">Not shown until saved against an exact event.</small>':''}</span><span><button class="btn-mini" onclick="removeMoodBoard('${esc(k)}')">Remove</button></span></div>`
+  list.innerHTML=entries.sort((a,b)=>String(a[1].couple||'').localeCompare(String(b[1].couple||''))).map(([k,v])=>
+    `<div class="cost-line"><span><b>${esc(v.couple||k)}</b> · <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url.length>52?v.url.slice(0,52)+'…':v.url)}</a></span><span><button class="btn-mini" onclick="removeMoodBoard('${esc(k)}')">Remove</button></span></div>`
   ).join('');
-}
-
-function moodCoupleChanged(){
-  const name=document.getElementById('moodCouple').value,dateSel=document.getElementById('moodDate'),map=calendarCoupleMap(),dates=((map[name]&&map[name].dates)||[]).filter(d=>d>=ciTodayIso()).sort();
-  dateSel.innerHTML='<option value="">Event date…</option>'+dates.map(d=>`<option value="${esc(d)}">${esc(ciDateLong(d))}</option>`).join('');
-  document.getElementById('moodEvent').value='';
-  if(dates.length===1){dateSel.value=dates[0];moodDateChanged();}
-}
-function moodDateChanged(){
-  const couple=document.getElementById('moodCouple').value,date=document.getElementById('moodDate').value,row=ciPlannerRow(couple,date),map=calendarCoupleMap(),evs=(map[couple]&&map[couple].events&&map[couple].events[date])||[];
-  document.getElementById('moodEvent').value=(row&&row.event&&row.event!=='—'?row.event:'')||evs.join(' + ');
 }
 
 function saveMoodBoard(){
   if(!liveMode){toast('Needs live sync to save.');return;}
   const name=document.getElementById('moodCouple').value;
-  const eventDate=document.getElementById('moodDate').value;
-  const eventName=document.getElementById('moodEvent').value.trim();
   const url=(document.getElementById('moodUrl').value||'').trim();
   if(!name){toast('Pick the couple first.');return;}
-  if(!eventDate){toast('Pick the event date.');return;}
-  if(!eventName){toast('Enter the exact event name.');return;}
   if(!url){toast('Paste the board link.');return;}
-  db.ref('shotMoods/'+moodKey(name,eventName,eventDate)).set({url,couple:name,eventName,eventDate,by:editor,at:stamp()});
+  db.ref('shotMoods/'+moodKey(name)).set({url,couple:name,by:editor,at:stamp()});
   document.getElementById('moodUrl').value='';
-  log(`saved mood board for ${name} — ${eventName}`);
-  toast(`Board saved only for ${name} — ${eventName}.`);
+  log('saved mood board for '+name);
+  toast('Board saved. The candid team sees it when they pick '+name+'.');
 }
 
 function removeMoodBoard(k){
@@ -3453,340 +3056,19 @@ function toggleShotEdit(){
 }
 function loadShotEd(){
   const area=document.getElementById('shotEdArea'); if(!area)return;
-  const name=document.getElementById('shotEdType').value.trim(),t=shotListKey(name), tm=document.getElementById('shotEdTeam').value;
+  const t=document.getElementById('shotEdType').value, tm=document.getElementById('shotEdTeam').value;
   const remote=shotLists&&shotLists[t]&&shotLists[t][tm];
   const arr=(Array.isArray(remote)&&remote.length)?remote:(remote&&typeof remote==='object')?Object.values(remote):(SHOT_DEFAULTS[t]&&SHOT_DEFAULTS[t][tm])||[];
   area.value=arr.join('\n');
 }
 function saveShotEd(){
   if(!liveMode){toast('Needs live sync to save.');return;}
-  const name=document.getElementById('shotEdType').value.trim(),t=shotListKey(name), tm=document.getElementById('shotEdTeam').value;
+  const t=document.getElementById('shotEdType').value, tm=document.getElementById('shotEdTeam').value;
   const arr=document.getElementById('shotEdArea').value.split('\n').map(x=>x.trim()).filter(Boolean);
-  if(!name){toast('Enter the exact event name first.');return;}
   if(!arr.length){toast('The list is empty — add at least one shot.');return;}
   db.ref('shotLists/'+t+'/'+tm).set(arr);
-  log('updated '+tm+' shot list for '+name+' ('+arr.length+' shots)');
-  toast(`Saved ${tm} checklist for “${name}”.`);
-}
-
-/* ---------------- Crew check-ins (isolated from Crew Planner) ---------------- */
-const CI_ROLES=['Candid Photographer','Candid Cinematographer','Traditional Photographer','Traditional Videographer','Drone Operator','LED Assistant','Other'];
-const ciCrewUrl=id=>{
-  const u=new URL('crew.html',location.href);
-  if(id)u.searchParams.set('event',id);
-  return u.href;
-};
-const ciPhone=v=>String(v||'').replace(/\D/g,'');
-const ciFmtTime=t=>{if(!t)return '—';const[h,m]=t.split(':').map(Number),ap=h>=12?'PM':'AM';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`;};
-const ciClock=ms=>ms?new Date(ms).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}):'—';
-const ciDateLong=iso=>{if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);return `${MN[m-1]} ${d}, ${y}`;};
-const ciTodayIso=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;};
-
-/* ---------------- client event-detail portal ---------------- */
-function clientPlannerEvents(couple){
-  const who=String(couple||'').trim().toLowerCase(),today=ciTodayIso(),found=new Map();
-  Object.values(plans||{}).forEach(p=>{
-    if(!p||!p.iso||p.iso<today||String(p.couple||'').trim().toLowerCase()!==who)return;
-    eventTypeParts(p.event).forEach(name=>{const k=`${p.iso}|${shotListKey(name)}`;if(!found.has(k))found.set(k,{date:p.iso,name});});
-  });
-  return [...found.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name));
-}
-function clientPortalUrl(id){return location.origin+location.pathname.replace(/[^/]*$/,'')+'event-details.html?f='+encodeURIComponent(id);}
-function newClientToken(){const b=new Uint8Array(18);crypto.getRandomValues(b);return btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
-function clientCouples(){
-  const today=ciTodayIso(),map=new Map();
-  Object.values(plans||{}).forEach(p=>{if(!p||!p.iso||p.iso<today||!p.couple)return;const k=String(p.couple).trim().toLowerCase(),old=map.get(k);if(!old||p.iso<old.next)map.set(k,{name:String(p.couple).trim(),next:p.iso});});
-  return [...map.values()].sort((a,b)=>a.next.localeCompare(b.next)||a.name.localeCompare(b.name));
-}
-function refreshClientCoupleOptions(){const dl=document.getElementById('cfCouples');if(dl)dl.innerHTML=clientCouples().map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.next))}">`).join('');}
-function previewClientFormEvents(){
-  refreshClientCoupleOptions();if(clientFormEditId)return;
-  const el=document.getElementById('cfEventPreview');if(!el)return;const couple=document.getElementById('cfCouple')?.value.trim()||'';
-  clientFormDraft=clientPlannerEvents(couple).map(x=>({...x,questions:{contact:false,brideReady:false,groomReady:false,notes:false}}));renderClientFormDraft();
-}
-function renderClientFormDraft(){
-  const el=document.getElementById('cfEventPreview');if(!el)return;
-  el.innerHTML=clientFormDraft.map((x,i)=>{const q=x.questions||{};return `<div class="cf-preview-event"><div class="cf-preview-row"><input aria-label="Event name" value="${esc(x.name)}" placeholder="Event name" oninput="updateClientDraftEvent(${i},'name',this.value)"><input type="date" aria-label="Event date" value="${esc(x.date)}" onchange="updateClientDraftEvent(${i},'date',this.value)"><button type="button" class="cf-remove" title="Remove event" aria-label="Remove event" onclick="removeClientDraftEvent(${i})">×</button></div><div class="cf-event-options"><span>Getting-ready moments</span><small>Select only the details needed from the couple for this event.</small><div class="cf-options-grid"><label class="cf-option"><input type="checkbox" ${q.contact?'checked':''} onchange="updateClientDraftQuestion(${i},'contact',this.checked)">Contact person</label><label class="cf-option"><input type="checkbox" ${q.brideReady?'checked':''} onchange="updateClientDraftQuestion(${i},'brideReady',this.checked)">Bride ready location</label><label class="cf-option"><input type="checkbox" ${q.groomReady?'checked':''} onchange="updateClientDraftQuestion(${i},'groomReady',this.checked)">Groom ready location</label><label class="cf-option"><input type="checkbox" ${q.notes?'checked':''} onchange="updateClientDraftQuestion(${i},'notes',this.checked)">Important notes</label></div></div></div>`;}).join('');
-}
-function updateClientDraftEvent(i,key,value){if(clientFormDraft[i])clientFormDraft[i][key]=value;}
-function updateClientDraftQuestion(i,key,value){if(clientFormDraft[i]){clientFormDraft[i].questions=clientFormDraft[i].questions||{};clientFormDraft[i].questions[key]=!!value;}}
-function removeClientDraftEvent(i){clientFormDraft.splice(i,1);renderClientFormDraft();}
-function addClientDraftEvent(){clientFormDraft.push({name:'',date:clientFormDraft.at(-1)?.date||ciTodayIso(),questions:{contact:false,brideReady:false,groomReady:false,notes:false}});renderClientFormDraft();setTimeout(()=>document.querySelector('#cfEventPreview .cf-preview-event:last-child input')?.focus(),0);}
-function resetClientFormEditor(){clientFormEditId=null;clientFormDraft=[];document.getElementById('cfCouple').value='';renderClientFormDraft();document.getElementById('cfSaveButton').textContent='Create link from this setup';document.getElementById('cfCancelEdit').style.display='none';document.getElementById('cfCreateResult').className='check-result';}
-function cancelClientFormEdit(){resetClientFormEditor();}
-function editClientForm(id){
-  const f=clientForms[id];if(!f)return;clientFormEditId=id;document.getElementById('cfCouple').value=f.couple||'';
-  clientFormDraft=Object.entries(f.events||{}).sort((a,b)=>(a[1].order||0)-(b[1].order||0)).map(([eventId,e])=>({_id:eventId,name:e.name||'',date:e.date||'',questions:{contact:!!e.questions?.contact,brideReady:!!e.questions?.brideReady,groomReady:!!e.questions?.groomReady,notes:!!e.questions?.notes}}));
-  renderClientFormDraft();document.getElementById('cfSaveButton').textContent='Save changes to this link';document.getElementById('cfCancelEdit').style.display='block';const result=document.getElementById('cfCreateResult');result.className='check-result show ok';result.innerHTML='<b>Editing existing link</b>The private URL will stay the same. Unchanged client answers will be preserved.';document.querySelector('.cf-create')?.scrollIntoView({behavior:'smooth',block:'start'});
-}
-async function createClientForm(){
-  const result=document.getElementById('cfCreateResult'),couple=document.getElementById('cfCouple').value.trim(),rows=clientFormDraft.map(x=>({_id:x._id||'',name:String(x.name||'').trim(),date:String(x.date||''),questions:{contact:!!x.questions?.contact,brideReady:!!x.questions?.brideReady,groomReady:!!x.questions?.groomReady,notes:!!x.questions?.notes}})).filter(x=>x.name&&x.date).sort((a,b)=>a.date.localeCompare(b.date));
-  if(!couple||!rows.length){result.className='check-result show clash';result.innerHTML='<b>Complete the setup</b>Add at least one event with its name and date.';return;}
-  if(rows.length!==clientFormDraft.length){result.className='check-result show clash';result.innerHTML='<b>One event is incomplete</b>Every event needs a name and date, or remove that row.';return;}
-  const existing=Object.entries(clientForms||{}).find(([fid,f])=>fid!==clientFormEditId&&f&&f.open!==false&&String(f.couple||'').trim().toLowerCase()===couple.toLowerCase());
-  if(existing){copyText(clientPortalUrl(existing[0]),'Existing client link copied.');result.className='check-result show ok';result.innerHTML='<b>Existing link copied</b>This couple already has an open form.';return;}
-  const id=clientFormEditId||newClientToken(),old=clientForms[id]||{},events={},used=new Set(),reserved=new Set(rows.map(x=>x._id).filter(Boolean));let next=1;
-  rows.forEach((x,i)=>{let eventId=x._id&&!used.has(x._id)?x._id:'';while(!eventId||used.has(eventId)||(!x._id&&reserved.has(eventId))){eventId='e'+next++;}used.add(eventId);events[eventId]={name:x.name,date:x.date,order:i+1,questions:x.questions};});
-  const editing=!!clientFormEditId,form={couple,events,open:true,locked:false,createdAt:old.createdAt||Date.now(),createdBy:old.createdBy||'Tale of Two',updatedAt:Date.now()},updates={};updates[`clientForms/${id}`]=form;
-  if(editing){const a=clientApprovals[id]||{};updates[`clientApprovals/${id}`]=a.status==='approved'?{...a,status:'changes_pending',reopenedAt:Date.now()}:a.status==='changes_pending'?a:null;updates[`clientSubmissions/${id}/submittedAt`]=null;Object.keys((clientSubmissions[id]&&clientSubmissions[id].events)||{}).forEach(eventId=>{if(!events[eventId])updates[`clientSubmissions/${id}/events/${eventId}`]=null;});}
-  try{await db.ref().update(updates);const url=clientPortalUrl(id);resetClientFormEditor();copyText(url,editing?'Updated private link copied.':'Private client link copied.');result.className='check-result show ok';result.innerHTML=editing?'<b>Link updated</b>The same private URL is ready. Existing answers for unchanged events were preserved.':'<b>Private link ready</b>Your customised setup was saved and the link was copied.';log(`${editing?'updated':'created'} customised client event-details link: ${couple}`);}catch(e){result.className='check-result show clash';result.innerHTML=`<b>Could not ${editing?'update':'create'} link</b>${esc(e.message||'Please try again.')}`;}
-}
-function clientEventDone(x){return !!(x&&x.startTime&&x.endTime&&x.venueName&&x.mapsUrl);}
-function clientSubmissionStatus(id){const f=clientForms[id]||{},s=clientSubmissions[id]||{},a=clientApprovals[id]||{};if(a.status==='approved')return ['Confirmed','approved'];if(a.status==='changes_pending')return ['Changes awaiting review','changes'];if(f.open===false)return ['Closed',''];if(s.submittedAt)return ['Submitted','submitted'];if(s.contact||Object.keys(s.events||{}).length)return ['In progress',''];return ['Not started',''];}
-function clientRoleLabel(x){return ({bride:'Bride',groom:'Groom',family:'Family',planner:'Planner'})[x]||'Contributor'}
-function clientDiffRows(old={},now={}){const fields=[['startTime','Start time',ciFmtTime],['endTime','End time',ciFmtTime],['venueName','Venue'],['mapsUrl','Maps link'],['contactName','On-ground contact'],['contactPhone','Contact number'],['brideReadyLocation','Bride preparation'],['groomReadyLocation','Groom preparation'],['notes','Notes']];return fields.filter(([k])=>String(old[k]||'')!==String(now[k]||'')).map(([k,label,fmt])=>`<div class="cf-change"><strong>${esc(label)} changed</strong><div class="cf-compare"><span><em>Previously confirmed</em>${esc(fmt?fmt(old[k]):old[k]||'Not provided')}</span><span><em>New update</em>${esc(fmt?fmt(now[k]):now[k]||'Removed')}</span></div></div>`).join('')}
-function clientShareText(id){const f=clientForms[id];return f?`Hello ${f.couple},\n\nTo help us plan your photography and film team smoothly, please add the event details currently available in this private link. Your event names and dates are already filled in.\n\n${clientPortalUrl(id)}\n\nYou do not need to complete everything together. Bride and groom can open the same link separately, save their respective locations, and return later until we approve the final details. Thank you!`:'';}
-function shareClientForm(id){const t=clientShareText(id);if(t)window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank','noopener');}
-function toggleClientReview(id){const el=document.getElementById('cfReview_'+id);if(el)el.style.display=el.style.display==='none'?'block':'none';}
-function renderClientForms(){
-  refreshClientCoupleOptions();const el=document.getElementById('cfList');if(!el)return;
-  const list=Object.entries(clientForms||{}).filter(([,f])=>!!f).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
-  if(!list.length){el.innerHTML='<div class="cf-empty">No client forms created yet.</div>';return;}
-  el.innerHTML=list.map(([id,f])=>{const sub=clientSubmissions[id]||{},contact=sub.contact||{},approval=clientApprovals[id]||{},snapshot=approval.snapshot||{},events=Object.entries(f.events||{}).sort((a,b)=>(a[1].order||0)-(b[1].order||0)),done=events.filter(([k])=>clientEventDone((sub.events||{})[k])).length,[label,cl]=clientSubmissionStatus(id),submitted=!!sub.submittedAt,people=Object.values(sub.contributors||{});
-    const peopleHtml=people.length?`<div class="cf-contributors">${people.map(p=>`<span class="cf-person">${esc(p.fullName)} · ${esc(clientRoleLabel(p.role))}</span>`).join('')}</div>`:'';
-    const contactReview=contact.fullName?`<div class="cf-review-event"><b>Latest contributor</b><small>${esc(contact.fullName)} · ${esc(clientRoleLabel(contact.role))} · ${esc(contact.phone||'')}</small><small>${esc(contact.email||'')}</small>${peopleHtml}</div>`:'';
-    const review=contactReview+events.map(([k,e])=>{const x=(sub.events||{})[k]||{},old=(snapshot.events||{})[k]||{},diff=approval.status==='changes_pending'?clientDiffRows(old,x):'';return `<div class="cf-review-event"><b>${esc(e.name)} · ${esc(ciDateLong(e.date))}</b><small>${esc(ciFmtTime(x.startTime))} – ${esc(ciFmtTime(x.endTime))} · ${esc(x.venueName||'Venue awaited')}</small><small>${x.mapsUrl?`<a href="${esc(x.mapsUrl)}" target="_blank" rel="noopener">Open Maps ↗</a>`:'Maps link awaited'}${x.contactName?` · ${esc(x.contactName)} ${esc(x.contactPhone||'')}`:''}</small>${x.updatedByName?`<small>Last updated by ${esc(x.updatedByName)} · ${esc(clientRoleLabel(x.updatedByRole))}</small>`:''}${x.notes?`<small>${esc(x.notes)}</small>`:''}${diff}</div>`;}).join('');
-    return `<article class="cf-card"><div class="cf-card-top"><div><h3>${esc(f.couple)}</h3><div class="cf-meta">${events.length} events · ${done}/${events.length} complete · Created ${esc(new Date(f.createdAt||Date.now()).toLocaleDateString('en-IN',{day:'numeric',month:'short'}))}</div></div><span class="cf-status ${cl}">${label}</span></div><div class="cf-card-actions">${f.open!==false&&!f.locked?`<button class="btn-mini" onclick="shareClientForm('${id}')">WhatsApp</button>`:''}<button class="btn-mini" onclick="copyText(clientPortalUrl('${id}'),'Private client link copied.')">Copy link</button><button class="btn-mini" onclick="toggleClientReview('${id}')">Review</button><button class="btn-mini" onclick="editClientAnswers('${id}')">Edit details</button><button class="btn-mini" onclick="editClientForm('${id}')">Edit setup</button>${submitted&&cl!=='approved'?`<button class="btn-mini" onclick="approveClientForm('${id}')">Approve & publish</button>`:''}${f.open!==false&&!f.locked?`<button class="btn-mini" onclick="closeClientForm('${id}')">Close</button>`:`<button class="btn-mini" onclick="reopenClientForm('${id}')">Reopen</button>`}<button class="btn-mini" onclick="deleteClientForm('${id}')">Delete</button></div><div class="cf-review" id="cfReview_${id}" style="display:${submitted?'block':'none'}">${review||'<div class="empty">The couple has not entered details yet.</div>'}</div></article>`;
-  }).join('');
-}
-function approvedClientEvent(couple,date,eventName){
-  const who=String(couple||'').trim().toLowerCase(),ek=shotListKey(eventName);
-  for(const [id,f] of Object.entries(clientForms||{})){if(!f||String(f.couple||'').trim().toLowerCase()!==who||(clientApprovals[id]||{}).status!=='approved')continue;for(const [k,e] of Object.entries(f.events||{})){if(e.date===date&&shotListKey(e.name)===ek)return {...((clientSubmissions[id]&&clientSubmissions[id].events||{})[k]||{}),formId:id};}}
-  return null;
-}
-function applyApprovedClientDetails(couple,date,eventName){
-  const x=approvedClientEvent(couple,date,eventName);if(!x)return false;
-  if(x.mapsUrl)document.getElementById('ciMapLink').value=x.mapsUrl;if(x.startTime)document.getElementById('ciScheduled').value=x.startTime;ciParseMap();if(x.venueName)document.getElementById('ciVenueName').value=x.venueName;
-  const box=document.getElementById('ciPlannerResult');box.className='ci-map-ok on';box.textContent='Approved client details imported: function timing, venue and location. Set the crew reporting time before saving.';return true;
-}
-function ciEventChanged(){ciChecklistStatus();const couple=document.getElementById('ciCouple').value.trim(),date=document.getElementById('ciDate').value,eventName=document.getElementById('ciEvent').value.trim();if(couple&&date&&eventName)applyApprovedClientDetails(couple,date,eventName);}
-async function approveClientForm(id){
-  const f=clientForms[id],s=clientSubmissions[id]||{};if(!f||!s.submittedAt)return;const missing=Object.entries(f.events||{}).filter(([k])=>!clientEventDone((s.events||{})[k]));if(missing.length){toast('Every event needs timings, venue and Maps link before approval.');return;}if(!confirm(`Approve ${f.couple}'s details and publish them to matching crew shoots?`))return;
-  const updates={},approvedAt=Date.now();updates[`clientApprovals/${id}`]={status:'approved',approvedAt,approvedBy:editor,snapshot:{contact:s.contact||{},events:s.events||{}}};updates[`clientForms/${id}/locked`]=true;updates[`clientForms/${id}/updatedAt`]=approvedAt;
-  Object.entries(f.events||{}).forEach(([k,e])=>{const x=(s.events||{})[k]||{};Object.entries(checkinEvents||{}).forEach(([eventId,ci])=>{if(!ci||String(ci.couple||'').trim().toLowerCase()!==String(f.couple||'').trim().toLowerCase()||ci.date!==e.date||shotListKey(ci.eventName)!==shotListKey(e.name))return;const d=ciMapData(x.mapsUrl);updates[`crewCheckins/events/${eventId}/functionStart`]=x.startTime||null;updates[`crewCheckins/events/${eventId}/functionEnd`]=x.endTime||null;updates[`crewCheckins/events/${eventId}/venueName`]=x.venueName||ci.venueName;updates[`crewCheckins/events/${eventId}/mapsUrl`]=x.mapsUrl||ci.mapsUrl;updates[`crewCheckins/events/${eventId}/clientContactName`]=x.contactName||null;updates[`crewCheckins/events/${eventId}/clientContactPhone`]=x.contactPhone||null;updates[`crewCheckins/events/${eventId}/brideReadyLocation`]=x.brideReadyLocation||null;updates[`crewCheckins/events/${eventId}/groomReadyLocation`]=x.groomReadyLocation||null;updates[`crewCheckins/events/${eventId}/clientNotes`]=x.notes||null;updates[`crewCheckins/events/${eventId}/clientFormId`]=id;if(d){updates[`crewCheckins/events/${eventId}/venueLat`]=d.lat;updates[`crewCheckins/events/${eventId}/venueLng`]=d.lng;}});});
-  try{await db.ref().update(updates);toast('Approved details published to matching crew shoots.');log(`approved client event details: ${f.couple}`);}catch(e){toast('Could not approve these details. Try again.');}
-}
-async function closeClientForm(id){const f=clientForms[id];if(!f||!confirm(`Close ${f.couple}'s client link? The saved submission will be kept.`))return;try{await db.ref(`clientForms/${id}/open`).set(false);toast('Client link closed.');}catch(e){toast('Could not close the link.');}}
-async function reopenClientForm(id,openAfter=false){const f=clientForms[id];if(!f)return false;const approval=clientApprovals[id]||{},approved=approval.status==='approved',s=clientSubmissions[id]||{};if(!confirm(`${approved?'Reopen the confirmed details':'Reopen this client link'} for ${f.couple}?\n\nAll answers will remain. Any new edits will be shown against the previously confirmed details before you approve them again.`))return false;const tab=openAfter?window.open('about:blank','_blank'):null,updates={},now=Date.now();updates[`clientForms/${id}/open`]=true;updates[`clientForms/${id}/locked`]=false;updates[`clientForms/${id}/updatedAt`]=now;updates[`clientApprovals/${id}`]=approved?{...approval,status:'changes_pending',reopenedAt:now,snapshot:approval.snapshot||{contact:s.contact||{},events:s.events||{}}}:approval.status==='changes_pending'?approval:null;try{await db.ref().update(updates);toast('Client link reopened. New edits will wait for your review.');if(tab)tab.location.href=clientPortalUrl(id);return true}catch(e){if(tab)tab.close();toast('Could not reopen the link.');return false}}
-async function editClientAnswers(id){const f=clientForms[id];if(!f)return;if(f.open===false||f.locked){await reopenClientForm(id,true);return}window.open(clientPortalUrl(id),'_blank','noopener')}
-async function deleteClientForm(id){
-  const f=clientForms[id];if(!f)return;const approved=(clientApprovals[id]||{}).status==='approved';
-  if(!confirm(`Permanently delete ${f.couple}'s generated link?\n\nThis removes the private link and all answers saved through it.${approved?' Details already copied into existing Check-ins will remain there.':''}`))return;
-  const updates={};updates[`clientForms/${id}`]=null;updates[`clientSubmissions/${id}`]=null;updates[`clientApprovals/${id}`]=null;
-  try{await db.ref().update(updates);if(clientFormEditId===id)resetClientFormEditor();toast('Generated client link deleted permanently.');log(`deleted client event-details link: ${f.couple}`);}catch(e){toast('Could not delete the link. Please try again.');}
-}
-const ciTeamType=role=>{const r=String(role||'').toLowerCase();return r.includes('traditional')?'traditional':r.includes('candid')?'candid':'';};
-function ciDuration(start,end){if(!start||!end)return 'Pending actual start';let n=Math.max(0,Math.round((end-start)/60000)),h=Math.floor(n/60),m=n%60;return `${h}h ${m}m${n>420?' · Over 7 hrs':''}`;}
-function ciCardStatus(a){
-  if(!a||!a.checkedOutAt||a.cardsUsed==null)return '';
-  const used=a.cardsUsed==null?'—':a.cardsUsed;
-  if(a.cardCustody==='handed_over'||a.cardCustody==='handed_to_lead')return `${used} used · Handed to ${a.handedToName||'named person'}`;
-  if(a.cardCustody==='copying_with_me'||a.cardCustody==='taking_with_me')return `${used} used · With crew member`;
-  return `${used} card${used===1?'':'s'} used`;
-}
-
-function copyText(text,msg){
-  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(text).then(()=>toast(msg||'Copied')).catch(()=>window.prompt('Copy this:',text));
-  else window.prompt('Copy this:',text);
-}
-function copyCrewRegistrationLink(){copyText(ciCrewUrl(),'Crew registration link copied.');}
-function openCrewProfiles(){renderCrewProfiles();document.getElementById('ciProfilesModal').classList.add('open');}
-function closeCrewProfiles(){crewProfileEditUid='';document.getElementById('ciProfilesModal').classList.remove('open');}
-let crewProfileEditUid='';
-function renderCrewProfiles(){
-  const el=document.getElementById('ciProfileList');if(!el)return;
-  const list=Object.entries(crewProfiles||{}).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
-  el.innerHTML=list.length?list.map(([id,p])=>crewProfileEditUid===id?`<div class="ci-profile editing"><div class="ci-profile-form">
-    <div class="field"><label for="ciEditName">Name</label><input id="ciEditName" value="${esc(p.name||'')}" autocomplete="name"></div>
-    <div class="field"><label for="ciEditPhone">Mobile number</label><input id="ciEditPhone" value="${esc(p.phone||'')}" inputmode="tel" autocomplete="tel"></div>
-    <div class="field wide"><label for="ciEditEmail">Email address</label><input id="ciEditEmail" type="email" value="${esc(p.email||'')}" autocomplete="email"></div>
-    <div class="field wide"><label for="ciEditRole">Role</label><select id="ciEditRole">${CI_ROLES.map(r=>`<option${r===(p.role||'')?' selected':''}>${esc(r)}</option>`).join('')}</select></div>
-    <div class="ci-profile-form-actions"><button class="ci-profile-edit" onclick="cancelCrewProfileEdit()">Cancel</button><button class="btn-mini" onclick="saveCrewProfile('${esc(id)}')">Save changes</button></div>
-   </div></div>`:`<div class="ci-profile"><div class="ci-profile-main"><b>${esc(p.name||'Unnamed')}</b><small>${esc(p.role||'Role not set')} · ${esc(p.phone||'No phone')}</small><small>${esc(p.email||'')}</small></div><div class="ci-profile-actions"><button class="ci-profile-edit" onclick="editCrewProfile('${esc(id)}')">Edit</button><button class="ci-profile-delete" onclick="deleteCrewProfile('${esc(id)}')">Delete</button></div></div>`).join(''):'<div class="empty">No crew members registered yet.</div>';
-}
-function editCrewProfile(uid){if(!crewProfiles[uid])return;crewProfileEditUid=uid;renderCrewProfiles();setTimeout(()=>document.getElementById('ciEditName')?.focus(),0);}
-function cancelCrewProfileEdit(){crewProfileEditUid='';renderCrewProfiles();}
-async function saveCrewProfile(uid){
-  const old=crewProfiles[uid];if(!old)return;
-  const name=document.getElementById('ciEditName').value.trim(),phone=ciPhone(document.getElementById('ciEditPhone').value),email=document.getElementById('ciEditEmail').value.trim().toLowerCase(),role=document.getElementById('ciEditRole').value;
-  if(!name){toast('Enter the crew member’s name.');return;}
-  if(phone.length<10||phone.length>16){toast('Enter a valid mobile number.');return;}
-  if(!email||!email.includes('@')){toast('Enter a valid email address.');return;}
-  if(!role){toast('Choose their role.');return;}
-  const updated={...old,name,phone,email,role,updatedAt:Date.now()};
-  try{await db.ref(`crewProfiles/${uid}`).set(updated);crewProfiles[uid]=updated;crewProfileEditUid='';renderCrewProfiles();renderCheckinTeam();toast(`${name} updated.`);log(`updated registered crew profile: ${name}`);}catch(err){toast('Could not update this crew profile. Please try again.');}
-}
-async function deleteCrewProfile(uid){
-  const p=crewProfiles[uid];if(!p)return;
-  if(!confirm(`Delete ${p.name||'this crew member'} from Registered Crew?\n\nThey will be removed from upcoming and uncompleted shoots. Genuine completed attendance will be preserved.`))return;
-  const updates={};updates[`crewProfiles/${uid}`]=null;
-  Object.entries(checkinEvents||{}).forEach(([eventId,e])=>{
-    if(!e||!e.crew||!e.crew[uid])return;
-    const a=(checkinAttendance[eventId]&&checkinAttendance[eventId][uid])||{},completed=!!(a.checkedInAt||a.checkedOutAt);
-    updates[`crewCheckins/assignments/${uid}/${eventId}`]=null;
-    if(!completed){updates[`crewCheckins/events/${eventId}/crew/${uid}`]=null;updates[`crewCheckins/attendance/${eventId}/${uid}`]=null;}
-  });
-  try{
-    await db.ref().update(updates);delete crewProfiles[uid];renderCrewProfiles();renderCheckinTeam();toast(`${p.name||'Crew member'} deleted.`);log(`deleted registered crew profile: ${p.name||uid}`);
-  }catch(err){toast('Could not delete this crew profile. Please try again.');}
-}
-function approvedClientCheckinRows(couple=''){
-  const who=String(couple||'').trim().toLowerCase(),today=ciTodayIso(),rows=[];
-  Object.entries(clientForms||{}).forEach(([id,f])=>{if(!f||(clientApprovals[id]||{}).status!=='approved'||(who&&String(f.couple||'').trim().toLowerCase()!==who))return;Object.entries(f.events||{}).forEach(([eventId,e])=>{if(!e||!e.date||e.date<today)return;rows.push({formId:id,eventId,couple:String(f.couple||'').trim(),date:e.date,name:e.name||'',details:((clientSubmissions[id]&&clientSubmissions[id].events)||{})[eventId]||{}});});});
-  return rows.sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name));
-}
-function renderCheckinFormOptions(){
-  const dl=document.getElementById('ciCouples');if(dl){
-    const map=calendarCoupleMap(),today=ciTodayIso();
-    const merged=new Map();Object.entries(map).forEach(([name,x])=>{const next=(x.dates||[]).filter(d=>d>=today).sort()[0];if(next)merged.set(name.toLowerCase(),{name,next});});approvedClientCheckinRows().forEach(x=>{const k=x.couple.toLowerCase(),old=merged.get(k);if(!old||x.date<old.next)merged.set(k,{name:x.couple,next:x.date});});
-    const list=[...merged.values()].sort((a,b)=>a.next.localeCompare(b.next)||a.name.localeCompare(b.name));dl.innerHTML=list.map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.next))}">`).join('');
-  }
-  refreshShotTypeOptions();
-  renderCheckinTeam();
-}
-function renderCheckinTeam(selected){
-  const el=document.getElementById('ciTeamList');if(!el)return;
-  const editId=document.getElementById('ciEditId')?.value||'',existing=selected||(checkinEvents[editId]&&checkinEvents[editId].crew)||{};
-  const def=document.getElementById('ciReport')?.value||'';
-  const list=Object.entries(crewProfiles||{}).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
-  if(!list.length){el.innerHTML=`<div class="ci-empty">No registered crew yet. Copy the crew registration link, ask each person to sign in once, then their name appears here automatically.</div>`;return;}
-  el.innerHTML=list.map(([uid,p])=>{const x=existing[uid]||{},on=!!existing[uid],role=x.role||p.role||CI_ROLES[0],rt=x.reportTime||def;return `<div class="ci-person" data-ci-uid="${esc(uid)}"><div class="ci-person-top"><input class="ci-person-check" type="checkbox" ${on?'checked':''} onchange="ciChecklistStatus()"><b>${esc(p.name||'Unnamed')}</b><small>${esc(p.phone||'')}</small></div><div class="ci-person-fields"><select class="ci-person-role" onchange="ciChecklistStatus()">${CI_ROLES.map(r=>`<option${r===role?' selected':''}>${esc(r)}</option>`).join('')}</select><input class="ci-person-time" type="time" value="${esc(rt)}" title="Reporting time"></div><label class="ci-lead"><input class="ci-person-lead" type="radio" name="ciShootLead" ${x.isLead?'checked':''}> Shoot lead</label></div>`;}).join('');
-  ciChecklistStatus();
-}
-function ciDefaultReportChanged(){
-  const v=document.getElementById('ciReport').value;
-  document.querySelectorAll('.ci-person-time').forEach(x=>{if(!x.dataset.custom)x.value=v;});
-}
-function ciCoupleChanged(){
-  const name=document.getElementById('ciCouple').value.trim(),sel=document.getElementById('ciDate'),map=calendarCoupleMap(),x=Object.entries(map).find(([k])=>k.toLowerCase()===name.toLowerCase())?.[1],dates=[...new Set([...(x&&x.dates||[]),...approvedClientCheckinRows(name).map(r=>r.date)])].filter(d=>d>=ciTodayIso()).sort();
-  sel.innerHTML='<option value="">Select date</option>'+dates.map(d=>`<option value="${d}">${esc(ciDateLong(d))}</option>`).join('');
-  document.getElementById('ciPlannerResult').classList.remove('on');
-  if(dates.length===1){sel.value=dates[0];ciDateChanged();}else renderCheckinTeam({});
-}
-function ciPlannerRow(couple,date){
-  const n=String(couple||'').trim().toLowerCase();
-  return Object.values(plans||{}).find(p=>p&&p.iso===date&&String(p.couple||'').trim().toLowerCase()===n)||null;
-}
-function ciApplyPlannerRow(row){
-  const box=document.getElementById('ciPlannerResult');
-  if(!row){box.classList.remove('on');renderCheckinTeam({});return;}
-  const roleMap={cp:'Candid Photographer',cv:'Candid Cinematographer',tp:'Traditional Photographer',tv:'Traditional Videographer',ex:'Other'},selected={},missing=[],matched=[];
-  Object.entries(roleMap).forEach(([key,role])=>planNames((row.cells&&row.cells[key])||'').forEach(name=>{
-    const hit=Object.entries(crewProfiles||{}).find(([,p])=>String(p.name||'').trim().toLowerCase()===name.toLowerCase());
-    if(hit){selected[hit[0]]={role,reportTime:''};matched.push(name);}else missing.push(name);
-  }));
-  renderCheckinTeam(selected);
-  const notes=['Imported from Crew Planner.'];
-  if(matched.length)notes.push(`${matched.length} registered crew selected.`);
-  if(missing.length)notes.push(`Not registered yet: ${[...new Set(missing)].join(', ')}.`);
-  if(row.loc){
-    const mapData=ciMapData(row.loc);
-    if(mapData){document.getElementById('ciMapLink').value=row.loc;ciParseMap();notes.push('Google Maps location imported.');}
-    else notes.push(`Planner venue: ${row.loc}. Paste its full Google Maps link below for GPS.`);
-  }
-  box.className='ci-map-ok on';box.textContent=notes.join(' ');
-}
-function ciDateChanged(){
-  const name=document.getElementById('ciCouple').value.trim(),date=document.getElementById('ciDate').value,map=calendarCoupleMap(),mx=Object.entries(map).find(([k])=>k.toLowerCase()===name.toLowerCase())?.[1],evs=[...((mx&&mx.events&&mx.events[date])||[]),...approvedClientCheckinRows(name).filter(r=>r.date===date).map(r=>r.name)];
-  const row=ciPlannerRow(name,date),plannerEvent=row&&row.event&&row.event!=='—'?row.event:'';
-  const choices=uniqueEventTypes([plannerEvent,...evs]);
-  const eventInput=document.getElementById('ciEvent');
-  if(choices.length===1)eventInput.value=choices[0];
-  else if(choices.length>1)eventInput.value='';
-  ciApplyPlannerRow(row);
-  if(choices.length>1){
-    const box=document.getElementById('ciPlannerResult');
-    box.className='ci-map-ok on';
-    box.textContent=`Planner has ${choices.join(', ')}. Choose the one event you are creating this check-in for.`;
-  }
-  ciEventChanged();
-}
-function ciListExists(eventName,team){
-  const k=shotListKey(eventName),v=shotLists&&shotLists[k]&&shotLists[k][team];
-  return !!((Array.isArray(v)&&v.length)||(v&&typeof v==='object'&&Object.keys(v).length));
-}
-function ciChecklistStatus(){
-  const box=document.getElementById('ciChecklistResult');if(!box)return;
-  const name=document.getElementById('ciEvent')?.value.trim()||'';
-  if(!name){box.classList.remove('on');return;}
-  const needs=new Set();document.querySelectorAll('.ci-person').forEach(row=>{if(row.querySelector('.ci-person-check')?.checked){const t=ciTeamType(row.querySelector('.ci-person-role')?.value);if(t)needs.add(t);}});
-  if(!needs.size){['candid','traditional'].forEach(t=>needs.add(t));}
-  const missing=[...needs].filter(t=>!ciListExists(name,t));
-  box.className='ci-map-ok on';
-  if(missing.length){box.style.background='#F4EBDD';box.style.color='#6B4B35';box.innerHTML=`<b>Shot list pending</b> for ${esc(missing.join(' and '))}. You can save this shoot now and create or update the exact <b>${esc(name)}</b> list later. It will connect automatically.`;}
-  else{box.style.background='';box.style.color='';box.innerHTML=`Exact <b>${esc(name)}</b> checklist is ready and will unlock after GPS check-in.`;}
-}
-function ciMapData(raw){
-  const text=decodeURIComponent(String(raw||''));let lat=null,lng=null,name='';
-  let m=text.match(/@(-?\d{1,3}(?:\.\d+)?),(-?\d{1,3}(?:\.\d+)?)/);if(m){lat=+m[1];lng=+m[2];}
-  try{
-    const u=new URL(raw),pm=u.pathname.match(/\/place\/([^/]+)/);if(pm)name=decodeURIComponent(pm[1]).replace(/\+/g,' ');
-    for(const k of ['query','q','destination','center','ll']){const v=u.searchParams.get(k);if(!v)continue;const c=v.match(/^\s*(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)\s*$/);if(c&&!m){lat=+c[1];lng=+c[2];}else if(!name&&k==='query')name=v;}
-  }catch(e){}
-  if(!name)name='Google Maps venue';
-  return lat!==null&&lng!==null&&Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180?{lat,lng,name}:null;
-}
-function ciParseMap(){
-  const raw=document.getElementById('ciMapLink').value.trim(),box=document.getElementById('ciMapResult');if(!raw){box.classList.remove('on');return null;}
-  const d=ciMapData(raw);
-  if(!d){box.className='ci-map-ok on';box.style.background='#3A241F';box.style.color='#F0C2B8';box.textContent='This short link does not contain GPS coordinates. Open it in Google Maps, then copy the full address-bar link and paste it here.';document.getElementById('ciVenueLat').value='';document.getElementById('ciVenueLng').value='';return null;}
-  document.getElementById('ciVenueLat').value=d.lat;document.getElementById('ciVenueLng').value=d.lng;document.getElementById('ciVenueName').value=d.name;
-  box.className='ci-map-ok on';box.style.background='';box.style.color='';box.textContent=`Location detected: ${d.name}. GPS check-in will use the fixed 500 m radius.`;return d;
-}
-function resetCheckinForm(){
-  ['ciEditId','ciCouple','ciEvent','ciMapLink','ciVenueLat','ciVenueLng','ciVenueName','ciReport','ciScheduled'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('ciDate').innerHTML='<option value="">Select date</option>';document.getElementById('ciMapResult').classList.remove('on');document.getElementById('ciPlannerResult').classList.remove('on');document.getElementById('ciChecklistResult').classList.remove('on');document.getElementById('ciFormResult').className='check-result';document.getElementById('ciFormTitle').textContent='New crew shoot';renderCheckinTeam({});
-}
-function toggleCheckinForm(show){const f=document.getElementById('ciForm');if(show){if(!f.style.display||f.style.display==='none')resetCheckinForm();f.style.display='block';f.scrollIntoView({behavior:'smooth',block:'start'});}else{f.style.display='none';resetCheckinForm();}}
-function editCheckinEvent(id){
-  const e=checkinEvents[id];if(!e)return;document.getElementById('ciForm').style.display='block';document.getElementById('ciFormTitle').textContent='Edit crew shoot';document.getElementById('ciEditId').value=id;document.getElementById('ciCouple').value=e.couple||'';ciCoupleChanged();
-  const ds=document.getElementById('ciDate');if(![...ds.options].some(o=>o.value===e.date))ds.add(new Option(ciDateLong(e.date),e.date));ds.value=e.date||'';document.getElementById('ciEvent').value=e.eventName||e.checklistType||'';document.getElementById('ciMapLink').value=e.mapsUrl||'';document.getElementById('ciVenueLat').value=e.venueLat||'';document.getElementById('ciVenueLng').value=e.venueLng||'';document.getElementById('ciVenueName').value=e.venueName||'';document.getElementById('ciReport').value=e.reportingTime||'';document.getElementById('ciScheduled').value=e.scheduledStart||'';ciParseMap();renderCheckinTeam(e.crew||{});ciChecklistStatus();document.getElementById('ciForm').scrollIntoView({behavior:'smooth',block:'start'});
-}
-async function saveCheckinEvent(){
-  const res=document.getElementById('ciFormResult'),id=document.getElementById('ciEditId').value||db.ref('crewCheckins/events').push().key;
-  const couple=document.getElementById('ciCouple').value.trim(),date=document.getElementById('ciDate').value,eventName=document.getElementById('ciEvent').value.trim(),checklistType=eventName,mapsUrl=document.getElementById('ciMapLink').value.trim(),reportingTime=document.getElementById('ciReport').value,scheduledStart=document.getElementById('ciScheduled').value;
-  const d=ciParseMap(),crew={};document.querySelectorAll('.ci-person').forEach(row=>{if(!row.querySelector('.ci-person-check').checked)return;const uid=row.dataset.ciUid,p=crewProfiles[uid];if(!p)return;crew[uid]={name:p.name||'',phone:p.phone||'',email:p.email||'',role:row.querySelector('.ci-person-role').value,reportTime:row.querySelector('.ci-person-time').value||reportingTime,isLead:!!row.querySelector('.ci-person-lead')?.checked};});
-  const missing=[];if(!couple)missing.push('couple');if(!date)missing.push('date');if(!eventName)missing.push('event');if(!d)missing.push('full Google Maps link');if(!reportingTime)missing.push('reporting time');if(!scheduledStart)missing.push('scheduled start');if(!Object.keys(crew).length)missing.push('at least one crew member');
-  if(missing.length){res.className='check-result show clash';res.innerHTML=`<b>Still needed</b>${esc(missing.join(', '))}.`;return;}
-  const old=checkinEvents[id]||{},approved=approvedClientEvent(couple,date,eventName)||{},event={couple,eventName,date,checklistType,mapsUrl,venueName:document.getElementById('ciVenueName').value||approved.venueName||d.name,venueLat:d.lat,venueLng:d.lng,radiusM:500,reportingTime,scheduledStart,functionStart:approved.startTime||old.functionStart||null,functionEnd:approved.endTime||old.functionEnd||null,clientContactName:approved.contactName||old.clientContactName||null,clientContactPhone:approved.contactPhone||old.clientContactPhone||null,brideReadyLocation:approved.brideReadyLocation||old.brideReadyLocation||null,groomReadyLocation:approved.groomReadyLocation||old.groomReadyLocation||null,clientNotes:approved.notes||old.clientNotes||null,clientFormId:approved.formId||old.clientFormId||null,crew,actualStartAt:old.actualStartAt||null,createdAt:old.createdAt||Date.now(),createdBy:old.createdBy||editor,updatedAt:Date.now(),updatedBy:editor};
-  const updates={};updates[`crewCheckins/events/${id}`]=event;Object.keys(old.crew||{}).forEach(uid=>{if(!crew[uid])updates[`crewCheckins/assignments/${uid}/${id}`]=null;});Object.keys(crew).forEach(uid=>updates[`crewCheckins/assignments/${uid}/${id}`]=true);
-  try{await db.ref().update(updates);checkinEvents[id]=event;log(`${old.couple?'updated':'created'} crew check-in event: ${couple} — ${eventName}`);toast('Event link ready.');toggleCheckinForm(false);setTimeout(()=>shareCheckinEvent(id,false),120);}catch(e){res.className='check-result show clash';res.innerHTML='<b>Could not save</b>Please try again.';}
-}
-function eventShareText(id){const e=checkinEvents[id];if(!e)return '';return `Hi team, sharing tomorrow’s shoot details.\n\n${e.couple} — ${e.eventName}\nReporting time: ${ciFmtTime(e.reportingTime)}\nScheduled shoot start: ${ciFmtTime(e.scheduledStart)}\nVenue: ${e.venueName||'Open the link for directions'}\n\nPlease open the link and confirm your assignment:\n${ciCrewUrl(id)}`;}
-function shareCheckinEvent(id,open=true){
-  const text=eventShareText(id);if(!text)return;if(open)window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener');else copyText(text,'WhatsApp message copied.');
-}
-function copyCheckinLink(id){copyText(ciCrewUrl(id),'Event link copied.');}
-async function deleteCheckinEvent(id){
-  const e=checkinEvents[id];if(!e)return;
-  if(!confirm(`Permanently delete ${e.couple} — ${e.eventName}?\n\nThis removes the shoot link, assignments, confirmations, GPS check-ins, working hours and linked checklist submissions.`))return;
-  const updates={};updates[`crewCheckins/events/${id}`]=null;
-  const uids=new Set([...Object.keys(e.crew||{}),...Object.keys(checkinAttendance[id]||{})]);
-  uids.forEach(uid=>{updates[`crewCheckins/assignments/${uid}/${id}`]=null;updates[`crewCheckins/attendance/${id}/${uid}`]=null;updates[`shotChecklists/ci_${id}_${uid}`]=null;});
-  try{await db.ref().update(updates);delete checkinEvents[id];delete checkinAttendance[id];renderCheckinEvents();toast('Crew event and its test records were deleted.');log(`deleted crew check-in event: ${e.couple} — ${e.eventName}`);}catch(err){toast('Could not delete the event. Please try again.');}
-}
-function ciLocalValue(ms){if(!ms)return '';const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;}
-function ciStartNow(id){const input=document.getElementById('ciStart_'+id);if(input)input.value=ciLocalValue(Date.now());saveActualStart(id);}
-async function saveActualStart(id){
-  const input=document.getElementById('ciStart_'+id),v=input&&input.value,ms=v?new Date(v).getTime():null;if(!ms){toast('Enter the actual shoot start.');return;}try{await db.ref(`crewCheckins/events/${id}/actualStartAt`).set(ms);await db.ref(`crewCheckins/events/${id}/updatedAt`).set(Date.now());if(checkinEvents[id])checkinEvents[id].actualStartAt=ms;toast('Actual shoot start saved.');setTimeout(()=>syncCheckinSubmissions(id),250);}catch(e){toast('Could not save the shoot start.');}
-}
-async function syncCheckinSubmissions(id){
-  const e=checkinEvents[id],all=checkinAttendance[id]||{},eventType=e&&(e.eventName||e.checklistType);if(!e||!e.actualStartAt||!eventType)return;
-  const tm=ms=>{const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${p(d.getHours())}:${p(d.getMinutes())}`;};
-  await Promise.all(Object.entries(all).map(([uid,a])=>{const c=e.crew&&e.crew[uid],its=Array.isArray(a.checklistItems)?a.checklistItems:Object.values(a.checklistItems||{});if(!c||!a.checkedOutAt||!its.length||!ciTeamType(c.role))return Promise.resolve();const sub={client:e.couple,eventType,eventDate:e.date,team:ciTeamType(c.role),crewName:c.name,startTime:tm(e.actualStartAt),endTime:tm(a.checkedOutAt),items:its.map(x=>({t:x.t,done:!!x.done})),tickedCount:its.filter(x=>x&&x.done).length,totalCount:its.length,submittedAt:Date.now()};return db.ref(`shotChecklists/ci_${id}_${uid}`).set(sub); }));
-}
-function renderCheckinEvents(){
-  const el=document.getElementById('ciEventList');if(!el)return;renderCheckinFormOptions();
-  const list=Object.entries(checkinEvents||{}).sort((a,b)=>`${a[1].date} ${a[1].scheduledStart}`.localeCompare(`${b[1].date} ${b[1].scheduledStart}`));
-  const today=new Date();today.setHours(0,0,0,0);const tomorrow=new Date(today);tomorrow.setDate(today.getDate()+1);const tomorrowIso=tomorrow.toISOString().slice(0,10),shareDue=list.filter(([,e])=>e.date===tomorrowIso);
-  const note=document.getElementById('ciTomorrowNote');if(note){note.style.display=shareDue.length?'':'none';note.innerHTML=shareDue.length?`<b>Tomorrow:</b> ${shareDue.map(([id,e])=>`${esc(e.couple)} — ${esc(e.eventName)} <button class="btn-mini" style="margin-left:6px" onclick="shareCheckinEvent('${id}')">Share with team</button>`).join(' · ')}`:'';}
-  if(!list.length){el.innerHTML='<div class="empty">No crew check-in events yet.</div>';return;}
-  el.innerHTML=list.map(([id,e])=>{
-    const all=checkinAttendance[id]||{},crew=Object.entries(e.crew||{}),confirmed=crew.filter(([uid])=>all[uid]&&all[uid].confirmedAt).length,checked=crew.filter(([uid])=>all[uid]&&all[uid].checkedInAt).length,late=crew.filter(([uid])=>all[uid]&&all[uid].late).length;
-    const rows=crew.map(([uid,c])=>{const a=all[uid]||{};let lab='Pending',cl='';if(a.checkedOutAt){lab='Checked out';cl='ok'}else if(a.checkedInAt){lab=a.late?`${a.lateMinutes||1}m late`:'On time';cl=a.late?'late':'ok'}else if(a.confirmedAt){lab='Confirmed';cl='ok'}const time=a.checkedInAt?`In ${ciClock(a.checkedInAt)}${a.checkedOutAt?' · Out '+ciClock(a.checkedOutAt):''}`:`Report ${ciFmtTime(c.reportTime||e.reportingTime)}`,cards=ciCardStatus(a);return `<div class="ci-row"><div><b>${esc(c.name)}${c.isLead?' · Lead':''}</b><small>${esc(c.role)} · ${esc(c.phone||'')}</small>${cards?`<small style="color:var(--leaf)">${esc(cards)}</small>`:''}</div><div class="ci-row-time">${esc(time)}${a.checkedOutAt?`<div class="ci-hours">${esc(ciDuration(e.actualStartAt,a.checkedOutAt))}</div>`:''}</div><span class="ci-badge ${cl}">${esc(lab)}</span></div>`;}).join('');
-    const board=shotMoods[moodKey(e.couple,e.eventName,e.date)],neededTeams=[...new Set(crew.map(([,c])=>ciTeamType(c.role)).filter(Boolean))],listsPending=neededTeams.filter(t=>!ciListExists(e.eventName||e.checklistType,t)),listStatus=listsPending.length?`Shot list pending: ${listsPending.join(' & ')}`:'Exact checklist ready';
-    return `<article class="ci-event"><div class="ci-event-top"><div><div class="ci-event-date">${esc(ciDateLong(e.date))} · ${esc(ciFmtTime(e.reportingTime))} reporting</div><h3>${esc(e.couple)} <small>${esc(e.eventName)}</small></h3><div class="ci-event-venue">${esc(e.venueName||'Google Maps venue')} · ${crew.length} assigned · ${esc(listStatus)}${board&&board.url?' · Pinterest ready':' · No Pinterest board'}</div></div><div class="ci-event-btns"><button class="btn-mini" onclick="shareCheckinEvent('${id}')">WhatsApp</button><button class="btn-mini" onclick="copyCheckinLink('${id}')">Copy link</button><button class="btn-mini" onclick="editCheckinEvent('${id}')">Edit</button><button class="btn-mini" onclick="deleteCheckinEvent('${id}')">Delete</button></div></div><div class="ci-statbar"><span class="ci-stat ${confirmed===crew.length&&crew.length?'ok':''}">${confirmed}/${crew.length} confirmed</span><span class="ci-stat ${checked?'ok':''}">${checked} checked in</span>${late?`<span class="ci-stat late">${late} late</span>`:''}</div><div class="ci-start"><div><label>Actual shoot start</label><input id="ciStart_${id}" type="datetime-local" value="${esc(ciLocalValue(e.actualStartAt))}"></div><button class="btn-mini" onclick="saveActualStart('${id}')">Save start</button><button class="btn-mini" onclick="ciStartNow('${id}')">Start now</button></div><div class="ci-roster">${rows}</div></article>`;
-  }).join('');
+  log('updated '+tm+' shot list for '+t+' ('+arr.length+' shots)');
+  toast('Saved. The crew sees this list from their next checklist on.');
 }
 
 restoreView();

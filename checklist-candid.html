@@ -4,9 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Tale of Two Weddings — Candid Shot Checklist</title>
-<link rel="icon" href="totw-logo-square.jpg" type="image/jpeg">
-<link rel="apple-touch-icon" href="totw-logo-square.jpg">
+<title>TOTW — Candid Shot Checklist</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -36,6 +34,11 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .row2{display:flex;gap:10px}
 .row2 .field{flex:1}
 .hint{font-size:12.5px;color:var(--ink-soft);line-height:1.45}
+.boards{display:none;margin:4px 0 18px}
+.board-card{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:13px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.board-card .board-k{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#A39F95}
+.board-card .board-n{font-family:var(--display);font-size:20px;font-weight:600;line-height:1.15;margin-top:2px}
+.board-card a{flex:0 0 auto;text-decoration:none;background:var(--ink);color:var(--paper);border-radius:6px;padding:8px 10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase}
 .sec-h{font-family:var(--display);font-size:24px;font-weight:600;margin:26px 0 4px}
 .count{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px}
 .count b{color:var(--sindoor);font-weight:500}
@@ -57,10 +60,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
 #done h2{font-family:var(--display);font-size:32px;font-weight:500;margin-bottom:8px}
 #done p{color:var(--ink-soft);font-size:14px}
 #otherWrap{display:none}
-#moodCard{display:none;background:var(--sindoor-soft);border:1px solid #D8A79E;border-radius:8px;padding:14px;margin:18px 0 4px}
-#moodCard .mood-l{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--sindoor);margin-bottom:5px}
-#moodCard .mood-t{font-size:13px;color:var(--ink-soft);line-height:1.45;margin-bottom:10px}
-#moodCard a{display:inline-block;background:var(--sindoor);color:#fff;text-decoration:none;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:10px 16px;border-radius:6px}
 footer{margin-top:44px;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#A39F95;text-align:center}
 </style>
 </head>
@@ -84,8 +83,19 @@ footer{margin-top:44px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1
   </div>
   <div class="field">
     <label for="fType">Event type</label>
-    <input id="fType" list="eventTypes" placeholder="Exact event name, e.g. Pre-Wedding" autocomplete="off">
-    <datalist id="eventTypes"></datalist>
+    <select id="fType">
+      <option value="">Select the event…</option>
+      <option value="Bride Making">Bride Making</option>
+      <option value="Groom Making">Groom Making</option>
+      <option value="Haldi">Haldi</option>
+      <option value="Pellikuthuru">Pellikuthuru</option>
+      <option value="Mehndi">Mehndi</option>
+      <option value="Sangeet">Sangeet</option>
+      <option value="Cocktail">Cocktail</option>
+      <option value="Edurukollu">Edurukollu</option>
+      <option value="Ceremony">Wedding Ceremony</option>
+      <option value="Reception">Reception</option>
+    </select>
   </div>
   <div class="field">
     <label for="fCrew">Your name</label>
@@ -106,11 +116,7 @@ footer{margin-top:44px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1
     </div>
   </div>
 
-  <div id="moodCard">
-    <div class="mood-l">Mood board for this couple</div>
-    <div class="mood-t" id="moodTxt">The planned looks and references — open it before you start shooting.</div>
-    <a id="moodLink" href="#" target="_blank" rel="noopener">Open the board ↗</a>
-  </div>
+  <div class="boards" id="boardsWrap"></div>
 
   <div id="shotsWrap" style="display:none">
     <div class="sec-h" id="shotsTitle"></div>
@@ -130,7 +136,7 @@ footer{margin-top:44px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1
   <p style="margin-top:6px">You can close this page now.</p>
 </div>
 
-<footer>Tale of Two Weddings · Shot Checklist · Candid</footer>
+<footer>TOTW · Shot Checklist · Candid</footer>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -147,9 +153,110 @@ const FIREBASE = {
   appId: "1:595678125258:web:01fef3d4661b6f52346833"
 };
 
-/* Upcoming couples load from the limited public crewEvents node. */
+/* Baked 2026 calendar — same source the ledger uses. Firebase bookings and
+   booked enquiries are merged on top, so team-added weddings appear too. */
+const BAKED = [
+[1,11,"Swathi","Cradle ceremony","Hyderabad"],
+[2,4,"Varsha & Darshan","Lagna Patrika, Haldi, Sangeet","Bangalore"],
+[2,5,"Varsha & Darshan","Bride Mehendi","Bangalore"],
+[2,6,"Varsha & Darshan","Chapra Pooja / Groom Haldi","Bangalore"],
+[2,6,"Komal & Preet","Bhyaat & Interviews","Hyderabad"],
+[2,7,"Varsha & Darshan","Reception","Bangalore"],
+[2,8,"Komal & Preet","Haldi","Hyderabad"],
+[2,8,"Varsha & Darshan","Wedding","Bangalore"],
+[2,9,"Komal & Preet","Mehendi","Hyderabad"],
+[2,10,"Komal & Preet","Baarat, Reception & Pheras","Hyderabad"],
+[2,11,"Komal & Preet","Bidaai","Hyderabad"],
+[2,18,"Preethi & Chethan","Mehendi","Anantapur"],
+[2,19,"Preethi & Chethan","Bride Making & Sangeet","Anantapur"],
+[2,20,"Meghana & Smaran","Lagna Patrika","Hyderabad"],
+[2,20,"Preethi & Chethan","Wedding","Anantapur"],
+[2,22,"Mohan & Varshini","Engagement","Hyderabad"],
+[3,1,"Mohan & Varshini","Haldi & Sangeet","Hyderabad"],
+[3,4,"Meghana & Smaran","Bride & Groom Making, Haldi","Hyderabad"],
+[3,4,"Mohan & Varshini","Bride Making","Kurnool"],
+[3,5,"Mohan & Varshini","Groom Making","Karimnagar"],
+[3,5,"Lakshmi & Shiva","Rituals & Wedding","Vijayawada"],
+[3,5,"Meghana & Smaran","Wedding","Hyderabad"],
+[3,6,"Mohan & Varshini","Wedding","Hyderabad"],
+[3,9,"Shivani & Kashyap","Proposal Shoot","Phuket"],
+[3,12,"Kavya & Bharath","Wedding","Hyderabad"],
+[3,18,"Meghana & Smaran","Reception","Hyderabad"],
+[3,20,"Shivani & Kashyap","Engagement","Eluru"],
+[4,8,"Tanvi & Vamshi","Pre-Wedding","—"],
+[4,11,"Shivani & Kashyap","Cocktail","Hyderabad"],
+[4,20,"Shivani & Kashyap","Bride & Groom Making","Eluru / Hyd"],
+[4,21,"Shivani & Kashyap","Wedding","Eluru"],
+[4,22,"Shivani & Kashyap","Wedding (contd.)","Eluru"],
+[4,23,"Anusha & Suraj","Lagna Patrika","Hyderabad"],
+[4,24,"Shivani & Kashyap","Vratham","Hyderabad"],
+[5,5,"Simran & Noel","Ladies Sangeet","Hyderabad"],
+[5,6,"Mugdha & Vijay","Mehendi","Hyderabad"],
+[5,7,"Mugdha & Vijay","Groom Making & Edurukollu","Hyderabad"],
+[5,8,"Mugdha & Vijay","Wedding","Hyderabad"],
+[5,9,"Simran & Noel","Mehendi, Cocktail & Sangeet","Hyderabad"],
+[5,10,"Simran & Noel","Haldi + Wedding","Hyderabad"],
+[5,13,"Sameepa & Sri Raj","Pasupu Danchadam","Anantapur"],
+[5,17,"Vedika & Devansh","Post Wedding","Hyderabad"],
+[5,30,"Kavya & Bharath","Interview","Hyderabad"],
+[6,24,"Mishrita & Charan","Mangalsnanam, Haldi & Mehendi","Tirupati"],
+[6,25,"Mishrita & Charan","Bride Making, Pradhanam & Sangeet","Tirupati"],
+[6,25,"Sushmitha & Bharath","Engagement","Hyderabad"],
+[6,26,"Mishrita & Charan","Nalugu & Wedding","Tirupati"],
+[6,29,"Zoya","Haldi","—"],
+[6,30,"Zoya","Mehendi & Sanchak","—"],
+[7,2,"Zoya","Shaadi","—"],
+[7,3,"Zoya","Walima","—"],
+[8,10,"Nidhi & Archit","Pre-Wedding","Hyderabad"],
+[8,11,"Nidhi & Archit","Pre-Wedding","Hyderabad"],
+[8,13,"Nidhi & Archit","Mehendi","Hyderabad"],
+[8,14,"Nidhi & Archit","Haldi & Sangeet","Hyderabad"],
+[8,15,"Nidhi & Archit","Bride & Groom Making, Vratam","Hyderabad"],
+[8,16,"Nidhi & Archit","Baarat, Wedding & Rituals","Shamshabad"],
+[8,21,"Sameepa & Sri Raj","Haldi & Mehendi","Anantapur"],
+[8,22,"Sameepa & Sri Raj","Bride Making & Sangeet","Anantapur"],
+[8,23,"Sameepa & Sri Raj","Wedding","Anantapur"],
+[10,29,"Vipin & Prathyusha","Mehendi","Dallas"],
+[10,30,"Vipin & Prathyusha","Sangeet & Cocktail","Dallas"],
+[10,30,"Dhiraj & Subhasya","Engagement","Tenali"],
+[10,31,"Vipin & Prathyusha","Haldi & Makings","Dallas"],
+[11,1,"Vipin & Prathyusha","Wedding","Dallas"],
+[11,16,"Sushmitha & Bharath","Bride Making","Hyderabad"],
+[11,17,"Sushmitha & Bharath","Bride Making","Hyderabad"],
+[11,18,"Sushmitha & Bharath","Wedding","Hyderabad"],
+[11,19,"Shreyashi & Sachith","Mehendi & Pooja","Ayana Resort, Hyd"],
+[11,19,"Manisha & Prakash","Pre-Wedding","Michigan, USA"],
+[11,20,"Manisha & Prakash","Mehendi","Michigan, USA"],
+[11,20,"Shreyashi & Sachith","Haldi, Sangeet & After Party","Ayana Resort, Hyd"],
+[11,21,"Manisha & Prakash","Haldi & Makings","Michigan, USA"],
+[11,21,"Shreyashi & Sachith","Rituals, Baarat & Wedding","Ayana Resort, Hyd"],
+[11,22,"Manisha & Prakash","Wedding","Michigan, USA"],
+[11,24,"Dhiraj & Subhasya","Mehendi & Sangeet","Kurnool"],
+[11,25,"Sireesha & Vineeth","Sangeet","Hyderabad"],
+[11,25,"Dhiraj & Subhasya","Groom Making & Mangalsnanam","Kurnool"],
+[11,26,"Dhiraj & Subhasya","Bride Making, Haldi & Wedding","Tenali"],
+[11,29,"Sireesha & Vineeth","Haldi & Mehendi","Hyderabad"],
+[12,2,"Sireesha & Vineeth","Bride & Groom Making","Hyderabad / Kodad"],
+[12,3,"Sireesha & Vineeth","Wedding","Hyderabad"]
+];
 
 const DEFAULT_SHOTS = {
+  "making": {
+    "traditional": [
+      "Room and outfit setup before the making begins",
+      "Hair and makeup progress frames",
+      "Jewellery, attire and accessories in place",
+      "Final full-length portrait",
+      "Portraits with parents and immediate family"
+    ],
+    "candid": [
+      "Quiet moments during hair and makeup",
+      "Natural reactions while getting dressed",
+      "Parents or siblings helping with final details",
+      "Mirror reflections and layered compositions",
+      "The finished look before leaving the room"
+    ]
+  },
   "haldi": {
     "traditional": [
       "Wide shot of the haldi setup before guests arrive",
@@ -240,79 +347,56 @@ const DEFAULT_SHOTS = {
   }
 };
 
+const p2 = n => String(n).padStart(2,'0');
 const MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const fmtIso = iso => {const[y,m,d]=iso.split('-').map(Number);return MN[m-1].slice(0,3)+" "+d;};
-const todayIso = () => {const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;};
 
-let db=null, shotListsRemote={}, crewEventsRemote={}, items=[], moods={};
+let db=null, shotListsRemote={}, shotMoodsRemote={}, shotEventMoodsRemote={}, items=[];
 
-const safeKey = value => String(value||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_').replace(/\s+/g,'-');
-const shotListKey = name => safeKey(name);
-const moodKey = (couple,eventName,eventDate) => safeKey(`${couple}|${eventName}|${eventDate}`);
-
-function updateMoodCard(){
-  if(TEAM!=='candid') return;
-  const card = document.getElementById('moodCard');
-  const selVal = document.getElementById('fClient').value;
-  const client = selVal==='__other__' ? document.getElementById('fClientOther').value.trim() : selVal;
-  const eventName=document.getElementById('fType').value.trim(),eventDate=document.getElementById('fDate').value;
-  const m = client&&eventName&&eventDate&&moods[moodKey(client,eventName,eventDate)];
-  if(m && m.url){
-    document.getElementById('moodLink').href = m.url;
-    card.style.display = 'block';
-  }else{
-    card.style.display = 'none';
-  }
-}
+const eventKey = type => ({
+  'Bride Making':'making','Groom Making':'making',
+  'Haldi':'haldi','Pellikuthuru':'haldi','Mehndi':'mehndi',
+  'Sangeet':'sangeet','Cocktail':'sangeet',
+  'Edurukollu':'ceremony','Ceremony':'ceremony','Reception':'reception'
+})[type] || String(type||'').toLowerCase();
+const boardKey = type => ({
+  'Bride Making':'bride-making','Groom Making':'groom-making',
+  'Haldi':'haldi','Pellikuthuru':'haldi','Mehndi':'mehndi',
+  'Sangeet':'sangeet-cocktail','Cocktail':'sangeet-cocktail',
+  'Edurukollu':'wedding','Ceremony':'wedding','Reception':'reception'
+})[type] || '';
+const boardLabels = {
+  'bride-making':'Bride Making','groom-making':'Groom Making',haldi:'Haldi & Pellikuthuru',
+  mehndi:'Mehendi','sangeet-cocktail':'Sangeet & Cocktail',wedding:'Wedding & Rituals',reception:'Reception'
+};
+const moodKey = name => String(name||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_');
 
 function init(){
-  document.getElementById('fDate').value = todayIso();
+  document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
   try{
     firebase.initializeApp(FIREBASE);
     db = firebase.database();
   }catch(e){ console.warn('Firebase failed', e); }
   if(db){
     Promise.all([
-      db.ref('crewEvents').once('value').then(s=>s.val()||{}).catch(()=>({})),
+      db.ref('bookings').once('value').then(s=>s.val()||{}).catch(()=>({})),
+      db.ref('enquiries').once('value').then(s=>s.val()||{}).catch(()=>({})),
       db.ref('shotLists').once('value').then(s=>s.val()||{}).catch(()=>({})),
-      db.ref('shotMoods').once('value').then(s=>s.val()||{}).catch(()=>({}))
-    ]).then(([events,lists,moodsIn])=>{
-      crewEventsRemote = events||{};
+      db.ref('shotMoods').once('value').then(s=>s.val()||{}).catch(()=>({})),
+      db.ref('shotEventMoods').once('value').then(s=>s.val()||{}).catch(()=>({}))
+    ]).then(([bk,enq,lists,moods,eventMoods])=>{
       shotListsRemote = lists||{};
-      moods = moodsIn||{};
-      buildEventTypes();
-      buildClientOptions(events);
+      shotMoodsRemote = moods||{};
+      shotEventMoodsRemote = eventMoods||{};
+      buildClientOptions(bk,enq);
       renderShotsIfReady();
-      updateMoodCard();
-    }).catch(()=>buildClientOptions({}));
+    }).catch(()=>buildClientOptions({},{}));
   }else{
-    buildClientOptions({});
+    buildClientOptions({},{});
   }
 }
 
-function eventIsForTeam(e){
-  return !e||!e.teams||e.teams[TEAM]!==false;
-}
-
-function buildEventTypes(client){
-  const today=todayIso(),names=new Map();
-  const aliases={mehendi:'Mehndi',mehandi:'Mehndi',mehndi:'Mehndi','after party':'After Party','pre-wedding':'Pre-Wedding'};
-  Object.values(crewEventsRemote||{}).filter(e=>e&&e.date>=today&&eventIsForTeam(e)&&(!client||client==='__other__'||e.client===client)).forEach(e=>String(e.event||'').replace(/bride\s*(?:&|and)\s*groom\s+makings?/gi,'Bride Making + Groom Making').split(/\s*(?:\+|,|\/|&)\s*/).forEach(part=>{
-    const clean=part.trim().replace(/\s+/g,' ');if(!clean||clean==='—')return;
-    const name=aliases[clean.toLowerCase()]||clean.replace(/\b\w/g,c=>c.toUpperCase());
-    const key=name.toLowerCase().replace(/[^a-z0-9]+/g,'');
-    const old=names.get(key);if(!old||e.date<old.date)names.set(key,{name,date:e.date});
-  }));
-  const ordered=[...names.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name));
-  document.getElementById('eventTypes').innerHTML=ordered.map(x=>`<option value="${x.name.replace(/"/g,'&quot;')}" label="${fmtIso(x.date)}">`).join('');
-  if(client&&client!=='__other__'){
-    if(ordered.length===1)document.getElementById('fType').value=ordered[0].name;
-    const dates=Object.values(crewEventsRemote||{}).filter(e=>e&&e.client===client&&e.date>=today&&eventIsForTeam(e)).map(e=>e.date).sort();
-    if(dates.length)document.getElementById('fDate').value=dates[0];
-  }
-}
-
-function buildClientOptions(events){
+function buildClientOptions(bookings, enqs){
   const today = new Date(); today.setHours(0,0,0,0);
   const map = {}; // couple -> earliest upcoming iso
   const add = (iso, name) => {
@@ -323,36 +407,36 @@ function buildClientOptions(events){
     if(!k) return;
     if(!map[k] || iso < map[k]) map[k] = iso;
   };
-  Object.values(events||{}).forEach(x => { if(x&&eventIsForTeam(x)) add(x.date, x.client); });
+  BAKED.forEach(r => add(`2026-${p2(r[0])}-${p2(r[1])}`, r[2]));
+  Object.values(bookings||{}).forEach(b => { if(b && b.m && b.d) add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`, b.c); });
+  Object.values(enqs||{}).forEach(x => { if(x && x.status==='BOOKED') (x.dates||[]).forEach(iso => add(iso, x.name)); });
 
-  const upcoming = Object.entries(map).sort((a,b)=>a[1].localeCompare(b[1])||a[0].localeCompare(b[0]));
+  const upcoming = Object.entries(map).sort((a,b)=>a[1]<b[1]?-1:1).slice(0,3);
   const sel = document.getElementById('fClient');
   sel.innerHTML = '<option value="">Select the couple…</option>' +
     upcoming.map(([name,iso])=>`<option value="${name.replace(/"/g,'&quot;')}">${name} — from ${fmtIso(iso)}</option>`).join('') +
     '<option value="__other__">Not listed — type it in</option>';
   sel.onchange = () => {
     document.getElementById('otherWrap').style.display = sel.value==='__other__' ? 'block' : 'none';
-    buildEventTypes(sel.value);
-    renderShotsIfReady();
-    updateMoodCard();
+    renderBoards();
   };
-  document.getElementById('fClientOther').addEventListener('input', updateMoodCard);
 }
 
 function currentShots(){
-  const type = document.getElementById('fType').value.trim();
+  const type = document.getElementById('fType').value;
   if(!type) return null;
-  const key = shotListKey(type);
+  const key = eventKey(type);
   const remote = shotListsRemote && shotListsRemote[key] && shotListsRemote[key][TEAM];
   const arr = (Array.isArray(remote) && remote.length) ? remote
             : (remote && typeof remote==='object') ? Object.values(remote)
-            : [];
+            : (DEFAULT_SHOTS[key] && DEFAULT_SHOTS[key][TEAM]) || [];
   return arr;
 }
 
 function renderShotsIfReady(){
-  const type = document.getElementById('fType').value.trim();
+  const type = document.getElementById('fType').value;
   const wrap = document.getElementById('shotsWrap');
+  renderBoards();
   if(!type){ wrap.style.display='none'; items=[]; return; }
   const arr = currentShots() || [];
   items = arr.map(t => ({t, done:false}));
@@ -363,8 +447,22 @@ function renderShotsIfReady(){
   updateCount();
   wrap.style.display='block';
 }
-document.getElementById('fType').addEventListener('input', ()=>{renderShotsIfReady();updateMoodCard();});
-document.getElementById('fDate').addEventListener('change', updateMoodCard);
+document.getElementById('fType').addEventListener('change', renderShotsIfReady);
+
+function renderBoards(){
+  const wrap=document.getElementById('boardsWrap');
+  const sel=document.getElementById('fClient');
+  const client=sel.value==='__other__'?document.getElementById('fClientOther').value.trim():sel.value;
+  const type=document.getElementById('fType').value;
+  const cards=[];
+  const couple=client&&shotMoodsRemote[moodKey(client)];
+  const bk=boardKey(type), common=bk&&shotEventMoodsRemote[bk];
+  if(couple&&couple.url)cards.push({k:'Couple-specific board',n:client,u:couple.url});
+  if(common&&common.url)cards.push({k:'Common event inspiration',n:boardLabels[bk]||type,u:common.url});
+  wrap.innerHTML=cards.map(c=>`<div class="board-card"><div><div class="board-k">${c.k}</div><div class="board-n">${c.n}</div></div><a href="${String(c.u).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" target="_blank" rel="noopener">Open board</a></div>`).join('');
+  wrap.style.display=cards.length?'block':'none';
+}
+document.getElementById('fClientOther').addEventListener('input',renderBoards);
 
 function tog(i){
   items[i].done = !items[i].done;
@@ -380,7 +478,7 @@ function submitChecklist(){
   const err = document.getElementById('err');
   const selVal = document.getElementById('fClient').value;
   const client = selVal==='__other__' ? document.getElementById('fClientOther').value.trim() : selVal;
-  const type = document.getElementById('fType').value.trim();
+  const type = document.getElementById('fType').value;
   const crew = document.getElementById('fCrew').value.trim();
   const date = document.getElementById('fDate').value;
   const start = document.getElementById('fStart').value;
@@ -393,7 +491,6 @@ function submitChecklist(){
   if(!date) missing.push('event date');
   if(!start) missing.push('start time');
   if(!end) missing.push('close time');
-  if(type && !items.length) missing.push(`an exact “${type}” checklist`);
   if(missing.length){
     err.textContent = 'Still needed: ' + missing.join(', ') + '.';
     err.classList.add('show');
@@ -414,7 +511,7 @@ function submitChecklist(){
     items: items.map(x=>({t:x.t, done:!!x.done})),
     tickedCount: items.filter(x=>x.done).length,
     totalCount: items.length,
-    submittedAt: firebase.database.ServerValue.TIMESTAMP
+    submittedAt: Date.now()
   }).then(()=>{
     document.getElementById('form').style.display='none';
     document.getElementById('doneSub').textContent = `${client} · ${type} · ${fmtIso(date)} · ${items.filter(x=>x.done).length}/${items.length} shots ticked`;
