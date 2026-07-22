@@ -259,7 +259,7 @@ function detailCard(){
  const me=currentCrew(),maps=activeEvent.mapsUrl||'#';
  return `<div class="card"><div class="detail-grid">
   <div class="detail-row"><div class="ico">◷</div><div><small>Reporting time</small><b>${esc(fmtTime(me.reportTime||activeEvent.reportingTime))}</b></div></div>
-  <div class="detail-row"><div class="ico">⌁</div><div><small>Scheduled shoot start</small><b>${esc(fmtTime(activeEvent.scheduledStart))}</b></div></div>
+  <div class="detail-row"><div class="ico">⌁</div><div><small>Scheduled shoot start</small><b>${esc(fmtTime(activeEvent.functionStart||activeEvent.scheduledStart))}</b></div></div>
   ${activeEvent.functionStart?`<div class="detail-row"><div class="ico">◇</div><div><small>Event timings</small><b>${esc(eventTimingRange(activeEvent.functionStart))}</b></div></div>`:''}
   <div class="detail-row"><div class="ico">⌖</div><div><small>Venue</small><b>${esc(activeEvent.venueName||'Venue to be updated')}</b></div>${activeEvent.mapsUrl?`<a class="link-button" href="${esc(maps)}" target="_blank" rel="noopener">Directions</a>`:'<span class="status late">Maps pending</span>'}</div>
   ${activeEvent.brideReadyLocation?`<div class="detail-row"><div class="ico">B</div><div><small>Bride getting ready</small><b>${esc(activeEvent.brideReadyLocation)}</b></div></div>`:''}
