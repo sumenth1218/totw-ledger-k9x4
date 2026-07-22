@@ -71,6 +71,7 @@ h2{font-family:var(--display);font-size:29px;font-weight:600;line-height:1.05}
 .shoot-list{display:grid;gap:11px}.shoot-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;cursor:pointer;box-shadow:0 8px 28px rgba(31,27,20,.05);transition:transform .15s,border-color .15s}
 .shoot-card:active{transform:scale(.99)}.shoot-card .date{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
 .shoot-card h3{font-family:var(--display);font-size:25px;font-weight:600;margin-top:4px}.shoot-card p{font-size:12.5px;color:var(--soft);margin-top:3px}
+.completed-shoots{margin-top:28px;border-top:1px solid var(--line);padding-top:10px}.completed-shoots summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px;cursor:pointer;font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--soft)}.completed-shoots summary::-webkit-details-marker{display:none}.completed-shoots summary:after{content:'+';width:27px;height:27px;border-radius:50%;background:var(--gold-soft);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--body);font-size:17px;line-height:1;flex:none}.completed-shoots[open] summary:after{content:'−'}.completed-shoots summary span{margin-left:auto;font-family:var(--body);font-size:10px;letter-spacing:0;text-transform:none}.completed-shoots .shoot-list{padding-top:3px}.completed-shoots .shoot-card{box-shadow:none;background:rgba(255,253,248,.7)}
 .status{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:999px;margin-top:12px;background:#EEEAE2;color:var(--soft)}
 .status:before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}.status.ok{background:var(--leaf-soft);color:var(--leaf)}.status.late{background:var(--red-soft);color:var(--red)}
 .event-head{margin-bottom:18px}.event-head .back{border:0;background:none;color:var(--soft);font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:0 0 16px;cursor:pointer}
@@ -241,11 +242,15 @@ function renderDashboard(){
  const el=document.getElementById('shootList');
  const list=Object.entries(events).sort((a,b)=>(a[1].date||'9999-12-31').localeCompare(b[1].date||'9999-12-31')||assignmentMinutes(a[1])-assignmentMinutes(b[1])||String(a[1].eventName||'').localeCompare(String(b[1].eventName||'')));
  if(!list.length){el.innerHTML='<div class="card empty">No assignments have been shared with you yet.</div>';return}
- el.innerHTML=list.map(([id,e])=>{
+ const card=([id,e])=>{
    const at=attendanceMap[id]||{};
    let label='Needs confirmation',cl='';if(at.checkedOutAt){label='Completed';cl='ok'}else if(at.checkedInAt){label=at.late?'Checked in late':'Checked in';cl=at.late?'late':'ok'}else if(at.confirmedAt){label='Confirmed';cl='ok'}
    return `<article class="shoot-card" onclick="openEvent('${esc(id)}')"><div class="date">${esc(fmtDate(e.date))} · ${esc(fmtTime(assignmentTime(e)))}</div><h3>${esc(e.couple)}</h3><p>${esc(e.eventName)} · ${esc(e.venueName||'Venue')}</p><span class="status ${cl}">${label}</span></article>`;
- }).join('');
+ };
+ const active=list.filter(([id])=>!(attendanceMap[id]||{}).checkedOutAt),completed=list.filter(([id])=>(attendanceMap[id]||{}).checkedOutAt).reverse();
+ const activeHtml=active.length?active.map(card).join(''):'<div class="card empty">No active assignments.</div>';
+ const completedHtml=completed.length?`<details class="completed-shoots"><summary>Completed shoots <span>${completed.length} ${completed.length===1?'shoot':'shoots'}</span></summary><div class="shoot-list">${completed.map(card).join('')}</div></details>`:'';
+ el.innerHTML=activeHtml+completedHtml;
 }
 function showDashboard(){activeId='';activeEvent=null;history.replaceState({},'',location.pathname);renderDashboard();screen('dashboardScreen')}
 async function openEvent(id){
@@ -352,7 +357,7 @@ function completedCards(){
  let detail=`${used} card${used===1?'':'s'} used.`;
  if(attendance.cardCustody==='handed_over'||attendance.cardCustody==='handed_to_lead')detail=`${used} card${used===1?'':'s'} handed to ${esc(attendance.handedToName||'the named person')}${attendance.handoverAt?' at '+esc(fmtClock(attendance.handoverAt)):''}.`;
  else if(attendance.cardCustody==='copying_with_me'||attendance.cardCustody==='taking_with_me')detail=`${used} card${used===1?'':'s'} taken by you for copying.`;
- return `<div class="card" style="margin-top:12px;text-align:center"><div class="eyebrow">Checked out at ${esc(fmtClock(attendance.checkedOutAt))}</div><h2 style="font-size:24px">Coverage completed</h2><p class="lead" style="margin-top:7px">${esc(durationText(activeEvent.actualStartAt||attendance.checkedInAt,attendance.checkedOutAt))}</p></div><div class="card card-status"><strong>Memory-card status</strong><span>${detail}</span></div>`;
+ return `<div class="card" style="margin-top:12px;text-align:center"><div class="eyebrow">Checked out at ${esc(fmtClock(attendance.checkedOutAt))}</div><h2 style="font-size:24px">Coverage completed</h2></div><div class="card card-status"><strong>Memory-card status</strong><span>${detail}</span></div>`;
 }
 async function submitLegacyChecklist(checkedOutAt,workStartAt){
  const me=currentCrew(),team=teamType(me.role),startedAt=workStartAt||activeEvent.actualStartAt||attendance.checkedInAt;if(!startedAt||!team)return;
