@@ -196,7 +196,6 @@ function phoneDigits(v){return String(v||'').replace(/\D/g,'')}
 function waPhone(v){const n=phoneDigits(v);return n.length===10?'91'+n:n}
 function distanceM(a,b,c,d){const R=6371000,p=x=>x*Math.PI/180,dp=p(c-a),dl=p(d-b),q=Math.sin(dp/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
 function durationText(start,end){if(!start||!end)return 'Working duration will appear once the actual shoot start is confirmed.';let m=Math.max(0,Math.round((end-start)/60000)),h=Math.floor(m/60);m%=60;return `Total shoot duration: ${h?`${h} hr${h===1?'':'s'} `:''}${m} min`;}
-
 async function boot(){
  try{firebase.initializeApp(FIREBASE);auth=firebase.auth();db=firebase.database()}catch(e){screen('loginScreen');showError('loginError','Could not connect. Reload and try again.');return}
  try{await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)}catch(e){}
