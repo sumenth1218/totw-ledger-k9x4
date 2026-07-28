@@ -1,4 +1,4 @@
-TALE OF TWO WEDDINGS — CLIENT EVENT SOURCE FIX v9
+TALE OF TWO WEDDINGS — FOCUSED CLIENT FOLDERS v10
 
 UPLOAD:
 1. Unzip this package.
@@ -18,7 +18,15 @@ IMPORTANT — THESE CONTRACTS ARE PRESERVED:
 - Existing events, registrations, assignments, attendance, lists and submissions remain intact.
 - Multiple events for one couple on the same date remain separate event records.
 
-WHAT IS NEW:
+WHAT IS NEW IN v10:
+- Each client now opens as one organised folder.
+- The inside sidebar contains Overview, individual event names, Deliveries, Costs and Activity.
+- Each event has one focused page with Event Details, Studio Plan and Shoot Record.
+- Lists, boards, team readiness, check-in, checkout and card handover are attached to the event instead of competing as separate client-level tabs.
+- The client Activity view keeps important milestones quiet and chronological.
+- On mobile, the inside sidebar becomes a compact horizontal event switcher.
+
+PRESERVED FROM v9:
 - The selected private client link is now the only source of event cards inside a client workspace.
 - Dates & Enquiries and Crew Planner can still supply the client directory, but they no longer create extra timeline, Lists & Boards, or client Shoot Operations cards.
 - Matching crew shoots attach to the correct private-link event using stable link identifiers first, with a safe legacy date/name fallback.
