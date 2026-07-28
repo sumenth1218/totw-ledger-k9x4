@@ -285,10 +285,10 @@ function renderDashboard(){
  if(!list.length){el.innerHTML='<div class="card empty">No assignments have been shared with you yet.</div>';return}
  const card=([id,e])=>{
    const at=attendanceMap[id]||{};
-   const dayState=eventDayState(e.date);let label=dayState==='today'?'Ready for check-in':'Upcoming',cl='';if(at.checkedOutAt){label='Completed';cl='ok'}else if(at.checkedInAt){label='In progress';cl='ok'}else if(at.confirmedAt&&dayState==='today'){label='Ready for check-in';cl='ok'}else if(at.confirmedAt){label='Upcoming · Confirmed';cl='ok'}
+   const dayState=eventDayState(e.date);let label=dayState==='today'?'Ready for check-in':'Upcoming',cl='';if(at.checkedOutAt){label='Completed';cl='ok'}else if(at.checkedInAt){label='In progress';cl='ok'}else if(dayState==='today'){label='Ready for check-in';cl='ok'}
    return `<article class="shoot-card" onclick="openEvent('${esc(id)}')"><div class="date">${esc(fmtDate(e.date))} · ${esc(fmtTime(assignmentTime(e)))}</div><h3>${esc(e.eventName||'Event')}</h3><p>${esc(e.venueName||'Venue')}</p><span class="status ${cl}">${label}</span></article>`;
  };
- const grouped=items=>{const groups=new Map();items.forEach(item=>{const couple=String(item[1].couple||'Unnamed client').trim()||'Unnamed client',key=couple.toLowerCase();if(!groups.has(key))groups.set(key,{couple,items:[]});groups.get(key).items.push(item);});return `<div class="client-groups">${[...groups.values()].map(group=>{const dates=[...new Set(group.items.map(([,e])=>e.date).filter(Boolean))].sort(),dateLabel=!dates.length?'Dates pending':dates.length===1?fmtDate(dates[0]):`${fmtDate(dates[0])} – ${fmtDate(dates[dates.length-1])}`,confirmed=group.items.filter(([id])=>(attendanceMap[id]||{}).confirmedAt).length,inProgress=group.items.filter(([id])=>(attendanceMap[id]||{}).checkedInAt&&!(attendanceMap[id]||{}).checkedOutAt).length,summary=[`${group.items.length} ${group.items.length===1?'event':'events'}`,inProgress?`${inProgress} in progress`:'',confirmed?`${confirmed} confirmed`:''].filter(Boolean).join(' · ');return `<details class="client-group"><summary><div class="client-group-title"><div class="date">${esc(dateLabel)}</div><h3>${esc(group.couple)}</h3><p>${esc(summary)}</p></div><span class="client-group-toggle">⌄</span></summary><div class="client-events">${group.items.map(card).join('')}</div></details>`;}).join('')}</div>`;};
+ const grouped=items=>{const groups=new Map();items.forEach(item=>{const couple=String(item[1].couple||'Unnamed client').trim()||'Unnamed client',key=couple.toLowerCase();if(!groups.has(key))groups.set(key,{couple,items:[]});groups.get(key).items.push(item);});return `<div class="client-groups">${[...groups.values()].map(group=>{const dates=[...new Set(group.items.map(([,e])=>e.date).filter(Boolean))].sort(),dateLabel=!dates.length?'Dates pending':dates.length===1?fmtDate(dates[0]):`${fmtDate(dates[0])} – ${fmtDate(dates[dates.length-1])}`,inProgress=group.items.filter(([id])=>(attendanceMap[id]||{}).checkedInAt&&!(attendanceMap[id]||{}).checkedOutAt).length,summary=[`${group.items.length} ${group.items.length===1?'event':'events'}`,inProgress?`${inProgress} in progress`:''].filter(Boolean).join(' · ');return `<details class="client-group"><summary><div class="client-group-title"><div class="date">${esc(dateLabel)}</div><h3>${esc(group.couple)}</h3><p>${esc(summary)}</p></div><span class="client-group-toggle">⌄</span></summary><div class="client-events">${group.items.map(card).join('')}</div></details>`;}).join('')}</div>`;};
  const active=list.filter(([id])=>!(attendanceMap[id]||{}).checkedOutAt),completed=list.filter(([id])=>(attendanceMap[id]||{}).checkedOutAt).reverse();
  const activeHtml=active.length?grouped(active):'<div class="card empty">No active assignments.</div>';
  const completedHtml=completed.length?`<details class="completed-shoots"><summary>Completed shoots <span>${completed.length} ${completed.length===1?'shoot':'shoots'}</span></summary>${grouped(completed)}</details>`:'';
@@ -329,15 +329,12 @@ function contactDetails(){
 function renderEvent(){
  const out=document.getElementById('eventBody');
  let html='';
- if(!attendance.confirmedAt){
-   html=detailCard()+assignmentCards();
-   html+=`<div class="action-stack"><button class="primary" onclick="confirmAssignment()">Confirm Assignment</button></div><p class="confirm-note">Confirm that you have seen the arrival time and venue.</p>`;
- }else if(!attendance.checkedInAt){
+ if(!attendance.checkedInAt){
    html=detailCard()+assignmentCards();const hasLocation=!!activeEvent.mapsUrl;
    const dayState=eventDayState(activeEvent.date);
-   if(dayState==='today')html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" id="checkBtn" ${hasLocation?'onclick="checkIn()"':'disabled'}>${hasLocation?'Check In':'Maps link pending'}</button></div>${hasLocation?'':'<p class="confirm-note">Tale of Two will update the venue link before check-in.</p>'}`;
-   else if(dayState==='upcoming')html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" disabled>Check In available on ${esc(fmtDate(activeEvent.date))}</button></div>`;
-   else html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" disabled>Event date has passed</button></div>`;
+   if(dayState==='today')html+=`<div class="action-stack"><button class="primary" id="checkBtn" ${hasLocation?'onclick="checkIn()"':'disabled'}>${hasLocation?'Check In':'Maps link pending'}</button></div>${hasLocation?'':'<p class="confirm-note">Tale of Two will update the venue link before check-in.</p>'}`;
+   else if(dayState==='upcoming')html+=`<div class="action-stack"><button class="primary" disabled>Check In available on ${esc(fmtDate(activeEvent.date))}</button></div><p class="confirm-note">Your assignment is ready. Check in on the shoot day.</p>`;
+   else html+=`<div class="action-stack"><button class="primary" disabled>Event date has passed</button></div>`;
    html+=lockedResources();
  }else if(!attendance.checkedOutAt){
    html=resources()+contactDetails();

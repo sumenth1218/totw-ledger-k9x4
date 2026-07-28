@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.1-recovery-2026-07-28">
+<meta name="totw-build" content="v12.2-workflow-2026-07-28">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1248,7 +1248,7 @@ body.cw10-client-mode .vtabs{margin-top:14px}
   <button id="vtPlan" onclick="setView('plan')">Crew Planner</button>
   <button id="vtCheckins" onclick="setView('shoots')">Shoot Operations</button>
   <button id="vtDeliveries" onclick="setView('deliverables')">Deliverables</button>
-  <button id="vtProd" onclick="setView('business')">Business</button>
+  <button id="vtProd" onclick="setView('business')" style="display:none" aria-hidden="true">Business</button>
   <button id="vtShots" onclick="setView('settings')">Settings</button>
 </div>
 
@@ -1576,7 +1576,7 @@ body.cw10-client-mode .vtabs{margin-top:14px}
 <div id="tabCheckins" style="display:none">
  <div class="ci-wrap">
   <div class="ci-head">
-    <div><h2>Shoot Operations</h2><p>Prepare each event, assign its team and resources, then track confirmations, arrival, checkout and card handover here.</p></div>
+    <div><h2>Shoot Operations</h2><p>Prepare each event, assign or edit its team, send a day-before WhatsApp reminder, then track arrival, checkout and card handover here.</p></div>
     <div class="ci-actions"><button class="btn-mini" onclick="copyCrewRegistrationLink()">Copy crew registration link</button><button class="btn-mini" onclick="openCrewProfiles()">Registered crew</button><button class="btn-mini" onclick="toggleCheckinForm(true)">+ New shoot</button></div>
   </div>
   <div class="ci-note" id="ciTomorrowNote" style="display:none"></div>
@@ -2818,11 +2818,12 @@ function calendarCoupleMap(){
 /* ---- view tabs ---- */
 function setView(v){
   v=({clientforms:'clients',prod:'business',shots:'settings',checkins:'shoots'})[v]||v;
+  if(v==='business'&&!openProdId)v='deliverables';
   const led=document.getElementById('tabLedger'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots'),ci=document.getElementById('tabCheckins'),cf=document.getElementById('tabClientForms'),dl=document.getElementById('tabDeliverables');
   if(!led||!pr||!pl||!sh||!ci||!cf||!dl)return;
   document.getElementById('vtEnq').classList.toggle('on',v==='ledger');
   document.getElementById('vtPlan').classList.toggle('on',v==='plan');
-  document.getElementById('vtProd').classList.toggle('on',v==='business');
+  document.getElementById('vtProd').classList.toggle('on',false);
   document.getElementById('vtShots').classList.toggle('on',v==='settings');
   document.getElementById('vtCheckins').classList.toggle('on',v==='shoots');
   document.getElementById('vtClientForms').classList.toggle('on',v==='clients');
@@ -2834,7 +2835,7 @@ function setView(v){
   ci.style.display=v==='shoots'?'':'none';
   cf.style.display=v==='clients'?'':'none';
   dl.style.display=v==='deliverables'?'':'none';
-  const titles={ledger:'Dates <em>&amp;</em> Enquiries',clients:'Clients',plan:'Crew <em>Planner</em>',settings:'Studio <em>Settings</em>',shoots:'Shoot <em>Operations</em>',deliverables:'Delivery <em>Overview</em>',business:'Business <em>Overview</em>'};
+  const titles={ledger:'Dates <em>&amp;</em> Enquiries',clients:'Clients',plan:'Crew <em>Planner</em>',settings:'Studio <em>Settings</em>',shoots:'Shoot <em>Operations</em>',deliverables:'Delivery <em>Overview</em>',business:'Production <em>detail</em>'};
   const pageTitle=document.getElementById('pageTitle'),calendarYearTabs=document.getElementById('calendarYearTabs'),calendarLegend=document.getElementById('calendarLegend');
   if(pageTitle)pageTitle.innerHTML=titles[v]||titles.ledger;
   document.body.classList.toggle('cw10-client-mode',v==='clients');
@@ -2849,7 +2850,7 @@ function setView(v){
   if(v==='clients'){renderClientForms();}
   if(v==='deliverables'){renderGlobalDeliverables();}
 }
-function restoreView(){setView(localStorage.getItem('totw_view')||'ledger');}
+function restoreView(){const v=localStorage.getItem('totw_view')||'ledger';setView(v==='business'?'deliverables':v);}
 
 /* ---- creation ---- */
 function toggleProdNew(){
@@ -4333,6 +4334,11 @@ const ciTodayIso=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return `
 function cwKey(name){
   return String(name||'').trim().toLowerCase().replace(/\band\b/g,'&').replace(/\s*&\s*/g,' & ').replace(/\s+/g,' ');
 }
+function cwFormByCoupleName(couple){
+  const who=cwKey(couple);
+  if(!who)return null;
+  return Object.entries(clientForms||{}).find(([,f])=>f&&cwKey(f.couple)===who)||null;
+}
 function cwEventPartKeys(value){
   const parts=eventTypeParts(value),source=parts.length?parts:[String(value||'')],aliases={
     mehendi:'mehndi',mehandi:'mehndi',mehndi:'mehndi',sangeeth:'sangeet'
@@ -4355,29 +4361,49 @@ function cwDirectory(){
   };
   Object.entries(clientForms||{}).forEach(([id,f])=>{if(f)ensureForm(id,f);});
   const attachShoot=(shootId,e)=>{
-    const formId=e.clientFormId;
-    if(formId&&clientForms[formId]){
-      const row=ensureForm(formId,clientForms[formId]);
+    if(!e)return;
+    const attachToForm=(formId)=>{
+      const f=clientForms[formId];if(!f)return;
+      const row=ensureForm(formId,f);
       if(row&&!row.shootIds.includes(shootId)){row.shootIds.push(shootId);addDate(row,e.date);}
-      return;
-    }
+    };
+    if(e.clientFormId&&clientForms[e.clientFormId]){attachToForm(e.clientFormId);return;}
     const refs=Array.isArray(e.linkedEvents)?e.linkedEvents:Object.values(e.linkedEvents||{});
-    refs.forEach(r=>{
-      if(!r||!r.formId||!clientForms[r.formId])return;
-      const row=ensureForm(r.formId,clientForms[r.formId]);
-      if(row&&!row.shootIds.includes(shootId)){row.shootIds.push(shootId);addDate(row,e.date);}
-    });
+    let linked=false;
+    refs.forEach(r=>{if(r&&r.formId&&clientForms[r.formId]){attachToForm(r.formId);linked=true;}});
+    if(linked)return;
+    const legacy=cwFormByCoupleName(e.couple);
+    if(legacy)attachToForm(legacy[0]);
   };
   Object.entries(checkinEvents||{}).forEach(([id,e])=>{if(e)attachShoot(id,e);});
   Object.entries(prods||{}).forEach(([id,p])=>{
     if(!p)return;
-    const row=map.get(cwKey(p.couple));
+    let row=map.get(cwKey(p.couple));
+    if(!row||!row.formIds.length){
+      const legacy=cwFormByCoupleName(p.couple);
+      if(legacy)row=ensureForm(legacy[0],legacy[1]);
+    }
+    if(!row||!row.formIds.length){
+      const prodDates=(p.days||[]).map(d=>d&&d.date).filter(Boolean);
+      Object.entries(clientForms||{}).some(([formId,f])=>{
+        if(!f)return false;
+        const formDates=Object.values(f.events||{}).map(e=>e&&e.date).filter(Boolean);
+        if(!prodDates.some(date=>formDates.includes(date)))return false;
+        row=ensureForm(formId,f);
+        return true;
+      });
+    }
     if(!row||!row.formIds.length)return;
-    row.prodIds.push(id);(p.days||[]).forEach(d=>addDate(row,d&&d.date));
+    if(!row.prodIds.includes(id))row.prodIds.push(id);
+    (p.days||[]).forEach(d=>addDate(row,d&&d.date));
   });
   Object.entries(shotSubs||{}).forEach(([id,s])=>{
     if(!s)return;
-    const row=map.get(cwKey(s.client));
+    let row=map.get(cwKey(s.client));
+    if(!row||!row.formIds.length){
+      const legacy=cwFormByCoupleName(s.client);
+      if(legacy)row=ensureForm(legacy[0],legacy[1]);
+    }
     if(!row||!row.formIds.length)return;
     row.submissionIds.push(id);addDate(row,s.eventDate);
   });
@@ -4410,22 +4436,29 @@ function cwShootExactLink(e,formId,eventId){
   return refs.some(r=>r&&r.eventId===eventId&&(!r.formId||r.formId===formId))||
     !!(e&&e.clientEventId===eventId&&(!e.clientFormId||e.clientFormId===formId));
 }
+function cwShootMatchesFormEvent(e,formId,eventId,formEvent,form){
+  if(cwShootExactLink(e,formId,eventId))return true;
+  if(!e||!formEvent||!form||e.date!==formEvent.date)return false;
+  if(cwKey(e.couple)!==cwKey(form.couple))return false;
+  const wanted=cwEventPartKeys(formEvent.name),available=new Set(ciEventNames(e).flatMap(cwEventPartKeys));
+  return !!wanted.length&&wanted.every(key=>available.has(key));
+}
 function cwRelevantShoots(entry,formRow){
   if(!formRow)return [];
-  const [formId,form]=formRow,eventIds=Object.keys(form&&form.events||{}),result=[],used=new Set();
-  (entry.shootIds||[]).map(id=>[id,checkinEvents[id]]).filter(([,e])=>!!e).forEach(row=>{
-    if(eventIds.some(eventId=>cwShootExactLink(row[1],formId,eventId))&&!used.has(row[0])){used.add(row[0]);result.push(row);}
-  });
-  return result;
+  const [formId,form]=formRow,formEvents=Object.entries(form&&form.events||{});
+  return (entry.shootIds||[]).map(id=>[id,checkinEvents[id]]).filter(([,e])=>
+    !!e&&formEvents.some(([eventId,formEvent])=>cwShootMatchesFormEvent(e,formId,eventId,formEvent,form))
+  );
 }
-function cwFindShootForFormEvent(shoots,formId,eventId){
-  return shoots.find(([,e])=>cwShootExactLink(e,formId,eventId))||null;
+function cwFindShootForFormEvent(shoots,formId,eventId,formEvent,form){
+  return shoots.find(([,e])=>cwShootExactLink(e,formId,eventId))||
+    shoots.find(([,e])=>cwShootMatchesFormEvent(e,formId,eventId,formEvent,form))||null;
 }
 function cwUnifiedEvents(entry,formRow=cwPrimaryForm(entry),shoots=null){
   if(!formRow)return [];
   const [formId,form]=formRow,s=clientSubmissions[formId]||{},linkedShoots=shoots||cwRelevantShoots(entry,formRow);
   return Object.entries(form.events||{}).map(([eventId,e])=>{
-    const shootRow=cwFindShootForFormEvent(linkedShoots,formId,eventId,e);
+    const shootRow=cwFindShootForFormEvent(linkedShoots,formId,eventId,e,form);
     return {
       name:String(e.name||'Event').trim()||'Event',
       date:e.date,
@@ -4870,7 +4903,7 @@ async function saveCheckinEvent(){
   const updates={},published=!event.planningOnly;updates[`crewCheckins/events/${id}`]=event;Object.keys(old.crew||{}).forEach(uid=>{if(!crew[uid])updates[`crewCheckins/assignments/${uid}/${id}`]=null;});Object.keys(crew).forEach(uid=>updates[`crewCheckins/assignments/${uid}/${id}`]=published?true:null);
   try{await db.ref().update(updates);checkinEvents[id]=event;log(`${old.couple?'updated':'created'} crew check-in event: ${couple} — ${eventName}`);toast(event.planningOnly?'Internal planning draft saved. Client approval is still required before sharing.':mapsUrl?'Event link ready.':'Event saved — remember to add the Maps link.');toggleCheckinForm(false);if(!event.planningOnly)setTimeout(()=>shareCheckinEvent(id,false),120);}catch(e){res.className='check-result show clash';res.innerHTML='<b>Could not save</b>Please try again.';}
 }
-function eventShareText(id){const e=checkinEvents[id];if(!e)return '';return `Hi team, sharing tomorrow’s shoot details.\n\n${e.couple} — ${e.eventName}\nReporting time: ${ciFmtTime(e.reportingTime)}\nScheduled shoot start: ${ciFmtTime(e.functionStart||e.scheduledStart)}\nVenue: ${e.venueName||'Open the link for directions'}\n\nPlease open the link and confirm your assignment:\n${ciCrewUrl(id)}`;}
+function eventShareText(id){const e=checkinEvents[id];if(!e)return '';return `Hi team — reminder for tomorrow’s shoot.\n\n${e.couple} — ${e.eventName}\nReporting time: ${ciFmtTime(e.reportingTime)}\nScheduled shoot start: ${ciFmtTime(e.functionStart||e.scheduledStart)}\nVenue: ${e.venueName||'Open the link for directions'}\n\nShoot link:\n${ciCrewUrl(id)}`;}
 function ciEventNames(e){const raw=e&&e.eventNames,a=Array.isArray(raw)?raw:(raw&&typeof raw==='object'?Object.values(raw):[]);return a.length?a:[e&&(e.eventName||e.checklistType)||'Event'];}
 function shareCheckinEvent(id,open=true){
   const e=checkinEvents[id];if(e&&e.planningOnly){toast('Approve this client event before sharing it with crew.');return;}
@@ -4879,7 +4912,7 @@ function shareCheckinEvent(id,open=true){
 function copyCheckinLink(id){const e=checkinEvents[id];if(e&&e.planningOnly){toast('Approve this client event before copying its crew link.');return;}copyText(ciCrewUrl(id),'Event link copied.');}
 async function deleteCheckinEvent(id){
   const e=checkinEvents[id];if(!e)return;
-  if(!confirm(`Permanently delete ${e.couple} — ${e.eventName}?\n\nThis removes the shoot link, assignments, confirmations, GPS check-ins, working hours and linked checklist submissions.`))return;
+  if(!confirm(`Permanently delete ${e.couple} — ${e.eventName}?\n\nThis removes the shoot link, assignments, GPS check-ins, working hours and linked checklist submissions.`))return;
   const updates={};updates[`crewCheckins/events/${id}`]=null;
   const uids=new Set([...Object.keys(e.crew||{}),...Object.keys(checkinAttendance[id]||{})]);
   uids.forEach(uid=>{updates[`crewCheckins/assignments/${uid}/${id}`]=null;updates[`crewCheckins/attendance/${id}/${uid}`]=null;updates[`shotChecklists/ci_${id}_${uid}`]=null;ciEventNames(e).forEach(name=>updates[`shotChecklists/ci_${id}_${uid}_${shotListKey(name)}`]=null);});
@@ -4888,14 +4921,15 @@ async function deleteCheckinEvent(id){
 function ciTimeValue(ms){if(!ms)return '';const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${p(d.getHours())}:${p(d.getMinutes())}`;}
 function ciStartNow(id){const input=document.getElementById('ciStart_'+id);if(input)input.value=ciTimeValue(Date.now());saveActualStart(id);}
 async function saveActualStart(id){
-  const input=document.getElementById('ciStart_'+id),v=input&&input.value,e=checkinEvents[id];if(e&&e.planningOnly){toast('Approve this client event before starting the crew workflow.');return;}const ms=v&&e&&e.date?new Date(`${e.date}T${v}`).getTime():null;if(!ms){toast('Enter the actual shoot start time.');return;}try{await db.ref(`crewCheckins/events/${id}/actualStartAt`).set(ms);await db.ref(`crewCheckins/events/${id}/updatedAt`).set(Date.now());if(checkinEvents[id])checkinEvents[id].actualStartAt=ms;toast('Actual shoot start saved.');setTimeout(()=>syncCheckinSubmissions(id),250);}catch(e){toast('Could not save the shoot start.');}
+  const input=document.getElementById('ciStart_'+id),v=input&&input.value,e=checkinEvents[id];if(e&&e.planningOnly){toast('Approve this client event before starting the crew workflow.');return;}const ms=v&&e&&e.date?new Date(`${e.date}T${v}`).getTime():null;if(!ms){toast('Enter the actual shoot start time, or tap Skip.');return;}try{await db.ref(`crewCheckins/events/${id}/actualStartAt`).set(ms);await db.ref(`crewCheckins/events/${id}/updatedAt`).set(Date.now());if(checkinEvents[id])checkinEvents[id].actualStartAt=ms;ciActualStartSkipped.delete(id);toast('Actual shoot start saved.');setTimeout(()=>syncCheckinSubmissions(id),250);renderCheckinEvents();}catch(e){toast('Could not save the shoot start.');}
 }
 async function syncCheckinSubmissions(id){
   const e=checkinEvents[id],all=checkinAttendance[id]||{};if(!e||!e.actualStartAt)return;
   const tm=ms=>{const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${p(d.getHours())}:${p(d.getMinutes())}`;};
   const updates={};Object.entries(all).forEach(([uid,a])=>{const c=e.crew&&e.crew[uid],team=c&&ciTeamType(c.role);if(!c||!a.checkedOutAt||!team)return;const sections=a.checklistSections&&typeof a.checklistSections==='object'?a.checklistSections:{},legacy=Array.isArray(a.checklistItems)?a.checklistItems:Object.values(a.checklistItems||{});if(Object.keys(sections).length)Object.entries(sections).forEach(([key,section])=>{const its=Array.isArray(section)?section:Object.values(section&&section.items||section||{}),name=section&&section.name||ciEventNames(e).find(x=>shotListKey(x)===key)||key;if(!its.length)return;updates[`shotChecklists/ci_${id}_${uid}_${key}`]={client:e.couple,eventType:name,eventDate:e.date,team,crewName:c.name,startTime:tm(e.actualStartAt),endTime:tm(a.checkedOutAt),items:its.map(x=>({t:x.t,done:!!x.done})),tickedCount:its.filter(x=>x&&x.done).length,totalCount:its.length,submittedAt:Date.now(),crewEventId:id};});else if(legacy.length){const name=ciEventNames(e)[0];updates[`shotChecklists/ci_${id}_${uid}`]={client:e.couple,eventType:name,eventDate:e.date,team,crewName:c.name,startTime:tm(e.actualStartAt),endTime:tm(a.checkedOutAt),items:legacy.map(x=>({t:x.t,done:!!x.done})),tickedCount:legacy.filter(x=>x&&x.done).length,totalCount:legacy.length,submittedAt:Date.now(),crewEventId:id};}});if(Object.keys(updates).length)await db.ref().update(updates);
 }
-let ciEventCardsOpen=new Set(),ciCoupleGroupsOpen=new Set(),ciCoupleGroupEvents=new Map(),ciCompletedOpen=false;
+let ciEventCardsOpen=new Set(),ciCoupleGroupsOpen=new Set(),ciCoupleGroupEvents=new Map(),ciCompletedOpen=false,ciActualStartSkipped=new Set();
+async function skipActualStart(id){ciActualStartSkipped.add(id);renderCheckinEvents();}
 function toggleCiEventCard(id){const card=document.getElementById('ciEventCard_'+id);if(!card)return;const opening=card.classList.contains('collapsed');card.classList.toggle('collapsed',!opening);card.querySelector('.ci-event-head')?.setAttribute('aria-expanded',opening?'true':'false');opening?ciEventCardsOpen.add(id):ciEventCardsOpen.delete(id);}
 function toggleCiCoupleGroup(id){const group=document.getElementById('ciCoupleGroup_'+id);if(!group)return;const opening=!group.classList.contains('open');group.classList.toggle('open',opening);group.querySelector('.ci-couple-head')?.setAttribute('aria-expanded',opening?'true':'false');if(opening){ciCoupleGroupsOpen.add(id);}else{ciCoupleGroupsOpen.delete(id);(ciCoupleGroupEvents.get(id)||[]).forEach(eventId=>{ciEventCardsOpen.delete(eventId);const card=document.getElementById('ciEventCard_'+eventId);if(card){card.classList.add('collapsed');card.querySelector('.ci-event-head')?.setAttribute('aria-expanded','false');}});}}
 function toggleCiCompleted(){ciCompletedOpen=!ciCompletedOpen;renderCheckinEvents();}
@@ -4925,8 +4959,8 @@ function ciShotListOptions(e,eventName,team){
   return html;
 }
 function ciResourceEditor(id,e,names){
-  const rows=names.map(name=>{const key=shotListKey(name),a=ciResourceAssignment(e,name);return `<div class="ci-resource-row" data-event-key="${esc(key)}" data-event-name="${esc(name)}"><b>${esc(name)}</b><div class="ci-resource-field"><label>Candid shot list</label><select data-team="candid">${ciShotListOptions(e,name,'candid')}</select></div><div class="ci-resource-field"><label>Traditional shot list</label><select data-team="traditional">${ciShotListOptions(e,name,'traditional')}</select></div><div class="ci-resource-field"><label>Event mood board</label><input data-board type="url" value="${esc(a.pinterestUrl||'')}" placeholder="Paste event Pinterest link"></div><div class="ci-resource-field"><label>Portrait mood board <small>Optional</small></label><input data-portrait-board type="url" value="${esc(a.portraitMoodUrl||'')}" placeholder="Paste portrait-board link"></div><div class="ci-resource-field"><label>Other mood board <small>Optional</small></label><input data-other-board type="url" value="${esc(a.otherMoodUrl||'')}" placeholder="Paste another reference link"></div></div>`;}).join('');
-  return `<div class="ci-resource-admin" id="ciResources_${id}"><label>Shoot preparation</label><p>Candid and Traditional lists are assigned separately. Event, portrait and other mood boards are shown only to the Candid team.</p>${rows}<div class="ci-resource-actions"><button class="btn-mini" onclick="saveCiResources('${id}')">Save shoot resources</button></div></div>`;
+  const rows=names.map(name=>{const key=shotListKey(name),a=ciResourceAssignment(e,name),common=shotEventMoods[eventBoardKey(name)],candidReady=ciListExists(name,'candid'),tradReady=ciListExists(name,'traditional');return `<div class="ci-resource-row" data-event-key="${esc(key)}" data-event-name="${esc(name)}"><b>${esc(name)}</b><div class="ci-resource-field" style="grid-column:1/-1"><small style="color:#8B857D">Shot lists: ${candidReady?'Candid ready':'Candid pending'} · ${tradReady?'Traditional ready':'Traditional pending'} — manage in Settings</small></div><div class="ci-resource-field" style="grid-column:1/-1"><label>Optional Pinterest board for this event</label><input data-board type="url" value="${esc(a.pinterestUrl||'')}" placeholder="Paste event Pinterest link (optional)"><small style="color:#8B857D">${common&&common.url&&common.active!==false?'A common board also exists in Settings for this event type.':''}</small></div><input data-portrait-board type="hidden" value="${esc(a.portraitMoodUrl||'')}"><input data-other-board type="hidden" value="${esc(a.otherMoodUrl||'')}"><input data-team="candid" type="hidden" value="${esc(a.candidListKey||'')}"><input data-team="traditional" type="hidden" value="${esc(a.traditionalListKey||'')}"></div>`;}).join('');
+  return `<div class="ci-resource-admin" id="ciResources_${id}"><label>Event board</label><p>Shot lists live in Settings and connect by event name. Add an optional Pinterest board here for this shoot only.</p>${rows}<div class="ci-resource-actions"><button class="btn-mini" onclick="saveCiResources('${id}')">Save event board</button><button class="btn-mini" onclick="setView('settings')">Open Settings</button></div></div>`;
 }
 function ciInlineCrewEditor(id,e){
   const assigned=Object.entries(e.crew||{}),requirements=ciRequirementsForEvent(e),summary=ciRequirementSummary(e.crew||{},requirements);
@@ -5057,7 +5091,10 @@ function ciAssignmentEventHtml(eventId,index){
 function renderCiAssignmentBoard(){
   if(!ciAssignmentState)return;const byDate=new Map();ciAssignmentState.eventIds.forEach(id=>{const date=checkinEvents[id].date||'Date pending';if(!byDate.has(date))byDate.set(date,[]);byDate.get(date).push(id);});
   const events=document.getElementById('ciAssignmentEvents');events.innerHTML=[...byDate.entries()].map(([date,ids])=>`<section class="ci-assignment-date"><h3>${date==='Date pending'?date:esc(ciDateLong(date))}</h3>${ids.map(id=>ciAssignmentEventHtml(id,ciAssignmentState.eventIds.indexOf(id))).join('')}</section>`).join('');
-  document.getElementById('ciAssignmentTitle').textContent=ciAssignmentState.couple;renderCiAssignmentCrew();renderCiAssignmentSummary();
+  document.getElementById('ciAssignmentTitle').textContent=ciAssignmentState.couple;
+  const hasCrew=ciAssignmentState.eventIds.some(id=>Object.keys(ciAssignmentState.events[id].crew||{}).length);
+  document.querySelector('#ciAssignmentModal .ci-assignment-title small').textContent=hasCrew?'Wedding-level team workspace · Edit team':'Wedding-level team workspace · Assign team';
+  renderCiAssignmentCrew();renderCiAssignmentSummary();
 }
 function renderCiAssignmentSummary(){
   if(!ciAssignmentState)return;let required=0,filled=0,assigned=0,dirty=0;ciAssignmentState.eventIds.forEach(id=>{const d=ciAssignmentState.events[id],s=ciRequirementSummary(d.crew,d.requirements);required+=s.required;filled+=s.filled;assigned+=s.assigned;if(d.dirty)dirty++;});
@@ -5136,36 +5173,45 @@ document.getElementById('ciAssignmentModal')?.addEventListener('touchend',e=>{if
 
 async function saveCiResources(id){
   const e=checkinEvents[id],box=document.getElementById('ciResources_'+id);if(!e||!box)return;
-  const assignments={};let invalid=false;
-  box.querySelectorAll('.ci-resource-row').forEach(row=>{const key=row.dataset.eventKey,name=row.dataset.eventName,board=row.querySelector('[data-board]').value.trim(),portraitBoard=row.querySelector('[data-portrait-board]').value.trim(),otherBoard=row.querySelector('[data-other-board]').value.trim();if([board,portraitBoard,otherBoard].some(url=>url&&!/^https?:\/\//i.test(url)))invalid=true;assignments[key]={eventName:name,candidListKey:row.querySelector('[data-team="candid"]').value||null,traditionalListKey:row.querySelector('[data-team="traditional"]').value||null,pinterestUrl:board||null,portraitMoodUrl:portraitBoard||null,otherMoodUrl:otherBoard||null};});
-  if(invalid){toast('Every mood-board link must start with https://');return;}
-  try{await db.ref(`crewCheckins/events/${id}/resourceAssignments`).set(assignments);if(checkinEvents[id])checkinEvents[id].resourceAssignments=assignments;toast('Shot lists and mood boards saved.');log(`updated shoot resources: ${e.couple} — ${e.eventName}`);}catch(err){toast('Could not save the shoot resources. Try again.');}
+  const previous=e.resourceAssignments&&typeof e.resourceAssignments==='object'?e.resourceAssignments:{},assignments={};let invalid=false;
+  box.querySelectorAll('.ci-resource-row').forEach(row=>{
+    const key=row.dataset.eventKey,name=row.dataset.eventName,board=(row.querySelector('[data-board]')?.value||'').trim(),portraitBoard=(row.querySelector('[data-portrait-board]')?.value||'').trim(),otherBoard=(row.querySelector('[data-other-board]')?.value||'').trim(),old=previous[key]||{};
+    if(board&&!/^https?:\/\//i.test(board))invalid=true;
+    assignments[key]={eventName:name,candidListKey:row.querySelector('[data-team="candid"]')?.value||old.candidListKey||null,traditionalListKey:row.querySelector('[data-team="traditional"]')?.value||old.traditionalListKey||null,pinterestUrl:board||null,portraitMoodUrl:portraitBoard||old.portraitMoodUrl||null,otherMoodUrl:otherBoard||old.otherMoodUrl||null};
+  });
+  if(invalid){toast('Pinterest links must start with https://');return;}
+  try{await db.ref(`crewCheckins/events/${id}/resourceAssignments`).set(assignments);if(checkinEvents[id])checkinEvents[id].resourceAssignments=assignments;toast('Event board saved.');log(`updated shoot resources: ${e.couple} — ${e.eventName}`);renderCheckinEvents();}catch(err){toast('Could not save the event board. Try again.');}
 }
 function renderCheckinEvents(){
   const el=document.getElementById('ciEventList');if(!el)return;renderCheckinFormOptions();
   const list=Object.entries(checkinEvents||{}).filter(([,e])=>e&&typeof e==='object').sort((a,b)=>`${a[1].date||''} ${a[1].scheduledStart||''}`.localeCompare(`${b[1].date||''} ${b[1].scheduledStart||''}`));
   const isComplete=([id,e])=>{const crew=Object.keys(e.crew||{}),all=checkinAttendance[id]||{};return !!(e.completedAt||e.status==='completed'||crew.length>0&&crew.every(uid=>all[uid]&&all[uid].checkedOutAt));};
   const tomorrow=new Date();tomorrow.setHours(0,0,0,0);tomorrow.setDate(tomorrow.getDate()+1);const p=n=>String(n).padStart(2,'0'),tomorrowIso=`${tomorrow.getFullYear()}-${p(tomorrow.getMonth()+1)}-${p(tomorrow.getDate())}`;
-  const shareDue=list.filter(entry=>{const[id,e]=entry,crew=Object.keys(e.crew||{}),all=checkinAttendance[id]||{};if(e.planningOnly||e.date!==tomorrowIso||!crew.length||isComplete(entry))return false;if(crew.some(uid=>all[uid]&&(all[uid].checkedInAt||all[uid].checkedOutAt)))return false;return crew.some(uid=>!(all[uid]&&all[uid].confirmedAt));});
-  const note=document.getElementById('ciTomorrowNote');if(note){note.style.display=shareDue.length?'':'none';note.innerHTML=shareDue.length?`<b>Needs sharing tomorrow:</b> ${shareDue.map(([id,e])=>`${esc(e.couple)} — ${esc(e.eventName)} <button class="btn-mini" style="margin-left:6px" onclick="shareCheckinEvent('${id}')">Share with team</button>`).join(' · ')}`:'';}
+  const shareDue=list.filter(entry=>{const[id,e]=entry,crew=Object.keys(e.crew||{}),all=checkinAttendance[id]||{};if(e.planningOnly||e.date!==tomorrowIso||!crew.length||isComplete(entry))return false;if(crew.some(uid=>all[uid]&&(all[uid].checkedInAt||all[uid].checkedOutAt)))return false;return true;});
+  const note=document.getElementById('ciTomorrowNote');if(note){note.style.display=shareDue.length?'':'none';note.innerHTML=shareDue.length?`<b>Day-before reminder:</b> ${shareDue.map(([id,e])=>`${esc(e.couple)} — ${esc(e.eventName)} <button class="btn-mini" style="margin-left:6px" onclick="shareCheckinEvent('${id}',true)">WhatsApp reminder</button>`).join(' · ')}`:'';}
   if(!list.length){el.innerHTML='<div class="empty">No crew shoots yet.</div>';return;}
   const active=list.filter(x=>!isComplete(x)),completed=list.filter(isComplete).reverse();
   const eventCard=([id,e],completedShoot=false,insideGroup=false)=>{
-    const all=checkinAttendance[id]||{},crew=Object.entries(e.crew||{}),confirmed=crew.filter(([uid])=>all[uid]&&all[uid].confirmedAt).length,checked=crew.filter(([uid])=>all[uid]&&all[uid].checkedInAt).length,checkedOut=crew.filter(([uid])=>all[uid]&&all[uid].checkedOutAt).length,late=crew.filter(([uid])=>all[uid]&&all[uid].late).length;
+    const all=checkinAttendance[id]||{},crew=Object.entries(e.crew||{}),checked=crew.filter(([uid])=>all[uid]&&all[uid].checkedInAt).length,checkedOut=crew.filter(([uid])=>all[uid]&&all[uid].checkedOutAt).length,late=crew.filter(([uid])=>all[uid]&&all[uid].late).length;
     const staffing=ciRequirementSummary(e.crew||{},ciRequirementsForEvent(e));
-    const rows=crew.map(([uid,c])=>{const a=all[uid]||{};let lab='Upcoming',cl='';if(a.checkedOutAt){lab='Completed';cl='ok'}else if(a.checkedInAt){lab='In progress';cl='ok'}else if(a.confirmedAt){lab='Ready';cl='ok'}const time=a.checkedInAt?`In ${ciClock(a.checkedInAt)}${a.checkedOutAt?' · Out '+ciClock(a.checkedOutAt):''}`:`Arrival ${ciFmtTime(c.arrivalTime||c.reportTime||e.reportingTime)}`;if(completedShoot){const used=a.cardsUsed==null?'—':Number(a.cardsUsed)||0,custody=(a.cardCustody==='handed_over'||a.cardCustody==='handed_to_lead')?`Handed to ${a.handedToName||'named person'}`:(a.cardCustody==='copying_with_me'||a.cardCustody==='taking_with_me')?'With crew member for copying':'Handover not recorded',nextEvent=a.continuingToNextShoot&&a.nextShootEventId&&checkinEvents[a.nextShootEventId],continuing=nextEvent?` · Continuing to ${nextEvent.eventName||'next shoot'}`:'';return `<div class="ci-row"><div><b>${esc(c.name)} — ${esc(ciRoleCode(c.role))} · ${esc(used)} card${used===1?'':'s'}</b><small>${esc(custody+continuing)}</small></div><div class="ci-row-time">${esc(time)}<div class="ci-hours">${esc(ciDuration(e.actualStartAt||a.checkedInAt,a.checkedOutAt))}</div></div><span class="ci-badge ok">Completed</span></div>`;}return `<div class="ci-row"><div><b>${esc(c.name)}${c.isLead?' · Lead':''}</b><small>${esc(c.role)} · ${esc(c.phone||'')}</small></div><div class="ci-row-time">${esc(time)}</div><span class="ci-badge ${cl}">${esc(lab)}</span></div>`;}).join('');
-    const names=ciEventNames(e),neededTeams=[...new Set(crew.map(([,c])=>ciTeamType(c.role)).filter(Boolean))],readiness={candid:true,traditional:true};neededTeams.forEach(team=>{readiness[team]=names.every(name=>{const assigned=ciResourceAssignment(e,name)[team+'ListKey'];if(!assigned)return ciListExists(name,team);const v=shotLists&&shotLists[assigned]&&shotLists[assigned][team],list=Array.isArray(v)?v:Object.values(v||{});return !!list.length;});});const boardReady=names.every(name=>{const a=ciResourceAssignment(e,name),specific=shotMoods[moodKey(e.couple,name,e.date)],common=shotEventMoods[eventBoardKey(name)];return !!(a.pinterestUrl||(specific&&specific.url)||(common&&common.url&&common.active!==false));});
-    const resourceStatus=[neededTeams.includes('candid')?`Candid ${readiness.candid?'ready':'pending'}`:'',neededTeams.includes('traditional')?`Traditional ${readiness.traditional?'ready':'pending'}`:'',neededTeams.includes('candid')?`Pinterest ${boardReady?'ready':'pending'} (Candid)`:'' ].filter(Boolean).join(' · '),cards=ciAdminCardSummary(crew,all),open=ciEventCardsOpen.has(id),shootStatus=!crew.length?'Crew pending':checkedOut?'Partially checked out':checked?'In progress':e.date===ciTodayIso()?'Ready for check-in':'Upcoming',headerDetail=completedShoot?`<div class="ci-event-handover">${esc(cards.text)}</div><div class="ci-event-summary">${crew.length} crew · All checked out</div>`:!crew.length?`<div class="ci-event-glance">${staffing.filled}/${staffing.required} roles filled · Crew pending</div><div class="ci-event-summary">Open the team workspace to assign this event</div>`:`<div class="ci-event-glance">${staffing.filled}/${staffing.required} roles filled · ${crew.length} crew · ${esc(resourceStatus)}</div><div class="ci-event-summary">${esc(shootStatus)} · ${confirmed}/${crew.length} confirmed · ${checked} checked in${!e.mapsUrl?' · Maps link pending':''}</div>`;
-    const stats=completedShoot?`<span class="ci-stat ok">${crew.length}/${crew.length} checked out</span><span class="ci-stat ok">${cards.total} card${cards.total===1?'':'s'} used</span>`:`<span class="ci-stat ${staffing.filled===staffing.required&&staffing.required?'ok':staffing.required?'late':''}">${staffing.filled}/${staffing.required} roles filled</span>${!e.mapsUrl?'<span class="ci-stat late">Maps link pending — update before check-in</span>':''}${crew.length?`<span class="ci-stat ${confirmed===crew.length?'ok':''}">${confirmed}/${crew.length} confirmed</span><span class="ci-stat ${checked?'ok':''}">${checked} checked in</span>`:''}${late?`<span class="ci-stat late">${late} late</span>`:''}`;
+    const rows=crew.map(([uid,c])=>{const a=all[uid]||{};let lab='Upcoming',cl='';if(a.checkedOutAt){lab='Completed';cl='ok'}else if(a.checkedInAt){lab='In progress';cl='ok'}const time=a.checkedInAt?`In ${ciClock(a.checkedInAt)}${a.checkedOutAt?' · Out '+ciClock(a.checkedOutAt):''}`:`Arrival ${ciFmtTime(c.arrivalTime||c.reportTime||e.reportingTime)}`;if(completedShoot){const used=a.cardsUsed==null?'—':Number(a.cardsUsed)||0,custody=(a.cardCustody==='handed_over'||a.cardCustody==='handed_to_lead')?`Handed to ${a.handedToName||'named person'}`:(a.cardCustody==='copying_with_me'||a.cardCustody==='taking_with_me')?'With crew member for copying':'Handover not recorded',nextEvent=a.continuingToNextShoot&&a.nextShootEventId&&checkinEvents[a.nextShootEventId],continuing=nextEvent?` · Continuing to ${nextEvent.eventName||'next shoot'}`:'';return `<div class="ci-row"><div><b>${esc(c.name)} — ${esc(ciRoleCode(c.role))} · ${esc(used)} card${used===1?'':'s'}</b><small>${esc(custody+continuing)}</small></div><div class="ci-row-time">${esc(time)}<div class="ci-hours">${esc(ciDuration(e.actualStartAt||a.checkedInAt,a.checkedOutAt))}</div></div><span class="ci-badge ok">Completed</span></div>`;}return `<div class="ci-row"><div><b>${esc(c.name)}${c.isLead?' · Lead':''}</b><small>${esc(c.role)} · ${esc(c.phone||'')}</small></div><div class="ci-row-time">${esc(time)}</div><span class="ci-badge ${cl}">${esc(lab)}</span></div>`;}).join('');
+    const names=ciEventNames(e),neededTeams=[...new Set(crew.map(([,c])=>ciTeamType(c.role)).filter(Boolean))],listReady={candid:true,traditional:true};neededTeams.forEach(team=>{listReady[team]=names.every(name=>ciListExists(name,team)||!!(ciResourceAssignment(e,name)[team+'ListKey']&&((Array.isArray(shotLists?.[ciResourceAssignment(e,name)[team+'ListKey']]?.[team])?shotLists[ciResourceAssignment(e,name)[team+'ListKey']][team]:Object.values(shotLists?.[ciResourceAssignment(e,name)[team+'ListKey']]?.[team]||[])).length)));});
+    const missingLists=[neededTeams.includes('candid')&&!listReady.candid?'Candid list':'',neededTeams.includes('traditional')&&!listReady.traditional?'Traditional list':''].filter(Boolean);
+    const teamLabel=crew.length?crew.map(([,c])=>`${ciRoleCode(c.role)} ${c.name}`).join(' · '):'No team yet';
+    const cards=ciAdminCardSummary(crew,all),open=ciEventCardsOpen.has(id),shootStatus=!crew.length?'Crew pending':checkedOut?'Partially checked out':checked?'In progress':e.date===ciTodayIso()?'Ready for check-in':'Upcoming',headerDetail=completedShoot?`<div class="ci-event-handover">${esc(cards.text)}</div><div class="ci-event-summary">${crew.length} crew · All checked out</div>`:!crew.length?`<div class="ci-event-glance">${staffing.filled}/${staffing.required} roles filled · Crew pending</div><div class="ci-event-summary">Open the team workspace to assign this event</div>`:`<div class="ci-event-glance">${esc(teamLabel)}</div><div class="ci-event-summary">${esc(shootStatus)} · ${checked} checked in${!e.mapsUrl?' · Maps link pending':''}${missingLists.length?' · '+missingLists.join(' & ')+' pending in Settings':''}</div>`;
+    const stats=completedShoot?`<span class="ci-stat ok">${crew.length}/${crew.length} checked out</span><span class="ci-stat ok">${cards.total} card${cards.total===1?'':'s'} used</span>`:`<span class="ci-stat ${staffing.filled===staffing.required&&staffing.required?'ok':staffing.required?'late':''}">${staffing.filled}/${staffing.required} roles filled</span>${!e.mapsUrl?'<span class="ci-stat late">Maps link pending — update before check-in</span>':''}${crew.length?`<span class="ci-stat ${checked?'ok':''}">${checked} checked in</span>`:''}${late?`<span class="ci-stat late">${late} late</span>`:''}${missingLists.length?`<span class="ci-stat">${esc(missingLists.join(' · '))} in Settings</span>`:''}`;
     const timings=`Reporting ${ciFmtTime(e.reportingTime)} · Event ${ciFmtTime(e.functionStart||e.scheduledStart)}${e.functionEnd?' – '+ciFmtTime(e.functionEnd):''}`;
     const contact=e.clientContactName||e.clientContactPhone?`${e.clientContactName||'On-ground contact'}${e.clientContactPhone?' · '+e.clientContactPhone:''}`:'';
     const details=completedShoot?'':`<div class="ci-event-details"><div class="ci-detail wide"><label>Venue & location</label><div>${esc(e.venueName||'Venue to be updated')}${e.mapsUrl?` · <a href="${esc(e.mapsUrl)}" target="_blank" rel="noopener">Open Maps ↗</a>`:' · Maps link pending'}</div></div><div class="ci-detail"><label>Timings</label><div>${esc(timings)}</div></div>${contact?`<div class="ci-detail"><label>Contact</label><div>${esc(contact)}</div></div>`:''}${e.brideReadyLocation?`<div class="ci-detail"><label>Bride preparation</label><div>${esc(e.brideReadyLocation)}</div></div>`:''}${e.groomReadyLocation?`<div class="ci-detail"><label>Groom preparation</label><div>${esc(e.groomReadyLocation)}</div></div>`:''}${e.clientNotes?`<div class="ci-detail wide"><label>Important notes</label><div class="ci-detail-note">${esc(e.clientNotes)}</div></div>`:''}</div>`;
-    const resourceEditor=completedShoot?'':ciResourceEditor(id,e,names),crewEditor=completedShoot?'':ciInlineCrewEditor(id,e),startControl=completedShoot||e.planningOnly?'':`<div class="ci-start"><div><label>Actual shoot start</label><input id="ciStart_${id}" type="time" value="${esc(ciTimeValue(e.actualStartAt))}"></div><button class="btn-mini" onclick="saveActualStart('${id}')">Save</button><button class="btn-mini" onclick="ciStartNow('${id}')">Start now</button></div>`;
-    const crewActions=e.planningOnly?`<button class="btn-mini" onclick="focusCiCrew('${id}')">Edit internal team</button><span class="ci-stat late">Client approval pending · crew link locked</span>`:`<button class="btn-mini" onclick="focusCiCrew('${id}')">Open team workspace</button><button class="btn-mini" onclick="shareCheckinEvent('${id}')">WhatsApp</button><button class="btn-mini" onclick="copyCheckinLink('${id}')">Copy link</button>`;
-    return `<article class="ci-event ${open?'':'collapsed'}" id="ciEventCard_${id}" data-event-id="${esc(id)}"><button type="button" class="ci-event-head" onclick="toggleCiEventCard('${id}')" aria-expanded="${open?'true':'false'}"><div class="ci-event-head-main"><div class="ci-event-date">${esc(ciDateLong(e.date))} · ${esc(ciFmtTime(e.reportingTime))} arrival</div><h3>${insideGroup?esc(names.join(' + ')):`${esc(e.couple)} <small>${esc(names.join(' + '))}</small>`}</h3>${e.planningOnly?'<div class="ci-event-glance">Internal planning draft · client approval pending</div>':headerDetail}</div><div class="ci-event-head-side"><span class="ci-event-toggle">⌄</span></div></button><div class="ci-event-body"><div class="ci-event-btns" style="margin-top:16px">${completedShoot?'':crewActions}<button class="btn-mini" onclick="editCheckinEvent('${id}')">Edit event details</button><button class="btn-mini" onclick="deleteCheckinEvent('${id}')">Delete</button></div><div class="ci-statbar">${stats}</div>${details}${crewEditor}${resourceEditor}<div class="ci-roster">${rows}</div>${startControl}</div></article>`;
+    const resourceEditor=completedShoot?'':ciResourceEditor(id,e,names),crewEditor=completedShoot?'':ciInlineCrewEditor(id,e);
+    const startPrompt=completedShoot&&!e.actualStartAt&&!ciActualStartSkipped.has(id)?`<div class="ci-start" style="background:#1C1F22;border:1px solid #3A3D40;border-radius:10px;padding:12px;margin-top:12px"><div><label>Optional · actual shoot start</label><input id="ciStart_${id}" type="time" value=""><small style="display:block;margin-top:4px;color:#8B857D">Saved for hours/pay. Skip anytime.</small></div><button class="btn-mini" onclick="saveActualStart('${id}')">Save</button><button class="btn-mini" onclick="skipActualStart('${id}')">Skip</button></div>`:'';
+    const startControl=completedShoot||e.planningOnly?'':`<div class="ci-start"><div><label>Actual shoot start <small>(optional)</small></label><input id="ciStart_${id}" type="time" value="${esc(ciTimeValue(e.actualStartAt))}"></div><button class="btn-mini" onclick="saveActualStart('${id}')">Save</button><button class="btn-mini" onclick="ciStartNow('${id}')">Start now</button></div>`;
+    const teamBtnLabel=crew.length?'Edit team':'Assign team';
+    const crewActions=e.planningOnly?`<button class="btn-mini" onclick="focusCiCrew('${id}')">Edit internal team</button><span class="ci-stat late">Client approval pending · crew link locked</span>`:`<button class="btn-mini" onclick="focusCiCrew('${id}')">${teamBtnLabel}</button><button class="btn-mini" onclick="shareCheckinEvent('${id}',true)">WhatsApp reminder</button><button class="btn-mini" onclick="copyCheckinLink('${id}')">Copy link</button>`;
+    return `<article class="ci-event ${open?'':'collapsed'}" id="ciEventCard_${id}" data-event-id="${esc(id)}"><button type="button" class="ci-event-head" onclick="toggleCiEventCard('${id}')" aria-expanded="${open?'true':'false'}"><div class="ci-event-head-main"><div class="ci-event-date">${esc(ciDateLong(e.date))} · ${esc(ciFmtTime(e.reportingTime))} arrival</div><h3>${insideGroup?esc(names.join(' + ')):`${esc(e.couple)} <small>${esc(names.join(' + '))}</small>`}</h3>${e.planningOnly?'<div class="ci-event-glance">Internal planning draft · client approval pending</div>':headerDetail}</div><div class="ci-event-head-side"><span class="ci-event-toggle">⌄</span></div></button><div class="ci-event-body"><div class="ci-event-btns" style="margin-top:16px">${completedShoot?'':crewActions}<button class="btn-mini" onclick="editCheckinEvent('${id}')">Edit event details</button><button class="btn-mini" onclick="deleteCheckinEvent('${id}')">Delete</button></div><div class="ci-statbar">${stats}</div>${details}${crewEditor}${resourceEditor}<div class="ci-roster">${rows}</div>${startControl}${startPrompt}</div></article>`;
   };
   ciCoupleGroupEvents=new Map();
-  const groupedHtml=(items,scope,completedShoot)=>{const groups=new Map();items.forEach(x=>{const couple=String(x[1].couple||'Unnamed couple').trim()||'Unnamed couple',key=couple.toLowerCase();if(!groups.has(key))groups.set(key,{couple,items:[]});groups.get(key).items.push(x);});return [...groups.values()].map(group=>{const groupId=ciCoupleGroupId(scope,group.couple),open=ciCoupleGroupsOpen.has(groupId),count=group.items.length,statuses=group.items.map(ciGroupShootStatus),crewPending=statuses.filter(x=>x==='crew').length,inProgress=statuses.filter(x=>x==='progress'||x==='partial').length,ready=statuses.filter(x=>x==='ready').length,summary=completedShoot?'All events completed':[crewPending?`${crewPending} need crew`:'',inProgress?`${inProgress} in progress`:'',ready?`${ready} ready for check-in`:'',!crewPending&&!inProgress&&!ready?'Crew assigned':''].filter(Boolean).join(' · ');ciCoupleGroupEvents.set(groupId,group.items.map(([id])=>id));const savebar=completedShoot?'':`<div class="ci-couple-savebar"><div><b>Assign this wedding’s full team in one clear view</b><small>All events, role requirements, multiple people per role, arrival times and conflict warnings stay together.</small></div><button class="btn-mini" onclick="openCiAssignmentBoard('${groupId}')">Assign team</button></div>`;return `<section class="ci-couple-group ${open?'open':''}" id="ciCoupleGroup_${groupId}"><button type="button" class="ci-couple-head" onclick="toggleCiCoupleGroup('${groupId}')" aria-expanded="${open?'true':'false'}"><div class="ci-couple-head-main"><div class="ci-couple-meta">${count} ${count===1?'event':'events'} · ${esc(ciGroupDateLabel(group.items))}</div><h3>${esc(group.couple)}</h3><div class="ci-couple-summary">${esc(summary)}</div></div><span class="ci-couple-toggle">⌄</span></button><div class="ci-couple-body">${savebar}${group.items.map(x=>eventCard(x,completedShoot,true)).join('')}</div></section>`;}).join('');};
+  const groupedHtml=(items,scope,completedShoot)=>{const groups=new Map();items.forEach(x=>{const couple=String(x[1].couple||'Unnamed couple').trim()||'Unnamed couple',key=couple.toLowerCase();if(!groups.has(key))groups.set(key,{couple,items:[]});groups.get(key).items.push(x);});return [...groups.values()].map(group=>{const groupId=ciCoupleGroupId(scope,group.couple),open=ciCoupleGroupsOpen.has(groupId),count=group.items.length,statuses=group.items.map(ciGroupShootStatus),crewPending=statuses.filter(x=>x==='crew').length,inProgress=statuses.filter(x=>x==='progress'||x==='partial').length,ready=statuses.filter(x=>x==='ready').length,hasCrew=group.items.some(([,e])=>Object.keys(e.crew||{}).length),summary=completedShoot?'All events completed':[crewPending?`${crewPending} need crew`:'',inProgress?`${inProgress} in progress`:'',ready?`${ready} ready for check-in`:'',!crewPending&&!inProgress&&!ready?'Crew assigned':''].filter(Boolean).join(' · ');ciCoupleGroupEvents.set(groupId,group.items.map(([id])=>id));const savebar=completedShoot?'':`<div class="ci-couple-savebar"><div><b>${hasCrew?'Edit this wedding’s team':'Assign this wedding’s full team'}</b><small>All events, role requirements, multiple people per role, arrival times and conflict warnings stay together.</small></div><button class="btn-mini" onclick="openCiAssignmentBoard('${groupId}')">${hasCrew?'Edit team':'Assign team'}</button></div>`;return `<section class="ci-couple-group ${open?'open':''}" id="ciCoupleGroup_${groupId}"><button type="button" class="ci-couple-head" onclick="toggleCiCoupleGroup('${groupId}')" aria-expanded="${open?'true':'false'}"><div class="ci-couple-head-main"><div class="ci-couple-meta">${count} ${count===1?'event':'events'} · ${esc(ciGroupDateLabel(group.items))}</div><h3>${esc(group.couple)}</h3><div class="ci-couple-summary">${esc(summary)}</div></div><span class="ci-couple-toggle">⌄</span></button><div class="ci-couple-body">${savebar}${group.items.map(x=>eventCard(x,completedShoot,true)).join('')}</div></section>`;}).join('');};
   const activeHtml=active.length?groupedHtml(active,'active',false):'<div class="empty">No active crew shoots.</div>';
   const completedHtml=completed.length?`<section class="ci-completed-group ${ciCompletedOpen?'open':''}"><button type="button" class="ci-completed-head" onclick="toggleCiCompleted()" aria-expanded="${ciCompletedOpen?'true':'false'}"><h3>Completed shoots</h3><span>${completed.length} ${completed.length===1?'shoot':'shoots'}</span></button><div class="ci-completed-body">${groupedHtml(completed,'completed',true)}</div></section>`:'';
   el.innerHTML=activeHtml+completedHtml;
@@ -5227,18 +5273,20 @@ function cw10DateBlock(iso){
   return {m:MN[m-1].slice(0,3),d:String(d)};
 }
 function cw12MonthLabel(month){
+  if(month==='all')return 'All months';
   if(!/^\d{4}-\d{2}$/.test(month||''))return month==='unscheduled'?'Dates pending':'Select month';
   const [year,index]=month.split('-').map(Number);return `${MN[index-1]} ${year}`;
 }
 function cw12ClientMonths(states){
   const months=[...new Set(states.flatMap(({state})=>cwWorkspaceDates(state).map(date=>date.slice(0,7))).filter(value=>/^\d{4}-\d{2}$/.test(value)))].sort();
   if(states.some(({state})=>!cwWorkspaceDates(state).length))months.push('unscheduled');
+  if(months.length>1)months.unshift('all');
   return months;
 }
 function cw12EnsureClientMonth(states){
   const months=cw12ClientMonths(states);
   if(months.includes(cw12ClientMonth))return months;
-  const calendar=months.filter(month=>month!=='unscheduled'),current=ciTodayIso().slice(0,7);
+  const calendar=months.filter(month=>!['unscheduled','all'].includes(month)),current=ciTodayIso().slice(0,7);
   cw12ClientMonth=calendar.find(month=>month>=current)||calendar.at(-1)||months[0]||'';
   if(cw12ClientMonth)localStorage.setItem('totw_client_month',cw12ClientMonth);
   return months;
@@ -5247,8 +5295,13 @@ function cw12SetClientMonth(value){
   cw12ClientMonth=String(value||'');localStorage.setItem('totw_client_month',cw12ClientMonth);renderClientsWorkspace();
 }
 function cw10ShootRow(state,event){
-  if(event.shootId&&checkinEvents[event.shootId]&&cwShootExactLink(checkinEvents[event.shootId],event.formId,event.eventId))return [event.shootId,checkinEvents[event.shootId]];
-  return state.shoots.find(([,x])=>cwShootExactLink(x,event.formId,event.eventId))||null;
+  const form=state.form;
+  if(event.shootId&&checkinEvents[event.shootId]){
+    const e=checkinEvents[event.shootId];
+    if(cwShootExactLink(e,event.formId,event.eventId)||(form&&cwShootMatchesFormEvent(e,event.formId,event.eventId,form.events&&form.events[event.eventId],form)))return [event.shootId,e];
+  }
+  const formEvent=form&&form.events&&form.events[event.eventId];
+  return state.shoots.find(([,x])=>cwShootExactLink(x,event.formId,event.eventId)||(form&&cwShootMatchesFormEvent(x,event.formId,event.eventId,formEvent,form)))||null;
 }
 
 function cw10EventResource(state,event){
@@ -5305,15 +5358,18 @@ function cw10FolderSearch(value){
 function cw10RenderFolderPage(all){
   const states=all.map(entry=>({entry,state:cwState(entry)})),months=cw12EnsureClientMonth(states),query=cw10FolderQuery.trim().toLowerCase();
   const filtered=states.filter(({entry,state})=>{
-    const dates=cwWorkspaceDates(state),inMonth=cw12ClientMonth==='unscheduled'?!dates.length:dates.some(date=>date.slice(0,7)===cw12ClientMonth);
+    const dates=cwWorkspaceDates(state),inMonth=query||cw12ClientMonth==='all'?true:cw12ClientMonth==='unscheduled'?!dates.length:dates.some(date=>date.slice(0,7)===cw12ClientMonth);
     return inMonth&&(!query||entry.name.toLowerCase().includes(query));
   }).sort((a,b)=>{
-    const first=x=>cwWorkspaceDates(x.state).find(date=>date.slice(0,7)===cw12ClientMonth)||'9999-12-31';
+    const first=x=>{
+      if(cw12ClientMonth==='all'||query)return cwWorkspaceDates(x.state)[0]||'9999-12-31';
+      return cwWorkspaceDates(x.state).find(date=>date.slice(0,7)===cw12ClientMonth)||'9999-12-31';
+    };
     return first(a).localeCompare(first(b))||a.entry.name.localeCompare(b.entry.name);
   });
   const monthOptions=months.map(month=>`<option value="${esc(month)}" ${month===cw12ClientMonth?'selected':''}>${esc(cw12MonthLabel(month))}</option>`).join('');
   const cards=filtered.map(({entry,state},index)=>{
-    const dates=cwWorkspaceDates(state),monthEvents=state.events.filter(e=>cw12ClientMonth==='unscheduled'||e.date.slice(0,7)===cw12ClientMonth),next=monthEvents.find(e=>e.date>=ciTodayIso())||monthEvents.at(-1),signal=cw10FolderSignal(state),eventCount=state.events.length;
+    const dates=cwWorkspaceDates(state),monthEvents=(cw12ClientMonth==='all'||query)?state.events:state.events.filter(e=>cw12ClientMonth==='unscheduled'||e.date.slice(0,7)===cw12ClientMonth),next=monthEvents.find(e=>e.date>=ciTodayIso())||monthEvents.at(-1),signal=cw10FolderSignal(state),eventCount=state.events.length;
     return `<button type="button" class="cw10-folder-card" data-client-key="${esc(entry.key)}" onclick="selectClientWorkspace(this.dataset.clientKey)">
       <div class="cw10-folder-cover cw10-tone-${cw10Tone(entry.name)}"><span class="cw10-folder-number">${String(index+1).padStart(2,'0')}</span><span class="cw10-folder-monogram">${esc(cw10Initials(entry.name).toUpperCase())}</span><span class="cw10-folder-corner"></span></div>
       <div class="cw10-folder-meta"><div class="cw10-folder-title"><h3>${esc(entry.name)}</h3><i>↗</i></div><span class="cw10-folder-dates">${esc(cw10DateRange(dates))} · ${eventCount} event${eventCount===1?'':'s'}</span>
@@ -5322,9 +5378,9 @@ function cw10RenderFolderPage(all){
   }).join('');
   return `<section class="cw10-folder-page">
     <div class="cw10-folder-head"><div><div class="cw10-kicker">Studio workspace</div><h2>Clients</h2><p>Select a wedding month, then open one client folder. Weddings that cross months remain discoverable in both months.</p></div>
-    <div class="cw10-folder-tools"><label class="cw12-month-picker"><span>Wedding month</span><select id="cw12ClientMonth" onchange="cw12SetClientMonth(this.value)" ${monthOptions?'':'disabled'}>${monthOptions||'<option>No dated clients</option>'}</select></label><label class="cw10-search"><span>⌕</span><input id="cw10Search" type="search" value="${esc(cw10FolderQuery)}" placeholder="Search this month" oninput="cw10FolderSearch(this.value)"></label><button type="button" class="cw10-primary" onclick="openClientSetup()">+ Client link</button><button type="button" class="cw10-soft" onclick="signOutLedger()">Sign out</button></div></div>
-    <div class="cw12-month-summary"><span><strong>${filtered.length}</strong> client${filtered.length===1?'':'s'} in ${esc(cw12MonthLabel(cw12ClientMonth))}</span><span>Sorted by first event in the selected month</span></div>
-    <div class="cw10-folder-grid">${cards||`<div class="cw10-folder-empty">No clients are scheduled in ${esc(cw12MonthLabel(cw12ClientMonth))}.</div>`}</div>
+    <div class="cw10-folder-tools"><label class="cw12-month-picker"><span>Wedding month</span><select id="cw12ClientMonth" onchange="cw12SetClientMonth(this.value)" ${monthOptions?'':'disabled'}>${monthOptions||'<option>No dated clients</option>'}</select></label><label class="cw10-search"><span>⌕</span><input id="cw10Search" type="search" value="${esc(cw10FolderQuery)}" placeholder="Search all clients" oninput="cw10FolderSearch(this.value)"></label><button type="button" class="cw10-primary" onclick="openClientSetup()">+ Client link</button><button type="button" class="cw10-soft" onclick="signOutLedger()">Sign out</button></div></div>
+    <div class="cw12-month-summary"><span><strong>${filtered.length}</strong> client${filtered.length===1?'':'s'}${query?' matching search':cw12ClientMonth==='all'?' total':` in ${esc(cw12MonthLabel(cw12ClientMonth))}`}</span><span>${query?'Search ignores month filter':cw12ClientMonth==='all'?'Sorted by first event date':'Sorted by first event in the selected month'}</span></div>
+    <div class="cw10-folder-grid">${cards||`<div class="cw10-folder-empty">${query?`No clients match “${esc(cw10FolderQuery.trim())}”.`:cw12ClientMonth==='all'?'No client folders yet.':`No clients are scheduled in ${esc(cw12MonthLabel(cw12ClientMonth))}.`}</div>`}</div>
     ${(()=>{const unlinked=cwUnlinkedCalendarNames();return unlinked.length?`<details class="cw10-unlinked-names" style="margin-top:18px"><summary style="cursor:pointer;color:#817A72;font-size:9px;padding:8px 2px">Unlinked calendar names (${unlinked.length})</summary><div style="display:flex;flex-wrap:wrap;gap:7px;padding:10px 2px 2px">${unlinked.map(name=>`<span style="padding:6px 9px;border:1px solid #34373A;border-radius:99px;color:#9A938B;font-size:8.5px">${esc(name)}</span>`).join('')}</div><p style="margin:8px 2px 0;color:#6F6963;font-size:8px">These appear in Dates &amp; Enquiries or Crew Planner but do not have a private client link yet.</p></details>`:'';})()}
   </section>`;
 }
@@ -5395,17 +5451,33 @@ function cw10AttentionBanner(state,eventId=''){
   if(!review)return '';
   return `<button type="button" class="cw10-attention" data-event-id="${esc(eventId)}" onclick="cw10OpenReview(this.dataset.eventId)"><span class="cw10-attention-icon">!</span><span><strong>${esc(review.title)}</strong><small>${esc(review.copy)}</small></span><span class="cw10-attention-action">Review update →</span></button>`;
 }
+function cw10TeamLine(state,event){
+  const draft=cw11GetPlanDraft(state,event),crew=Object.values(draft.crew||{});
+  if(!crew.length)return 'No team yet';
+  return crew.map(c=>`${ciRoleCode(c.role)} ${c.name||'Crew'}`).join(' · ');
+}
+function cw10ShotListReminder(state,event){
+  const draft=cw11GetPlanDraft(state,event),needed=[...new Set(Object.values(draft.crew||{}).map(c=>ciTeamType(c.role)).filter(Boolean))];
+  if(!needed.length)return '';
+  const resource=cw10EventResource(state,event),missing=[];
+  if(needed.includes('candid')&&!resource.candid.items.length)missing.push('Candid');
+  if(needed.includes('traditional')&&!resource.traditional.items.length)missing.push('Traditional');
+  return missing.length?`Add ${missing.join(' & ')} shot list in Settings`: '';
+}
 function cw10RenderOverview(state){
-  const events=state.events,statuses=events.map(e=>({event:e,status:cw10EventStatus(state,e)})),ready=statuses.filter(x=>['ready','complete'].includes(x.status.key)).length,pct=events.length?Math.round(ready/events.length*100):0;
-  const rows=statuses.map(({event,status})=>{
+  const events=state.events,statuses=events.map(e=>({event:e,status:cw10EventStatus(state,e),team:cw10TeamLine(state,e),listNote:cw10ShotListReminder(state,e)}));
+  const withTeam=statuses.filter(x=>x.team!=='No team yet').length;
+  const rows=statuses.map(({event,status,team,listNote})=>{
     const details=cw10CurrentDetails(state,event),date=cw10DateBlock(event.date),venue=details.venueName||'Venue awaiting confirmation';
-    return `<button type="button" class="cw10-overview-row" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw10-date-block"><small>${esc(date.m)}</small><strong>${esc(date.d)}</strong></span><span class="cw10-overview-main"><strong>${esc(event.name)}</strong><small>${esc(ciFmtTime(details.startTime))} · ${esc(venue)}</small></span><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span><span class="cw10-row-arrow">→</span></button>`;
+    return `<button type="button" class="cw10-overview-row" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw10-date-block"><small>${esc(date.m)}</small><strong>${esc(date.d)}</strong></span><span class="cw10-overview-main"><strong>${esc(event.name)}</strong><small>${esc(ciFmtTime(details.startTime))} · ${esc(venue)}</small><small style="display:block;margin-top:4px;color:#9A938B">${esc(team)}${listNote?' · '+esc(listNote):''}</small></span><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span><span class="cw10-row-arrow">→</span></button>`;
   }).join('');
-  const dates=cwWorkspaceDates(state);
+  const dates=cwWorkspaceDates(state),reminders=statuses.map(x=>x.listNote).filter(Boolean);
   return `<div class="cw10-content">${cw10PageHead('Client workspace',state.entry.name,`${cw10DateRange(dates)} · Everything for this wedding in one place.`,cw10ClientActions(state))}
     ${cw10AttentionBanner(state)}
-    <section class="cw10-readiness"><div class="cw10-readiness-top"><div><span>Wedding readiness</span><strong>${events.length?`${ready} of ${events.length} events ready`:'Client events not created'}</strong></div><span>${pct}%</span></div><div class="cw10-progress"><i style="width:${pct}%"></i></div><div class="cw10-readiness-items"><span><i class="cw10-dot ${state.detailsOk?'ready':'attention'}"></i>Client details</span><span><i class="cw10-dot ${state.resourcesOk?'ready':'planning'}"></i>Lists &amp; boards</span><span><i class="cw10-dot ${state.crewReady?'ready':'attention'}"></i>Crew readiness</span><span><i class="cw10-dot ${state.prod?'ready':'planning'}"></i>Deliveries</span></div></section>
-    <div class="cw10-section-title"><div><h3>Events</h3><p>Client-link events only. Studio planning is attached inside each one.</p></div></div>
+    <section class="cw10-readiness"><div class="cw10-readiness-top"><div><span>Wedding readiness</span><strong>${events.length?`${withTeam} of ${events.length} events have a team`:'Client events not created'}</strong></div><span>${events.length?`${events.length} event${events.length===1?'':'s'}`:''}</span></div>
+    <div class="cw10-readiness-items" style="margin-top:10px;display:grid;gap:8px">${statuses.length?statuses.map(({event,team,listNote,status})=>`<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px solid #2A2D30"><span><b style="color:#E8E2D8">${esc(event.name)}</b> · ${esc(cw10CompactDate(event.date))}<br><small style="color:#8E8880">${esc(team)}</small>${listNote?`<br><small style="color:#BFA27A">${esc(listNote)}</small>`:''}</span><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span></div>`).join(''):'<span style="color:#817A72">Create the private client link to see events here.</span>'}</div>
+    ${reminders.length?`<p style="margin-top:12px;color:#9A938B;font-size:8.5px">Shot lists and common Pinterest boards are managed in Settings. You can also add an optional board while assigning crew on each event.</p>`:''}</section>
+    <div class="cw10-section-title"><div><h3>Events</h3><p>Open an event to edit team, timings, or optional Pinterest board.</p></div></div>
     ${events.length?`<div class="cw10-overview-list">${rows}</div>`:`<div class="cw10-empty-state"><h3>No client events yet</h3><p>Create the private event-details link. Crew Planner can help prefill the setup, but it will not create event cards here.</p><button type="button" class="cw10-primary" onclick="openClientSetupForSelected()">Create client link</button></div>`}
   </div>`;
 }
@@ -5445,7 +5517,7 @@ function cw10RenderCosts(state){
   if(!state.prod)return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Costs','Package value, crew cost and estimated margin for this wedding.')}${cw10ProductionEmpty(state)}</div>`;
   const pkg=Number(state.prod.pkg)||0,total=state.costs.total,margin=pkg-total,pct=pkg?Math.round(total/pkg*100):null;
   const days=(state.prod.days||[]).map(d=>{const cost=(d.roles||[]).reduce((n,r)=>n+(Number(r.pay)||0),0);return `<div class="cw10-cost-row"><span><span>${esc((d.events||[]).join(' + ')||'Shoot day')}</span><small>${esc(ciDateLong(d.date))} · ${(d.roles||[]).length} assignments</small></span><strong>${inrP(cost)}</strong></div>`;}).join('');
-  return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Costs','Package value, crew cost and estimated margin for this wedding.',`<button type="button" class="cw10-soft" onclick="exportCouplePDF('${state.prodId}')">Finance PDF</button><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Detailed production</button>`)}
+  return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Costs','Package value, crew cost and estimated margin for this wedding.',`<button type="button" class="cw10-soft" onclick="exportCouplePDF('${state.prodId}')">Finance PDF</button><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Open production detail</button>`)}
     <div class="cw10-metrics"><div class="cw10-metric"><span>Package value</span><strong>${pkg?inrP(pkg):'—'}</strong><small>${pkg?'Confirmed booking value':'Add the package value below'}</small></div><div class="cw10-metric"><span>Recorded crew cost</span><strong>${inrP(total)}</strong><small>${pct===null?'Ratio available after package value':pct+'% of package'}</small></div><div class="cw10-metric ${pkg&&margin>=0?'good':''}"><span>Estimated margin</span><strong>${pkg?inrP(margin):'—'}</strong><small>Before travel and overheads</small></div></div>
     <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Cost by shoot day</h3><p>Calculated from the existing production assignments.</p></div><input type="number" value="${pkg||''}" placeholder="₹ Package value" onchange="pkgSet('${state.prodId}',this.value)" style="width:150px;padding:9px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></div>${days||'<div class="cw10-folder-empty">Shoot-day costs have not been logged.</div>'}</section>
   </div>`;
@@ -5572,9 +5644,11 @@ function cw11GetPlanDraft(state,event){
   });
   const requirements=ciClone(shoot&&shoot.crewRequirements||{});
   CW11_CANDID_ROLES.concat(CW11_TRADITIONAL_ROLES).forEach(role=>{if(!(Number(requirements[role])>0)&&Object.values(crew).some(c=>(c.role||'Other')===role))requirements[role]=Math.max(1,Number(requirements[role])||0);});
+  const assignment=shoot?ciResourceAssignment(shoot,event.name):{};
   const draft={
     key,clientKey:state.entry.key,formId:event.formId,eventId:event.eventId,shootId:shootId||'',dirty:false,
     date:event.date,eventName:event.name,startTime,endTime,teamArrival,crew,requirements,
+    pinterestUrl:assignment.pinterestUrl||'',
     arrivalMode:shoot&&shoot.reportingTimeMode||((shoot&&shoot.reportingTime&&shoot.reportingTime!==autoArrival)?'manual':'auto'),
     endMode:shoot&&shoot.functionEndMode||(shoot&&shoot.functionEnd&&shoot.functionEnd!==clientEnd?'manual':clientEnd?'client':'auto'),
     timingOverride:!!(shoot&&shoot.studioTimingOverride)
@@ -5623,6 +5697,10 @@ function cw11SetPlanTime(eventId,field,value){
   cw11RecomputeTimingOverride(state,event,draft);cw11MarkDraft(draft);
   const end=document.getElementById('cw11EndTime'),arrival=document.getElementById('cw11TeamArrival');
   if(end)end.value=draft.endTime||'';if(arrival)arrival.value=draft.teamArrival||'';
+}
+function cw11SetPinterest(eventId,value){
+  const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft)return;
+  draft.pinterestUrl=String(value||'').trim();cw11MarkDraft(draft);
 }
 function cw11ToggleAddCrew(){cw11AddCrewOpen=!cw11AddCrewOpen;renderClientsWorkspace();}
 function cw11ToggleClientDetails(){cw11ClientDetailsOpen=!cw11ClientDetailsOpen;renderClientsWorkspace();}
@@ -5706,7 +5784,11 @@ function cw11PlanPayload(state,event,draft){
     clientContactName:details.contactName||old.clientContactName||null,clientContactPhone:details.contactPhone||old.clientContactPhone||null,
     brideReadyLocation:details.brideReadyLocation||old.brideReadyLocation||null,groomReadyLocation:details.groomReadyLocation||old.groomReadyLocation||null,
     clientNotes:details.notes||old.clientNotes||null,clientFormId:event.formId,clientEventId:event.eventId,crew,
-    crewRequirements:ciClone(draft.requirements||old.crewRequirements||{}),resourceAssignments:old.resourceAssignments||null,
+    crewRequirements:ciClone(draft.requirements||old.crewRequirements||{}),resourceAssignments:(()=>{
+      const key=shotListKey(event.name),prev=old.resourceAssignments&&typeof old.resourceAssignments==='object'?ciClone(old.resourceAssignments):{},cur=prev[key]||{};
+      prev[key]={...cur,eventName:event.name,pinterestUrl:draft.pinterestUrl||null,candidListKey:cur.candidListKey||null,traditionalListKey:cur.traditionalListKey||null,portraitMoodUrl:cur.portraitMoodUrl||null,otherMoodUrl:cur.otherMoodUrl||null};
+      return prev;
+    })(),
     plannerSync:old.plannerSync||null,
     planningOnly:!published,publicationStatus:published?'published':'approval_pending',setupStatus:Object.keys(crew).length?(published?'prepared':'planned_pending_approval'):'crew_pending',
     createdAt:old.createdAt||Date.now(),createdBy:old.createdBy||editor,updatedAt:Date.now(),updatedBy:editor
@@ -5774,20 +5856,20 @@ function cw11RenderPlanning(state,event){
   const draft=cw11GetPlanDraft(state,event),resource=cw10EventResource(state,event),crewCount=Object.keys(draft.crew||{}).length,published=cw11IsPublished(state,event)&&!(resource.shoot&&resource.shoot.planningOnly);
   const started=cw11EventStarted(draft);
   const copyOptions=state.events.filter(e=>e.eventId!==event.eventId&&Object.keys(cw11GetPlanDraft(state,e).crew||{}).length).map(e=>`<option value="${esc(e.eventId)}">${esc(e.name)} · ${esc(cw10CompactDate(e.date))}</option>`).join('');
-  const lists=[resource.candid.items.length?`Candid · ${resource.candid.items.length} shots`:'Candid list pending',resource.traditional.items.length?`Traditional · ${resource.traditional.items.length} shots`:'Traditional list pending'].join(' · ');
-  const boards=resource.boards.length?resource.boards.map(([name])=>name).join(', '):'No event-specific boards';
+  const listNote=cw10ShotListReminder(state,event),teamTitle=crewCount?'Edit team':'Assign team';
   const dirtyCount=cw11DirtyDrafts().length;
-  return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Planning Details</h3><p>Assign operational timings and crew for this private-link event.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
+  return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Planning Details</h3><p>${teamTitle}, timings, and an optional Pinterest board for this event.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
     ${published?'':`<div class="cw11-plan-note"><i>i</i><div><strong>You can finish planning before client approval.</strong>This timing and team stay internal. Approval publishes the same event record to the assigned crew—nothing is duplicated.</div></div>`}
     ${started?`<div class="cw11-plan-note"><i>✓</i><div><strong>This shoot has started.</strong>Operational timings and checked-in assignments are locked to protect the attendance record.</div></div>`:''}
     <div class="cw11-plan-fields"><div class="cw11-field"><label for="cw11StartTime">Event start</label><input id="cw11StartTime" type="time" value="${esc(draft.startTime)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','startTime',this.value)"><small>Used as the scheduled shoot start.</small></div>
     <div class="cw11-field"><label for="cw11EndTime">Expected end</label><input id="cw11EndTime" type="time" value="${esc(draft.endTime)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','endTime',this.value)"><small>Defaults to seven hours after start.</small></div>
     <div class="cw11-field"><label for="cw11TeamArrival">Overall team arrival</label><input id="cw11TeamArrival" type="time" value="${esc(draft.teamArrival)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','teamArrival',this.value)"><small>Defaults to one hour before the event.</small></div></div>
-    <div class="cw11-team"><div class="cw11-section-head"><div><h4>Assigned team</h4><p>${crewCount} registered crew · manual assignment</p></div></div>
+    <div class="cw11-team"><div class="cw11-section-head"><div><h4>${esc(teamTitle)}</h4><p>${crewCount} registered crew · manual assignment</p></div></div>
     ${cw11TeamSectionHtml(event.eventId,draft,'Candid team',CW11_CANDID_ROLES)}
     ${cw11TeamSectionHtml(event.eventId,draft,'Traditional team',CW11_TRADITIONAL_ROLES)}
     ${copyOptions?`<div class="cw11-section-actions" style="margin-top:9px"><select aria-label="Copy team from another event" onchange="cw11CopyTeam('${esc(event.eventId)}',this.value);this.value=''"><option value="">Copy team from another event…</option>${copyOptions}</select></div>`:''}</div>
-    <div class="cw11-resources-wrap"><button type="button" class="cw11-resources-toggle" onclick="cw11ToggleResources()" aria-expanded="${cw11ResourcesOpen?'true':'false'}"><span><span>Lists &amp; boards</span><strong>${esc(lists)} · ${esc(boards)}</strong></span><em>${cw11ResourcesOpen?'Close':'Manage'} ${cw11ResourcesOpen?'⌃':'⌄'}</em></button>${cw11ResourcesOpen?`<div class="cw11-resources-body"><div class="cw11-plan-resources"><div class="cw11-resource"><span>Shot lists</span><strong>${esc(lists)}</strong><small>Common templates connect by event name.</small></div><div class="cw11-resource"><span>Creative boards</span><strong>${esc(boards)}</strong><small>Event, Portraits and Other remain event-specific.</small></div></div><div class="cw10-panel-actions"><button type="button" class="cw10-text" data-event-name="${esc(event.name)}" onclick="cwOpenSettings(this.dataset.eventName)">Edit common lists</button>${draft.shootId?`<button type="button" class="cw10-text" onclick="cwOpenShoot('${esc(draft.shootId)}')">Open lists &amp; boards setup</button>`:'<span style="color:#6F6963;font-size:8px">Save this plan once to add event-specific boards.</span>'}</div></div>`:''}</div>
+    <div class="cw11-plan-fields" style="margin-top:14px"><div class="cw11-field" style="grid-column:1/-1"><label for="cw11Pinterest">Optional Pinterest board</label><input id="cw11Pinterest" type="url" value="${esc(draft.pinterestUrl||'')}" placeholder="https://pinterest.com/…" onchange="cw11SetPinterest('${esc(event.eventId)}',this.value)"><small>Optional for this event only. Common shot lists and boards stay in Settings.${listNote?' · '+esc(listNote):''}</small></div></div>
+    <div class="cw10-panel-actions" style="margin-top:8px"><button type="button" class="cw10-text" data-event-name="${esc(event.name)}" onclick="cwOpenSettings(this.dataset.eventName)">Open Settings · shot lists &amp; boards</button></div>
     <footer class="cw11-plan-footer"><div class="cw11-save-copy" id="cw11SaveCopy">${dirtyCount?`<strong class="cw11-plan-dirty">${dirtyCount} unsaved event plan${dirtyCount===1?'':'s'}</strong>`:'<strong>All planning changes saved</strong>'}</div><div class="cw11-save-actions"><button type="button" class="cw10-soft cw11-save-all" id="cw11SaveAll" ${dirtyCount<2?'hidden':''} onclick="cw11SaveAllPlans()">Save all<span class="cw11-save-count">${dirtyCount}</span></button><button type="button" class="cw10-primary" id="cw11SaveCurrent" ${draft.dirty?'':'disabled'} onclick="cw11SaveCurrentPlan()">Save event plan</button></div></footer>
   </section>`;
 }
@@ -5832,11 +5914,6 @@ function cw10EventStatus(state,event){
   if(!shoot)return {key:'planning',text:'Plan pending'};
   if(!shoot.mapsUrl)return {key:'attention',text:'Map missing'};
   const crew=Object.keys(shoot.crew||{});if(!crew.length)return {key:'attention',text:'Team pending'};
-  const resource=cw10EventResource(state,event),needed=[...new Set(Object.values(shoot.crew||{}).map(c=>ciTeamType(c.role)).filter(Boolean))];
-  if(needed.includes('candid')&&!resource.candid.items.length)return {key:'attention',text:'Candid list pending'};
-  if(needed.includes('traditional')&&!resource.traditional.items.length)return {key:'attention',text:'Traditional list pending'};
-  const attendance=checkinAttendance[id]||{},unconfirmed=crew.filter(uid=>!attendance[uid]?.confirmedAt);
-  if(event.date>=ciTodayIso()&&unconfirmed.length)return {key:'attention',text:`${unconfirmed.length} confirmation${unconfirmed.length===1?'':'s'} pending`};
   return {key:'ready',text:'Ready'};
 }
 function cw10RenderSidebar(state){
