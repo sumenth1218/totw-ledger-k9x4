@@ -1,11 +1,45 @@
-TALE OF TWO WEDDINGS — REFINED SHOOT WORKFLOW UPDATE
+TALE OF TWO WEDDINGS — DARK CLIENT WORKSPACE v8
 
-UPLOAD / REPLACE:
+UPLOAD:
+1. Unzip this package.
+2. Upload the contents inside the extracted folder to the existing GitHub repository.
+3. Replace the current files when GitHub asks.
+4. Do not upload the ZIP itself.
+
+The files changed by this update are:
 - index.html
 - crew.html
 - crew-sw.js
+- crew-manifest.webmanifest
+- event-details.html
+- checklist-candid.html
+- checklist-traditional.html
 
-The ZIP also contains the complete clean website as a backup.
+IMPORTANT — THESE CONTRACTS ARE PRESERVED:
+- Dates & Enquiries data and workflow are unchanged.
+- Crew Planner data and workflow are unchanged.
+- Existing private client links remain valid.
+- Existing crew links remain valid.
+- Existing Firebase paths and records remain unchanged.
+- Existing events, registrations, assignments, attendance, lists and submissions remain intact.
+- Multiple events for one couple on the same date remain separate event records.
+
+WHAT IS NEW:
+- A refined dark visual system across the owner Ledger, client form, crew app and both checklist pages.
+- One client workspace for Event Details, Lists & Boards, Shoot Operations, Deliveries and Costs.
+- A client overview showing readiness, unfinished actions and the event timeline.
+- Every client event remains separate, while all related information is visible from one place.
+- Lists & Boards show common Candid and Traditional lists plus Event, Portrait and Other boards.
+- Shoot Operations show crew confirmation, check-in, checkout and card-handover state.
+- Deliveries and Costs remain available globally and are also surfaced inside the relevant client.
+- Mobile navigation uses a compact two-row layout without horizontal scrolling.
+
+NOT CHANGED:
+- Dates & Enquiries logic
+- Crew Planner logic
+- Client or crew URLs
+- Firebase data structure
+- Manual WhatsApp contact/share actions
 
 DELETE THESE OLD REMINDER FILES FROM GITHUB IF THEY ARE STILL PRESENT:
 - REMINDER-SETUP.md
@@ -13,28 +47,5 @@ DELETE THESE OLD REMINDER FILES FROM GITHUB IF THEY ARE STILL PRESENT:
 - functions (delete the entire folder)
 - .firebaserc
 
+Telegram, calendar and automatic WhatsApp reminder code is not included.
 Do not delete or change any Firebase Realtime Database data.
-Existing events, crew registrations, assignments, attendance and shot lists remain intact.
-
-WHAT THIS UPDATE FIXES:
-- Late check-in now shows the late-arrival card and number of minutes late.
-- On-time check-in still shows the on-time confirmation card.
-- Shot lists unlock immediately after successful check-in.
-- Exact assigned lists are used first.
-- Saved event-name lists and safe built-in fallbacks are used when required.
-- Separate checklist sections remain intact for simultaneous/multiple events.
-- Checkout now asks for cards used, card custody and handover details after tapping Check Out.
-- Same-day crew can choose whether they are continuing to their next assigned shoot.
-- Every event can have an event mood board plus optional portrait and other mood boards.
-- The shot-list editor now shows only unique event names from Crew Planning.
-- One common Candid list and one common Traditional list are saved per event name, regardless of couple or date.
-- Tomorrow's share banner now excludes completed, started and fully confirmed shoots.
-- Completed shoots appear only in the collapsed Completed Shoots archive.
-- Owner navigation is reordered and renamed around the real workflow.
-- The main page title now changes with the selected section.
-- Mobile navigation shows all six areas in a clear two-row layout.
-- Telegram, calendar and automatic WhatsApp reminder code has been removed.
-
-NORMAL MANUAL WHATSAPP FEATURES REMAIN:
-- Crew/team contact buttons
-- Manual share-assignment button

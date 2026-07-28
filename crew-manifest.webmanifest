@@ -5,8 +5,8 @@
   "start_url": "crew.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#F6F3EC",
-  "theme_color": "#F6F3EC",
+  "background_color": "#0D0E10",
+  "theme_color": "#0D0E10",
   "icons": [
     {"src":"totw-logo-square.jpg","sizes":"2048x2048","type":"image/jpeg","purpose":"any"}
   ]

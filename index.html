@@ -11,20 +11,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#F2F1ED; --ink:#1B1A17; --ink-soft:#6E6A61; --line:#D9D6CE;
-  --sindoor:#B5392A; --sindoor-soft:#F3DEDA;
-  --teal:#2E5A5C; --leaf:#3E5C44; --leaf-soft:#E4EAE2;
-  --amber:#B07C28; --amber-soft:#F1E7D2;
-  --cold:#5B6B8C; --cold-soft:#E3E7EF;
-  --card:#FAFAF7;
+  --paper:#0D0E10; --ink:#F1ECE3; --ink-soft:#AAA398; --line:#303235;
+  --sindoor:#A6434E; --sindoor-soft:#2A191D;
+  --teal:#648D86; --leaf:#82A987; --leaf-soft:#18241C;
+  --amber:#C5A26B; --amber-soft:#2A2318;
+  --cold:#8995B6; --cold-soft:#1D202A;
+  --card:#17191B; --surface:#131416; --surface-2:#1D1F21; --surface-3:#242629;
+  --ivory:#F1ECE3; --shadow:0 22px 70px rgba(0,0,0,.28);
   --display:'Cormorant Garamond', Georgia, serif;
   --body:'Inter', -apple-system, sans-serif;
   --mono:'Spline Sans Mono', ui-monospace, monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding:0 0 80px}
-.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding:0 0 80px;color-scheme:dark}
+.wrap{max-width:1440px;margin:0 auto;padding:0 24px}
 
 header{padding:44px 0 26px;border-bottom:1px solid var(--ink)}
 .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
@@ -594,6 +595,228 @@ h1 em{font-style:italic;color:var(--sindoor)}
   #tabLedger .demand-meta{display:block;text-align:left;margin-top:5px}
 }
 .ci-profile-group,.ci-team-group{border:1px solid var(--line);border-radius:10px;overflow:hidden}.ci-profile-group-head,.ci-team-group-head{width:100%;border:0;background:#F4F0E8;color:var(--ink);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;text-align:left}.ci-profile-group-head b,.ci-team-group-head b{font:600 14px var(--body)}.ci-profile-group-head span,.ci-team-group-head span{font:500 8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}.ci-profile-group-body,.ci-team-group-body{display:grid;gap:8px;padding:8px}.ci-profile-group.closed .ci-profile-group-body,.ci-team-group.closed .ci-team-group-body{display:none}.ci-form .ci-team-group{border-color:#4a473f}.ci-form .ci-team-group-head{background:#2b2924;color:#fff}.ci-form .ci-team-group-head span{color:#aaa59b}
+
+/* ===================== DARK STUDIO SYSTEM =====================
+   Presentation only: data paths, public URLs and workflow contracts stay unchanged. */
+html{background:var(--paper);scrollbar-color:#4A4D50 var(--paper)}
+::selection{background:#6E3038;color:var(--ivory)}
+a{color:#D2B27E}
+header{border-color:#3B3D40}
+.eyebrow{color:#938C81}
+h1 em{color:#C96A75}
+.legend span,.m-count,.dow span,.demand-meta,.enq-meta,.hint{color:var(--ink-soft)}
+.sync-banner.local{background:var(--amber-soft);color:#D6B67D;border-color:#59492F}
+.sync-banner.live{background:var(--leaf-soft);color:#9BC49F;border-color:#344C38}
+.strip,.enq-head,.act-head,.ci-completed-group{border-color:#3A3C3F}
+.strip div{border-color:var(--line)}
+.month,.demand-box,.enq-edit,.cf-card,.p-card,.p-row,.shot-card,.shot-team,.day-card,.role-row,.stage-row,.role-spend,.person-detail .pd-wrap{
+  background:var(--card);border-color:var(--line);color:var(--ink)
+}
+.month{box-shadow:0 10px 30px rgba(0,0,0,.10)}
+.month.is-busy{border-color:#5A3A3E}
+.day.free{color:#77746E}
+.day.booked{background:#8F3440;color:#FFF4F2}.day.booked:hover{background:#A6434E}
+.day.team-booked{background:#446C67;color:#F0FAF8}.day.team-booked:hover{background:#527D77}
+.day.today{border-color:#D9D1C4}
+#gpop{background:#232529;color:var(--ink);border:1px solid #3A3D40;box-shadow:0 18px 55px rgba(0,0,0,.42)}
+#gpop em{color:#D5868E}#gpop u{color:#B4AEA4}
+.demand-select,.enq-edit input[type=text],.enq-edit input[type=date],.enq-edit select,.upd-add input,.tag-edit input,
+.plan-wrap input,.plan-wrap select,.plan-wrap textarea,.prod-wrap input,.prod-wrap select,.cf-wrap input,.cf-wrap select,.cf-wrap textarea,
+.ci-resource-field select,.ci-resource-field input,.ci-inline-person-fields select,.ci-inline-person-fields input,.ci-team-arrival input{
+  background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--line)!important;color-scheme:dark
+}
+input::placeholder,textarea::placeholder{color:#77736C}
+.demand-item summary:hover{background:#1D1F21}
+.detail{background:rgba(0,0,0,.72);backdrop-filter:blur(7px)}
+.detail-card,.ci-modal-card{background:#1A1C1E;color:var(--ink);border:1px solid #35383B;box-shadow:var(--shadow)}
+.evt-del,.btn-cancel{background:transparent;color:var(--ink-soft)}
+.close-btn,.filters button.on,.upd-add button,.tag-edit button,.edit-actions .btn-save{background:#EEE8DE;color:#111214}
+.panel-card,.ci-form{background:#17191B;color:var(--ink);border:1px solid #303337;box-shadow:var(--shadow)}
+.tabs,.vtabs{background:#151719;border:1px solid #2B2D30}
+.tabs button,.vtabs button{color:#908A80}
+.tabs button.active{background:#2A2C2F;color:#F2EDE4}
+.field label,.panel-card .hint,.ci-form .hint,.ci-form .field label{color:#989188}
+.field input,.field select,.ci-form select{background:#222427;border-color:#393C40;color:var(--ink);color-scheme:dark}
+.field input:focus,.field select:focus,.ci-form select:focus{border-color:#7F7364;box-shadow:0 0 0 3px rgba(197,162,107,.08)}
+.btn-main{background:#8F3440;color:#FFF6F2}.btn-main:hover{background:#A6434E}
+.btn-main.teal{background:#4C746F}.btn-main.teal:hover{background:#5C8580}
+.filters button,.btn-mini,.cost-add,.xs{background:#1C1E20;color:#CFC8BC;border-color:#383A3D}
+.filters button:hover,.btn-mini:hover{background:#25272A;border-color:#4A4D50;color:#FFF}
+.enq input[type=checkbox]{background:#17191B;border-color:#B3ACA1}
+.dtag.free{background:var(--leaf-soft);color:#9FC3A3}.dtag.clash{background:var(--sindoor-soft);color:#D88790}
+.src-tag{background:#251D2A;color:#BE9AC8}
+.enq-edit,.tag-edit{background:#151719}
+.dchip.lite,.mini-cal.lite{background:#17191B;color:var(--ink)}
+.mini-cal.lite,.mini-cal{border-color:#3A3D40}
+.mini-cal.lite .mc-g i:hover,.mini-cal.dark .mc-g i:hover{background:#26282B}
+.mini-cal.lite .mc-g i.sel,.mini-cal.dark .mc-g i.sel{background:#EAE4DA;color:#101113}
+.remind{background:#282117;color:#D8B87B;border-color:#A98245}
+.pd-wrap{background:#111214!important}
+.plan-table th{background:var(--paper);color:#9E978C;border-color:#44464A}
+.plan-table td{border-color:#2E3033}
+.plan-table tr.ppast td{opacity:.45}
+.plan-table td.cpal0{background:#352B25}.plan-table td.cpal1{background:#26342B}
+.plan-table td.cpal2{background:#253338}.plan-table td.cpal3{background:#3A292A}
+.plan-table td.cpal4{background:#302D3D}.plan-table td.cpal5{background:#393125}
+.plan-table td.cpal6{background:#28343B}.plan-table td.cpal7{background:#392A33}
+.yr-tabs button{background:#151719;border-color:#35373A;color:#989188}.yr-tabs button.on{background:#EAE4DA;color:#101113;border-color:#EAE4DA}
+.cf-create,.ci-couple-group,.ci-event,.ci-couple-savebar,.ci-event-details,.ci-resource-admin,.ci-crew-admin,.ci-crew-overview,
+.ci-inline-team,.ci-inline-person,.ci-profile-group,.ci-team-group,.shot-sub,.stage-add-form{
+  background:#17191B!important;color:var(--ink);border-color:var(--line)!important
+}
+.cf-preview-event,.cf-review-event,.cf-change,.ci-event-choice,.ci-person{background:#202225!important;border-color:#383B3E!important}
+.cf-status.approved,.ci-badge.ok,.ci-stat.ok,.sdue.ok{background:var(--leaf-soft);color:#9DC3A1}
+.cf-status.submitted,.sdue.warn{background:var(--amber-soft);color:#D6B67D}
+.cf-status.changes,.sdue.bad,.ci-stat.late{background:var(--sindoor-soft);color:#DA858F}
+.ci-couple-group{box-shadow:0 15px 45px rgba(0,0,0,.14)}
+.ci-couple-savebar .btn-mini,.ci-crew-actions .btn-mini.primary{background:#EAE4DA;color:#111214;border-color:#EAE4DA}
+.ci-couple-body .ci-event,.ci-completed-group .ci-event{background:#141618!important}
+.ci-stat{background:#242629;color:#A9A298}
+.ci-event-details,.ci-resource-admin{background:#121416!important}
+.ci-inline-team>header,.ci-profile-group-head,.ci-team-group-head{background:#222427;color:var(--ink)}
+.ci-crew-overview-names span{background:#25282A;color:#D8D1C6}
+.ci-assignment-modal{background:#0D0E10;color:var(--ink)}
+.ci-assignment-header{background:rgba(18,20,22,.95);border-color:#34373A}
+.ci-assignment-guide{background:#1B1D1F;border-color:#323538;color:#A9A298}
+.ci-assignment-guide b{color:var(--ink)}
+.ci-assignment-event,.ci-assignment-role,.ci-assignment-sidebar,.ci-assignment-member{background:#17191B!important;border-color:#34373A!important;color:var(--ink)}
+.ci-assignment-event-top,.ci-assignment-sidebar-head{background:#202225!important;border-color:#35383B!important}
+.ci-assignment-controls,.ci-assignment-role-head{border-color:#303337}
+.ci-assignment-target,.ci-requirement button,.ci-assignment-arrival input,.ci-assignment-copy select,.ci-assignment-copy-row button,.ci-assignment-search,.ci-assignment-add select,.ci-assignment-member-time input{
+  background:#121416!important;color:var(--ink)!important;border-color:#3B3E41!important
+}
+.ci-assignment-role.drag-over{background:#15241F!important;border-color:#638D86!important}
+.ci-assignment-empty{border-color:#3A3D40;color:#858078}
+.ci-assignment-footer{background:rgba(20,22,24,.96);border-color:#34373A}
+.ci-assignment-footer button,.ci-assignment-save{background:#EAE4DA;color:#111214;border-color:#EAE4DA}
+.stage-row,.role-row{border-color:#2E3033}
+.shot-team-h.candid{background:#24312F;color:#9CC2BC}.shot-team-h.traditional{background:#30291E;color:#D1B17C}
+.shot-row.ok{color:#A5C8A8}.shot-row.miss{color:#9B958C}
+.cardc,.evc,.sdue,.ci-badge{background:#242629;border-color:#3A3D40;color:#B5AEA4}
+.tickbox{border-color:#55585B}.tickbox.on{background:#527D77;color:#fff}
+.cost-pkg input{background:#1B1D1F;color:var(--ink);border-color:var(--line)}
+.toast{background:#F0EADF;color:#111214;box-shadow:0 14px 45px rgba(0,0,0,.38)}
+.gate{background:radial-gradient(circle at 50% 0,#242024 0,#0D0E10 48%)!important}
+.gate-card{background:#17191B!important;color:var(--ink)!important;border:1px solid #34373A;box-shadow:var(--shadow)}
+.gate-card button{background:#EAE4DA!important;color:#111214!important}
+.signout-btn{color:#AFA89D!important;border-color:#3A3C3F!important}
+[style*="background:#fff"],[style*="background: #fff"],[style*="background:white"],[style*="background: white"]{background:var(--surface-2)!important}
+[style*="color:var(--paper)"]{color:var(--ink)!important}
+
+/* Primary navigation */
+header{padding:34px 0 22px}
+.vtabs{position:sticky;top:0;z-index:90;margin:0 -8px 26px;padding:6px;background:rgba(18,20,22,.92);backdrop-filter:blur(18px);box-shadow:0 12px 36px rgba(0,0,0,.16)}
+.vtabs button{min-height:42px;border-radius:7px;transition:background .18s,color .18s}
+.vtabs button.on{background:#2A2C2F;color:#F4EFE7;box-shadow:inset 0 0 0 1px #393C40}
+
+/* ===================== CLIENT WORKSPACE ===================== */
+.cw-shell{display:grid;grid-template-columns:286px minmax(0,1fr);gap:18px;min-height:720px}
+.cw-sidebar{position:sticky;top:66px;align-self:start;max-height:calc(100vh - 86px);display:flex;flex-direction:column;background:#131517;border:1px solid #2E3134;border-radius:16px;overflow:hidden}
+.cw-sidebar-head{padding:20px 18px 14px;border-bottom:1px solid #2E3134}
+.cw-sidebar-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cw-sidebar-head h2{font:600 27px/1 var(--display)}
+.cw-sidebar-head p{font-size:11px;color:var(--ink-soft);margin-top:6px}
+.cw-new{width:32px;height:32px;border:1px solid #45484B;background:#242629;color:#F3EDE4;border-radius:9px;font-size:18px;cursor:pointer;display:grid;place-content:center;flex:none}
+.cw-search{width:100%;margin-top:14px;padding:11px 12px;border:1px solid #373A3D;border-radius:9px;background:#0F1112;color:var(--ink);font:12px var(--body);outline:none}
+.cw-search:focus{border-color:#74634D;box-shadow:0 0 0 3px rgba(197,162,107,.08)}
+.cw-client-list{overflow:auto;padding:8px;scrollbar-width:thin}
+.cw-client-item{width:100%;display:block;text-align:left;border:1px solid transparent;background:transparent;color:var(--ink);border-radius:11px;padding:12px 11px;cursor:pointer;margin-bottom:3px}
+.cw-client-item:hover{background:#1B1D1F}.cw-client-item.on{background:#242629;border-color:#3A3D40}
+.cw-client-item-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cw-client-item b{font-size:12.5px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw-client-item small{display:block;font:8px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#8F897F;margin-top:5px;line-height:1.45}
+.cw-item-dot{width:7px;height:7px;border-radius:50%;background:#686B6E;flex:none}.cw-item-dot.ready{background:#78A07E}.cw-item-dot.attention{background:#C7A160}.cw-item-dot.live{background:#C35B66;box-shadow:0 0 0 4px rgba(195,91,102,.12)}
+.cw-main{min-width:0;background:#121416;border:1px solid #2E3134;border-radius:16px;overflow:hidden;box-shadow:0 20px 70px rgba(0,0,0,.12)}
+.cw-empty{min-height:650px;display:grid;place-content:center;text-align:center;padding:40px;color:var(--ink-soft)}
+.cw-empty-mark{width:54px;height:54px;border:1px solid #393C40;border-radius:50%;display:grid;place-content:center;margin:0 auto 16px;font:26px var(--display);color:#C7A66F}
+.cw-empty h3{font:600 29px var(--display);color:var(--ink)}.cw-empty p{max-width:380px;margin:7px auto 0;font-size:12px;line-height:1.65}
+.cw-client{min-width:0}
+.cw-client-head{padding:28px 30px 22px;background:linear-gradient(140deg,#1C1E20,#151719);border-bottom:1px solid #303337}
+.cw-head-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.cw-kicker{font:9px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#C4A269;margin-bottom:6px}
+.cw-client-head h2{font:600 clamp(30px,4vw,43px)/.98 var(--display)}
+.cw-client-summary{font-size:12px;color:var(--ink-soft);margin-top:9px}
+.cw-stage{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #474A4D;border-radius:99px;font:8.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#CFC8BD;white-space:nowrap}
+.cw-stage:before{content:'';width:6px;height:6px;border-radius:50%;background:#C5A26B}.cw-stage.ready:before{background:#7EAA84}.cw-stage.live:before{background:#D4606B}
+.cw-head-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;margin-top:14px}
+.cw-head-actions .btn-mini{padding:8px 11px}
+.cw-readiness{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:22px}
+.cw-ready-item{min-width:0;border:1px solid #303337;background:#151719;border-radius:10px;padding:10px 11px;text-align:left;color:var(--ink);cursor:pointer}
+.cw-ready-item span{display:flex;align-items:center;gap:6px;font:8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#938D83}
+.cw-ready-item span:before{content:'';width:6px;height:6px;border-radius:50%;background:#C45C66}
+.cw-ready-item.ok span:before{background:#7FA486}.cw-ready-item.warn span:before{background:#C5A26B}
+.cw-ready-item b{display:block;font-size:11px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw-subnav{display:flex;gap:4px;padding:10px 18px;border-bottom:1px solid #2F3235;background:#111315;overflow-x:auto;scrollbar-width:none}
+.cw-subnav::-webkit-scrollbar{display:none}
+.cw-subnav button{flex:none;border:0;background:transparent;color:#948E84;border-radius:8px;padding:9px 12px;font:8.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.cw-subnav button.on{background:#26282B;color:#F2EDE4}
+.cw-panel{padding:24px 26px 34px}
+.cw-panel-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:17px}
+.cw-panel-head h3{font:600 28px/1 var(--display)}.cw-panel-head p{font-size:11.5px;color:var(--ink-soft);margin-top:5px}
+.cw-panel-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.cw-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cw-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cw-card{min-width:0;background:#181A1C;border:1px solid #303337;border-radius:12px;padding:16px}
+.cw-card.critical{border-color:#58353A;background:#1E1719}.cw-card.good{border-color:#304737;background:#151C17}
+.cw-card-label{font:8px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#969087}
+.cw-card-value{font:600 24px/1.05 var(--display);margin-top:7px}.cw-card-copy{font-size:11px;line-height:1.55;color:var(--ink-soft);margin-top:7px}
+.cw-issue-list{display:grid;gap:8px}.cw-issue{display:grid;grid-template-columns:9px minmax(0,1fr) auto;gap:10px;align-items:start;padding:12px 13px;border:1px solid #303337;border-radius:10px;background:#17191B}
+.cw-issue>i{width:7px;height:7px;border-radius:50%;background:#C5A26B;margin-top:5px}.cw-issue.critical>i{background:#C85C68}.cw-issue.good>i{background:#7DA282}
+.cw-issue b{display:block;font-size:12px}.cw-issue small{display:block;font-size:10.5px;line-height:1.45;color:var(--ink-soft);margin-top:2px}
+.cw-issue button{border:0;background:transparent;color:#D2B27E;font:8px var(--mono);text-transform:uppercase;letter-spacing:.07em;cursor:pointer;padding-top:2px}
+.cw-event-stack,.cw-shoot-stack,.cw-delivery-list{display:grid;gap:10px}
+.cw-event-card,.cw-shoot-card{background:#181A1C;border:1px solid #303337;border-radius:12px;overflow:hidden}
+.cw-event-top,.cw-shoot-top{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;padding:16px}
+.cw-date{font:8.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#C3A16A}
+.cw-event-card h4,.cw-shoot-card h4{font:600 22px/1.05 var(--display);margin-top:4px}
+.cw-event-status{font:8px var(--mono);letter-spacing:.07em;text-transform:uppercase;padding:5px 8px;border-radius:99px;background:#242629;color:#AFA89D;white-space:nowrap}.cw-event-status.ok{background:var(--leaf-soft);color:#9EC1A1}.cw-event-status.warn{background:var(--amber-soft);color:#D1B076}.cw-event-status.bad{background:var(--sindoor-soft);color:#D4828B}
+.cw-event-details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:1px solid #2E3134}
+.cw-detail{padding:12px 14px;border-right:1px solid #2E3134;min-width:0}.cw-detail:last-child{border-right:0}
+.cw-detail span{display:block;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#8F897F}.cw-detail b,.cw-detail a{display:block;font-size:10.5px;color:var(--ink);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}
+.cw-event-actions,.cw-shoot-actions{display:flex;gap:7px;flex-wrap:wrap;padding:12px 14px;border-top:1px solid #2E3134;background:#151719}
+.cw-resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 14px 14px}
+.cw-resource{border:1px solid #303337;border-radius:9px;padding:11px;background:#141618;min-width:0}
+.cw-resource span{display:block;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#8F897F}.cw-resource b{display:block;font-size:10.5px;margin-top:4px}.cw-resource a{display:block;color:#D0B17C;font-size:10px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw-roster{display:grid;gap:5px;padding:0 14px 14px}.cw-person{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 10px;background:#141618;border:1px solid #2D3033;border-radius:8px}
+.cw-person b{font-size:10.5px}.cw-person small{font-size:9px;color:var(--ink-soft)}.cw-person em{font:8px var(--mono);font-style:normal;color:#AFA89D;text-transform:uppercase}
+.cw-progress{height:5px;background:#282A2D;border-radius:99px;overflow:hidden;margin-top:9px}.cw-progress i{display:block;height:100%;background:#7FA486;border-radius:inherit}
+.cw-delivery{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px 13px;border:1px solid #303337;border-radius:10px;background:#17191B}
+.cw-delivery input{width:17px;height:17px;accent-color:#6F9776}.cw-delivery b{display:block;font-size:11.5px}.cw-delivery small{display:block;font-size:9.5px;color:var(--ink-soft);margin-top:2px}.cw-delivery-state{font:8px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#C2A16A;white-space:nowrap}.cw-delivery.done .cw-delivery-state{color:#8EB594}
+.cw-money{font:600 31px/1 var(--display);margin-top:7px}
+.cw-breakdown{margin-top:10px;border-top:1px solid #303337}.cw-breakdown-row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid #292C2F;font-size:10.5px}.cw-breakdown-row span:last-child{font-family:var(--mono)}
+.cw-inline-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}.cw-inline-form input{width:100%;padding:10px;border:1px solid #393C40;border-radius:8px;background:#111315;color:var(--ink)}.cw-inline-form .full{grid-column:1/-1}
+.cw-empty-state{padding:34px 20px;border:1px dashed #383B3E;border-radius:12px;text-align:center;color:var(--ink-soft)}.cw-empty-state h4{font:600 23px var(--display);color:var(--ink)}.cw-empty-state p{font-size:11.5px;line-height:1.55;max-width:480px;margin:6px auto 14px}
+
+/* Client-link setup drawer */
+.cw-drawer{display:none;position:fixed;inset:0;z-index:240;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}
+.cw-drawer.open{display:flex;justify-content:flex-end}
+.cw-drawer-panel{width:min(560px,100%);height:100%;overflow:auto;background:#121416;border-left:1px solid #34373A;padding:22px;box-shadow:-30px 0 80px rgba(0,0,0,.3)}
+.cw-drawer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:16px}.cw-drawer-head h3{font:600 28px var(--display)}.cw-drawer-head p{font-size:11px;color:var(--ink-soft);margin-top:4px}
+.cw-drawer-close{width:34px;height:34px;border:1px solid #3B3E41;background:#1D1F21;color:var(--ink);border-radius:9px;cursor:pointer}
+.cw-drawer .cf-create{position:static;padding:20px;border-radius:12px}
+
+@media(max-width:980px){
+  .cw-shell{grid-template-columns:240px minmax(0,1fr)}
+  .cw-readiness{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cw-grid.three{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:720px){
+  .wrap{padding:0 12px}
+  header{padding:24px 0 18px}
+  .vtabs{top:0;margin:0 -12px 16px;border-left:0;border-right:0;border-radius:0;padding:6px 8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}
+  .vtabs button{min-width:0;min-height:40px;white-space:normal;line-height:1.25;font-size:7.5px;padding:7px 4px}
+  .cw-shell{display:block;min-height:0}
+  .cw-sidebar{position:static;max-height:none;border-radius:13px;margin-bottom:10px}
+  .cw-sidebar-head{padding:15px}.cw-sidebar-head p{display:none}.cw-search{margin-top:11px}
+  .cw-client-list{display:flex;overflow-x:auto;padding:7px;scroll-snap-type:x proximity}.cw-client-item{flex:0 0 180px;scroll-snap-align:start;margin:0 4px 0 0}
+  .cw-main{border-radius:13px}.cw-empty{min-height:330px}
+  .cw-client-head{padding:21px 17px 18px}.cw-head-top{display:block}.cw-stage{margin-top:12px}.cw-head-actions{justify-content:flex-start}
+  .cw-readiness{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:17px}.cw-ready-item:last-child{grid-column:1/-1}
+  .cw-subnav{padding:8px}.cw-panel{padding:18px 13px 26px}.cw-panel-head{align-items:flex-start;flex-direction:column}.cw-panel-actions{justify-content:flex-start}
+  .cw-grid,.cw-grid.three{grid-template-columns:1fr}.cw-event-details{grid-template-columns:1fr}.cw-detail{border-right:0;border-bottom:1px solid #2E3134}.cw-detail:last-child{border-bottom:0}
+  .cw-resource-grid{grid-template-columns:1fr}.cw-person{grid-template-columns:minmax(0,1fr) auto}.cw-person em{grid-column:1/-1}
+  .cw-inline-form{grid-template-columns:1fr}.cw-inline-form .full{grid-column:auto}
+}
 </style>
 </head>
 <body>
@@ -629,11 +852,11 @@ h1 em{font-style:italic;color:var(--sindoor)}
 
 <div class="vtabs">
   <button id="vtEnq" class="on" onclick="setView('ledger')">Dates &amp; Enquiries</button>
-  <button id="vtClientForms" onclick="setView('clientforms')">Event Details</button>
-  <button id="vtPlan" onclick="setView('plan')">Crew Planning</button>
-  <button id="vtShots" onclick="setView('shots')">Lists &amp; Boards</button>
-  <button id="vtCheckins" onclick="setView('checkins')">Shoot Operations</button>
-  <button id="vtProd" onclick="setView('prod')">Deliveries &amp; Costs</button>
+  <button id="vtClientForms" onclick="setView('clients')">Clients</button>
+  <button id="vtPlan" onclick="setView('plan')">Crew Planner</button>
+  <button id="vtCheckins" onclick="setView('shoots')">Shoot Operations</button>
+  <button id="vtProd" onclick="setView('business')">Business</button>
+  <button id="vtShots" onclick="setView('settings')">Settings</button>
 </div>
 
 <div id="tabLedger">
@@ -754,9 +977,38 @@ h1 em{font-style:italic;color:var(--sindoor)}
 </div>
 
 <div id="tabClientForms" style="display:none">
- <div class="cf-wrap">
-  <div class="cf-head"><div><h2>Client Event Details</h2><p>Create one private, pre-filled link per confirmed couple. Nothing reaches the crew until you approve it.</p></div></div>
-  <div class="cf-grid">
+ <div class="cw-shell">
+  <aside class="cw-sidebar">
+   <div class="cw-sidebar-head">
+    <div class="cw-sidebar-head-row"><div><h2>Clients</h2><p>One home for every confirmed couple.</p></div><button class="cw-new" type="button" title="Create client link" aria-label="Create client link" onclick="openClientSetup()">+</button></div>
+    <input class="cw-search" id="cwSearch" type="search" placeholder="Search couples…" oninput="renderClientsWorkspace()">
+   </div>
+   <div class="cw-client-list" id="cwClientList"></div>
+  </aside>
+  <main class="cw-main">
+   <div class="cw-empty" id="cwEmpty"><div><div class="cw-empty-mark">&amp;</div><h3>Select a client</h3><p>Event details, lists and boards, shoot operations, deliveries and costs will appear together here.</p></div></div>
+   <section class="cw-client" id="cwClient" style="display:none">
+    <header class="cw-client-head">
+     <div class="cw-head-top"><div><div class="cw-kicker" id="cwKicker">Client workspace</div><h2 id="cwTitle"></h2><div class="cw-client-summary" id="cwSummary"></div></div><span class="cw-stage" id="cwStage">Planning</span></div>
+     <div class="cw-head-actions" id="cwHeadActions"></div>
+     <div class="cw-readiness" id="cwReadiness"></div>
+    </header>
+    <nav class="cw-subnav" aria-label="Client workspace sections">
+     <button id="cwNavOverview" class="on" onclick="setClientSection('overview')">Overview</button>
+     <button id="cwNavDetails" onclick="setClientSection('details')">Event Details</button>
+     <button id="cwNavResources" onclick="setClientSection('resources')">Lists &amp; Boards</button>
+     <button id="cwNavShoots" onclick="setClientSection('shoots')">Shoot Operations</button>
+     <button id="cwNavDeliveries" onclick="setClientSection('deliveries')">Deliveries</button>
+     <button id="cwNavCosts" onclick="setClientSection('costs')">Costs</button>
+    </nav>
+    <div class="cw-panel" id="cwPanel"></div>
+   </section>
+  </main>
+ </div>
+
+ <div class="cw-drawer" id="cwSetupDrawer" onclick="if(event.target===this)closeClientSetup()">
+  <div class="cw-drawer-panel">
+   <div class="cw-drawer-head"><div><h3>Client event link</h3><p>The existing private URL remains unchanged when you edit a setup.</p></div><button class="cw-drawer-close" type="button" aria-label="Close client setup" onclick="closeClientSetup()">×</button></div>
    <section class="cf-create">
     <h3>Prepare client link</h3>
     <p class="hint" style="margin:6px 0 16px">Planner details are only a starting point. Review and customise everything before creating the private link.</p>
@@ -768,7 +1020,6 @@ h1 em{font-style:italic;color:var(--sindoor)}
     <button class="btn-main teal" id="cfSaveButton" onclick="createClientForm()">Create link from this setup</button>
     <button class="btn-main" id="cfCancelEdit" style="display:none;margin-top:8px;background:#35332D;color:#C5C0B5" onclick="cancelClientFormEdit()">Cancel editing</button>
    </section>
-   <section><div class="cf-list" id="cfList"><div class="cf-empty">No client forms created yet.</div></div></section>
   </div>
  </div>
 </div>
@@ -776,7 +1027,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
 <div id="tabProd" style="display:none">
  <div class="prod-wrap">
   <div class="prod-head">
-    <h2>Deliveries &amp; Costs</h2>
+    <h2>Business Overview</h2>
     <div style="display:flex;gap:12px;align-items:baseline">
       <span id="prodCount" style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-soft)"></span>
       <button class="btn-mini" onclick="toggleProdNew()">+ New wedding</button>
@@ -884,7 +1135,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
 <div id="tabShots" style="display:none">
  <div class="plan-wrap">
   <div class="prod-head">
-    <h2>Shot Lists &amp; Mood Boards</h2>
+    <h2>Lists, Boards &amp; Checklist Archive</h2>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <input id="shotFClient" placeholder="Filter by couple…" oninput="renderShots()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);width:170px">
       <input id="shotFType" list="shotTypeOptions" placeholder="All events" oninput="renderShots()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);width:150px">
@@ -1096,6 +1347,10 @@ let approvedShootSyncRunning=false;
 let clientFormDraft = []; // editable setup before a private link exists
 let clientFormEditId = null; // existing private link currently being edited
 let openClientCards = new Set(); // expanded client detail cards; collapsed by default
+let cwSelectedKey = localStorage.getItem('totw_client_workspace') || '';
+let cwSection = localStorage.getItem('totw_client_section') || 'overview';
+let cwDeliveryFormOpen = false;
+let cwProductionFormOpen = false;
 let planRowMeta = {};    // runtime: rowKey -> identity for editors
 let openProdId = null;
 let evEdit = null;       // enquiry date-event editor {id,date}
@@ -1180,24 +1435,24 @@ function start(){
   setCat("WARM");
   liveMode=true;
   banner('live','Private live sync on. Signed in as '+editor+'.');
-  db.ref('calendarSeed').on('value',s=>{const v=s.val()||[];BAKED=Array.isArray(v)?v:Object.values(v);seedLoaded=true;refresh();publishCrewEvents();});
+  db.ref('calendarSeed').on('value',s=>{const v=s.val()||[];BAKED=Array.isArray(v)?v:Object.values(v);seedLoaded=true;refresh();publishCrewEvents();renderClientsWorkspace();});
   db.ref('calendarNotes').on('value',s=>{TBD=s.val()||{};renderCalendar();});
   db.ref('rosterSeed').on('value',s=>{const v=s.val()||[];ROSTER_SEED=Array.isArray(v)?v:Object.values(v);});
-  db.ref('bookings').on('value',s=>{teamBookings=s.val()||{};bookingsLoaded=true;refresh();publishCrewEvents();});
-  db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};enquiriesLoaded=true;refresh();publishCrewEvents();});
+  db.ref('bookings').on('value',s=>{teamBookings=s.val()||{};bookingsLoaded=true;refresh();publishCrewEvents();renderClientsWorkspace();});
+  db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};enquiriesLoaded=true;refresh();publishCrewEvents();renderClientsWorkspace();});
   db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
-  db.ref('prod').on('value',s=>{prods=s.val()||{};renderProdAll();});
+  db.ref('prod').on('value',s=>{prods=s.val()||{};renderProdAll();renderClientsWorkspace();});
   db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
-  db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();renderCheckinFormOptions();renderMoodSec();previewClientFormEvents();publishCrewEvents();});
+  db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();renderCheckinFormOptions();renderMoodSec();previewClientFormEvents();publishCrewEvents();renderClientsWorkspace();});
   db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();});
   db.ref('sentSnaps').on('value',s=>{sentSnaps=s.val()||{};renderPlanTeam();});
-  db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();});
-  db.ref('shotLists').on('value',s=>{shotLists=s.val()||{};loadShotEd();refreshShotTypeOptions();ciChecklistStatus();});
-  db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();});
-  db.ref('shotEventMoods').on('value',s=>{shotEventMoods=s.val()||{};renderEventBoards();});
+  db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();renderClientsWorkspace();});
+  db.ref('shotLists').on('value',s=>{shotLists=s.val()||{};loadShotEd();refreshShotTypeOptions();ciChecklistStatus();renderClientsWorkspace();});
+  db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();renderClientsWorkspace();});
+  db.ref('shotEventMoods').on('value',s=>{shotEventMoods=s.val()||{};renderEventBoards();renderClientsWorkspace();});
   db.ref('crewProfiles').on('value',s=>{crewProfiles=s.val()||{};renderCheckinTeam();renderCrewProfiles();});
-  db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};checkinEventsLoaded=true;renderCheckinEvents();ensureApprovedClientShoots();});
-  db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};ciBackfillVenuePins();renderCheckinEvents();});
+  db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};checkinEventsLoaded=true;renderCheckinEvents();ensureApprovedClientShoots();renderClientsWorkspace();});
+  db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};ciBackfillVenuePins();renderCheckinEvents();renderClientsWorkspace();});
   db.ref('clientForms').on('value',s=>{clientForms=s.val()||{};clientFormsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();});
   db.ref('clientSubmissions').on('value',s=>{clientSubmissions=s.val()||{};clientSubmissionsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();});
   db.ref('clientApprovals').on('value',s=>{clientApprovals=s.val()||{};clientApprovalsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();});
@@ -2192,32 +2447,33 @@ function calendarCoupleMap(){
 
 /* ---- view tabs ---- */
 function setView(v){
+  v=({clientforms:'clients',prod:'business',shots:'settings',checkins:'shoots'})[v]||v;
   const led=document.getElementById('tabLedger'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots'),ci=document.getElementById('tabCheckins'),cf=document.getElementById('tabClientForms');
   if(!led||!pr||!pl||!sh||!ci||!cf)return;
   document.getElementById('vtEnq').classList.toggle('on',v==='ledger');
   document.getElementById('vtPlan').classList.toggle('on',v==='plan');
-  document.getElementById('vtProd').classList.toggle('on',v==='prod');
-  document.getElementById('vtShots').classList.toggle('on',v==='shots');
-  document.getElementById('vtCheckins').classList.toggle('on',v==='checkins');
-  document.getElementById('vtClientForms').classList.toggle('on',v==='clientforms');
+  document.getElementById('vtProd').classList.toggle('on',v==='business');
+  document.getElementById('vtShots').classList.toggle('on',v==='settings');
+  document.getElementById('vtCheckins').classList.toggle('on',v==='shoots');
+  document.getElementById('vtClientForms').classList.toggle('on',v==='clients');
   led.style.display=v==='ledger'?'':'none';
   pl.style.display=v==='plan'?'':'none';
-  pr.style.display=v==='prod'?'':'none';
-  sh.style.display=v==='shots'?'':'none';
-  ci.style.display=v==='checkins'?'':'none';
-  cf.style.display=v==='clientforms'?'':'none';
-  const titles={ledger:'Dates <em>&amp;</em> Enquiries',clientforms:'Client Event <em>Details</em>',plan:'Crew <em>Planning</em>',shots:'Shot Lists <em>&amp; Mood Boards</em>',checkins:'Shoot <em>Operations</em>',prod:'Deliveries <em>&amp; Costs</em>'};
+  pr.style.display=v==='business'?'':'none';
+  sh.style.display=v==='settings'?'':'none';
+  ci.style.display=v==='shoots'?'':'none';
+  cf.style.display=v==='clients'?'':'none';
+  const titles={ledger:'Dates <em>&amp;</em> Enquiries',clients:'Client <em>Workspaces</em>',plan:'Crew <em>Planner</em>',settings:'Studio <em>Settings</em>',shoots:'Shoot <em>Operations</em>',business:'Business <em>Overview</em>'};
   const pageTitle=document.getElementById('pageTitle'),calendarYearTabs=document.getElementById('calendarYearTabs'),calendarLegend=document.getElementById('calendarLegend');
   if(pageTitle)pageTitle.innerHTML=titles[v]||titles.ledger;
   if(calendarYearTabs)calendarYearTabs.style.display=v==='ledger'?'':'none';
   if(calendarLegend)calendarLegend.style.display=v==='ledger'?'':'none';
   localStorage.setItem('totw_view',v);
   hidePop();
-  if(v==='prod')renderProdAll();
+  if(v==='business')renderProdAll();
   if(v==='plan')renderPlan();
-  if(v==='shots'){renderShots();renderEventBoards();renderMoodSec();loadShotEd();}
-  if(v==='checkins'){renderCheckinFormOptions();renderCheckinEvents();}
-  if(v==='clientforms'){renderClientForms();previewClientFormEvents();}
+  if(v==='settings'){renderShots();renderEventBoards();renderMoodSec();loadShotEd();}
+  if(v==='shoots'){renderCheckinFormOptions();renderCheckinEvents();}
+  if(v==='clients'){renderClientForms();}
 }
 function restoreView(){setView(localStorage.getItem('totw_view')||'ledger');}
 
@@ -3699,6 +3955,246 @@ const ciScheduledCoverage=(start,end)=>{if(!/^\d{2}:\d{2}$/.test(start||'')||!/^
 const ciDateLong=iso=>{if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);return `${MN[m-1]} ${d}, ${y}`;};
 const ciTodayIso=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;};
 
+/* ---------------- unified client workspaces (read-through UI layer) ---------------- */
+function cwKey(name){
+  return String(name||'').trim().toLowerCase().replace(/\band\b/g,'&').replace(/\s*&\s*/g,' & ').replace(/\s+/g,' ');
+}
+function cwDirectory(){
+  const map=new Map(),ensure=(name,rank=0)=>{
+    const clean=String(name||'').trim();if(!clean)return null;
+    const key=cwKey(clean);if(!map.has(key))map.set(key,{key,name:clean,nameRank:rank,dates:new Set(),formIds:[],prodIds:[],shootIds:[],submissionIds:[]});
+    const row=map.get(key);if(rank>row.nameRank){row.name=clean;row.nameRank=rank;}return row;
+  },addDate=(row,date)=>{if(row&&/^\d{4}-\d{2}-\d{2}$/.test(date||''))row.dates.add(date);};
+  Object.entries(calendarCoupleMap()).forEach(([name,x])=>{const row=ensure(name,1);(x.dates||[]).forEach(d=>addDate(row,d));});
+  Object.values(enquiries||{}).forEach(x=>{if(!x||x.status!=='BOOKED')return;const row=ensure(x.name,1);(x.dates||[]).forEach(d=>addDate(row,d));});
+  Object.entries(clientForms||{}).forEach(([id,f])=>{if(!f)return;const row=ensure(f.couple,4);row.formIds.push(id);Object.values(f.events||{}).forEach(e=>addDate(row,e&&e.date));});
+  Object.entries(prods||{}).forEach(([id,p])=>{if(!p)return;const row=ensure(p.couple,3);row.prodIds.push(id);(p.days||[]).forEach(d=>addDate(row,d&&d.date));});
+  Object.entries(checkinEvents||{}).forEach(([id,e])=>{if(!e)return;const row=ensure(e.couple,3);row.shootIds.push(id);addDate(row,e.date);});
+  Object.entries(shotSubs||{}).forEach(([id,s])=>{if(!s)return;const row=ensure(s.client,2);row.submissionIds.push(id);addDate(row,s.eventDate);});
+  return [...map.values()].map(row=>({...row,dates:[...row.dates].sort()})).sort((a,b)=>{
+    const today=ciTodayIso(),an=a.dates.find(d=>d>=today)||'9999-12-31',bn=b.dates.find(d=>d>=today)||'9999-12-31';
+    if(an!==bn)return an.localeCompare(bn);
+    const al=a.dates.at(-1)||'',bl=b.dates.at(-1)||'';if(an==='9999-12-31'&&al!==bl)return bl.localeCompare(al);
+    return a.name.localeCompare(b.name);
+  });
+}
+function cwEntry(){return cwDirectory().find(x=>x.key===cwSelectedKey)||null;}
+function cwPrimaryForm(entry){
+  return (entry.formIds||[]).map(id=>[id,clientForms[id]]).filter(([,f])=>f).sort((a,b)=>(b[1].updatedAt||b[1].createdAt||0)-(a[1].updatedAt||a[1].createdAt||0))[0]||null;
+}
+function cwPrimaryProd(entry){
+  return (entry.prodIds||[]).map(id=>[id,prods[id]]).filter(([,p])=>p).sort((a,b)=>(b[1].t||0)-(a[1].t||0))[0]||null;
+}
+function cwShootComplete(id,e){
+  const crew=Object.keys(e&&e.crew||{}),all=checkinAttendance[id]||{};
+  return !!(e&&(e.completedAt||e.status==='completed'||crew.length&&crew.every(uid=>all[uid]&&all[uid].checkedOutAt)));
+}
+function cwUnifiedEvents(entry){
+  const rows=new Map(),add=(name,date,extra={},priority=0)=>{
+    const clean=String(name||'Event').trim()||'Event';if(!date)return;
+    const key=`${date}|${shotListKey(clean)}`,old=rows.get(key);
+    if(!old||priority>=old.priority)rows.set(key,{...(old||{}),name:clean,date,priority,...extra});
+  };
+  (entry.formIds||[]).forEach(formId=>{const f=clientForms[formId]||{},s=clientSubmissions[formId]||{};Object.entries(f.events||{}).forEach(([eventId,e])=>add(e.name,e.date,{formId,eventId,details:(s.events||{})[eventId]||{},order:Number(e.order)||0},4));});
+  (entry.shootIds||[]).forEach(shootId=>{const e=checkinEvents[shootId];if(!e)return;const refs=Array.isArray(e.linkedEvents)?e.linkedEvents:Object.values(e.linkedEvents||{});if(refs.length)refs.forEach((r,i)=>add(r.name||e.eventName,r.date||e.date,{shootId,formId:r.formId||'',eventId:r.eventId||'',order:Number(r.order)||i},3));else ciEventNames(e).forEach((name,i)=>add(name,e.date,{shootId,order:i},3));});
+  Object.values(plans||{}).forEach(p=>{if(p&&cwKey(p.couple)===entry.key)eventTypeParts(p.event).forEach((name,i)=>add(name,p.iso,{order:i},2));});
+  const cal=calendarCoupleMap()[entry.name];if(cal)Object.entries(cal.events||{}).forEach(([date,names])=>(names||[]).forEach((name,i)=>add(name,date,{order:i},1)));
+  return [...rows.values()].sort((a,b)=>a.date.localeCompare(b.date)||String(a.details&&a.details.startTime||'23:59').localeCompare(String(b.details&&b.details.startTime||'23:59'))||a.order-b.order||a.name.localeCompare(b.name));
+}
+function cwListItems(eventName,team,assignedKey=''){
+  const key=assignedKey||shotListKey(eventName),remote=shotLists&&shotLists[key]&&shotLists[key][team];
+  const arr=Array.isArray(remote)?remote:(remote&&typeof remote==='object'?Object.values(remote):[]);
+  if(arr.length)return {items:arr,source:'Assigned common list',key};
+  const fallback=(SHOT_DEFAULTS[shotListKey(eventName)]&&SHOT_DEFAULTS[shotListKey(eventName)][team])||[];
+  return {items:fallback,source:fallback.length?'Built-in safety list':'No list assigned',key};
+}
+function cwShootResource(id,e){
+  const names=ciEventNames(e),crew=Object.values(e.crew||{}),teams=[...new Set(crew.map(c=>ciTeamType(c.role)).filter(Boolean))];
+  if(!teams.length){const plan=plannerRowForEvent(e.date,e.couple,names[0]),flags=planTeamFlags(plan);if(flags.candid)teams.push('candid');if(flags.traditional)teams.push('traditional');}
+  let listReady=true,listTotal=0,boardTotal=0;
+  const events=names.map(name=>{
+    const a=ciResourceAssignment(e,name),candid=cwListItems(name,'candid',a.candidListKey||''),traditional=cwListItems(name,'traditional',a.traditionalListKey||'');
+    const specific=shotMoods[moodKey(e.couple,name,e.date)]||{},common=shotEventMoods[eventBoardKey(name)]||{};
+    const boards=[
+      a.pinterestUrl||specific.url||(common.active!==false?common.url:'')||'',
+      a.portraitMoodUrl||'',
+      a.otherMoodUrl||''
+    ].filter(Boolean);
+    if(teams.includes('candid')){listTotal++;if(!candid.items.length)listReady=false;}
+    if(teams.includes('traditional')){listTotal++;if(!traditional.items.length)listReady=false;}
+    boardTotal+=boards.length;
+    return {name,assignment:a,candid,traditional,boards,common,specific};
+  });
+  return {events,teams,listReady:listTotal>0&&listReady,listTotal,boardTotal};
+}
+function cwState(entry){
+  const formRow=cwPrimaryForm(entry),prodRow=cwPrimaryProd(entry),shoots=(entry.shootIds||[]).map(id=>[id,checkinEvents[id]]).filter(([,e])=>e),events=cwUnifiedEvents(entry);
+  const formId=formRow&&formRow[0],form=formRow&&formRow[1],submission=formId?clientSubmissions[formId]||{}:{},approval=formId?clientApprovals[formId]||{}:{};
+  const formEvents=form?Object.entries(form.events||{}):[],detailDone=formEvents.filter(([id])=>clientEventDone((submission.events||{})[id])).length,detailsOk=!!form&&approval.status==='approved';
+  const activeShoots=shoots.filter(([id,e])=>!cwShootComplete(id,e)),completedShoots=shoots.filter(([id,e])=>cwShootComplete(id,e));
+  const crewReady=!!shoots.length&&activeShoots.every(([id,e])=>{const summary=ciRequirementSummary(e.crew||{},ciRequirementsForEvent(e));return Object.keys(e.crew||{}).length>0&&(!summary.required||summary.filled>=summary.required);});
+  const resourceRows=activeShoots.map(([id,e])=>cwShootResource(id,e)),resourcesOk=!!resourceRows.length&&resourceRows.every(x=>x.listReady);
+  const prodId=prodRow&&prodRow[0],prod=prodRow&&prodRow[1],stages=prod?stagesFor(prod):[],stageDone=prod?stages.filter(s=>(prod.stages||{})[s.k]&&(prod.stages||{})[s.k].done).length:0,deliveriesOk=!!prod&&!!stages.length&&stageDone===stages.length;
+  const costs=prod?crewCost(prod):{total:0,byRole:{},byPerson:{}},costsOk=!!prod&&Number(prod.pkg)>0;
+  const today=ciTodayIso(),live=shoots.some(([id,e])=>e.date===today&&Object.values(checkinAttendance[id]||{}).some(a=>a&&a.checkedInAt&&!a.checkedOutAt));
+  const future=events.some(e=>e.date>=today),allShootsComplete=!!shoots.length&&completedShoots.length===shoots.length;
+  let stage='Planning',stageClass='';
+  if(live){stage='Live';stageClass='live';}
+  else if(deliveriesOk){stage='Closed';stageClass='ready';}
+  else if(allShootsComplete||(!future&&prod)){stage='Delivering';stageClass='';}
+  else if(detailsOk&&crewReady&&resourcesOk){stage='Ready';stageClass='ready';}
+  return {entry,events,formRow,formId,form,submission,approval,formEvents,detailDone,detailsOk,shoots,activeShoots,completedShoots,crewReady,resourceRows,resourcesOk,prodRow,prodId,prod,stages,stageDone,deliveriesOk,costs,costsOk,stage,stageClass};
+}
+function cwStatusCopy(state){
+  const detailTotal=state.formEvents.length,boards=state.resourceRows.reduce((n,x)=>n+x.boardTotal,0),crewTotal=state.shoots.reduce((n,[,e])=>n+Object.keys(e.crew||{}).length,0);
+  return [
+    {section:'details',label:'Client details',value:state.form?`${state.detailDone}/${detailTotal} complete`:'Link not created',kind:state.detailsOk?'ok':state.detailDone?'warn':''},
+    {section:'shoots',label:'Crew & shoots',value:state.shoots.length?`${crewTotal} crew · ${state.shoots.length} shoots`:'Not prepared',kind:state.crewReady?'ok':''},
+    {section:'resources',label:'Lists & boards',value:state.resourceRows.length?`${state.resourcesOk?'Lists ready':'Lists pending'} · ${boards} boards`:'Not prepared',kind:state.resourcesOk?'ok':state.resourceRows.length?'warn':''},
+    {section:'deliveries',label:'Deliveries',value:state.prod?`${state.stageDone}/${state.stages.length} complete`:'Not started',kind:state.deliveriesOk?'ok':state.prod?'warn':''},
+    {section:'costs',label:'Costs',value:state.prod?`${inrP(state.costs.total)} crew cost`:'Not started',kind:state.costsOk?'ok':state.prod?'warn':''}
+  ];
+}
+function renderClientsWorkspace(){
+  const listEl=document.getElementById('cwClientList');if(!listEl)return;
+  const query=String(document.getElementById('cwSearch')?.value||'').trim().toLowerCase(),all=cwDirectory(),list=all.filter(x=>!query||x.name.toLowerCase().includes(query));
+  if(cwSelectedKey&&!all.some(x=>x.key===cwSelectedKey))cwSelectedKey='';
+  if(!cwSelectedKey&&all.length)cwSelectedKey=all[0].key;
+  listEl.innerHTML=list.length?list.map(entry=>{const state=cwState(entry),next=entry.dates.find(d=>d>=ciTodayIso()),dot=state.stage==='Live'?'live':state.detailsOk&&state.crewReady&&state.resourcesOk?'ready':'attention';return `<button type="button" class="cw-client-item ${entry.key===cwSelectedKey?'on':''}" data-client-key="${esc(entry.key)}" onclick="selectClientWorkspace(this.dataset.clientKey)"><span class="cw-client-item-top"><b>${esc(entry.name)}</b><i class="cw-item-dot ${dot}"></i></span><small>${esc(state.stage)} · ${state.events.length} event${state.events.length===1?'':'s'}${next?' · '+esc(fmt(next)):''}</small></button>`;}).join(''):'<div class="empty" style="padding:22px 10px">No matching clients.</div>';
+  const selected=all.find(x=>x.key===cwSelectedKey)||null;renderClientWorkspaceMain(selected);
+}
+function selectClientWorkspace(key){
+  cwSelectedKey=String(key||'');cwSection='overview';cwDeliveryFormOpen=false;cwProductionFormOpen=false;
+  localStorage.setItem('totw_client_workspace',cwSelectedKey);localStorage.setItem('totw_client_section',cwSection);renderClientsWorkspace();
+  if(innerWidth<721)document.getElementById('cwClient')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function setClientSection(section){
+  cwSection=['overview','details','resources','shoots','deliveries','costs'].includes(section)?section:'overview';
+  localStorage.setItem('totw_client_section',cwSection);renderClientsWorkspace();
+}
+function renderClientWorkspaceMain(entry){
+  const empty=document.getElementById('cwEmpty'),box=document.getElementById('cwClient');if(!empty||!box)return;
+  if(!entry){empty.style.display='grid';box.style.display='none';return;}
+  empty.style.display='none';box.style.display='block';const state=cwState(entry),next=entry.dates.find(d=>d>=ciTodayIso()),dates=entry.dates;
+  document.getElementById('cwTitle').textContent=entry.name;
+  document.getElementById('cwSummary').textContent=`${state.events.length} event${state.events.length===1?'':'s'}${dates.length?' · '+ciDateLong(dates[0])+(dates.length>1?' – '+ciDateLong(dates.at(-1)):''):''}${next?' · Next '+ciDateLong(next):''}`;
+  const stage=document.getElementById('cwStage');stage.textContent=state.stage;stage.className='cw-stage '+state.stageClass;
+  document.getElementById('cwHeadActions').innerHTML=state.formId?`${state.form.open!==false&&!state.form.locked?`<button class="btn-mini" onclick="shareClientForm('${state.formId}')">WhatsApp link</button>`:''}<button class="btn-mini" onclick="copyText(clientPortalUrl('${state.formId}'),'Private client link copied.')">Copy client link</button><button class="btn-mini" onclick="openClientSetupForSelected()">Edit setup</button>`:`<button class="btn-mini" onclick="openClientSetupForSelected()">Create client link</button>`;
+  document.getElementById('cwReadiness').innerHTML=cwStatusCopy(state).map(x=>`<button type="button" class="cw-ready-item ${x.kind}" onclick="setClientSection('${x.section}')"><span>${esc(x.label)}</span><b>${esc(x.value)}</b></button>`).join('');
+  ['Overview','Details','Resources','Shoots','Deliveries','Costs'].forEach(name=>document.getElementById('cwNav'+name)?.classList.toggle('on',cwSection===name.toLowerCase()));
+  const panel=document.getElementById('cwPanel');
+  panel.innerHTML=({overview:cwRenderOverview,details:cwRenderDetails,resources:cwRenderResources,shoots:cwRenderShoots,deliveries:cwRenderDeliveries,costs:cwRenderCosts})[cwSection](state);
+}
+function cwIssues(state){
+  const out=[];
+  if(!state.form)out.push({section:'details',title:'Create the client event-details link',copy:'The couple does not yet have a private event-details workspace.',sev:'critical'});
+  else if(state.approval.status==='changes_pending')out.push({section:'details',title:'Review the client’s latest changes',copy:'Confirmed details were reopened and the new edits are waiting for approval.',sev:'critical'});
+  else if(state.submission.submittedAt&&state.detailDone<state.formEvents.length)out.push({section:'details',title:'Client details are incomplete',copy:`${state.detailDone} of ${state.formEvents.length} events have timings, venue and Maps link.`,sev:'critical'});
+  else if(state.approval.status!=='approved')out.push({section:'details',title:state.submission.submittedAt?'Approve the submitted details':'Waiting for client details',copy:state.submission.submittedAt?'Review once, then publish the events to Shoot Operations.':'The private link is active; unfinished information can be saved and continued later.',sev:'warn'});
+  state.activeShoots.forEach(([id,e])=>{
+    if(!Object.keys(e.crew||{}).length)out.push({section:'shoots',title:`${e.eventName||'Event'} needs crew`,copy:`${ciDateLong(e.date)} · No one is assigned yet.`,sev:'critical'});
+    if(!e.mapsUrl)out.push({section:'details',title:`${e.eventName||'Event'} needs a Maps link`,copy:`${ciDateLong(e.date)} · Add the confirmed venue pin before check-in.`,sev:'critical'});
+    const resource=cwShootResource(id,e);if(!resource.listReady)out.push({section:'resources',title:`${e.eventName||'Event'} needs a shot list`,copy:'Assign the common Candid and Traditional lists required by this crew.',sev:'warn'});
+    const crew=Object.keys(e.crew||{}),attendance=checkinAttendance[id]||{},unconfirmed=crew.filter(uid=>!attendance[uid]?.confirmedAt);
+    if(e.date>=ciTodayIso()&&crew.length&&unconfirmed.length)out.push({section:'shoots',title:`${unconfirmed.length} crew confirmation${unconfirmed.length===1?' is':'s are'} pending`,copy:`${e.eventName||'Event'} · ${ciDateLong(e.date)}`,sev:'warn'});
+  });
+  if(state.prod)prodIssues(state.prod,Date.now()).slice(0,3).forEach(x=>out.push({section:'deliveries',title:x.t,copy:'Open Deliveries to resolve this production exception.',sev:x.sev==='r'?'critical':'warn'}));
+  return out;
+}
+function cwRenderOverview(state){
+  const issues=cwIssues(state),next=state.events.find(e=>e.date>=ciTodayIso()),shootsDone=state.completedShoots.length,totalShoots=state.shoots.length;
+  const issueHtml=issues.length?issues.slice(0,8).map(x=>`<div class="cw-issue ${x.sev}"><i></i><div><b>${esc(x.title)}</b><small>${esc(x.copy)}</small></div><button onclick="setClientSection('${x.section}')">Open</button></div>`).join(''):`<div class="cw-issue good"><i></i><div><b>Nothing urgent</b><small>This client has no current operational exceptions.</small></div><button onclick="setClientSection('details')">Review</button></div>`;
+  return `<div class="cw-panel-head"><div><h3>Overview</h3><p>Only unfinished work and the next useful action.</p></div></div>
+    <div class="cw-grid three">
+      <div class="cw-card"><div class="cw-card-label">Next event</div><div class="cw-card-value">${next?esc(fmt(next.date)):'—'}</div><div class="cw-card-copy">${next?esc(next.name)+' · '+esc(ciDateLong(next.date)):'No upcoming event is currently recorded.'}</div></div>
+      <div class="cw-card ${state.detailsOk?'good':''}"><div class="cw-card-label">Client details</div><div class="cw-card-value">${state.form?state.detailDone+'/'+state.formEvents.length:'Not started'}</div><div class="cw-card-copy">${state.detailsOk?'Approved and published to the crew workflow.':'Incomplete details stay visible here until approved.'}</div></div>
+      <div class="cw-card ${totalShoots&&shootsDone===totalShoots?'good':''}"><div class="cw-card-label">Shoot progress</div><div class="cw-card-value">${totalShoots?shootsDone+'/'+totalShoots:'Not prepared'}</div><div class="cw-card-copy">${totalShoots?'Completed event shoots.':'Shoot records appear after approved client details are published.'}</div></div>
+    </div>
+    <div style="height:18px"></div><div class="cw-panel-head"><div><h3 style="font-size:23px">Needs attention</h3><p>${issues.length} current ${issues.length===1?'item':'items'}</p></div></div><div class="cw-issue-list">${issueHtml}</div>
+    ${state.events.length?`<div style="height:22px"></div><div class="cw-panel-head"><div><h3 style="font-size:23px">Event timeline</h3><p>Same-day events remain separate records.</p></div><button class="btn-mini" onclick="setClientSection('details')">View details</button></div><div class="cw-event-stack">${state.events.map(e=>cwEventSummary(e,state)).join('')}</div>`:''}`;
+}
+function cwEventSummary(e,state){
+  const shoot=e.shootId?checkinEvents[e.shootId]:state.shoots.find(([,x])=>x.date===e.date&&ciEventNames(x).some(n=>shotListKey(n)===shotListKey(e.name)))?.[1],details=e.details||{},done=clientEventDone(details);
+  return `<article class="cw-event-card"><div class="cw-event-top"><div><div class="cw-date">${esc(ciDateLong(e.date))}${details.startTime?' · '+esc(ciFmtTime(details.startTime)):''}</div><h4>${esc(e.name)}</h4></div><span class="cw-event-status ${done?'ok':details.startTime||details.venueName?'warn':'bad'}">${done?'Details complete':details.startTime||details.venueName?'In progress':'Details awaited'}</span></div><div class="cw-event-details"><div class="cw-detail"><span>Venue</span><b>${esc(details.venueName||shoot?.venueName||'Awaited')}</b></div><div class="cw-detail"><span>Crew</span><b>${shoot?Object.keys(shoot.crew||{}).length+' assigned':'Not prepared'}</b></div><div class="cw-detail"><span>Event record</span><b>${e.shootId||shoot?'Shoot prepared':'Planning'}</b></div></div></article>`;
+}
+function cwRenderDetails(state){
+  if(!state.form)return `<div class="cw-panel-head"><div><h3>Event Details</h3><p>Create one private link using the events already in Crew Planner.</p></div></div><div class="cw-empty-state"><h4>No client link yet</h4><p>The setup reads Crew Planner as a starting point. The URL and saved records remain stable after creation.</p><button class="btn-mini" onclick="openClientSetupForSelected()">Create client link</button></div>`;
+  const submitted=!!state.submission.submittedAt,[label,cl]=clientSubmissionStatus(state.formId),contact=state.submission.contact||{},snapshot=state.approval.snapshot||{};
+  const actions=`${state.form.open!==false&&!state.form.locked?`<button class="btn-mini" onclick="shareClientForm('${state.formId}')">WhatsApp</button>`:''}<button class="btn-mini" onclick="copyText(clientPortalUrl('${state.formId}'),'Private client link copied.')">Copy link</button><button class="btn-mini" onclick="editClientAnswers('${state.formId}')">Edit details</button><button class="btn-mini" onclick="openClientSetupForSelected()">Edit setup</button>${submitted&&state.approval.status!=='approved'?`<button class="btn-mini" onclick="approveClientForm('${state.formId}')">Approve &amp; publish</button>`:''}`;
+  const events=state.formEvents.sort((a,b)=>clientEventSortValue(a,state.submission).localeCompare(clientEventSortValue(b,state.submission))).map(([eventId,e])=>{const x=(state.submission.events||{})[eventId]||{},old=(snapshot.events||{})[eventId]||{},done=clientEventDone(x),diff=state.approval.status==='changes_pending'?clientDiffRows(old,x):'';return `<article class="cw-event-card"><div class="cw-event-top"><div><div class="cw-date">${esc(ciDateLong(e.date))} · ${esc(ciFmtTime(x.startTime))}${x.endTime?' – '+esc(ciFmtTime(x.endTime)):''}</div><h4>${esc(e.name)}</h4></div><span class="cw-event-status ${done?'ok':Object.keys(x).length?'warn':'bad'}">${done?'Complete':Object.keys(x).length?'In progress':'Awaited'}</span></div><div class="cw-event-details"><div class="cw-detail"><span>Venue</span><b title="${esc(x.venueName||'')}">${esc(x.venueName||'Awaited')}</b></div><div class="cw-detail"><span>Google Maps</span>${x.mapsUrl?`<a href="${esc(x.mapsUrl)}" target="_blank" rel="noopener">Open pin ↗</a>`:'<b>Awaited</b>'}</div><div class="cw-detail"><span>On-ground contact</span><b>${esc(x.contactName||x.contactPhone||'Optional')}</b></div></div>${x.brideReadyLocation||x.groomReadyLocation||x.notes?`<div class="cw-resource-grid" style="padding-top:14px">${x.brideReadyLocation?`<div class="cw-resource"><span>Bride preparation</span><b>${esc(x.brideReadyLocation)}</b></div>`:''}${x.groomReadyLocation?`<div class="cw-resource"><span>Groom preparation</span><b>${esc(x.groomReadyLocation)}</b></div>`:''}${x.notes?`<div class="cw-resource" style="grid-column:1/-1"><span>Important notes</span><b>${esc(x.notes)}</b></div>`:''}</div>`:''}${diff?`<div style="padding:0 14px 14px">${diff}</div>`:''}</article>`;}).join('');
+  return `<div class="cw-panel-head"><div><h3>Event Details</h3><p>${esc(label)} · ${state.detailDone}/${state.formEvents.length} events complete${contact.fullName?' · Last contributor '+esc(contact.fullName):''}</p></div><div class="cw-panel-actions">${actions}</div></div><div class="cw-event-stack">${events||'<div class="cw-empty-state">No events in this link.</div>'}</div>`;
+}
+function cwEventResourceCard(e,state){
+  const shootRow=e.shootId?[e.shootId,checkinEvents[e.shootId]]:state.shoots.find(([,x])=>x.date===e.date&&ciEventNames(x).some(n=>shotListKey(n)===shotListKey(e.name))),shootId=shootRow&&shootRow[0],shoot=shootRow&&shootRow[1];
+  const assignment=shoot?ciResourceAssignment(shoot,e.name):{},candid=cwListItems(e.name,'candid',assignment.candidListKey||''),traditional=cwListItems(e.name,'traditional',assignment.traditionalListKey||'');
+  const specific=shotMoods[moodKey(state.entry.name,e.name,e.date)]||{},common=shotEventMoods[eventBoardKey(e.name)]||{};
+  const eventBoard=assignment.pinterestUrl||specific.url||(common.active!==false?common.url:'')||'',portrait=assignment.portraitMoodUrl||'',other=assignment.otherMoodUrl||'';
+  const link=(label,url)=>`<div class="cw-resource"><span>${label}</span>${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Open board ↗</a>`:'<b>Optional · not added</b>'}</div>`;
+  return `<article class="cw-event-card"><div class="cw-event-top"><div><div class="cw-date">${esc(ciDateLong(e.date))}</div><h4>${esc(e.name)}</h4></div><span class="cw-event-status ${candid.items.length&&traditional.items.length?'ok':'bad'}">${candid.items.length&&traditional.items.length?'Lists ready':'List pending'}</span></div><div class="cw-resource-grid" style="padding-top:14px"><div class="cw-resource"><span>Candid list</span><b>${candid.items.length} shots · ${esc(candid.source)}</b></div><div class="cw-resource"><span>Traditional list</span><b>${traditional.items.length} shots · ${esc(traditional.source)}</b></div>${link('Event mood board',eventBoard)}${link('Portrait board',portrait)}${link('Other mood board',other)}</div><div class="cw-event-actions">${shootId?`<button class="btn-mini" onclick="cwOpenShoot('${shootId}')">Edit this event setup</button>`:'<button class="btn-mini" disabled>Approve details to prepare shoot</button>'}<button class="btn-mini" data-event-name="${esc(e.name)}" onclick="cwOpenSettings(this.dataset.eventName)">Edit common lists</button></div></article>`;
+}
+function cwRenderResources(state){
+  return `<div class="cw-panel-head"><div><h3>Lists &amp; Boards</h3><p>One event list can be reused everywhere; event, portrait and other boards remain optional per shoot.</p></div><button class="btn-mini" onclick="setView('settings')">Common templates</button></div>${state.events.length?`<div class="cw-event-stack">${state.events.map(e=>cwEventResourceCard(e,state)).join('')}</div>`:'<div class="cw-empty-state"><h4>No events yet</h4><p>Create the client event-details link first.</p></div>'}`;
+}
+function cwRenderShoots(state){
+  if(!state.shoots.length)return `<div class="cw-panel-head"><div><h3>Shoot Operations</h3><p>Every approved event remains an independent shoot.</p></div></div><div class="cw-empty-state"><h4>No shoot records yet</h4><p>Approve the client’s complete event details and each event will appear here automatically.</p><button class="btn-mini" onclick="setClientSection('details')">Open Event Details</button></div>`;
+  const cards=state.shoots.slice().sort((a,b)=>`${a[1].date||''} ${a[1].functionStart||''}`.localeCompare(`${b[1].date||''} ${b[1].functionStart||''}`)).map(([id,e])=>{
+    const all=checkinAttendance[id]||{},crew=Object.entries(e.crew||{}),confirmed=crew.filter(([uid])=>all[uid]?.confirmedAt).length,checked=crew.filter(([uid])=>all[uid]?.checkedInAt).length,out=crew.filter(([uid])=>all[uid]?.checkedOutAt).length,complete=cwShootComplete(id,e),cards=ciAdminCardSummary(crew,all);
+    const roster=crew.length?`<div class="cw-roster">${crew.map(([uid,c])=>{const a=all[uid]||{},status=a.checkedOutAt?'Checked out':a.checkedInAt?'Checked in':a.confirmedAt?'Confirmed':'Pending';return `<div class="cw-person"><div><b>${esc(c.name)}${c.isLead?' · Lead':''}</b><small>${esc(c.role)} · Arrival ${esc(ciFmtTime(c.arrivalTime||c.reportTime||e.reportingTime))}</small></div><small>${a.checkedInAt?esc(ciClock(a.checkedInAt)):'—'}</small><em>${esc(status)}</em></div>`;}).join('')}</div>`:'<div class="cw-empty-state" style="margin:0 14px 14px;padding:18px"><p style="margin:0">No crew assigned.</p></div>';
+    return `<article class="cw-shoot-card"><div class="cw-shoot-top"><div><div class="cw-date">${esc(ciDateLong(e.date))} · Arrival ${esc(ciFmtTime(e.reportingTime))}</div><h4>${esc(e.eventName||'Event')}</h4><div class="cw-card-copy">${esc(e.venueName||'Venue awaited')} · Event ${esc(ciFmtTime(e.functionStart||e.scheduledStart))}${e.functionEnd?' – '+esc(ciFmtTime(e.functionEnd)):''}</div></div><span class="cw-event-status ${complete?'ok':checked?'warn':crew.length?'':'bad'}">${complete?'Completed':checked?'Live':crew.length?'Prepared':'Crew pending'}</span></div><div class="cw-resource-grid"><div class="cw-resource"><span>Confirmation</span><b>${confirmed}/${crew.length} crew</b><div class="cw-progress"><i style="width:${crew.length?Math.round(confirmed/crew.length*100):0}%"></i></div></div><div class="cw-resource"><span>Attendance</span><b>${checked} in · ${out} out</b>${complete?`<a>${esc(cards.text)}</a>`:''}</div></div>${roster}<div class="cw-shoot-actions"><button class="btn-mini" onclick="cwOpenShoot('${id}')">Open full shoot</button>${!complete?`<button class="btn-mini" onclick="focusCiCrew('${id}')">Assign team</button><button class="btn-mini" onclick="shareCheckinEvent('${id}')">WhatsApp</button><button class="btn-mini" onclick="copyCheckinLink('${id}')">Copy link</button>`:''}</div></article>`;
+  }).join('');
+  return `<div class="cw-panel-head"><div><h3>Shoot Operations</h3><p>${state.activeShoots.length} active · ${state.completedShoots.length} completed</p></div><button class="btn-mini" onclick="setView('shoots')">All shoots</button></div><div class="cw-shoot-stack">${cards}</div>`;
+}
+function cwProductionEmpty(){
+  const state=cwEntry()?cwState(cwEntry()):null,dates=state?state.entry.dates:[];if(!cwProductionFormOpen)return `<div class="cw-empty-state"><h4>Production not started</h4><p>Create the record here using this client’s existing event dates. This does not alter Dates &amp; Enquiries or Crew Planner.</p><button class="btn-mini" onclick="cwProductionFormOpen=true;renderClientsWorkspace()">Start production record</button></div>`;
+  return `<div class="cw-empty-state"><h4>Start production record</h4><p>${dates.length} existing shoot date${dates.length===1?'':'s'} will be copied into this record.</p><div class="cw-inline-form" style="text-align:left"><input id="cwDiskA" placeholder="Hard disk I"><input id="cwDiskB" placeholder="Hard disk II"><label class="full" style="display:flex;gap:8px;align-items:center;font-size:11px;color:var(--ink-soft)"><input id="cwAlbum" type="checkbox" checked style="width:auto"> Album included in package</label><button class="btn-mini full" onclick="cwCreateProduction()">Create production record</button></div></div>`;
+}
+function cwRenderDeliveries(state){
+  if(!state.prod)return `<div class="cw-panel-head"><div><h3>Deliveries</h3><p>Intended and actual delivery progress for this client.</p></div></div>${cwProductionEmpty()}`;
+  const rows=state.stages.map(s=>{const st=(state.prod.stages||{})[s.k]||{},ss=stageState(state.prod,s,Date.now());return `<div class="cw-delivery ${st.done?'done':''}"><input type="checkbox" ${st.done?'checked':''} onchange="stageTog('${state.prodId}','${s.k}',this.checked)"><div><b>${esc(s.l)}</b><small>${esc(s.client?'Waiting on client':s.o)}${s.due?' · Intended '+esc(fullDate(s.due)):''}${st.at?' · Actual '+esc(st.at):''}</small></div><span class="cw-delivery-state">${st.done?'Done':esc(ss.txt)}</span></div>`;}).join('');
+  const add=cwDeliveryFormOpen?`<div class="cw-inline-form"><input id="cwStageName" class="full" placeholder="Deliverable name"><select id="cwStageOwner" style="padding:10px;border:1px solid var(--line);border-radius:8px;background:#111315;color:var(--ink)"><option>Sumenth</option><option>Mahima</option><option>Team</option><option>Client</option></select><input id="cwStageDue" type="date"><label class="full" style="display:flex;gap:8px;align-items:center;font-size:11px;color:var(--ink-soft)"><input id="cwStagePdf" type="checkbox" checked style="width:auto"> Include in client delivery PDF</label><button class="btn-mini full" onclick="cwSaveDeliverable('${state.prodId}')">Save deliverable</button></div>`:'';
+  return `<div class="cw-panel-head"><div><h3>Deliveries</h3><p>${state.stageDone}/${state.stages.length} complete · Albums stay outside the client delivery PDF.</p></div><div class="cw-panel-actions"><button class="btn-mini" onclick="cwDeliveryFormOpen=!cwDeliveryFormOpen;renderClientsWorkspace()">${cwDeliveryFormOpen?'Cancel':'+ Deliverable'}</button><button class="btn-mini" onclick="exportDeliveryPDF('${state.prodId}')">Delivery PDF</button></div></div><div class="cw-delivery-list">${rows||'<div class="cw-empty-state">No deliverables yet.</div>'}</div>${add}`;
+}
+function cwRenderCosts(state){
+  if(!state.prod)return `<div class="cw-panel-head"><div><h3>Costs</h3><p>Package value, crew spend and estimated working margin.</p></div></div>${cwProductionEmpty()}`;
+  const pkg=Number(state.prod.pkg)||0,total=state.costs.total,margin=pkg-total,pct=pkg?Math.round(total/pkg*100):null;
+  const roleRows=Object.entries(state.costs.byRole||{}).sort((a,b)=>b[1]-a[1]).map(([name,value])=>`<div class="cw-breakdown-row"><span>${esc(name)}</span><span>${inrP(value)}</span></div>`).join('')||'<div class="cw-card-copy">Crew costs appear as pay is logged against each shoot day.</div>';
+  const days=(state.prod.days||[]).map(d=>{const dayCost=(d.roles||[]).reduce((n,r)=>n+(Number(r.pay)||0),0);return `<article class="cw-event-card"><div class="cw-event-top"><div><div class="cw-date">${esc(ciDateLong(d.date))}</div><h4>${esc((d.events||[]).join(' + ')||'Shoot day')}</h4></div><span class="cw-event-status">${inrP(dayCost)}</span></div>${(d.roles||[]).length?`<div class="cw-roster">${d.roles.map(r=>`<div class="cw-person"><div><b>${esc(r.person||'Name pending')}</b><small>${esc(r.role)}</small></div><small></small><em>${inrP(r.pay||0)}</em></div>`).join('')}</div>`:''}</article>`;}).join('');
+  return `<div class="cw-panel-head"><div><h3>Costs</h3><p>Operational cost only; no invoice or payment processor is added.</p></div><div class="cw-panel-actions"><button class="btn-mini" onclick="exportCouplePDF('${state.prodId}')">Finance PDF</button><button class="btn-mini" onclick="cwOpenBusiness('${state.prodId}')">Detailed production</button></div></div>
+    <div class="cw-grid three"><div class="cw-card"><div class="cw-card-label">Package value</div><div class="cw-inline-form" style="display:block"><input type="number" value="${pkg||''}" placeholder="₹ Add package value" onchange="pkgSet('${state.prodId}',this.value)"></div></div><div class="cw-card"><div class="cw-card-label">Crew cost</div><div class="cw-money">${inrP(total)}</div><div class="cw-card-copy">${pct===null?'Add package value to calculate ratio.':pct+'% of package value'}</div></div><div class="cw-card ${pkg&&margin>=0?'good':'critical'}"><div class="cw-card-label">Estimated margin before overheads</div><div class="cw-money">${pkg?inrP(margin):'—'}</div><div class="cw-card-copy">Package minus recorded crew pay only.</div></div></div>
+    <div style="height:20px"></div><div class="cw-grid"><div class="cw-card"><div class="cw-card-label">Spend by role</div><div class="cw-breakdown">${roleRows}</div></div><div class="cw-card"><div class="cw-card-label">Data safety</div><div class="cw-card-value">${esc(state.prod.diskA||'Disk I')}</div><div class="cw-card-copy">Disk II · ${esc(state.prod.diskB||'Not named')}</div></div></div>
+    ${days?`<div style="height:22px"></div><div class="cw-panel-head"><div><h3 style="font-size:23px">Shoot-day costs</h3><p>Detailed card-copy logging remains in the production record.</p></div></div><div class="cw-event-stack">${days}</div>`:''}`;
+}
+function openClientSetup(name=''){
+  resetClientFormEditor();document.getElementById('cwSetupDrawer')?.classList.add('open');document.body.style.overflow='hidden';
+  if(name){document.getElementById('cfCouple').value=name;previewClientFormEvents();}
+}
+function openClientSetupForSelected(){
+  const entry=cwEntry();if(!entry)return;const form=cwPrimaryForm(entry);
+  document.getElementById('cwSetupDrawer')?.classList.add('open');document.body.style.overflow='hidden';
+  if(form)editClientForm(form[0]);else{resetClientFormEditor();document.getElementById('cfCouple').value=entry.name;previewClientFormEvents();}
+}
+function closeClientSetup(){document.getElementById('cwSetupDrawer')?.classList.remove('open');document.body.style.overflow='';}
+function cwOpenShoot(id){
+  const e=checkinEvents[id];if(!e)return;const scope=cwShootComplete(id,e)?'completed':'active',groupId=ciCoupleGroupId(scope,e.couple);
+  if(scope==='completed')ciCompletedOpen=true;ciCoupleGroupsOpen.add(groupId);ciEventCardsOpen.add(id);setView('shoots');renderCheckinEvents();setTimeout(()=>document.getElementById('ciEventCard_'+id)?.scrollIntoView({behavior:'smooth',block:'center'}),80);
+}
+function cwOpenSettings(eventName){
+  setView('settings');const sec=document.getElementById('shotEditSec');if(sec&&!sec.classList.contains('open'))toggleShotEdit();refreshShotEditTypeOptions();const select=document.getElementById('shotEdType');if(select&&[...select.options].some(o=>o.value===eventName)){select.value=eventName;loadShotEd();}setTimeout(()=>sec?.scrollIntoView({behavior:'smooth',block:'start'}),60);
+}
+function cwOpenBusiness(id){openProdId=id;setView('business');renderProd();setTimeout(()=>document.getElementById('prodList')?.scrollIntoView({behavior:'smooth',block:'start'}),60);}
+function cwCreateProduction(){
+  const entry=cwEntry();if(!entry)return;const a=document.getElementById('cwDiskA')?.value.trim(),b=document.getElementById('cwDiskB')?.value.trim();
+  if(!a||!b){toast('Name both hard disks before starting production.');return;}if(a.toLowerCase()===b.toLowerCase()){toast('Disk II must be a different drive.');return;}
+  const events=cwUnifiedEvents(entry),dates=entry.dates.length?entry.dates:[...new Set(events.map(e=>e.date))].sort();if(!dates.length){toast('No shoot dates are available for this client.');return;}
+  const id=uid('p'),eventMap={};events.forEach(e=>(eventMap[e.date]=eventMap[e.date]||[]).push(e.name));
+  prods[id]={couple:entry.name,diskA:a,diskB:b,deliv:{album:!!document.getElementById('cwAlbum')?.checked},days:dates.map(date=>({date,events:[...new Set(eventMap[date]||[])],gb:0,roles:[],fmt:false})),stages:{},pay:{adv:{amt:0,paid:false},pre:{amt:0,paid:false},fin:{amt:0,paid:false}},by:editor,at:stamp(),t:Date.now()};
+  writeProd(id);cwProductionFormOpen=false;log(`created production from client workspace: ${entry.name}`);toast('Production record created.');renderClientsWorkspace();
+}
+function cwSaveDeliverable(prodId){
+  const p=prods[prodId],name=document.getElementById('cwStageName')?.value.trim(),owner=document.getElementById('cwStageOwner')?.value||'Sumenth',due=document.getElementById('cwStageDue')?.value,clientPdf=!!document.getElementById('cwStagePdf')?.checked;
+  if(!p||!name){toast('Enter the deliverable name.');return;}p.customStages=p.customStages||[];p.customStages.push({k:uid('s'),l:name,o:owner,due:due?Date.parse(due+'T00:00:00'):null,clientPdf});writeProd(prodId);cwDeliveryFormOpen=false;log(`added deliverable ${name} for ${p.couple}`);toast('Deliverable added.');renderClientsWorkspace();
+}
+
 /* ---------------- client event-detail portal ---------------- */
 function clientPlannerEvents(couple){
   const who=String(couple||'').trim().toLowerCase(),today=ciTodayIso(),found=new Map();
@@ -3730,11 +4226,11 @@ function updateClientDraftQuestion(i,key,value){if(clientFormDraft[i]){clientFor
 function removeClientDraftEvent(i){clientFormDraft.splice(i,1);renderClientFormDraft();}
 function addClientDraftEvent(){clientFormDraft.push({name:'',date:clientFormDraft.at(-1)?.date||ciTodayIso(),questions:{contact:false,brideReady:false,groomReady:false,notes:false}});renderClientFormDraft();setTimeout(()=>document.querySelector('#cfEventPreview .cf-preview-event:last-child input')?.focus(),0);}
 function resetClientFormEditor(){clientFormEditId=null;clientFormDraft=[];document.getElementById('cfCouple').value='';renderClientFormDraft();document.getElementById('cfSaveButton').textContent='Create link from this setup';document.getElementById('cfCancelEdit').style.display='none';document.getElementById('cfCreateResult').className='check-result';}
-function cancelClientFormEdit(){resetClientFormEditor();}
+function cancelClientFormEdit(){resetClientFormEditor();closeClientSetup();}
 function editClientForm(id){
   const f=clientForms[id];if(!f)return;clientFormEditId=id;document.getElementById('cfCouple').value=f.couple||'';
   clientFormDraft=Object.entries(f.events||{}).sort((a,b)=>(a[1].order||0)-(b[1].order||0)).map(([eventId,e])=>({_id:eventId,name:e.name||'',date:e.date||'',questions:{contact:!!e.questions?.contact,brideReady:!!e.questions?.brideReady,groomReady:!!e.questions?.groomReady,notes:!!e.questions?.notes}}));
-  renderClientFormDraft();document.getElementById('cfSaveButton').textContent='Save changes to this link';document.getElementById('cfCancelEdit').style.display='block';const result=document.getElementById('cfCreateResult');result.className='check-result show ok';result.innerHTML='<b>Editing existing link</b>The private URL will stay the same. Unchanged client answers will be preserved.';document.querySelector('.cf-create')?.scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('cwSetupDrawer')?.classList.add('open');document.body.style.overflow='hidden';renderClientFormDraft();document.getElementById('cfSaveButton').textContent='Save changes to this link';document.getElementById('cfCancelEdit').style.display='block';const result=document.getElementById('cfCreateResult');result.className='check-result show ok';result.innerHTML='<b>Editing existing link</b>The private URL will stay the same. Unchanged client answers will be preserved.';document.querySelector('.cf-create')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function createClientForm(){
   const result=document.getElementById('cfCreateResult'),couple=document.getElementById('cfCouple').value.trim(),rows=clientFormDraft.map(x=>({_id:x._id||'',name:String(x.name||'').trim(),date:String(x.date||''),questions:{contact:!!x.questions?.contact,brideReady:!!x.questions?.brideReady,groomReady:!!x.questions?.groomReady,notes:!!x.questions?.notes}})).filter(x=>x.name&&x.date).sort((a,b)=>a.date.localeCompare(b.date));
@@ -3746,7 +4242,7 @@ async function createClientForm(){
   rows.forEach((x,i)=>{let eventId=x._id&&!used.has(x._id)?x._id:'';while(!eventId||used.has(eventId)||(!x._id&&reserved.has(eventId))){eventId='e'+next++;}used.add(eventId);events[eventId]={name:x.name,date:x.date,order:i+1,questions:x.questions};});
   const editing=!!clientFormEditId,form={couple,events,open:true,locked:false,createdAt:old.createdAt||Date.now(),createdBy:old.createdBy||'Tale of Two',updatedAt:Date.now()},updates={};updates[`clientForms/${id}`]=form;
   if(editing){const a=clientApprovals[id]||{};updates[`clientApprovals/${id}`]=a.status==='approved'?{...a,status:'changes_pending',reopenedAt:Date.now()}:a.status==='changes_pending'?a:null;updates[`clientSubmissions/${id}/submittedAt`]=null;Object.keys((clientSubmissions[id]&&clientSubmissions[id].events)||{}).forEach(eventId=>{if(!events[eventId])updates[`clientSubmissions/${id}/events/${eventId}`]=null;});}
-  try{await db.ref().update(updates);const url=clientPortalUrl(id);resetClientFormEditor();copyText(url,editing?'Updated private link copied.':'Private client link copied.');result.className='check-result show ok';result.innerHTML=editing?'<b>Link updated</b>The same private URL is ready. Existing answers for unchanged events were preserved.':'<b>Private link ready</b>Your customised setup was saved and the link was copied.';log(`${editing?'updated':'created'} customised client event-details link: ${couple}`);}catch(e){result.className='check-result show clash';result.innerHTML=`<b>Could not ${editing?'update':'create'} link</b>${esc(e.message||'Please try again.')}`;}
+  try{await db.ref().update(updates);const url=clientPortalUrl(id);cwSelectedKey=cwKey(couple);localStorage.setItem('totw_client_workspace',cwSelectedKey);resetClientFormEditor();closeClientSetup();copyText(url,editing?'Updated private link copied.':'Private client link copied.');toast(editing?'Client setup updated. The private URL is unchanged.':'Private client link created and copied.');log(`${editing?'updated':'created'} customised client event-details link: ${couple}`);renderClientsWorkspace();}catch(e){result.className='check-result show clash';result.innerHTML=`<b>Could not ${editing?'update':'create'} link</b>${esc(e.message||'Please try again.')}`;}
 }
 function clientEventDone(x){return !!(x&&x.startTime&&x.endTime&&x.venueName&&x.mapsUrl);}
 function clientSubmissionStatus(id){const f=clientForms[id]||{},s=clientSubmissions[id]||{},a=clientApprovals[id]||{};if(a.status==='approved')return ['Confirmed','approved'];if(a.status==='changes_pending')return ['Changes awaiting review','changes'];if(f.open===false)return ['Closed',''];if(s.submittedAt)return ['Submitted','submitted'];if(s.contact||Object.keys(s.events||{}).length)return ['In progress',''];return ['Not started',''];}
@@ -3758,15 +4254,7 @@ function toggleClientCard(id,force){const card=document.getElementById('cfCard_'
 function toggleClientReview(id){toggleClientCard(id,true);const el=document.getElementById('cfReview_'+id);if(el)el.style.display=el.style.display==='none'?'block':'none';}
 function clientEventSortValue(entry,sub){const[k,e]=entry,x=(sub.events||{})[k]||{};return `${e.date||'9999-12-31'} ${x.startTime||'23:59'} ${String(e.order||0).padStart(6,'0')}`;}
 function renderClientForms(){
-  refreshClientCoupleOptions();const el=document.getElementById('cfList');if(!el)return;
-  const list=Object.entries(clientForms||{}).filter(([,f])=>!!f).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
-  if(!list.length){el.innerHTML='<div class="cf-empty">No client forms created yet.</div>';return;}
-  el.innerHTML=list.map(([id,f])=>{const sub=clientSubmissions[id]||{},contact=sub.contact||{},approval=clientApprovals[id]||{},snapshot=approval.snapshot||{},events=Object.entries(f.events||{}).sort((a,b)=>clientEventSortValue(a,sub).localeCompare(clientEventSortValue(b,sub))),done=events.filter(([k])=>clientEventDone((sub.events||{})[k])).length,[label,cl]=clientSubmissionStatus(id),submitted=!!sub.submittedAt,people=Object.values(sub.contributors||{}),isOpen=openClientCards.has(id);
-    const peopleHtml=people.length?`<div class="cf-contributors">${people.map(p=>`<span class="cf-person">${esc(p.fullName)} · ${esc(clientRoleLabel(p.role))}</span>`).join('')}</div>`:'';
-    const contactReview=contact.fullName?`<div class="cf-review-event"><b>Latest contributor</b><small>${esc(contact.fullName)} · ${esc(clientRoleLabel(contact.role))} · ${esc(contact.phone||'')}</small><small>${esc(contact.email||'')}</small>${sub.updatedAt?`<small>Latest activity · ${esc(ciUpdatedDateTime(sub.updatedAt))}</small>`:''}${peopleHtml}</div>`:'';
-    const review=contactReview+events.map(([k,e])=>{const x=(sub.events||{})[k]||{},old=(snapshot.events||{})[k]||{},diff=approval.status==='changes_pending'?clientDiffRows(old,x):'',coverage=ciScheduledCoverage(x.startTime,x.endTime);return `<div class="cf-review-event"><b>${esc(e.name)} · ${esc(ciDateLong(e.date))}</b><small>${esc(ciFmtTime(x.startTime))} – ${esc(ciFmtTime(x.endTime))} · ${esc(x.venueName||'Venue awaited')}</small>${coverage?`<small><b>Coverage hours:</b> ${esc(coverage)}</small>`:''}<small>${x.mapsUrl?`<a href="${esc(x.mapsUrl)}" target="_blank" rel="noopener">Open Maps ↗</a>`:'Maps link awaited'}${x.contactName?` · ${esc(x.contactName)} ${esc(x.contactPhone||'')}`:''}</small>${x.updatedByName?`<small>Last updated by ${esc(x.updatedByName)} · ${esc(clientRoleLabel(x.updatedByRole))}${x.updatedAt?' · '+esc(ciUpdatedDateTime(x.updatedAt)):''}</small>`:''}${x.notes?`<small>${esc(x.notes)}</small>`:''}${diff}</div>`;}).join('');
-    return `<article class="cf-card ${isOpen?'':'collapsed'}" id="cfCard_${id}"><button class="cf-card-head" onclick="toggleClientCard('${id}')"><div><h3>${esc(f.couple)}</h3><div class="cf-meta">${events.length} events · ${done}/${events.length} complete · Created ${esc(new Date(f.createdAt||Date.now()).toLocaleDateString('en-IN',{day:'numeric',month:'short'}))}</div></div><div class="cf-card-head-side"><span class="cf-status ${cl}">${label}</span><span class="cf-card-toggle">${isOpen?'⌃':'⌄'}</span></div></button><div class="cf-card-body"><div class="cf-card-actions">${f.open!==false&&!f.locked?`<button class="btn-mini" onclick="shareClientForm('${id}')">WhatsApp</button>`:''}<button class="btn-mini" onclick="copyText(clientPortalUrl('${id}'),'Private client link copied.')">Copy link</button><button class="btn-mini" onclick="toggleClientReview('${id}')">Review</button><button class="btn-mini" onclick="editClientAnswers('${id}')">Edit details</button><button class="btn-mini" onclick="editClientForm('${id}')">Edit setup</button>${submitted&&cl!=='approved'?`<button class="btn-mini" onclick="approveClientForm('${id}')">Approve & publish</button>`:''}${f.open!==false&&!f.locked?`<button class="btn-mini" onclick="closeClientForm('${id}')">Close</button>`:`<button class="btn-mini" onclick="reopenClientForm('${id}')">Reopen</button>`}<button class="btn-mini" onclick="deleteClientForm('${id}')">Delete</button></div><div class="cf-review" id="cfReview_${id}" style="display:${submitted?'block':'none'}">${review||'<div class="empty">The couple has not entered details yet.</div>'}</div></div></article>`;
-  }).join('');
+  refreshClientCoupleOptions();renderClientsWorkspace();
 }
 function approvedClientEvent(couple,date,eventName){
   const who=String(couple||'').trim().toLowerCase(),ek=shotListKey(eventName);
