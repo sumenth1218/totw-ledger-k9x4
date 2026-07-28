@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.2.1-readiness-2026-07-29">
+<meta name="totw-build" content="v12.2.2-delivery-months-2026-07-29">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -4414,13 +4414,31 @@ function cwDirectory(){
     return a.name.localeCompare(b.name);
   });
 }
+function cwDeliveryDirectory(){
+  const linked=cwDirectory(),linkedKeys=new Set(linked.map(x=>x.key)),linkedProdIds=new Set(linked.flatMap(x=>x.prodIds||[])),extras=new Map();
+  Object.entries(prods||{}).forEach(([id,p])=>{
+    if(!p||linkedProdIds.has(id))return;
+    const clean=String(p.couple||'').trim();if(!clean)return;
+    const key=cwKey(clean);if(linkedKeys.has(key))return;
+    if(!extras.has(key))extras.set(key,{key,name:clean,dates:new Set(),formIds:[],prodIds:[],shootIds:[],submissionIds:[],prodOnly:true});
+    const row=extras.get(key);
+    if(!row.prodIds.includes(id))row.prodIds.push(id);
+    (p.days||[]).forEach(d=>{if(d&&/^\d{4}-\d{2}-\d{2}$/.test(d.date||''))row.dates.add(d.date);});
+  });
+  const orphan=[...extras.values()].map(row=>({...row,dates:[...row.dates].sort()})).sort((a,b)=>{
+    const al=a.dates.at(-1)||'',bl=b.dates.at(-1)||'';
+    if(al!==bl)return (al||'9999').localeCompare(bl||'9999');
+    return a.name.localeCompare(b.name);
+  });
+  return [...linked,...orphan];
+}
 function cwUnlinkedCalendarNames(){
   const linked=new Set(cwDirectory().map(x=>x.key)),names=new Set();
   Object.keys(calendarCoupleMap()||{}).forEach(name=>{if(!linked.has(cwKey(name)))names.add(String(name||'').trim());});
   Object.values(enquiries||{}).forEach(x=>{if(x&&x.status==='BOOKED'){const clean=String(x.name||'').trim();if(clean&&!linked.has(cwKey(clean)))names.add(clean);}});
   return [...names].filter(Boolean).sort((a,b)=>a.localeCompare(b));
 }
-function cwEntry(){return cwDirectory().find(x=>x.key===cwSelectedKey)||null;}
+function cwEntry(){return cwDirectory().find(x=>x.key===cwSelectedKey)||cwDeliveryDirectory().find(x=>x.prodOnly&&x.key===cwSelectedKey)||null;}
 function cwPrimaryForm(entry){
   return (entry.formIds||[]).map(id=>[id,clientForms[id]]).filter(([,f])=>f).sort((a,b)=>(b[1].updatedAt||b[1].createdAt||0)-(a[1].updatedAt||a[1].createdAt||0))[0]||null;
 }
@@ -5277,8 +5295,29 @@ function cw12MonthLabel(month){
   if(!/^\d{4}-\d{2}$/.test(month||''))return month==='unscheduled'?'Dates pending':'Select month';
   const [year,index]=month.split('-').map(Number);return `${MN[index-1]} ${year}`;
 }
+function cw12StudioBookedMonths(){
+  const months=new Set(),add=iso=>{if(/^\d{4}-\d{2}-\d{2}$/.test(iso||''))months.add(iso.slice(0,7));};
+  Object.values(calendarCoupleMap()||{}).forEach(x=>(x.dates||[]).forEach(add));
+  Object.values(enquiries||{}).forEach(x=>{if(x&&x.status==='BOOKED')(x.dates||[]).forEach(add);});
+  Object.values(clientForms||{}).forEach(f=>Object.values((f&&f.events)||{}).forEach(e=>add(e&&e.date)));
+  Object.values(prods||{}).forEach(p=>(p.days||[]).forEach(d=>add(d&&d.date)));
+  Object.values(checkinEvents||{}).forEach(e=>add(e&&e.date));
+  Object.values(plans||{}).forEach(p=>{const m=String(p&&p.iso||'').match(/^(20\d{2})-(\d{2})-\d{2}$/);if(m)months.add(`${m[1]}-${m[2]}`);});
+  return [...months].filter(value=>/^\d{4}-\d{2}$/.test(value)).sort();
+}
+function cw12FillMonthRange(months){
+  const clean=[...new Set((months||[]).filter(value=>/^\d{4}-\d{2}$/.test(value)))].sort();
+  if(!clean.length)return clean;
+  const [y0,m0]=clean[0].split('-').map(Number),[y1,m1]=clean[clean.length-1].split('-').map(Number),filled=[];
+  for(let y=y0,m=m0;y<y1||(y===y1&&m<=m1);){
+    filled.push(`${y}-${String(m).padStart(2,'0')}`);
+    m+=1;if(m>12){m=1;y+=1;}
+  }
+  return filled;
+}
 function cw12ClientMonths(states){
-  const months=[...new Set(states.flatMap(({state})=>cwWorkspaceDates(state).map(date=>date.slice(0,7))).filter(value=>/^\d{4}-\d{2}$/.test(value)))].sort();
+  const fromClients=[...new Set(states.flatMap(({state})=>cwWorkspaceDates(state).map(date=>date.slice(0,7)).filter(value=>/^\d{4}-\d{2}$/.test(value))))];
+  const months=cw12FillMonthRange([...fromClients,...cw12StudioBookedMonths()]);
   if(states.some(({state})=>!cwWorkspaceDates(state).length))months.push('unscheduled');
   if(months.length>1)months.unshift('all');
   return months;
@@ -5380,7 +5419,7 @@ function cw10RenderFolderPage(all){
     <div class="cw10-folder-head"><div><div class="cw10-kicker">Studio workspace</div><h2>Clients</h2><p>Select a wedding month, then open one client folder. Weddings that cross months remain discoverable in both months.</p></div>
     <div class="cw10-folder-tools"><label class="cw12-month-picker"><span>Wedding month</span><select id="cw12ClientMonth" onchange="cw12SetClientMonth(this.value)" ${monthOptions?'':'disabled'}>${monthOptions||'<option>No dated clients</option>'}</select></label><label class="cw10-search"><span>⌕</span><input id="cw10Search" type="search" value="${esc(cw10FolderQuery)}" placeholder="Search all clients" oninput="cw10FolderSearch(this.value)"></label><button type="button" class="cw10-primary" onclick="openClientSetup()">+ Client link</button><button type="button" class="cw10-soft" onclick="signOutLedger()">Sign out</button></div></div>
     <div class="cw12-month-summary"><span><strong>${filtered.length}</strong> client${filtered.length===1?'':'s'}${query?' matching search':cw12ClientMonth==='all'?' total':` in ${esc(cw12MonthLabel(cw12ClientMonth))}`}</span><span>${query?'Search ignores month filter':cw12ClientMonth==='all'?'Sorted by first event date':'Sorted by first event in the selected month'}</span></div>
-    <div class="cw10-folder-grid">${cards||`<div class="cw10-folder-empty">${query?`No clients match “${esc(cw10FolderQuery.trim())}”.`:cw12ClientMonth==='all'?'No client folders yet.':`No clients are scheduled in ${esc(cw12MonthLabel(cw12ClientMonth))}.`}</div>`}</div>
+    <div class="cw10-folder-grid">${cards||`<div class="cw10-folder-empty">${query?`No clients match “${esc(cw10FolderQuery.trim())}”.`:cw12ClientMonth==='all'?'No client folders yet.':`No private-link clients in ${esc(cw12MonthLabel(cw12ClientMonth))} yet. Bookings in Dates &amp; Enquiries still count toward this month — create a client link when you need a folder. Pending deliveries for older production-only couples stay under Deliverables.`}</div>`}</div>
     ${(()=>{const unlinked=cwUnlinkedCalendarNames();return unlinked.length?`<details class="cw10-unlinked-names" style="margin-top:18px"><summary style="cursor:pointer;color:#817A72;font-size:9px;padding:8px 2px">Unlinked calendar names (${unlinked.length})</summary><div style="display:flex;flex-wrap:wrap;gap:7px;padding:10px 2px 2px">${unlinked.map(name=>`<span style="padding:6px 9px;border:1px solid #34373A;border-radius:99px;color:#9A938B;font-size:8.5px">${esc(name)}</span>`).join('')}</div><p style="margin:8px 2px 0;color:#6F6963;font-size:8px">These appear in Dates &amp; Enquiries or Crew Planner but do not have a private client link yet.</p></details>`:'';})()}
   </section>`;
 }
@@ -5407,23 +5446,23 @@ function cw12OpenClientDeliveries(key){
 }
 function renderGlobalDeliverables(){
   const root=document.getElementById('cw12DeliverablesRoot');if(!root)return;
-  const rows=cwDirectory().map(cw12DeliveryRow).sort((a,b)=>{
+  const rows=cwDeliveryDirectory().map(cw12DeliveryRow).sort((a,b)=>{
     if(!a.last.lastDate&&!b.last.lastDate)return a.entry.name.localeCompare(b.entry.name);
     if(!a.last.lastDate)return 1;if(!b.last.lastDate)return -1;
     return a.last.lastDate.localeCompare(b.last.lastDate)||a.entry.name.localeCompare(b.entry.name);
   });
   const groups=new Map();
   rows.forEach(row=>{const key=row.last.lastDate?row.last.lastDate.slice(0,7):'pending';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row);});
-  const inDelivery=rows.filter(row=>row.state.prod&&row.state.stageDone<row.state.stages.length&&(!row.last.lastDate||row.last.lastDate<=ciTodayIso())).length,overdue=rows.filter(row=>row.overdue).length,complete=rows.filter(row=>row.state.prod&&row.state.stages.length&&row.state.stageDone===row.state.stages.length).length;
+  const inDelivery=rows.filter(row=>row.state.prod&&row.state.stageDone<row.state.stages.length&&(!row.last.lastDate||row.last.lastDate<=ciTodayIso())).length,overdue=rows.filter(row=>row.overdue).length,complete=rows.filter(row=>row.state.prod&&row.state.stages.length&&row.state.stageDone===row.state.stages.length).length,prodOnly=rows.filter(row=>row.entry.prodOnly).length;
   const groupHtml=[...groups.entries()].map(([month,items])=>{
     const label=month==='pending'?'Dates pending':cw12MonthLabel(month);
     const itemHtml=items.map(row=>{
-      const date=row.last.lastDate?cw10DateBlock(row.last.lastDate):{m:'—',d:'—'},eventCopy=row.last.names.length?`Last event · ${row.last.names.join(' + ')}`:row.last.lastDate?'Last scheduled coverage day':'Last event date pending';
-      return `<button type="button" class="cw12-delivery-client" data-client-key="${esc(row.entry.key)}" onclick="cw12OpenClientDeliveries(this.dataset.clientKey)"><span class="cw12-last-date"><b>${esc(date.d)}</b><small>${esc(date.m)}</small></span><span class="cw12-delivery-name"><h4>${esc(row.entry.name)}</h4><p>${esc(eventCopy)}${row.last.lastDate?' · '+esc(ciDateLong(row.last.lastDate)):''}</p></span><span class="cw12-delivery-progress"><b>${esc(row.progress)}</b><small>${esc(row.nextCopy)}</small></span><span class="cw12-delivery-status ${esc(row.statusClass)}">${esc(row.status)}</span></button>`;
+      const date=row.last.lastDate?cw10DateBlock(row.last.lastDate):{m:'—',d:'—'},eventCopy=row.entry.prodOnly?'Production record · delivery tracking':row.last.names.length?`Last event · ${row.last.names.join(' + ')}`:row.last.lastDate?'Last scheduled coverage day':'Last event date pending';
+      return `<button type="button" class="cw12-delivery-client" data-client-key="${esc(row.entry.key)}" onclick="cw12OpenClientDeliveries(this.dataset.clientKey)"><span class="cw12-last-date"><b>${esc(date.d)}</b><small>${esc(date.m)}</small></span><span class="cw12-delivery-name"><h4>${esc(row.entry.name)}${row.entry.prodOnly?' <small style="color:#9A938B;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase"> · production</small>':''}</h4><p>${esc(eventCopy)}${row.last.lastDate?' · '+esc(ciDateLong(row.last.lastDate)):''}</p></span><span class="cw12-delivery-progress"><b>${esc(row.progress)}</b><small>${esc(row.nextCopy)}</small></span><span class="cw12-delivery-status ${esc(row.statusClass)}">${esc(row.status)}</span></button>`;
     }).join('');
     return `<section class="cw12-delivery-group"><div class="cw12-delivery-group-head"><h3>${esc(label)}</h3><span>${items.length} client${items.length===1?'':'s'} · ordered by final event</span></div>${itemHtml}</section>`;
   }).join('');
-  root.innerHTML=`<section class="cw12-deliverables-page"><div class="cw12-deliverables-head"><div><div class="cw10-kicker">Client delivery control</div><h2>Deliverables</h2><p>Every client is ordered by the date of their final event. Older finished weddings appear first, so the delivery queue follows when coverage actually ended.</p></div><button type="button" class="cw10-soft" onclick="signOutLedger()">Sign out</button></div><div class="cw12-delivery-metrics"><div class="cw12-delivery-metric"><span>All clients</span><strong>${rows.length}</strong><small>Booked client folders</small></div><div class="cw12-delivery-metric"><span>In delivery</span><strong>${inDelivery}</strong><small>Final event completed</small></div><div class="cw12-delivery-metric"><span>Overdue</span><strong>${overdue}</strong><small>At least one late item</small></div><div class="cw12-delivery-metric"><span>Complete</span><strong>${complete}</strong><small>All tracked items done</small></div></div>${groupHtml||'<div class="cw12-deliverables-empty">Client delivery records will appear here.</div>'}</section>`;
+  root.innerHTML=`<section class="cw12-deliverables-page"><div class="cw12-deliverables-head"><div><div class="cw10-kicker">Client delivery control</div><h2>Deliverables</h2><p>Every client is ordered by the date of their final event. Older finished weddings appear first. Production-only records (no private client link yet) stay here for delivery tracking and do not create Clients folders.</p></div><button type="button" class="cw10-soft" onclick="signOutLedger()">Sign out</button></div><div class="cw12-delivery-metrics"><div class="cw12-delivery-metric"><span>All tracked</span><strong>${rows.length}</strong><small>${prodOnly?prodOnly+' production-only · ':''}Client links + production</small></div><div class="cw12-delivery-metric"><span>In delivery</span><strong>${inDelivery}</strong><small>Final event completed</small></div><div class="cw12-delivery-metric"><span>Overdue</span><strong>${overdue}</strong><small>At least one late item</small></div><div class="cw12-delivery-metric"><span>Complete</span><strong>${complete}</strong><small>All tracked items done</small></div></div>${groupHtml||'<div class="cw12-deliverables-empty">Client delivery records will appear here.</div>'}</section>`;
 }
 function setClientSection(section){
   const mapped={details:'event',resources:'event',shoots:'event'}[section]||section;
@@ -5572,13 +5611,13 @@ function cw10CloseReview(){cw10ReviewOpen=false;cw10ReviewEventId='';renderClien
 function cw10RenderWorkspace(entry){
   const state=cwState(entry);cw10SelectDefaultEvent(state);
   const content=({overview:cw10RenderOverview,event:cw10RenderEvent,deliveries:cw10RenderDeliveries,costs:cw10RenderCosts,activity:cw10RenderActivity})[cwSection](state);
-  return `<div class="cw10-workspace-shell"><button type="button" class="cw10-mobile-backdrop" aria-label="Close client navigation" onclick="cw10ToggleMobileNav(false)"></button>${cw10RenderSidebar(state)}<main class="cw10-main"><div class="cw10-mobile-bar"><button type="button" class="cw10-mobile-menu" aria-label="Open client navigation" onclick="cw10ToggleMobileNav(true)">☰</button><button type="button" class="cw10-mobile-client" onclick="setClientSection('overview')"><b>${esc(entry.name)}</b><small>${esc(state.stage)} · ${esc(cw10DateRange(cwWorkspaceDates(state)))}</small></button><button type="button" class="cw10-mobile-menu" aria-label="All clients" onclick="showClientFolders()">←</button></div><div class="cw10-topline"><button type="button" onclick="showClientFolders()">Clients <span>/</span> ${esc(entry.name)}</button><small>One client · one event record</small></div>${content}</main></div>${cw10RenderReview(state)}`;
+  return `<div class="cw10-workspace-shell"><button type="button" class="cw10-mobile-backdrop" aria-label="Close client navigation" onclick="cw10ToggleMobileNav(false)"></button>${cw10RenderSidebar(state)}<main class="cw10-main"><div class="cw10-mobile-bar"><button type="button" class="cw10-mobile-menu" aria-label="Open client navigation" onclick="cw10ToggleMobileNav(true)">☰</button><button type="button" class="cw10-mobile-client" onclick="setClientSection('overview')"><b>${esc(entry.name)}</b><small>${esc(state.stage)} · ${esc(cw10DateRange(cwWorkspaceDates(state)))}</small></button><button type="button" class="cw10-mobile-menu" aria-label="All clients" onclick="showClientFolders()">←</button></div><div class="cw10-topline"><button type="button" onclick="showClientFolders()">Clients <span>/</span> ${esc(entry.name)}</button><small>${entry.prodOnly?'Production delivery tracking':'One client · one event record'}</small></div>${content}</main></div>${cw10RenderReview(state)}`;
 }
 function renderClientsWorkspace(){
   const root=document.getElementById('cwRoot');if(!root)return;
   const all=cwDirectory();
-  if(cwSelectedKey&&!all.some(x=>x.key===cwSelectedKey))cwSelectedKey='';
-  const entry=all.find(x=>x.key===cwSelectedKey)||null;
+  if(cwSelectedKey&&!cwEntry())cwSelectedKey='';
+  const entry=cwEntry();
   root.innerHTML=entry?cw10RenderWorkspace(entry):cw10RenderFolderPage(all);
   renderGlobalDeliverables();
 }
