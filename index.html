@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="client-folders-v10-2026-07-28">
+<meta name="totw-build" content="client-planning-workspace-v11-2026-07-28">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -987,6 +987,152 @@ body.cw10-client-mode .vtabs{margin-top:14px}
   .cw10-field-grid,.cw10-plan-grid,.cw10-record-grid,.cw10-metrics{grid-template-columns:1fr}.cw10-notes{flex-direction:column}.cw10-source-badge{align-self:flex-start}
   .cw10-compare-row{grid-template-columns:1fr}.cw10-compare-arrow{transform:rotate(90deg);text-align:center}
   .cw10-timeline{grid-template-columns:10px minmax(0,1fr)}.cw10-timeline time{grid-column:2}
+}
+
+/* ===================== CLIENT PLANNING WORKSPACE V11 ===================== */
+.cw10-mobile-backdrop{display:none}
+.cw10-workspace-shell{grid-template-columns:318px minmax(0,1fr);gap:16px}
+.cw10-sidebar{padding:18px 13px 14px}
+.cw10-event-nav{min-height:58px;align-items:center;padding:8px 10px}
+.cw11-nav-event{min-width:0;display:grid;gap:3px}
+.cw11-nav-event .cw10-event-name{font-size:11px}
+.cw11-nav-event small{display:block;padding-left:14px;color:#746E68;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw10-event-nav.on .cw11-nav-event small{color:#978F86}
+.cw10-event-nav .cw10-nav-note{max-width:92px;text-align:right;line-height:1.3;white-space:normal}
+.cw11-dirty-dot{width:5px;height:5px;display:inline-block;margin-left:5px;border-radius:50%;background:#D4A55D;box-shadow:0 0 0 3px rgba(212,165,93,.10)}
+.cw11-event-content{max-width:1180px;padding:28px 30px 42px}
+.cw11-event-content .cw10-page-head{align-items:center;margin-bottom:17px}
+.cw11-event-content .cw10-page-head p{max-width:700px}
+.cw11-event-context{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin-bottom:13px;border:1px solid #303337;border-radius:11px;background:#303337;overflow:hidden}
+.cw11-context-cell{min-width:0;padding:12px 13px;background:#151719}
+.cw11-context-cell span{display:block;color:#77716B;font:7.5px var(--mono);letter-spacing:.09em;text-transform:uppercase}
+.cw11-context-cell strong{display:block;margin-top:5px;color:#E9E3DA;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw11-context-cell small{display:block;margin-top:4px;color:#77716B;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw11-context-cell a{color:#D0AE77;text-decoration:none}
+.cw11-context-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-2px 2px 15px}
+.cw11-source{display:flex;align-items:center;gap:7px;color:#76706A;font-size:8.5px}
+.cw11-source i{width:6px;height:6px;border-radius:50%;background:#9C5061}
+.cw11-client-summary{margin-bottom:13px;border:1px solid #303337;border-radius:11px;background:#151719;overflow:hidden}
+.cw11-client-summary-head{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:12px;padding:11px 13px}
+.cw11-client-summary-toggle{min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;border:0;background:transparent;color:#E9E3DA;text-align:left;cursor:pointer}
+.cw11-client-summary-label{color:#897F74;font:7.5px var(--mono);letter-spacing:.09em;text-transform:uppercase}
+.cw11-client-summary-value{min-width:0;color:#BDB5AA;font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw11-client-summary-toggle>i{color:#807971;font:8px var(--mono);font-style:normal}
+.cw11-client-summary-body{padding:0 12px 12px}
+.cw11-client-summary-body .cw11-event-context{margin:0}
+.cw11-client-summary-source{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 2px 0;color:#736D67;font-size:8px}
+.cw11-client-summary-source span:first-child{display:flex;align-items:center;gap:7px}.cw11-client-summary-source i{width:6px;height:6px;border-radius:50%;background:#9C5061}
+.cw11-plan-card,.cw11-record-card{border:1px solid #303337;border-radius:13px;background:#151719;overflow:hidden}
+.cw11-plan-card{box-shadow:0 16px 45px rgba(0,0,0,.10)}
+.cw11-plan-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:17px 18px;border-bottom:1px solid #2E3134;background:linear-gradient(135deg,#191B1D,#151719)}
+.cw11-plan-head h3{font:500 25px/1 var(--display)}
+.cw11-plan-head p{margin-top:5px;color:#857F77;font-size:9.5px;line-height:1.5}
+.cw11-plan-state{display:inline-flex;align-items:center;gap:7px;flex:none;padding:6px 9px;border:1px solid #4A4233;border-radius:99px;color:#CDAA72;font:7.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
+.cw11-plan-state i{width:6px;height:6px;border-radius:50%;background:#CDAA72}
+.cw11-plan-state.published{border-color:#33493A;color:#8FB296}.cw11-plan-state.published i{background:#79A083}
+.cw11-plan-note{display:flex;align-items:flex-start;gap:10px;margin:14px 16px 0;padding:11px 12px;border:1px solid #4A3A2B;border-radius:9px;background:#1D1913;color:#B99F78;font-size:9px;line-height:1.5}
+.cw11-plan-note i{width:18px;height:18px;display:grid;place-content:center;flex:none;border-radius:50%;background:#5A4326;color:#E6C489;font:7px var(--mono);font-style:normal}
+.cw11-plan-note strong{display:block;color:#D8BE96;font-size:9.5px}
+.cw11-plan-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:16px 16px 4px}
+.cw11-field{min-width:0}
+.cw11-field label{display:block;margin-bottom:6px;color:#858078;font:7.5px var(--mono);letter-spacing:.09em;text-transform:uppercase}
+.cw11-field input,.cw11-field select,.cw11-add-grid select{width:100%;min-width:0;height:42px;padding:0 11px;border:1px solid #383B3E;border-radius:8px;background:#111315;color:#EEE8DF;font:11px var(--body);outline:none;color-scheme:dark}
+.cw11-field input:focus,.cw11-field select:focus,.cw11-add-grid select:focus{border-color:#766247;box-shadow:0 0 0 3px rgba(198,163,108,.08)}
+.cw11-field input:disabled{cursor:not-allowed;border-color:#2B2E30;background:#17191B;color:#716D67;opacity:1}
+.cw11-field small{display:block;margin-top:5px;color:#6F6A64;font-size:8px;line-height:1.35}
+.cw11-team{padding:15px 16px 0}
+.cw11-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin-bottom:9px}
+.cw11-section-head h4{font:500 20px var(--display)}
+.cw11-section-head p{margin-top:3px;color:#77716B;font-size:8.5px}
+.cw11-section-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.cw11-section-actions select{max-width:220px;height:34px;padding:0 9px;border:1px solid #36393C;border-radius:7px;background:#111315;color:#CFC8BE;font-size:8.5px;color-scheme:dark}
+.cw11-team-list{display:grid;border:1px solid #2E3134;border-radius:10px;background:#121416;overflow:hidden}
+.cw11-team-row{display:grid;grid-template-columns:minmax(160px,1.1fr) minmax(150px,.9fr) minmax(122px,.65fr) auto;gap:10px;align-items:center;min-height:63px;padding:9px 11px;border-bottom:1px solid #292C2F}
+.cw11-team-row:last-child{border-bottom:0}
+.cw11-person{min-width:0;display:flex;align-items:center;gap:9px}
+.cw11-avatar{width:31px;height:31px;display:grid;place-content:center;flex:none;border-radius:8px;background:#292C2F;color:#CDC5BA;font:7.5px var(--mono)}
+.cw11-person b,.cw11-person small{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw11-person b{font-size:10px}.cw11-person small{margin-top:2px;color:#746F68;font-size:7.8px}
+.cw11-role-select,.cw11-time-input{width:100%;min-width:0;height:35px;padding:0 9px;border:1px solid #373A3D;border-radius:7px;background:#17191B;color:#D9D2C8;font-size:8.5px;color-scheme:dark}
+.cw11-arrival-summary{min-width:0}
+.cw11-arrival-summary b,.cw11-arrival-summary small{display:block}.cw11-arrival-summary b{font-size:9px}.cw11-arrival-summary small{margin-top:3px;color:#746F68;font-size:7.5px}
+.cw11-member-actions{display:flex;align-items:center;gap:5px;justify-content:flex-end}
+.cw11-icon-button{height:31px;padding:0 8px;border:1px solid #373A3D;border-radius:7px;background:#1A1C1E;color:#AAA39A;cursor:pointer;font:7px var(--mono);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.cw11-icon-button:hover{border-color:#55595D;color:#E9E3DA}
+.cw11-icon-button.on{border-color:#715D3E;background:#211C14;color:#D2AE74}
+.cw11-icon-button.remove{width:31px;padding:0;font-size:15px}
+.cw11-member-time{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 150px auto;gap:9px;align-items:center;padding:9px 0 1px;border-top:1px solid #292C2F}
+.cw11-member-time span{color:#817B73;font-size:8.5px}
+.cw11-empty-team{padding:22px;text-align:center;color:#7D7770;font-size:9px;line-height:1.5}
+.cw11-add-team{margin-top:9px;padding:12px;border:1px solid #313437;border-radius:9px;background:#131517}
+.cw11-add-team-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cw11-add-team-head strong{font-size:9.5px}.cw11-add-team-head small{display:block;margin-top:2px;color:#77716B;font-size:8px}
+.cw11-add-grid{display:grid;grid-template-columns:minmax(170px,1fr) minmax(170px,1fr) auto;gap:8px;align-items:end;margin-top:10px}
+.cw11-plan-resources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:15px 16px 0}
+.cw11-resources-wrap{margin:14px 16px 0;border:1px solid #2F3235;border-radius:9px;background:#121416;overflow:hidden}
+.cw11-resources-toggle{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 12px;border:0;background:transparent;color:#E7E0D7;text-align:left;cursor:pointer}
+.cw11-resources-toggle span{display:block;color:#77716B;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.cw11-resources-toggle strong{display:block;margin-top:4px;font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw11-resources-toggle em{color:#A49A8E;font:7px var(--mono);font-style:normal;letter-spacing:.05em;text-transform:uppercase}
+.cw11-resources-body{padding:0 11px 11px;border-top:1px solid #2B2E31}
+.cw11-resources-body .cw11-plan-resources{margin:11px 0 0}
+.cw11-resources-body .cw10-panel-actions{padding:9px 0 0!important}
+.cw11-resource{min-width:0;padding:11px 12px;border:1px solid #2F3235;border-radius:9px;background:#121416}
+.cw11-resource span{display:block;color:#77716B;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.cw11-resource strong{display:block;margin-top:5px;font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw11-resource small{display:block;margin-top:4px;color:#6E6963;font-size:8px}
+.cw11-plan-footer{position:sticky;bottom:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:16px;padding:13px 16px;border-top:1px solid #303337;background:rgba(21,23,25,.96);backdrop-filter:blur(12px)}
+.cw11-save-copy strong,.cw11-save-copy small{display:block}.cw11-save-copy strong{font-size:9.5px}.cw11-save-copy small{margin-top:3px;color:#77716B;font-size:8px}
+.cw11-save-actions{display:flex;gap:7px;align-items:center}
+.cw11-save-all[hidden]{display:none}
+.cw11-save-all{position:relative}
+.cw11-save-count{min-width:17px;height:17px;display:inline-grid;place-content:center;margin-left:6px;border-radius:99px;background:#5C2C38;color:#F4DDD8;font:7px var(--mono)}
+.cw11-record-card{margin-top:11px}
+.cw11-record-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 16px;border:0;background:transparent;color:#E9E3DA;text-align:left;cursor:pointer}
+.cw11-record-head strong{font:500 18px var(--display)}.cw11-record-head small{display:block;margin-top:2px;color:#78726C;font-size:8.5px}
+.cw11-record-body{padding:0 15px 15px;border-top:1px solid #2C2F32}
+.cw11-plan-dirty{color:#D0A761}
+
+@media(max-width:1180px){
+  .cw10-workspace-shell{grid-template-columns:280px minmax(0,1fr)}
+  .cw11-event-context{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cw11-team-row{grid-template-columns:minmax(150px,1fr) minmax(145px,.85fr) minmax(116px,.65fr) auto}
+}
+@media(max-width:920px) and (min-width:761px){
+  .cw10-workspace-shell{grid-template-columns:238px minmax(0,1fr)}
+  .cw11-event-content{padding-left:20px;padding-right:20px}
+  .cw11-plan-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cw11-plan-fields .cw11-field:last-child{grid-column:1/-1}
+  .cw11-team-row{grid-template-columns:minmax(0,1fr) minmax(145px,.85fr) auto}
+  .cw11-arrival-summary{grid-column:1/3}
+  .cw11-member-actions{grid-column:3;grid-row:1/3}
+}
+@media(max-width:760px){
+  .cw10-event-nav{min-height:61px}
+  .cw10-event-nav .cw10-nav-note{max-width:86px}
+  .cw11-event-content{padding:18px 11px 30px}
+  .cw11-event-content .cw10-page-head{align-items:flex-start}
+  .cw11-event-context{grid-template-columns:1fr 1fr}
+  .cw11-client-summary-head{grid-template-columns:1fr}.cw11-client-summary-toggle{grid-template-columns:auto minmax(0,1fr) auto}
+  .cw11-client-summary-source{align-items:flex-start;flex-direction:column}
+  .cw11-context-cell{padding:11px}
+  .cw11-context-actions{align-items:flex-start;flex-direction:column}
+  .cw11-plan-head{padding:15px;flex-direction:column}.cw11-plan-state{align-self:flex-start}
+  .cw11-plan-fields{grid-template-columns:1fr;padding:14px 13px 3px}
+  .cw11-team{padding:14px 13px 0}
+  .cw11-section-head{align-items:flex-start;flex-direction:column}.cw11-section-actions{width:100%;justify-content:flex-start}.cw11-section-actions select{max-width:none;flex:1}
+  .cw11-team-row{grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:11px}
+  .cw11-person{grid-column:1}.cw11-member-actions{grid-column:2;grid-row:1}
+  .cw11-role-select{grid-column:1/-1}.cw11-arrival-summary{grid-column:1/-1}
+  .cw11-member-time{grid-template-columns:1fr}.cw11-member-time .cw11-icon-button{justify-self:start}
+  .cw11-add-grid{grid-template-columns:1fr}.cw11-add-grid button{width:100%}
+  .cw11-resources-wrap{margin:13px 13px 0}.cw11-plan-resources{grid-template-columns:1fr}
+  .cw11-plan-footer{position:static;align-items:flex-start;flex-direction:column;padding:13px}
+  .cw11-save-actions{width:100%}.cw11-save-actions button{flex:1}
+  .cw10-overview-row{grid-template-columns:46px minmax(0,1fr) 16px;min-height:92px;padding:12px 11px}
+  .cw10-overview-main{align-self:start;padding-top:4px}
+  .cw10-event-state{grid-column:2;align-self:start;margin-top:-9px;white-space:normal}
+  .cw10-row-arrow{grid-column:3;grid-row:1/3;align-self:center}
 }
 </style>
 </head>
@@ -4525,13 +4671,14 @@ async function approveClientForm(id){
   const matched=new Set();
   Object.entries(checkinEvents||{}).forEach(([eventId,ci])=>{if(!ci||String(ci.couple||'').trim().toLowerCase()!==String(f.couple||'').trim().toLowerCase())return;const refs=Array.isArray(ci.linkedEvents)?ci.linkedEvents:Object.values(ci.linkedEvents||{}),linked=refs.filter(r=>r&&r.formId===id&&f.events&&f.events[r.eventId]);let selected=linked.map(r=>{const e=f.events[r.eventId],details=(s.events||{})[r.eventId]||{};return {formId:id,eventId:r.eventId,name:e.name,date:e.date,order:e.order||0,details};});if(!selected.length){const legacy=Object.entries(f.events||{}).find(([k,e])=>ci.clientFormId===id&&ci.clientEventId===k||ci.date===e.date&&shotListKey(ci.eventName)===shotListKey(e.name));if(legacy){const[k,e]=legacy;selected=[{formId:id,eventId:k,name:e.name,date:e.date,order:e.order||0,details:(s.events||{})[k]||{}}];}}if(!selected.length)return;selected.forEach(x=>matched.add(x.eventId));selected.sort((a,b)=>(a.details.startTime||'23:59').localeCompare(b.details.startTime||'23:59')||a.order-b.order);const timing=ciCombinedTiming(selected),names=selected.map(x=>x.name),first=selected[0].details||{},maps=[...new Set(selected.map(x=>x.details.mapsUrl).filter(Boolean))],venues=[...new Set(selected.map(x=>x.details.venueName).filter(Boolean))];updates[`crewCheckins/events/${eventId}/eventName`]=names.join(' + ');updates[`crewCheckins/events/${eventId}/eventNames`]=names;updates[`crewCheckins/events/${eventId}/checklistType`]=names[0];updates[`crewCheckins/events/${eventId}/linkedEvents`]=selected.map(x=>({formId:id,eventId:x.eventId,name:x.name,date:x.date,order:x.order}));updates[`crewCheckins/events/${eventId}/date`]=ci.dateOverride?ci.date:selected[0].date;updates[`crewCheckins/events/${eventId}/functionStart`]=timing.start||null;updates[`crewCheckins/events/${eventId}/functionEnd`]=timing.end||null;updates[`crewCheckins/events/${eventId}/scheduledStart`]=timing.start||ci.scheduledStart;updates[`crewCheckins/events/${eventId}/scheduledStartMode`]='auto';if(venues.length===1)updates[`crewCheckins/events/${eventId}/venueName`]=venues[0];if(maps.length===1){updates[`crewCheckins/events/${eventId}/mapsUrl`]=maps[0];const d=ciMapData(maps[0]);if(d){updates[`crewCheckins/events/${eventId}/venueLat`]=d.lat;updates[`crewCheckins/events/${eventId}/venueLng`]=d.lng;}}updates[`crewCheckins/events/${eventId}/clientContactName`]=first.contactName||null;updates[`crewCheckins/events/${eventId}/clientContactPhone`]=first.contactPhone||null;updates[`crewCheckins/events/${eventId}/brideReadyLocation`]=first.brideReadyLocation||null;updates[`crewCheckins/events/${eventId}/groomReadyLocation`]=first.groomReadyLocation||null;updates[`crewCheckins/events/${eventId}/clientNotes`]=first.notes||null;updates[`crewCheckins/events/${eventId}/clientFormId`]=id;updates[`crewCheckins/events/${eventId}/clientEventId`]=selected[0].eventId;});
   Object.entries(f.events||{}).forEach(([eventId,e])=>{if(matched.has(eventId))return;updates[`crewCheckins/events/client_${id}_${eventId}`]=ciClientShootRecord(id,eventId,f,e,s,approvedAt);});
+  cw11AppendPublicationUpdates(id,f,updates);
   try{await db.ref().update(updates);toast('Approved. Every event is now ready in Check-ins for crew, shot-list and Pinterest setup.');log(`approved client event details: ${f.couple}`);}catch(e){toast('Could not approve these details. Try again.');}
 }
 async function closeClientForm(id){const f=clientForms[id];if(!f||!confirm(`Close ${f.couple}'s client link? The saved submission will be kept.`))return;try{await db.ref(`clientForms/${id}/open`).set(false);toast('Client link closed.');}catch(e){toast('Could not close the link.');}}
-async function reopenClientForm(id,openAfter=false){const f=clientForms[id];if(!f)return false;const approval=clientApprovals[id]||{},approved=approval.status==='approved',s=clientSubmissions[id]||{};if(!confirm(`${approved?'Reopen the confirmed details':'Reopen this client link'} for ${f.couple}?\n\nAll answers will remain. Any new edits will be shown against the previously confirmed details before you approve them again.`))return false;const tab=openAfter?window.open('about:blank','_blank'):null,updates={},now=Date.now();updates[`clientForms/${id}/open`]=true;updates[`clientForms/${id}/locked`]=false;updates[`clientForms/${id}/updatedAt`]=now;updates[`clientSubmissions/${id}/submittedAt`]=null;updates[`clientApprovals/${id}`]=approved?{...approval,status:'changes_pending',reopenedAt:now,snapshot:approval.snapshot||{contact:s.contact||{},events:s.events||{}}}:approval.status==='changes_pending'?approval:null;try{await db.ref().update(updates);toast('Client link reopened. New edits will wait for your review.');if(tab)tab.location.href=clientPortalUrl(id);return true}catch(e){if(tab)tab.close();toast('Could not reopen the link.');return false}}
+async function reopenClientForm(id,openAfter=false){const f=clientForms[id];if(!f)return false;const approval=clientApprovals[id]||{},approved=approval.status==='approved'||approval.status==='partially_approved'||Object.values(approval.events||{}).some(e=>e&&e.status==='approved'),s=clientSubmissions[id]||{};if(!confirm(`${approved?'Reopen the confirmed details':'Reopen this client link'} for ${f.couple}?\n\nAll answers will remain. Any new edits will be shown against the previously confirmed details before you approve them again.`))return false;const tab=openAfter?window.open('about:blank','_blank'):null,updates={},now=Date.now();updates[`clientForms/${id}/open`]=true;updates[`clientForms/${id}/locked`]=false;updates[`clientForms/${id}/updatedAt`]=now;updates[`clientSubmissions/${id}/submittedAt`]=null;updates[`clientApprovals/${id}`]=approved?{...approval,status:'changes_pending',reopenedAt:now,snapshot:approval.snapshot||{contact:s.contact||{},events:s.events||{}}}:approval.status==='changes_pending'?approval:null;try{await db.ref().update(updates);toast('Client link reopened. New edits will wait for your review.');if(tab)tab.location.href=clientPortalUrl(id);return true}catch(e){if(tab)tab.close();toast('Could not reopen the link.');return false}}
 async function editClientAnswers(id){const f=clientForms[id];if(!f)return;if(f.open===false||f.locked){await reopenClientForm(id,true);return}window.open(clientPortalUrl(id),'_blank','noopener')}
 async function deleteClientForm(id){
-  const f=clientForms[id];if(!f)return;const approved=(clientApprovals[id]||{}).status==='approved';
+  const f=clientForms[id];if(!f)return;const approval=clientApprovals[id]||{},approved=approval.status==='approved'||approval.status==='partially_approved'||Object.values(approval.events||{}).some(e=>e&&e.status==='approved');
   if(!confirm(`Permanently delete ${f.couple}'s generated link?\n\nThis removes the private link and all answers saved through it.${approved?' Details already copied into existing Check-ins will remain there.':''}`))return;
   const updates={};updates[`clientForms/${id}`]=null;updates[`clientSubmissions/${id}`]=null;updates[`clientApprovals/${id}`]=null;
   try{await db.ref().update(updates);if(clientFormEditId===id)resetClientFormEditor();toast('Generated client link deleted permanently.');log(`deleted client event-details link: ${f.couple}`);}catch(e){toast('Could not delete the link. Please try again.');}
@@ -4718,16 +4865,17 @@ async function saveCheckinEvent(){
   const d=mapsUrl?ciParseMap():null,crew={};document.querySelectorAll('.ci-person').forEach(row=>{if(!row.querySelector('.ci-person-check').checked)return;const uid=row.dataset.ciUid,p=crewProfiles[uid];if(!p)return;const arrivalTime=row.querySelector('.ci-person-time').value||reportingTime;crew[uid]={name:p.name||'',phone:p.phone||'',email:p.email||'',role:row.querySelector('.ci-person-role').value,reportTime:arrivalTime,arrivalTime,isLead:!!row.querySelector('.ci-person-lead')?.checked};});
   const missing=[];if(!couple)missing.push('couple');if(!date)missing.push('date');if(!eventName)missing.push('event');if(mapsUrl&&!d)missing.push('valid full Google Maps link, or leave it blank');if(!reportingTime)missing.push('reporting time');if(!scheduledStart)missing.push('scheduled start');if(!Object.keys(crew).length)missing.push('at least one crew member');
   if(missing.length){res.className='check-result show clash';res.innerHTML=`<b>Still needed</b>${esc(missing.join(', '))}.`;return;}
-  const old=checkinEvents[id]||{},approved=selectedEvents.find(x=>x.formId)?.details||{},linkedEvents=selectedEvents.map(x=>({formId:x.formId||'',eventId:x.eventId||'',name:x.name,date:x.date||date,order:x.order||0})),firstLinked=selectedEvents.find(x=>x.formId)||{},dateOverride=!!(firstLinked.formId&&firstLinked.date&&firstLinked.date!==date),matchingStart=scheduledStart||functionStart||approved.startTime||old.functionStart||null,event={couple,eventName,eventNames,date,dateOverride,checklistType,linkedEvents,mapsUrl,venueName:document.getElementById('ciVenueName').value||approved.venueName||(d&&d.name)||old.venueName||'Venue to be updated',venueLat:d?d.lat:null,venueLng:d?d.lng:null,radiusM:500,reportingTime,scheduledStart:matchingStart,scheduledStartMode:scheduledEl.dataset.mode||'manual',functionStart:matchingStart,functionEnd:functionEnd||approved.endTime||old.functionEnd||null,clientContactName:approved.contactName||old.clientContactName||null,clientContactPhone:approved.contactPhone||old.clientContactPhone||null,brideReadyLocation:approved.brideReadyLocation||old.brideReadyLocation||null,groomReadyLocation:approved.groomReadyLocation||old.groomReadyLocation||null,clientNotes:approved.notes||old.clientNotes||null,clientFormId:firstLinked.formId||old.clientFormId||null,clientEventId:firstLinked.eventId||old.clientEventId||null,crew,resourceAssignments:old.resourceAssignments||null,actualStartAt:old.actualStartAt||null,createdAt:old.createdAt||Date.now(),createdBy:old.createdBy||editor,updatedAt:Date.now(),updatedBy:editor};
-  const updates={};updates[`crewCheckins/events/${id}`]=event;Object.keys(old.crew||{}).forEach(uid=>{if(!crew[uid])updates[`crewCheckins/assignments/${uid}/${id}`]=null;});Object.keys(crew).forEach(uid=>updates[`crewCheckins/assignments/${uid}/${id}`]=true);
-  try{await db.ref().update(updates);checkinEvents[id]=event;log(`${old.couple?'updated':'created'} crew check-in event: ${couple} — ${eventName}`);toast(mapsUrl?'Event link ready.':'Event saved — remember to add the Maps link.');toggleCheckinForm(false);setTimeout(()=>shareCheckinEvent(id,false),120);}catch(e){res.className='check-result show clash';res.innerHTML='<b>Could not save</b>Please try again.';}
+  const old=checkinEvents[id]||{},approved=selectedEvents.find(x=>x.formId)?.details||{},linkedEvents=selectedEvents.map(x=>({formId:x.formId||'',eventId:x.eventId||'',name:x.name,date:x.date||date,order:x.order||0})),firstLinked=selectedEvents.find(x=>x.formId)||{},dateOverride=!!(firstLinked.formId&&firstLinked.date&&firstLinked.date!==date),matchingStart=scheduledStart||functionStart||approved.startTime||old.functionStart||null,event={couple,eventName,eventNames,date,dateOverride,checklistType,linkedEvents,mapsUrl,venueName:document.getElementById('ciVenueName').value||approved.venueName||(d&&d.name)||old.venueName||'Venue to be updated',venueLat:d?d.lat:null,venueLng:d?d.lng:null,radiusM:500,reportingTime,scheduledStart:matchingStart,scheduledStartMode:scheduledEl.dataset.mode||'manual',functionStart:matchingStart,functionEnd:functionEnd||approved.endTime||old.functionEnd||null,clientContactName:approved.contactName||old.clientContactName||null,clientContactPhone:approved.contactPhone||old.clientContactPhone||null,brideReadyLocation:approved.brideReadyLocation||old.brideReadyLocation||null,groomReadyLocation:approved.groomReadyLocation||old.groomReadyLocation||null,clientNotes:approved.notes||old.clientNotes||null,clientFormId:firstLinked.formId||old.clientFormId||null,clientEventId:firstLinked.eventId||old.clientEventId||null,crew,resourceAssignments:old.resourceAssignments||null,actualStartAt:old.actualStartAt||null,planningOnly:!!old.planningOnly,publicationStatus:old.planningOnly?'approval_pending':old.publicationStatus||'published',createdAt:old.createdAt||Date.now(),createdBy:old.createdBy||editor,updatedAt:Date.now(),updatedBy:editor};
+  const updates={},published=!event.planningOnly;updates[`crewCheckins/events/${id}`]=event;Object.keys(old.crew||{}).forEach(uid=>{if(!crew[uid])updates[`crewCheckins/assignments/${uid}/${id}`]=null;});Object.keys(crew).forEach(uid=>updates[`crewCheckins/assignments/${uid}/${id}`]=published?true:null);
+  try{await db.ref().update(updates);checkinEvents[id]=event;log(`${old.couple?'updated':'created'} crew check-in event: ${couple} — ${eventName}`);toast(event.planningOnly?'Internal planning draft saved. Client approval is still required before sharing.':mapsUrl?'Event link ready.':'Event saved — remember to add the Maps link.');toggleCheckinForm(false);if(!event.planningOnly)setTimeout(()=>shareCheckinEvent(id,false),120);}catch(e){res.className='check-result show clash';res.innerHTML='<b>Could not save</b>Please try again.';}
 }
 function eventShareText(id){const e=checkinEvents[id];if(!e)return '';return `Hi team, sharing tomorrow’s shoot details.\n\n${e.couple} — ${e.eventName}\nReporting time: ${ciFmtTime(e.reportingTime)}\nScheduled shoot start: ${ciFmtTime(e.functionStart||e.scheduledStart)}\nVenue: ${e.venueName||'Open the link for directions'}\n\nPlease open the link and confirm your assignment:\n${ciCrewUrl(id)}`;}
 function ciEventNames(e){const raw=e&&e.eventNames,a=Array.isArray(raw)?raw:(raw&&typeof raw==='object'?Object.values(raw):[]);return a.length?a:[e&&(e.eventName||e.checklistType)||'Event'];}
 function shareCheckinEvent(id,open=true){
+  const e=checkinEvents[id];if(e&&e.planningOnly){toast('Approve this client event before sharing it with crew.');return;}
   const text=eventShareText(id);if(!text)return;if(open)window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener');else copyText(text,'WhatsApp message copied.');
 }
-function copyCheckinLink(id){copyText(ciCrewUrl(id),'Event link copied.');}
+function copyCheckinLink(id){const e=checkinEvents[id];if(e&&e.planningOnly){toast('Approve this client event before copying its crew link.');return;}copyText(ciCrewUrl(id),'Event link copied.');}
 async function deleteCheckinEvent(id){
   const e=checkinEvents[id];if(!e)return;
   if(!confirm(`Permanently delete ${e.couple} — ${e.eventName}?\n\nThis removes the shoot link, assignments, confirmations, GPS check-ins, working hours and linked checklist submissions.`))return;
@@ -4739,7 +4887,7 @@ async function deleteCheckinEvent(id){
 function ciTimeValue(ms){if(!ms)return '';const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${p(d.getHours())}:${p(d.getMinutes())}`;}
 function ciStartNow(id){const input=document.getElementById('ciStart_'+id);if(input)input.value=ciTimeValue(Date.now());saveActualStart(id);}
 async function saveActualStart(id){
-  const input=document.getElementById('ciStart_'+id),v=input&&input.value,e=checkinEvents[id],ms=v&&e&&e.date?new Date(`${e.date}T${v}`).getTime():null;if(!ms){toast('Enter the actual shoot start time.');return;}try{await db.ref(`crewCheckins/events/${id}/actualStartAt`).set(ms);await db.ref(`crewCheckins/events/${id}/updatedAt`).set(Date.now());if(checkinEvents[id])checkinEvents[id].actualStartAt=ms;toast('Actual shoot start saved.');setTimeout(()=>syncCheckinSubmissions(id),250);}catch(e){toast('Could not save the shoot start.');}
+  const input=document.getElementById('ciStart_'+id),v=input&&input.value,e=checkinEvents[id];if(e&&e.planningOnly){toast('Approve this client event before starting the crew workflow.');return;}const ms=v&&e&&e.date?new Date(`${e.date}T${v}`).getTime():null;if(!ms){toast('Enter the actual shoot start time.');return;}try{await db.ref(`crewCheckins/events/${id}/actualStartAt`).set(ms);await db.ref(`crewCheckins/events/${id}/updatedAt`).set(Date.now());if(checkinEvents[id])checkinEvents[id].actualStartAt=ms;toast('Actual shoot start saved.');setTimeout(()=>syncCheckinSubmissions(id),250);}catch(e){toast('Could not save the shoot start.');}
 }
 async function syncCheckinSubmissions(id){
   const e=checkinEvents[id],all=checkinAttendance[id]||{};if(!e||!e.actualStartAt)return;
@@ -4791,7 +4939,7 @@ function ciCollectInlineCrew(id){
   box.querySelectorAll('.ci-inline-person').forEach(row=>{const check=row.querySelector('.ci-inline-check'),uid=row.dataset.inlineUid,p=crewProfiles[uid];if(!p||!check.checked)return;const arrivalTime=row.querySelector('.ci-inline-time').value||teamArrival;crew[uid]={name:p.name||'',phone:p.phone||'',email:p.email||'',role:row.querySelector('.ci-inline-role').value,reportTime:arrivalTime,arrivalTime,isLead:!!row.querySelector('.ci-inline-lead-radio').checked};});
   return {box,e,crew,teamArrival};
 }
-function ciAppendCrewUpdates(updates,id,result,now){updates[`crewCheckins/events/${id}/crew`]=result.crew;updates[`crewCheckins/events/${id}/reportingTime`]=result.teamArrival;updates[`crewCheckins/events/${id}/updatedAt`]=now;updates[`crewCheckins/events/${id}/updatedBy`]=editor;Object.keys(result.e.crew||{}).forEach(uid=>{if(!result.crew[uid])updates[`crewCheckins/assignments/${uid}/${id}`]=null;});Object.keys(result.crew).forEach(uid=>updates[`crewCheckins/assignments/${uid}/${id}`]=true);}
+function ciAppendCrewUpdates(updates,id,result,now){updates[`crewCheckins/events/${id}/crew`]=result.crew;updates[`crewCheckins/events/${id}/reportingTime`]=result.teamArrival;updates[`crewCheckins/events/${id}/updatedAt`]=now;updates[`crewCheckins/events/${id}/updatedBy`]=editor;Object.keys(result.e.crew||{}).forEach(uid=>{if(!result.crew[uid])updates[`crewCheckins/assignments/${uid}/${id}`]=null;});Object.keys(result.crew).forEach(uid=>updates[`crewCheckins/assignments/${uid}/${id}`]=result.e.planningOnly?null:true);}
 async function saveCiInlineCrew(id){
   const result=ciCollectInlineCrew(id);if(result.error){toast(result.error);return;}if(!Object.keys(result.crew).length){toast('Select at least one crew member.');return;}const updates={},now=Date.now();ciAppendCrewUpdates(updates,id,result,now);
   try{await db.ref().update(updates);checkinEvents[id].crew=result.crew;checkinEvents[id].reportingTime=result.teamArrival;result.box.dataset.dirty='false';toast(`${Object.keys(result.crew).length} crew member${Object.keys(result.crew).length===1?'':'s'} saved for this event.`);log(`updated crew assignment: ${result.e.couple} — ${result.e.eventName}`);renderCheckinEvents();}catch(err){toast('Could not save the crew assignment. Please try again.');}
@@ -4845,11 +4993,21 @@ function ciAssignmentEventIdsForCouple(couple){
   const who=String(couple||'').trim().toLowerCase();
   return Object.entries(checkinEvents||{}).filter(([id,e])=>{if(!e||String(e.couple||'').trim().toLowerCase()!==who)return false;const crew=Object.keys(e.crew||{}),attendance=checkinAttendance[id]||{};return !crew.length||!crew.every(uid=>attendance[uid]&&attendance[uid].checkedOutAt);}).sort((a,b)=>`${a[1].date||''} ${a[1].functionStart||a[1].scheduledStart||''}`.localeCompare(`${b[1].date||''} ${b[1].functionStart||b[1].scheduledStart||''}`)).map(([id])=>id);
 }
+function ciAssignmentEventIdsForClientForm(formId){
+  const f=clientForms[formId];if(!f)return [];
+  return Object.entries(checkinEvents||{}).filter(([id,e])=>{
+    if(!e||e.clientFormId!==formId||!e.clientEventId||!f.events[e.clientEventId])return false;
+    const source=f.events[e.clientEventId],exact=e.date===source.date&&shotListKey(e.eventName)===shotListKey(source.name);
+    if(!exact)return false;
+    const crew=Object.keys(e.crew||{}),attendance=checkinAttendance[id]||{};
+    return !crew.length||!crew.every(uid=>attendance[uid]&&attendance[uid].checkedOutAt);
+  }).sort((a,b)=>`${a[1].date||''} ${a[1].functionStart||a[1].scheduledStart||''}`.localeCompare(`${b[1].date||''} ${b[1].functionStart||b[1].scheduledStart||''}`)).map(([id])=>id);
+}
 function openCiAssignmentBoard(groupId){
   const ids=(ciCoupleGroupEvents.get(groupId)||[]).filter(id=>checkinEvents[id]);if(!ids.length){toast('No active events are available for this couple.');return;}openCiAssignmentBoardWithEvents(ids);
 }
 function openCiAssignmentBoardByEvent(id){
-  const e=checkinEvents[id];if(!e)return;const ids=ciAssignmentEventIdsForCouple(e.couple);openCiAssignmentBoardWithEvents(ids.length?ids:[id],id);
+  const e=checkinEvents[id];if(!e)return;const ids=e.clientFormId?ciAssignmentEventIdsForClientForm(e.clientFormId):ciAssignmentEventIdsForCouple(e.couple);openCiAssignmentBoardWithEvents(ids.length?ids:[id],id);
 }
 function openCiAssignmentBoardWithEvents(ids,focusId){
   ids=[...new Set(ids)].filter(id=>checkinEvents[id]).sort((a,b)=>{const x=checkinEvents[a],y=checkinEvents[b];return `${x.date||''} ${x.functionStart||x.scheduledStart||''}`.localeCompare(`${y.date||''} ${y.functionStart||y.scheduledStart||''}`);});
@@ -4959,7 +5117,7 @@ function ciAssignmentSaveResult(eventId){
 }
 function ciAppendAssignmentSave(updates,result,now){
   const id=result.eventId;updates[`crewCheckins/events/${id}/crew`]=result.crew;updates[`crewCheckins/events/${id}/crewRequirements`]=result.requirements;updates[`crewCheckins/events/${id}/reportingTime`]=result.teamArrival||null;updates[`crewCheckins/events/${id}/updatedAt`]=now;updates[`crewCheckins/events/${id}/updatedBy`]=editor;
-  Object.keys(result.e.crew||{}).forEach(uid=>{if(!result.crew[uid])updates[`crewCheckins/assignments/${uid}/${id}`]=null;});Object.keys(result.crew).forEach(uid=>updates[`crewCheckins/assignments/${uid}/${id}`]=true);
+  Object.keys(result.e.crew||{}).forEach(uid=>{if(!result.crew[uid])updates[`crewCheckins/assignments/${uid}/${id}`]=null;});Object.keys(result.crew).forEach(uid=>updates[`crewCheckins/assignments/${uid}/${id}`]=result.e.planningOnly?null:true);
 }
 async function ciSaveAssignmentResults(results,label){
   const updates={},now=Date.now();results.forEach(result=>ciAppendAssignmentSave(updates,result,now));
@@ -4987,7 +5145,7 @@ function renderCheckinEvents(){
   const list=Object.entries(checkinEvents||{}).filter(([,e])=>e&&typeof e==='object').sort((a,b)=>`${a[1].date||''} ${a[1].scheduledStart||''}`.localeCompare(`${b[1].date||''} ${b[1].scheduledStart||''}`));
   const isComplete=([id,e])=>{const crew=Object.keys(e.crew||{}),all=checkinAttendance[id]||{};return !!(e.completedAt||e.status==='completed'||crew.length>0&&crew.every(uid=>all[uid]&&all[uid].checkedOutAt));};
   const tomorrow=new Date();tomorrow.setHours(0,0,0,0);tomorrow.setDate(tomorrow.getDate()+1);const p=n=>String(n).padStart(2,'0'),tomorrowIso=`${tomorrow.getFullYear()}-${p(tomorrow.getMonth()+1)}-${p(tomorrow.getDate())}`;
-  const shareDue=list.filter(entry=>{const[id,e]=entry,crew=Object.keys(e.crew||{}),all=checkinAttendance[id]||{};if(e.date!==tomorrowIso||!crew.length||isComplete(entry))return false;if(crew.some(uid=>all[uid]&&(all[uid].checkedInAt||all[uid].checkedOutAt)))return false;return crew.some(uid=>!(all[uid]&&all[uid].confirmedAt));});
+  const shareDue=list.filter(entry=>{const[id,e]=entry,crew=Object.keys(e.crew||{}),all=checkinAttendance[id]||{};if(e.planningOnly||e.date!==tomorrowIso||!crew.length||isComplete(entry))return false;if(crew.some(uid=>all[uid]&&(all[uid].checkedInAt||all[uid].checkedOutAt)))return false;return crew.some(uid=>!(all[uid]&&all[uid].confirmedAt));});
   const note=document.getElementById('ciTomorrowNote');if(note){note.style.display=shareDue.length?'':'none';note.innerHTML=shareDue.length?`<b>Needs sharing tomorrow:</b> ${shareDue.map(([id,e])=>`${esc(e.couple)} — ${esc(e.eventName)} <button class="btn-mini" style="margin-left:6px" onclick="shareCheckinEvent('${id}')">Share with team</button>`).join(' · ')}`:'';}
   if(!list.length){el.innerHTML='<div class="empty">No crew shoots yet.</div>';return;}
   const active=list.filter(x=>!isComplete(x)),completed=list.filter(isComplete).reverse();
@@ -5001,8 +5159,9 @@ function renderCheckinEvents(){
     const timings=`Reporting ${ciFmtTime(e.reportingTime)} · Event ${ciFmtTime(e.functionStart||e.scheduledStart)}${e.functionEnd?' – '+ciFmtTime(e.functionEnd):''}`;
     const contact=e.clientContactName||e.clientContactPhone?`${e.clientContactName||'On-ground contact'}${e.clientContactPhone?' · '+e.clientContactPhone:''}`:'';
     const details=completedShoot?'':`<div class="ci-event-details"><div class="ci-detail wide"><label>Venue & location</label><div>${esc(e.venueName||'Venue to be updated')}${e.mapsUrl?` · <a href="${esc(e.mapsUrl)}" target="_blank" rel="noopener">Open Maps ↗</a>`:' · Maps link pending'}</div></div><div class="ci-detail"><label>Timings</label><div>${esc(timings)}</div></div>${contact?`<div class="ci-detail"><label>Contact</label><div>${esc(contact)}</div></div>`:''}${e.brideReadyLocation?`<div class="ci-detail"><label>Bride preparation</label><div>${esc(e.brideReadyLocation)}</div></div>`:''}${e.groomReadyLocation?`<div class="ci-detail"><label>Groom preparation</label><div>${esc(e.groomReadyLocation)}</div></div>`:''}${e.clientNotes?`<div class="ci-detail wide"><label>Important notes</label><div class="ci-detail-note">${esc(e.clientNotes)}</div></div>`:''}</div>`;
-    const resourceEditor=completedShoot?'':ciResourceEditor(id,e,names),crewEditor=completedShoot?'':ciInlineCrewEditor(id,e),startControl=completedShoot?'':`<div class="ci-start"><div><label>Actual shoot start</label><input id="ciStart_${id}" type="time" value="${esc(ciTimeValue(e.actualStartAt))}"></div><button class="btn-mini" onclick="saveActualStart('${id}')">Save</button><button class="btn-mini" onclick="ciStartNow('${id}')">Start now</button></div>`;
-    return `<article class="ci-event ${open?'':'collapsed'}" id="ciEventCard_${id}" data-event-id="${esc(id)}"><button type="button" class="ci-event-head" onclick="toggleCiEventCard('${id}')" aria-expanded="${open?'true':'false'}"><div class="ci-event-head-main"><div class="ci-event-date">${esc(ciDateLong(e.date))} · ${esc(ciFmtTime(e.reportingTime))} arrival</div><h3>${insideGroup?esc(names.join(' + ')):`${esc(e.couple)} <small>${esc(names.join(' + '))}</small>`}</h3>${headerDetail}</div><div class="ci-event-head-side"><span class="ci-event-toggle">⌄</span></div></button><div class="ci-event-body"><div class="ci-event-btns" style="margin-top:16px">${completedShoot?'':`<button class="btn-mini" onclick="focusCiCrew('${id}')">Open team workspace</button><button class="btn-mini" onclick="shareCheckinEvent('${id}')">WhatsApp</button><button class="btn-mini" onclick="copyCheckinLink('${id}')">Copy link</button>`}<button class="btn-mini" onclick="editCheckinEvent('${id}')">Edit event details</button><button class="btn-mini" onclick="deleteCheckinEvent('${id}')">Delete</button></div><div class="ci-statbar">${stats}</div>${details}${crewEditor}${resourceEditor}<div class="ci-roster">${rows}</div>${startControl}</div></article>`;
+    const resourceEditor=completedShoot?'':ciResourceEditor(id,e,names),crewEditor=completedShoot?'':ciInlineCrewEditor(id,e),startControl=completedShoot||e.planningOnly?'':`<div class="ci-start"><div><label>Actual shoot start</label><input id="ciStart_${id}" type="time" value="${esc(ciTimeValue(e.actualStartAt))}"></div><button class="btn-mini" onclick="saveActualStart('${id}')">Save</button><button class="btn-mini" onclick="ciStartNow('${id}')">Start now</button></div>`;
+    const crewActions=e.planningOnly?`<button class="btn-mini" onclick="focusCiCrew('${id}')">Edit internal team</button><span class="ci-stat late">Client approval pending · crew link locked</span>`:`<button class="btn-mini" onclick="focusCiCrew('${id}')">Open team workspace</button><button class="btn-mini" onclick="shareCheckinEvent('${id}')">WhatsApp</button><button class="btn-mini" onclick="copyCheckinLink('${id}')">Copy link</button>`;
+    return `<article class="ci-event ${open?'':'collapsed'}" id="ciEventCard_${id}" data-event-id="${esc(id)}"><button type="button" class="ci-event-head" onclick="toggleCiEventCard('${id}')" aria-expanded="${open?'true':'false'}"><div class="ci-event-head-main"><div class="ci-event-date">${esc(ciDateLong(e.date))} · ${esc(ciFmtTime(e.reportingTime))} arrival</div><h3>${insideGroup?esc(names.join(' + ')):`${esc(e.couple)} <small>${esc(names.join(' + '))}</small>`}</h3>${e.planningOnly?'<div class="ci-event-glance">Internal planning draft · client approval pending</div>':headerDetail}</div><div class="ci-event-head-side"><span class="ci-event-toggle">⌄</span></div></button><div class="ci-event-body"><div class="ci-event-btns" style="margin-top:16px">${completedShoot?'':crewActions}<button class="btn-mini" onclick="editCheckinEvent('${id}')">Edit event details</button><button class="btn-mini" onclick="deleteCheckinEvent('${id}')">Delete</button></div><div class="ci-statbar">${stats}</div>${details}${crewEditor}${resourceEditor}<div class="ci-roster">${rows}</div>${startControl}</div></article>`;
   };
   ciCoupleGroupEvents=new Map();
   const groupedHtml=(items,scope,completedShoot)=>{const groups=new Map();items.forEach(x=>{const couple=String(x[1].couple||'Unnamed couple').trim()||'Unnamed couple',key=couple.toLowerCase();if(!groups.has(key))groups.set(key,{couple,items:[]});groups.get(key).items.push(x);});return [...groups.values()].map(group=>{const groupId=ciCoupleGroupId(scope,group.couple),open=ciCoupleGroupsOpen.has(groupId),count=group.items.length,statuses=group.items.map(ciGroupShootStatus),crewPending=statuses.filter(x=>x==='crew').length,inProgress=statuses.filter(x=>x==='progress'||x==='partial').length,ready=statuses.filter(x=>x==='ready').length,summary=completedShoot?'All events completed':[crewPending?`${crewPending} need crew`:'',inProgress?`${inProgress} in progress`:'',ready?`${ready} ready for check-in`:'',!crewPending&&!inProgress&&!ready?'Crew assigned':''].filter(Boolean).join(' · ');ciCoupleGroupEvents.set(groupId,group.items.map(([id])=>id));const savebar=completedShoot?'':`<div class="ci-couple-savebar"><div><b>Assign this wedding’s full team in one clear view</b><small>All events, role requirements, multiple people per role, arrival times and conflict warnings stay together.</small></div><button class="btn-mini" onclick="openCiAssignmentBoard('${groupId}')">Assign team</button></div>`;return `<section class="ci-couple-group ${open?'open':''}" id="ciCoupleGroup_${groupId}"><button type="button" class="ci-couple-head" onclick="toggleCiCoupleGroup('${groupId}')" aria-expanded="${open?'true':'false'}"><div class="ci-couple-head-main"><div class="ci-couple-meta">${count} ${count===1?'event':'events'} · ${esc(ciGroupDateLabel(group.items))}</div><h3>${esc(group.couple)}</h3><div class="ci-couple-summary">${esc(summary)}</div></div><span class="ci-couple-toggle">⌄</span></button><div class="ci-couple-body">${savebar}${group.items.map(x=>eventCard(x,completedShoot,true)).join('')}</div></section>`;}).join('');};
@@ -5403,14 +5562,14 @@ function cw10RenderReview(state){
   if(!cw10ReviewOpen||!cw10ReviewPending(state))return '';
   const scoped=state.events.find(e=>e.eventId===cw10ReviewEventId),diffs=cw10DiffEntries(state,cw10ReviewEventId);
   let body='';
-  if(state.approval.status==='changes_pending'&&diffs.length){
+  if(diffs.length){
     body=diffs.map(x=>`<div class="cw10-compare-card"><div class="cw10-compare-label">${esc(x.eventName)}</div><h4>${esc(x.label)}</h4><div class="cw10-compare-row"><div class="cw10-compare-value"><span>Current studio record</span><strong>${esc(x.oldValue)}</strong></div><span class="cw10-compare-arrow">→</span><div class="cw10-compare-value client"><span>Client submitted</span><strong>${esc(x.newValue)}</strong></div></div></div>`).join('');
   }else{
     const events=(scoped?[scoped]:state.events).map(e=>{const d=e.details||{};return `<div class="cw10-compare-card"><div class="cw10-compare-label">${esc(ciDateLong(e.date))}</div><h4>${esc(e.name)}</h4><div class="cw10-compare-row"><div class="cw10-compare-value"><span>Timing</span><strong>${esc(ciFmtTime(d.startTime))}${d.endTime?' – '+esc(ciFmtTime(d.endTime)):''}</strong></div><span class="cw10-compare-arrow">·</span><div class="cw10-compare-value client"><span>Venue</span><strong>${esc(d.venueName||'Awaited')}</strong></div></div></div>`;}).join('');
     body=events||'<div class="cw10-empty-state"><p>No submitted event values are available yet.</p></div>';
   }
-  const canKeep=state.approval.status==='changes_pending'&&state.events.every(e=>state.approval.snapshot&&state.approval.snapshot.events&&state.approval.snapshot.events[e.eventId]);
-  return `<button type="button" class="cw10-review-backdrop" aria-label="Close client update review" onclick="cw10CloseReview()"></button><aside class="cw10-review" aria-label="Client update review"><div class="cw10-review-head"><div><div class="cw10-kicker">Client update</div><h3>${state.approval.status==='changes_pending'?'Compare submitted changes':'Review submitted details'}</h3></div><button type="button" class="cw10-review-close" aria-label="Close" onclick="cw10CloseReview()">×</button></div><p class="cw10-review-intro">${esc(state.entry.name)} submitted information through the existing private link. The confirmed studio record changes only after you approve it.</p><div class="cw10-compare-stack">${body}</div><div class="cw10-review-actions"><button type="button" class="cw10-primary" onclick="cw10ApproveReview('${state.formId}')">${state.approval.status==='changes_pending'?'Accept client update':'Approve & publish'}</button>${canKeep?`<button type="button" class="cw10-soft" onclick="cw10KeepCurrent('${state.formId}')">Keep current studio record</button>`:''}</div><p class="cw10-review-foot">The decision will be recorded in Activity. Existing public links and event IDs remain unchanged.</p></aside>`;
+  const canKeep=!!(scoped&&diffs.length&&cw11EventSnapshot(state,scoped))||state.approval.status==='changes_pending'&&state.events.every(e=>state.approval.snapshot&&state.approval.snapshot.events&&state.approval.snapshot.events[e.eventId]);
+  return `<button type="button" class="cw10-review-backdrop" aria-label="Close client update review" onclick="cw10CloseReview()"></button><aside class="cw10-review" aria-label="Client update review"><div class="cw10-review-head"><div><div class="cw10-kicker">Client update</div><h3>${diffs.length?'Compare submitted changes':'Review submitted details'}</h3></div><button type="button" class="cw10-review-close" aria-label="Close" onclick="cw10CloseReview()">×</button></div><p class="cw10-review-intro">${esc(state.entry.name)} submitted information through the existing private link. Only ${scoped?esc(scoped.name):'the reviewed event'} changes after you approve it.</p><div class="cw10-compare-stack">${body}</div><div class="cw10-review-actions"><button type="button" class="cw10-primary" onclick="cw10ApproveReview('${state.formId}')">${diffs.length?'Accept event update':'Approve & publish event'}</button>${canKeep?`<button type="button" class="cw10-soft" onclick="cw10KeepCurrent('${state.formId}')">Keep current event record</button>`:''}</div><p class="cw10-review-foot">The decision will be recorded in Activity. Existing public links and event IDs remain unchanged.</p></aside>`;
 }
 function cw10OpenReview(eventId=''){
   const entry=cwEntry();if(!entry)return;const state=cwState(entry);
@@ -5443,6 +5602,484 @@ function renderClientsWorkspace(){
   if(cwSelectedKey&&!all.some(x=>x.key===cwSelectedKey))cwSelectedKey='';
   const entry=all.find(x=>x.key===cwSelectedKey)||null;
   root.innerHTML=entry?cw10RenderWorkspace(entry):cw10RenderFolderPage(all);
+}
+
+/* ===================== CLIENT PLANNING WORKSPACE V11 ===================== */
+const cw11PlanDrafts=new Map();
+const cw11CrewTimeOpen=new Set();
+let cw11AddCrewOpen=false;
+let cw11RecordOpen=false;
+let cw11ClientDetailsOpen=false;
+let cw11ResourcesOpen=false;
+let cw11Saving=false;
+
+function cw11DraftKey(formId,eventId){return `${formId||''}|${eventId||''}`;}
+function cw11ShiftTime(value,minutes){
+  if(!/^\d{2}:\d{2}$/.test(value||''))return '';
+  const [h,m]=value.split(':').map(Number),total=((h*60+m+minutes)%1440+1440)%1440;
+  return `${p2(Math.floor(total/60))}:${p2(total%60)}`;
+}
+function cw11IsPublished(state,event){
+  if(!state||!event)return false;
+  const a=state.approval||{},eventApproval=a.events&&a.events[event.eventId],globalSnapshot=a.snapshot&&a.snapshot.events&&a.snapshot.events[event.eventId];
+  return !!(a.status==='approved'||eventApproval&&eventApproval.status==='approved'||['changes_pending','partially_approved'].includes(a.status)&&globalSnapshot);
+}
+function cw11GetPlanDraft(state,event){
+  const key=cw11DraftKey(event.formId,event.eventId),cached=cw11PlanDrafts.get(key);
+  if(cached)return cached;
+  const row=cw10ShootRow(state,event),shootId=row&&row[0],shoot=row&&row[1],details=cw10CurrentDetails(state,event);
+  const startTime=shoot&&(shoot.functionStart||shoot.scheduledStart)||details.startTime||'';
+  const clientEnd=details.endTime||'',autoEnd=cw11ShiftTime(startTime,420),endTime=shoot&&shoot.functionEnd||clientEnd||autoEnd;
+  const autoArrival=cw11ShiftTime(startTime,-60),teamArrival=shoot&&shoot.reportingTime||autoArrival;
+  const crew={};
+  Object.entries(shoot&&shoot.crew||{}).forEach(([uid,c])=>{
+    const saved=c.arrivalTime||c.reportTime||teamArrival;
+    crew[uid]={...ciClone(c),arrivalTime:saved,reportTime:saved,arrivalOverride:c.arrivalTimeMode==='individual'||!!(saved&&teamArrival&&saved!==teamArrival)};
+  });
+  const draft={
+    key,clientKey:state.entry.key,formId:event.formId,eventId:event.eventId,shootId:shootId||'',dirty:false,
+    startTime,endTime,teamArrival,crew,requirements:ciClone(shoot&&shoot.crewRequirements||{}),
+    arrivalMode:shoot&&shoot.reportingTimeMode||((shoot&&shoot.reportingTime&&shoot.reportingTime!==autoArrival)?'manual':'auto'),
+    endMode:shoot&&shoot.functionEndMode||(shoot&&shoot.functionEnd&&shoot.functionEnd!==clientEnd?'manual':clientEnd?'client':'auto'),
+    timingOverride:!!(shoot&&shoot.studioTimingOverride)
+  };
+  cw11PlanDrafts.set(key,draft);
+  return draft;
+}
+function cw11DirtyDrafts(clientKey=cwSelectedKey){
+  return [...cw11PlanDrafts.values()].filter(d=>d.clientKey===clientKey&&d.dirty);
+}
+function cw11RefreshSaveState(){
+  const count=cw11DirtyDrafts().length,currentDraft=[...cw11PlanDrafts.values()].find(d=>d.clientKey===cwSelectedKey&&d.eventId===cw10SelectedEventId),current=document.getElementById('cw11SaveCurrent'),all=document.getElementById('cw11SaveAll'),copy=document.getElementById('cw11SaveCopy');
+  if(current){current.disabled=cw11Saving||!currentDraft||!currentDraft.dirty;current.textContent=cw11Saving?'Saving…':'Save event plan';}
+  if(all){all.hidden=count<2;all.disabled=cw11Saving||count<2;const badge=all.querySelector('.cw11-save-count');if(badge)badge.textContent=count;}
+  if(copy)copy.innerHTML=count?`<strong class="cw11-plan-dirty">${count} unsaved event plan${count===1?'':'s'}</strong>`:'<strong>All planning changes saved</strong>';
+}
+function cw11MarkDraft(draft){
+  if(!draft)return;draft.dirty=true;cw11RefreshSaveState();
+}
+function cw11CurrentStateEvent(eventId){
+  const entry=cwEntry();if(!entry)return {};
+  const state=cwState(entry),event=state.events.find(e=>e.eventId===eventId);
+  return {entry,state,event};
+}
+function cw11RecomputeTimingOverride(state,event,draft){
+  const client=cw10CurrentDetails(state,event);
+  draft.timingOverride=String(draft.startTime||'')!==String(client.startTime||'')||String(draft.endTime||'')!==String(client.endTime||'');
+}
+function cw11SetPlanTime(eventId,field,value){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event),oldStart=draft.startTime,oldArrival=draft.teamArrival,oldAutoEnd=cw11ShiftTime(oldStart,420),oldAutoArrival=cw11ShiftTime(oldStart,-60);
+  if(field==='startTime'){
+    draft.startTime=value;
+    if(!draft.endTime||draft.endMode==='auto'||draft.endTime===oldAutoEnd){draft.endTime=cw11ShiftTime(value,420);draft.endMode='auto';}
+    if(draft.arrivalMode==='auto'||draft.teamArrival===oldAutoArrival){
+      draft.teamArrival=cw11ShiftTime(value,-60);draft.arrivalMode='auto';
+      Object.entries(draft.crew).forEach(([uid,c])=>{if(!cw11CrewLocked(draft,uid)&&!c.arrivalOverride){c.arrivalTime=draft.teamArrival;c.reportTime=draft.teamArrival;}});
+    }
+  }else if(field==='endTime'){
+    draft.endTime=value;draft.endMode='manual';
+  }else if(field==='teamArrival'){
+    draft.teamArrival=value;draft.arrivalMode='manual';
+    Object.entries(draft.crew).forEach(([uid,c])=>{if(!cw11CrewLocked(draft,uid)&&(!c.arrivalOverride||c.arrivalTime===oldArrival)){c.arrivalTime=value;c.reportTime=value;c.arrivalOverride=false;}});
+  }
+  cw11RecomputeTimingOverride(state,event,draft);cw11MarkDraft(draft);
+  const end=document.getElementById('cw11EndTime'),arrival=document.getElementById('cw11TeamArrival');
+  if(end)end.value=draft.endTime||'';if(arrival)arrival.value=draft.teamArrival||'';
+}
+function cw11ToggleAddCrew(){cw11AddCrewOpen=!cw11AddCrewOpen;renderClientsWorkspace();}
+function cw11ToggleClientDetails(){cw11ClientDetailsOpen=!cw11ClientDetailsOpen;renderClientsWorkspace();}
+function cw11ToggleResources(){cw11ResourcesOpen=!cw11ResourcesOpen;renderClientsWorkspace();}
+function cw11CrewPickChanged(uid){
+  const p=crewProfiles[uid],role=document.getElementById('cw11AddRole');if(p&&role&&CI_ROLES.includes(p.role))role.value=p.role;
+}
+function cw11AddCrew(eventId){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const uid=document.getElementById('cw11AddCrew')?.value,role=document.getElementById('cw11AddRole')?.value,p=crewProfiles[uid];
+  if(!uid||!p){toast('Choose a registered crew member.');return;}
+  const draft=cw11GetPlanDraft(state,event);if(draft.crew[uid]){toast(`${p.name||'This crew member'} is already assigned.`);return;}
+  draft.crew[uid]={name:p.name||'',phone:p.phone||'',email:p.email||'',role:role||p.role||'Other',arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false,isLead:!Object.values(draft.crew).some(c=>c.isLead)};
+  cw11AddCrewOpen=false;cw11MarkDraft(draft);renderClientsWorkspace();
+}
+function cw11SetCrewRole(eventId,uid,role){
+  const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft||!draft.crew[uid])return;
+  draft.crew[uid].role=role;cw11MarkDraft(draft);
+}
+function cw11CrewLocked(draft,uid){return !!(draft.shootId&&checkinAttendance[draft.shootId]&&checkinAttendance[draft.shootId][uid]&&checkinAttendance[draft.shootId][uid].checkedInAt);}
+function cw11RemoveCrew(eventId,uid){
+  const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft||!draft.crew[uid])return;
+  if(cw11CrewLocked(draft,uid)){toast('Checked-in crew cannot be removed from this event.');return;}
+  delete draft.crew[uid];cw11CrewTimeOpen.delete(`${draft.key}|${uid}`);cw11MarkDraft(draft);renderClientsWorkspace();
+}
+function cw11ToggleLead(eventId,uid){
+  const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft||!draft.crew[uid]||cw11CrewLocked(draft,uid))return;
+  const next=!draft.crew[uid].isLead;Object.values(draft.crew).forEach(c=>c.isLead=false);draft.crew[uid].isLead=next;cw11MarkDraft(draft);renderClientsWorkspace();
+}
+function cw11ToggleCrewTime(eventId,uid){
+  const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft)return;
+  const key=`${draft.key}|${uid}`;cw11CrewTimeOpen.has(key)?cw11CrewTimeOpen.delete(key):cw11CrewTimeOpen.add(key);renderClientsWorkspace();
+}
+function cw11SetCrewTime(eventId,uid,value){
+  const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event),c=draft&&draft.crew[uid];if(!c)return;
+  c.arrivalOverride=!!value;c.arrivalTime=value||draft.teamArrival;c.reportTime=c.arrivalTime;cw11MarkDraft(draft);
+  const summary=document.getElementById(`cw11ArrivalSummary_${uid}`);if(summary)summary.innerHTML=`<b>${c.arrivalOverride?'Individual '+esc(ciFmtTime(c.arrivalTime)):'Overall '+esc(ciFmtTime(draft.teamArrival))}</b><small>${c.arrivalOverride?'Overrides this event only':'Follows overall team arrival'}</small>`;
+}
+function cw11UseOverall(eventId,uid){
+  const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event),c=draft&&draft.crew[uid];if(!c)return;
+  c.arrivalOverride=false;c.arrivalTime=draft.teamArrival;c.reportTime=draft.teamArrival;cw11MarkDraft(draft);renderClientsWorkspace();
+}
+function cw11CopyTeam(eventId,sourceEventId){
+  if(!sourceEventId)return;
+  const {state,event}=cw11CurrentStateEvent(eventId),source=state&&state.events.find(e=>e.eventId===sourceEventId);if(!state||!event||!source)return;
+  const draft=cw11GetPlanDraft(state,event),from=cw11GetPlanDraft(state,source);if(!Object.keys(from.crew||{}).length){toast('That event does not have a team yet.');return;}
+  draft.crew={};Object.entries(from.crew).forEach(([uid,c])=>{draft.crew[uid]={...ciClone(c),arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false};});
+  draft.requirements=ciClone(from.requirements);cw11MarkDraft(draft);renderClientsWorkspace();toast(`Team copied from ${source.name}.`);
+}
+function cw11PlanPayload(state,event,draft){
+  if(!draft.startTime)return {error:`Add the event start time for ${event.name}.`};
+  if(!draft.endTime)draft.endTime=cw11ShiftTime(draft.startTime,420);
+  if(!draft.teamArrival)return {error:`Add the overall team arrival time for ${event.name}.`};
+  const row=cw10ShootRow(state,event),id=row&&row[0]||`client_${event.formId}_${event.eventId}`,old=checkinEvents[id]||{},details=cw10CurrentDetails(state,event),formEvent=(state.form.events||{})[event.eventId]||event;
+  const base=ciClientShootRecord(event.formId,event.eventId,state.form,formEvent,state.submission,old.createdAt||Date.now()),published=cw11IsPublished(state,event),crew={};
+  Object.entries(draft.crew||{}).forEach(([uid,c])=>{
+    const p=crewProfiles[uid]||{},arrival=c.arrivalOverride?(c.arrivalTime||draft.teamArrival):draft.teamArrival;
+    crew[uid]={name:p.name||c.name||'',phone:p.phone||c.phone||'',email:p.email||c.email||'',role:c.role||p.role||'Other',arrivalTime:arrival,reportTime:arrival,arrivalTimeMode:c.arrivalOverride?'individual':'overall',isLead:!!c.isLead};
+  });
+  const mapData=ciMapData(details.mapsUrl||old.mapsUrl||''),record={
+    ...base,...old,couple:state.entry.name,eventName:event.name,eventNames:[event.name],date:event.date,dateOverride:false,checklistType:event.name,
+    linkedEvents:[{formId:event.formId,eventId:event.eventId,name:event.name,date:event.date,order:Number(event.order)||0}],
+    mapsUrl:details.mapsUrl||old.mapsUrl||'',venueName:details.venueName||old.venueName||(mapData&&mapData.name)||'Venue to be updated',
+    venueLat:mapData?mapData.lat:(old.venueLat??null),venueLng:mapData?mapData.lng:(old.venueLng??null),radiusM:500,
+    reportingTime:draft.teamArrival,reportingTimeMode:draft.arrivalMode,scheduledStart:draft.startTime,scheduledStartMode:draft.timingOverride?'manual':'auto',
+    functionStart:draft.startTime,functionEnd:draft.endTime,functionEndMode:draft.endMode,studioTimingOverride:!!draft.timingOverride,
+    clientContactName:details.contactName||old.clientContactName||null,clientContactPhone:details.contactPhone||old.clientContactPhone||null,
+    brideReadyLocation:details.brideReadyLocation||old.brideReadyLocation||null,groomReadyLocation:details.groomReadyLocation||old.groomReadyLocation||null,
+    clientNotes:details.notes||old.clientNotes||null,clientFormId:event.formId,clientEventId:event.eventId,crew,
+    crewRequirements:ciClone(draft.requirements||old.crewRequirements||{}),resourceAssignments:old.resourceAssignments||null,
+    planningOnly:!published,publicationStatus:published?'published':'approval_pending',setupStatus:Object.keys(crew).length?(published?'prepared':'planned_pending_approval'):'crew_pending',
+    createdAt:old.createdAt||Date.now(),createdBy:old.createdBy||editor,updatedAt:Date.now(),updatedBy:editor
+  };
+  return {id,old,record,published,draft,event,state};
+}
+function cw11AppendPlanUpdates(updates,result){
+  const {id,old,record,published}=result;updates[`crewCheckins/events/${id}`]=record;
+  const allUids=new Set([...Object.keys(old.crew||{}),...Object.keys(record.crew||{})]);
+  allUids.forEach(uid=>{updates[`crewCheckins/assignments/${uid}/${id}`]=published&&record.crew[uid]?true:null;});
+}
+async function cw11SavePlans(drafts,label){
+  if(cw11Saving)return;
+  const results=[];
+  for(const draft of drafts){
+    const entry=cwDirectory().find(x=>x.key===draft.clientKey),state=entry&&cwState(entry),event=state&&state.events.find(e=>e.eventId===draft.eventId&&e.formId===draft.formId);
+    if(!state||!event)continue;
+    const result=cw11PlanPayload(state,event,draft);if(result.error){toast(result.error);return;}results.push(result);
+  }
+  if(!results.length){toast('All planning changes are already saved.');return;}
+  const updates={};results.forEach(result=>cw11AppendPlanUpdates(updates,result));cw11Saving=true;cw11RefreshSaveState();
+  try{
+    await db.ref().update(updates);
+    results.forEach(result=>{checkinEvents[result.id]=result.record;result.draft.shootId=result.id;result.draft.dirty=false;});
+    const internal=results.some(r=>!r.published);toast(internal?'Planning saved internally. The crew will receive it only after approval.':label);
+    log(`saved client planning for ${results.length} event${results.length===1?'':'s'}: ${results[0].state.entry.name}`);
+    renderCheckinEvents();renderClientsWorkspace();
+  }catch(err){toast('Could not save the planning details. Please try again.');}
+  finally{cw11Saving=false;cw11RefreshSaveState();}
+}
+function cw11SaveCurrentPlan(){
+  const {state,event}=cw11CurrentStateEvent(cw10SelectedEventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event);if(!draft.dirty){toast('This event plan is already saved.');return;}cw11SavePlans([draft],`Planning saved for ${event.name}.`);
+}
+function cw11SaveAllPlans(){cw11SavePlans(cw11DirtyDrafts(),'All event plans saved.');}
+function cw11AppendPublicationUpdates(formId,f,updates){
+  const s=clientSubmissions[formId]||{};
+  Object.entries(checkinEvents||{}).forEach(([shootId,shoot])=>{
+    if(!shoot)return;
+    const refs=Array.isArray(shoot.linkedEvents)?shoot.linkedEvents:Object.values(shoot.linkedEvents||{}),linked=refs.filter(r=>r&&r.formId===formId&&f.events&&f.events[r.eventId]);
+    if(!linked.length&&!(shoot.clientFormId===formId&&f.events&&f.events[shoot.clientEventId]))return;
+    const eventId=(linked[0]&&linked[0].eventId)||shoot.clientEventId,details=(s.events||{})[eventId]||{},start=shoot.studioTimingOverride?(shoot.functionStart||shoot.scheduledStart):details.startTime||shoot.functionStart||shoot.scheduledStart;
+    updates[`crewCheckins/events/${shootId}/planningOnly`]=false;
+    updates[`crewCheckins/events/${shootId}/publicationStatus`]='published';
+    updates[`crewCheckins/events/${shootId}/setupStatus`]=Object.keys(shoot.crew||{}).length?'prepared':'crew_pending';
+    updates[`crewCheckins/events/${shootId}/updatedAt`]=Date.now();
+    if(shoot.studioTimingOverride){
+      updates[`crewCheckins/events/${shootId}/functionStart`]=shoot.functionStart||null;
+      updates[`crewCheckins/events/${shootId}/functionEnd`]=shoot.functionEnd||null;
+      updates[`crewCheckins/events/${shootId}/scheduledStart`]=shoot.functionStart||shoot.scheduledStart||null;
+      updates[`crewCheckins/events/${shootId}/scheduledStartMode`]='manual';
+    }
+    let overall=shoot.reportingTime;
+    if(shoot.reportingTimeMode==='auto'&&start){overall=cw11ShiftTime(start,-60);updates[`crewCheckins/events/${shootId}/reportingTime`]=overall;}
+    Object.entries(shoot.crew||{}).forEach(([uid,c])=>{
+      updates[`crewCheckins/assignments/${uid}/${shootId}`]=true;
+      if(shoot.reportingTimeMode==='auto'&&c.arrivalTimeMode!=='individual'){
+        updates[`crewCheckins/events/${shootId}/crew/${uid}/arrivalTime`]=overall;
+        updates[`crewCheckins/events/${shootId}/crew/${uid}/reportTime`]=overall;
+      }
+    });
+  });
+}
+function cw11CrewRow(eventId,draft,uid,c){
+  const locked=cw11CrewLocked(draft,uid),open=cw11CrewTimeOpen.has(`${draft.key}|${uid}`),arrival=c.arrivalOverride?(c.arrivalTime||draft.teamArrival):draft.teamArrival;
+  const options=CI_ROLES.map(role=>`<option ${role===(c.role||'Other')?'selected':''}>${esc(role)}</option>`).join('');
+  return `<div class="cw11-team-row"><div class="cw11-person"><span class="cw11-avatar">${esc(cw10Initials(c.name).toUpperCase())}</span><span><b>${esc(c.name||'Crew member')}${c.isLead?' · Lead':''}</b><small>${locked?'Checked in · assignment locked':esc(c.phone||'Registered crew')}</small></span></div>
+    <select class="cw11-role-select" aria-label="Role for ${esc(c.name||'crew member')}" ${locked?'disabled':''} onchange="cw11SetCrewRole('${esc(eventId)}','${esc(uid)}',this.value)">${options}</select>
+    <div class="cw11-arrival-summary" id="cw11ArrivalSummary_${esc(uid)}"><b>${c.arrivalOverride?'Individual '+esc(ciFmtTime(arrival)):'Overall '+esc(ciFmtTime(draft.teamArrival))}</b><small>${c.arrivalOverride?'Overrides this event only':'Follows overall team arrival'}</small></div>
+    <div class="cw11-member-actions"><button type="button" class="cw11-icon-button ${c.isLead?'on':''}" ${locked?'disabled':''} onclick="cw11ToggleLead('${esc(eventId)}','${esc(uid)}')">${c.isLead?'Lead ✓':'Lead'}</button><button type="button" class="cw11-icon-button ${c.arrivalOverride||open?'on':''}" ${locked?'disabled':''} onclick="cw11ToggleCrewTime('${esc(eventId)}','${esc(uid)}')">Time</button><button type="button" class="cw11-icon-button remove" ${locked?'disabled':''} aria-label="Remove ${esc(c.name||'crew member')}" onclick="cw11RemoveCrew('${esc(eventId)}','${esc(uid)}')">×</button></div>
+    ${open?`<div class="cw11-member-time"><span>Optional individual arrival time for ${esc(c.name||'this crew member')}</span><input class="cw11-time-input" type="time" value="${esc(c.arrivalOverride?arrival:'')}" onchange="cw11SetCrewTime('${esc(eventId)}','${esc(uid)}',this.value)"><button type="button" class="cw11-icon-button" onclick="cw11UseOverall('${esc(eventId)}','${esc(uid)}')">Use overall</button></div>`:''}</div>`;
+}
+function cw11RenderPlanning(state,event){
+  const draft=cw11GetPlanDraft(state,event),resource=cw10EventResource(state,event),crew=Object.entries(draft.crew||{}).sort((a,b)=>(a[1].role||'').localeCompare(b[1].role||'')||(a[1].name||'').localeCompare(b[1].name||'')),published=cw11IsPublished(state,event)&&!(resource.shoot&&resource.shoot.planningOnly);
+  const started=!!(draft.shootId&&Object.values(checkinAttendance[draft.shootId]||{}).some(a=>a&&a.checkedInAt));
+  const assigned=new Set(crew.map(([uid])=>uid)),available=Object.entries(crewProfiles||{}).filter(([uid])=>!assigned.has(uid)).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
+  const crewOptions=available.map(([uid,p])=>`<option value="${esc(uid)}">${esc(p.name||'Unnamed')} · ${esc(ciRoleCode(p.role||''))}</option>`).join('');
+  const roleOptions=CI_ROLES.map(role=>`<option>${esc(role)}</option>`).join('');
+  const copyOptions=state.events.filter(e=>e.eventId!==event.eventId&&Object.keys(cw11GetPlanDraft(state,e).crew||{}).length).map(e=>`<option value="${esc(e.eventId)}">${esc(e.name)} · ${esc(cw10CompactDate(e.date))}</option>`).join('');
+  const lists=[resource.candid.items.length?`Candid · ${resource.candid.items.length} shots`:'Candid list pending',resource.traditional.items.length?`Traditional · ${resource.traditional.items.length} shots`:'Traditional list pending'].join(' · ');
+  const boards=resource.boards.length?resource.boards.map(([name])=>name).join(', '):'No event-specific boards';
+  const dirtyCount=cw11DirtyDrafts().length;
+  return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Planning Details</h3><p>Set this event’s operational timing and team here. Individual arrival overrides stay optional.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
+    ${published?'':`<div class="cw11-plan-note"><i>i</i><div><strong>You can finish planning before client approval.</strong>This timing and team stay internal. Approval publishes the same event record to the assigned crew—nothing is duplicated.</div></div>`}
+    ${started?`<div class="cw11-plan-note"><i>✓</i><div><strong>This shoot has started.</strong>Operational timings and checked-in assignments are locked to protect the attendance record.</div></div>`:''}
+    <div class="cw11-plan-fields"><div class="cw11-field"><label for="cw11StartTime">Event start</label><input id="cw11StartTime" type="time" value="${esc(draft.startTime)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','startTime',this.value)"><small>Used as the scheduled shoot start.</small></div>
+    <div class="cw11-field"><label for="cw11EndTime">Expected end</label><input id="cw11EndTime" type="time" value="${esc(draft.endTime)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','endTime',this.value)"><small>Defaults to seven hours after start.</small></div>
+    <div class="cw11-field"><label for="cw11TeamArrival">Overall team arrival</label><input id="cw11TeamArrival" type="time" value="${esc(draft.teamArrival)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','teamArrival',this.value)"><small>Defaults to one hour before the event.</small></div></div>
+    <div class="cw11-team"><div class="cw11-section-head"><div><h4>Assigned team</h4><p>${crew.length} crew member${crew.length===1?'':'s'} · one overall arrival time</p></div><div class="cw11-section-actions"><button type="button" class="cw10-soft" onclick="cw11ToggleAddCrew()">${cw11AddCrewOpen?'Close team tools':'+ Add or copy team'}</button></div></div>
+    <div class="cw11-team-list">${crew.length?crew.map(([uid,c])=>cw11CrewRow(event.eventId,draft,uid,c)).join(''):'<div class="cw11-empty-team">No crew assigned yet. Add the team now—even while the client update is awaiting approval.</div>'}</div>
+    ${cw11AddCrewOpen?`<div class="cw11-add-team"><div class="cw11-add-team-head"><div><strong>Team tools</strong><small>Add one person, or reuse the team from another event.</small></div></div>${copyOptions?`<div class="cw11-add-grid" style="grid-template-columns:minmax(170px,1fr) minmax(170px,1fr)"><span style="color:#817B73;font-size:8.5px">Copy an existing event team</span><select aria-label="Copy team from another event" onchange="cw11CopyTeam('${esc(event.eventId)}',this.value);this.value=''"><option value="">Choose event…</option>${copyOptions}</select></div>`:''}<div class="cw11-add-grid"><select id="cw11AddCrew" onchange="cw11CrewPickChanged(this.value)"><option value="">Choose crew member…</option>${crewOptions}</select><select id="cw11AddRole">${roleOptions}</select><button type="button" class="cw10-primary" onclick="cw11AddCrew('${esc(event.eventId)}')">Add to event</button></div></div>`:''}</div>
+    <div class="cw11-resources-wrap"><button type="button" class="cw11-resources-toggle" onclick="cw11ToggleResources()" aria-expanded="${cw11ResourcesOpen?'true':'false'}"><span><span>Lists &amp; boards</span><strong>${esc(lists)} · ${esc(boards)}</strong></span><em>${cw11ResourcesOpen?'Close':'Manage'} ${cw11ResourcesOpen?'⌃':'⌄'}</em></button>${cw11ResourcesOpen?`<div class="cw11-resources-body"><div class="cw11-plan-resources"><div class="cw11-resource"><span>Shot lists</span><strong>${esc(lists)}</strong><small>Common templates connect by event name.</small></div><div class="cw11-resource"><span>Creative boards</span><strong>${esc(boards)}</strong><small>Event, Portraits and Other remain event-specific.</small></div></div><div class="cw10-panel-actions"><button type="button" class="cw10-text" data-event-name="${esc(event.name)}" onclick="cwOpenSettings(this.dataset.eventName)">Edit common lists</button>${draft.shootId?`<button type="button" class="cw10-text" onclick="cwOpenShoot('${esc(draft.shootId)}')">Open lists &amp; boards setup</button>`:'<span style="color:#6F6963;font-size:8px">Save this plan once to add event-specific boards.</span>'}</div></div>`:''}</div>
+    <footer class="cw11-plan-footer"><div class="cw11-save-copy" id="cw11SaveCopy">${dirtyCount?`<strong class="cw11-plan-dirty">${dirtyCount} unsaved event plan${dirtyCount===1?'':'s'}</strong>`:'<strong>All planning changes saved</strong>'}</div><div class="cw11-save-actions"><button type="button" class="cw10-soft cw11-save-all" id="cw11SaveAll" ${dirtyCount<2?'hidden':''} onclick="cw11SaveAllPlans()">Save all<span class="cw11-save-count">${dirtyCount}</span></button><button type="button" class="cw10-primary" id="cw11SaveCurrent" ${draft.dirty?'':'disabled'} onclick="cw11SaveCurrentPlan()">Save event plan</button></div></footer>
+  </section>`;
+}
+function cw11RenderEventContext(state,event){
+  const d=cw10CurrentDetails(state,event),eventApproval=cw11EventApprovalState(state,event),source=eventApproval.changed?'Current approved record':eventApproval.approved?'Client confirmed':'Client submitted',map=d.mapsUrl?`<a href="${esc(d.mapsUrl)}" target="_blank" rel="noopener">Open Maps ↗</a>`:'Map awaited';
+  const summary=`${ciFmtTime(d.startTime)}${d.endTime?'–'+ciFmtTime(d.endTime):''} · ${d.venueName||'Venue awaited'} · ${d.mapsUrl?'Maps ready':'Map awaited'}`;
+  return `<section class="cw11-client-summary"><div class="cw11-client-summary-head"><button type="button" class="cw11-client-summary-toggle" onclick="cw11ToggleClientDetails()" aria-expanded="${cw11ClientDetailsOpen?'true':'false'}"><span class="cw11-client-summary-label">Client details</span><span class="cw11-client-summary-value">${esc(summary)}</span><i>${cw11ClientDetailsOpen?'⌃':'⌄'}</i></button></div>${cw11ClientDetailsOpen?`<div class="cw11-client-summary-body"><div class="cw11-event-context"><div class="cw11-context-cell"><span>Client event timing</span><strong>${esc(ciFmtTime(d.startTime))}${d.endTime?' – '+esc(ciFmtTime(d.endTime)):''}</strong><small>${esc(source)}</small></div><div class="cw11-context-cell"><span>Venue</span><strong>${esc(d.venueName||'Awaited')}</strong><small>${esc(source)}</small></div><div class="cw11-context-cell"><span>Google Maps</span><strong>${map}</strong><small>${d.mapsUrl?'Client supplied pin':'Still awaiting client'}</small></div><div class="cw11-context-cell"><span>On-ground contact</span><strong>${esc(d.contactName||d.contactPhone||'Optional')}</strong><small>${esc(d.contactPhone||'Not provided')}</small></div></div><div class="cw11-client-summary-source"><span><i></i>Client information remains separate from your operational plan.</span>${state.formId?`<button type="button" class="cw10-text" onclick="editClientAnswers('${state.formId}')">Edit client details</button>`:''}</div></div>`:''}</section>`;
+}
+function cw11RenderRecord(state,event){
+  const draft=cw11GetPlanDraft(state,event),row=cw10ShootRow(state,event),shoot=row&&row[1];
+  if(!cw11IsPublished(state,event)||shoot&&shoot.planningOnly)return '';
+  const summary=shoot&&cwShootComplete(row[0],shoot)?'Completed':shoot?'Not started':'Not prepared';
+  return `<section class="cw11-record-card"><button type="button" class="cw11-record-head" onclick="cw11RecordOpen=!cw11RecordOpen;renderClientsWorkspace()" aria-expanded="${cw11RecordOpen?'true':'false'}"><div><strong>Shoot Record</strong><small>Check-in, checkout, hours, cards and handover.</small></div><span>${esc(summary)} ${cw11RecordOpen?'⌃':'⌄'}</span></button>${cw11RecordOpen?`<div class="cw11-record-body">${cw10RenderShootRecord(state,event)}</div>`:''}</section>`;
+}
+function cw10SelectDefaultEvent(state){
+  if(state.events.some(e=>e.eventId===cw10SelectedEventId))return;
+  const actionable=state.events.find(e=>['attention','planning','live'].includes(cw10EventStatus(state,e).key)),next=state.events.find(e=>e.date>=ciTodayIso()),selected=actionable||next||state.events[0];
+  cw10SelectedEventId=selected?selected.eventId:'';
+  if(cw10SelectedEventId)localStorage.setItem('totw_client_event',cw10SelectedEventId);
+}
+function selectClientWorkspace(key){
+  cwSelectedKey=String(key||'');cwSection='event';cw10SelectedEventId='';cw10ReviewOpen=false;cw11AddCrewOpen=false;cw11RecordOpen=false;cw11ClientDetailsOpen=false;cw11ResourcesOpen=false;
+  localStorage.setItem('totw_client_workspace',cwSelectedKey);localStorage.setItem('totw_client_section','event');localStorage.removeItem('totw_client_event');
+  renderClientsWorkspace();document.getElementById('cwRoot')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function cw10SelectEvent(eventId){
+  cw10SelectedEventId=String(eventId||'');cwSection='event';cw10ReviewOpen=false;cw11AddCrewOpen=false;cw11RecordOpen=false;cw11ClientDetailsOpen=false;cw11ResourcesOpen=false;
+  localStorage.setItem('totw_client_event',cw10SelectedEventId);localStorage.setItem('totw_client_section','event');renderClientsWorkspace();cw10ToggleMobileNav(false);
+}
+function cw10EventStatus(state,event){
+  const details=cw10CurrentDetails(state,event),shootRow=cw10ShootRow(state,event),shoot=shootRow&&shootRow[1],id=shootRow&&shootRow[0];
+  if(shoot&&cwShootComplete(id,shoot))return {key:'complete',text:'Complete'};
+  if(shoot&&shoot.date===ciTodayIso()&&Object.values(checkinAttendance[id]||{}).some(a=>a&&a.checkedInAt&&!a.checkedOutAt))return {key:'live',text:'Live'};
+  const eventApproval=cw11EventApprovalState(state,event),selectedDiff=cw10DiffEntries(state,event.eventId);
+  if(eventApproval.changed&&state.submission.submittedAt&&selectedDiff.length)return {key:'attention',text:'Update pending'};
+  if(!clientEventDone(details))return {key:'planning',text:details.startTime||details.venueName?'Details incomplete':'Details pending'};
+  if(!eventApproval.approved){
+    if(shoot&&Object.keys(shoot.crew||{}).length)return {key:'attention',text:'Plan ready · approval pending'};
+    return {key:'attention',text:'Approval pending'};
+  }
+  if(!shoot)return {key:'planning',text:'Plan pending'};
+  if(!shoot.mapsUrl)return {key:'attention',text:'Map missing'};
+  const crew=Object.keys(shoot.crew||{});if(!crew.length)return {key:'attention',text:'Team pending'};
+  const resource=cw10EventResource(state,event),needed=[...new Set(Object.values(shoot.crew||{}).map(c=>ciTeamType(c.role)).filter(Boolean))];
+  if(needed.includes('candid')&&!resource.candid.items.length)return {key:'attention',text:'Candid list pending'};
+  if(needed.includes('traditional')&&!resource.traditional.items.length)return {key:'attention',text:'Traditional list pending'};
+  const attendance=checkinAttendance[id]||{},unconfirmed=crew.filter(uid=>!attendance[uid]?.confirmedAt);
+  if(event.date>=ciTodayIso()&&unconfirmed.length)return {key:'attention',text:`${unconfirmed.length} confirmation${unconfirmed.length===1?'':'s'} pending`};
+  return {key:'ready',text:'Ready'};
+}
+function cw10RenderSidebar(state){
+  const dates=cwWorkspaceDates(state),events=state.events.map(event=>{
+    const status=cw10EventStatus(state,event),details=cw10CurrentDetails(state,event),draft=cw11PlanDrafts.get(cw11DraftKey(event.formId,event.eventId));
+    return `<button type="button" class="cw10-event-nav ${cwSection==='event'&&cw10SelectedEventId===event.eventId?'on':''}" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw11-nav-event"><span class="cw10-event-name"><i class="cw10-dot ${status.key}"></i>${esc(event.name)}${draft&&draft.dirty?'<i class="cw11-dirty-dot"></i>':''}</span><small>${esc(cw10CompactDate(event.date))} · ${esc(ciFmtTime(details.startTime))}</small></span><span class="cw10-nav-note">${esc(status.text)}</span></button>`;
+  }).join('');
+  const due=state.prod?state.stages.filter(s=>!(state.prod.stages||{})[s.k]?.done).length:0,activityCount=cw10ActivityRows(state).length;
+  return `<aside class="cw10-sidebar"><div class="cw10-side-brand"><span class="cw10-brand"><span class="cw10-brand-mark">II</span><span><b>Tale of Two</b><small>Studio Ledger</small></span></span><button type="button" class="cw10-nav-close" aria-label="Close client navigation" onclick="cw10ToggleMobileNav(false)">×</button></div>
+    <button type="button" class="cw10-back" onclick="showClientFolders()">← All clients</button>
+    <div class="cw10-client-id"><span class="cw10-client-avatar">${esc(cw10Initials(state.entry.name).toUpperCase())}</span><span><h3>${esc(state.entry.name)}</h3><p>${esc(cw10DateRange(dates))} · ${state.events.length} events</p></span></div><span class="cw10-stage ${esc(state.stageClass)}">${esc(state.stage)}</span>
+    <nav class="cw10-side-nav" aria-label="Client workspace"><button type="button" class="cw10-nav-button ${cwSection==='overview'?'on':''}" onclick="setClientSection('overview')"><span>Overview</span><span>›</span></button><div class="cw10-nav-label">Events</div><div class="cw10-event-list">${events||'<div style="padding:9px 10px;color:#77716B;font-size:9px">No client events yet</div>'}</div><div class="cw10-side-divider"></div>
+    <button type="button" class="cw10-nav-button ${cwSection==='deliveries'?'on':''}" onclick="setClientSection('deliveries')"><span>Deliveries</span><span class="cw10-nav-note">${due?due+' pending':'›'}</span></button><button type="button" class="cw10-nav-button ${cwSection==='costs'?'on':''}" onclick="setClientSection('costs')"><span>Costs</span><span>›</span></button><button type="button" class="cw10-nav-button ${cwSection==='activity'?'on':''}" onclick="setClientSection('activity')"><span>Activity</span><span class="cw10-nav-note">${activityCount||'›'}</span></button></nav>
+    <div class="cw10-side-footer">Select an event on the left, then complete its planning details on the right.<button type="button" onclick="signOutLedger()">Sign out</button></div>
+  </aside>`;
+}
+function cw10RenderEvent(state){
+  cw10SelectDefaultEvent(state);
+  const event=state.events.find(e=>e.eventId===cw10SelectedEventId);
+  if(!event)return `<div class="cw10-content">${cw10PageHead('Client workspace',state.entry.name,'No private-link event is available yet.',cw10ClientActions(state))}<div class="cw10-empty-state"><h3>Create the client event link</h3><p>Events in this workspace come only from that private link.</p><button type="button" class="cw10-primary" onclick="openClientSetupForSelected()">Create client link</button></div></div>`;
+  const details=cw10CurrentDetails(state,event),status=cw10EventStatus(state,event),dirty=cw11DirtyDrafts().length;
+  const actions=`${cw10ReviewSummary(state,event.eventId)?'':`<span class="cw10-large-status"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span>`}${dirty?`<button type="button" class="cw10-soft" onclick="cw11SaveAllPlans()">Save all · ${dirty}</button>`:''}`;
+  return `<div class="cw10-content cw11-event-content">${cw10PageHead(`${ciDateLong(event.date)} · ${ciFmtTime(details.startTime)}`,event.name,details.venueName||'Venue awaiting confirmation',actions)}
+    ${cw10AttentionBanner(state,event.eventId)}
+    ${cw11RenderEventContext(state,event)}
+    ${cw11RenderPlanning(state,event)}
+    ${cw11RenderRecord(state,event)}
+    <p class="cw10-event-footnote">This page attaches planning to the exact private-link event ID. Crew Planner and Dates &amp; Enquiries remain unchanged.</p>
+  </div>`;
+}
+const CW11_APPROVAL_FIELDS=[
+  ['startTime','Start time'],['endTime','End time'],['venueName','Venue'],['mapsUrl','Maps link'],
+  ['contactName','On-ground contact'],['contactPhone','Contact number'],['brideReadyLocation','Bride preparation'],
+  ['groomReadyLocation','Groom preparation'],['notes','Notes']
+];
+function cw11RawEventApproved(formId,eventId){
+  const a=clientApprovals[formId]||{},eventApproval=a.events&&a.events[eventId],snapshot=a.snapshot&&a.snapshot.events&&a.snapshot.events[eventId];
+  return !!(a.status==='approved'||eventApproval&&eventApproval.status==='approved'||['changes_pending','partially_approved'].includes(a.status)&&snapshot);
+}
+function cw11EventSnapshot(state,event){
+  const a=state.approval||{},eventApproval=a.events&&a.events[event.eventId];
+  return eventApproval&&eventApproval.snapshot||a.snapshot&&a.snapshot.events&&a.snapshot.events[event.eventId]||null;
+}
+function cw11EventApprovalState(state,event){
+  const submitted=event.details||{},snapshot=cw11EventSnapshot(state,event),approved=cw11RawEventApproved(event.formId,event.eventId),complete=clientEventDone(submitted);
+  const changed=!!(approved&&snapshot&&CW11_APPROVAL_FIELDS.some(([key])=>String(snapshot[key]||'')!==String(submitted[key]||'')));
+  return {approved,complete,changed,snapshot,status:changed?'changes_pending':approved?'approved':complete&&state.submission.submittedAt?'awaiting_review':'incomplete'};
+}
+function cw10CurrentDetails(state,event){
+  const approval=cw11EventApprovalState(state,event);
+  return approval.approved&&approval.snapshot?approval.snapshot:event.details||{};
+}
+function cw10DiffEntries(state,eventId=''){
+  if(!state)return [];
+  const rows=[];
+  state.events.filter(e=>!eventId||e.eventId===eventId).forEach(e=>{
+    const old=cw11EventSnapshot(state,e),now=e.details||{};if(!old)return;
+    CW11_APPROVAL_FIELDS.forEach(([key,label])=>{
+      if(String(old[key]||'')===String(now[key]||''))return;
+      rows.push({eventId:e.eventId,eventName:e.name,key,label,oldValue:cw10FormatDiffValue(key,old[key]),newValue:cw10FormatDiffValue(key,now[key])});
+    });
+  });
+  return rows;
+}
+function cw10ReviewSummary(state,eventId=''){
+  if(eventId){
+    const event=state.events.find(e=>e.eventId===eventId);if(!event)return null;
+    const approval=cw11EventApprovalState(state,event);
+    if(approval.changed){
+      const first=cw10DiffEntries(state,eventId)[0];
+      return {title:'Client update awaiting review',copy:first?`${event.name}: ${first.label} changed from ${first.oldValue} to ${first.newValue}.`:`${event.name} contains a new client update.`};
+    }
+    if(!approval.approved&&approval.complete&&state.submission.submittedAt)return {title:'Client details awaiting approval',copy:`${event.name} is complete and can be approved now. Planning may continue before approval.`};
+    return null;
+  }
+  const pending=state.events.map(event=>({event,summary:cw10ReviewSummary(state,event.eventId)})).filter(x=>x.summary);
+  if(!pending.length)return null;
+  return {title:`${pending.length} client event${pending.length===1?'':'s'} awaiting review`,copy:pending.length===1?pending[0].summary.copy:`Approve completed events individually; incomplete events can remain pending.`};
+}
+function cw10ReviewPending(state){return !!cw10ReviewSummary(state);}
+function cw10OpenReview(eventId=''){
+  const entry=cwEntry();if(!entry)return;const state=cwState(entry),scopedId=String(eventId||state.events.find(e=>cw10ReviewSummary(state,e.eventId))?.eventId||''),summary=cw10ReviewSummary(state,scopedId);
+  if(!summary){toast('There is no client update waiting for review.');return;}
+  cw10ReviewEventId=scopedId;cw10ReviewOpen=true;renderClientsWorkspace();
+}
+function ciClientShootRecord(formId,eventId,f,e,s,now=Date.now()){
+  const details=((s.events||{})[eventId])||{},mapData=ciMapData(details.mapsUrl||''),start=details.startTime||'',arrival=cw11ShiftTime(start,-60);
+  return {couple:String(f.couple||'').trim(),eventName:e.name||'Event',eventNames:[e.name||'Event'],date:e.date||'',dateOverride:false,checklistType:e.name||'Event',linkedEvents:[{formId,eventId,name:e.name||'Event',date:e.date||'',order:Number(e.order)||0}],mapsUrl:details.mapsUrl||'',venueName:details.venueName||(mapData&&mapData.name)||'Venue to be updated',venueLat:mapData?mapData.lat:null,venueLng:mapData?mapData.lng:null,radiusM:500,reportingTime:arrival,reportingTimeMode:'auto',scheduledStart:start,scheduledStartMode:'auto',functionStart:start,functionEnd:details.endTime||cw11ShiftTime(start,420),functionEndMode:details.endTime?'client':'auto',studioTimingOverride:false,clientContactName:details.contactName||null,clientContactPhone:details.contactPhone||null,brideReadyLocation:details.brideReadyLocation||null,groomReadyLocation:details.groomReadyLocation||null,clientNotes:details.notes||null,clientFormId:formId,clientEventId:eventId,crew:{},resourceAssignments:null,actualStartAt:null,planningOnly:false,publicationStatus:'published',createdAt:now,createdBy:editor,updatedAt:now,updatedBy:editor,setupStatus:'crew_pending'};
+}
+function approvedClientCheckinRows(couple=''){
+  const who=String(couple||'').trim().toLowerCase(),today=ciTodayIso(),rows=[];
+  Object.entries(clientForms||{}).forEach(([id,f])=>{
+    if(!f||who&&String(f.couple||'').trim().toLowerCase()!==who)return;
+    Object.entries(f.events||{}).forEach(([eventId,e])=>{
+      if(!e||!e.date||e.date<today||!cw11RawEventApproved(id,eventId))return;
+      rows.push({formId:id,eventId,couple:String(f.couple||'').trim(),date:e.date,name:e.name||'',order:Number(e.order)||0,details:((clientSubmissions[id]&&clientSubmissions[id].events)||{})[eventId]||{}});
+    });
+  });
+  return rows.sort((a,b)=>a.date.localeCompare(b.date)||(a.details.startTime||'23:59').localeCompare(b.details.startTime||'23:59')||a.order-b.order||a.name.localeCompare(b.name));
+}
+function approvedClientEvent(couple,date,eventName){
+  const who=String(couple||'').trim().toLowerCase(),ek=shotListKey(eventName);
+  for(const [id,f] of Object.entries(clientForms||{})){
+    if(!f||String(f.couple||'').trim().toLowerCase()!==who)continue;
+    for(const [k,e] of Object.entries(f.events||{})){
+      if(e.date===date&&shotListKey(e.name)===ek&&cw11RawEventApproved(id,k))return {...((clientSubmissions[id]&&clientSubmissions[id].events||{})[k]||{}),formId:id,eventId:k,eventName:e.name,eventDate:e.date};
+    }
+  }
+  return null;
+}
+async function ensureApprovedClientShoots(){
+  if(approvedShootSyncRunning||!db||!clientFormsLoaded||!clientSubmissionsLoaded||!clientApprovalsLoaded||!checkinEventsLoaded)return;
+  const updates={},now=Date.now();
+  Object.entries(clientForms||{}).forEach(([formId,f])=>{
+    if(!f)return;const s=clientSubmissions[formId]||{};
+    Object.entries(f.events||{}).forEach(([eventId,e])=>{
+      if(!e||!e.date||!cw11RawEventApproved(formId,eventId)||ciClientEventIsLinked(formId,eventId,f.couple,e.date,e.name))return;
+      updates[`crewCheckins/events/client_${formId}_${eventId}`]=ciClientShootRecord(formId,eventId,f,e,s,now);
+    });
+  });
+  if(!Object.keys(updates).length)return;
+  approvedShootSyncRunning=true;
+  try{await db.ref().update(updates);toast(`${Object.keys(updates).length} approved client event${Object.keys(updates).length===1?' is':'s are'} now ready in Shoot Operations.`);}
+  catch(err){console.warn('Approved client shoot sync failed',err);}
+  finally{approvedShootSyncRunning=false;}
+}
+function cw11PublishedPlanResult(state,event,now){
+  const draft=cw11GetPlanDraft(state,event),result=cw11PlanPayload(state,event,draft);
+  if(result.error)return result;
+  const details=event.details||{},record=result.record,finalStart=record.studioTimingOverride?record.functionStart:details.startTime||record.functionStart;
+  record.planningOnly=false;record.publicationStatus='published';record.setupStatus=Object.keys(record.crew||{}).length?'prepared':'crew_pending';
+  if(!record.studioTimingOverride){record.functionStart=finalStart;record.scheduledStart=finalStart;record.functionEnd=details.endTime||record.functionEnd||cw11ShiftTime(finalStart,420);record.scheduledStartMode='auto';}
+  if(record.reportingTimeMode==='auto'||!record.reportingTime){
+    record.reportingTime=cw11ShiftTime(finalStart,-60);
+    Object.values(record.crew||{}).forEach(c=>{if(c.arrivalTimeMode!=='individual'){c.arrivalTime=record.reportingTime;c.reportTime=record.reportingTime;}});
+  }
+  record.updatedAt=now;record.updatedBy=editor;result.published=true;result.record=record;return result;
+}
+async function cw11ApproveClientEvent(formId,eventId){
+  const f=clientForms[formId],s=clientSubmissions[formId]||{},formEvent=f&&f.events&&f.events[eventId],details=s.events&&s.events[eventId];
+  if(!f||!formEvent||!clientEventDone(details)){toast('This event still needs timings, venue and a Maps link before approval.');return;}
+  if(!confirm(`Approve and publish ${f.couple} — ${formEvent.name}?`))return;
+  const entry=cwDirectory().find(x=>x.formIds&&x.formIds.includes(formId)),state=entry&&cwState(entry),event=state&&state.events.find(e=>e.eventId===eventId),now=Date.now(),a=clientApprovals[formId]||{};
+  if(!state||!event){toast('This client event is not available.');return;}
+  const planResult=cw11PublishedPlanResult(state,event,now);if(planResult.error){toast(planResult.error);return;}
+  const eventApprovals={...(a.events||{}),[eventId]:{status:'approved',approvedAt:now,approvedBy:editor,snapshot:ciClone(details)}};
+  const snapshotEvents={...((a.snapshot&&a.snapshot.events)||{}),[eventId]:ciClone(details)};
+  const allApproved=Object.keys(f.events||{}).every(id=>{
+    if(id===eventId)return true;
+    const eventApproval=eventApprovals[id],snapshot=eventApproval&&eventApproval.snapshot||a.snapshot&&a.snapshot.events&&a.snapshot.events[id],current=(s.events||{})[id]||{};
+    const wasApproved=eventApproval&&eventApproval.status==='approved'||a.status==='approved'||['changes_pending','partially_approved'].includes(a.status)&&snapshot;
+    return !!(wasApproved&&snapshot&&CW11_APPROVAL_FIELDS.every(([key])=>String(snapshot[key]||'')===String(current[key]||'')));
+  });
+  const approvalRecord={...a,status:allApproved?'approved':'partially_approved',events:eventApprovals,snapshot:{contact:ciClone(s.contact||{}),events:snapshotEvents},lastApprovedEventId:eventId,lastApprovedAt:now,lastApprovedBy:editor};
+  if(allApproved){approvalRecord.approvedAt=now;approvalRecord.approvedBy=editor;}
+  const updates={};updates[`clientApprovals/${formId}`]=approvalRecord;updates[`clientForms/${formId}/locked`]=allApproved;updates[`clientForms/${formId}/open`]=true;updates[`clientForms/${formId}/updatedAt`]=now;cw11AppendPlanUpdates(updates,planResult);
+  try{
+    await db.ref().update(updates);clientApprovals[formId]=approvalRecord;clientForms[formId]={...f,locked:allApproved,open:true,updatedAt:now};checkinEvents[planResult.id]=planResult.record;planResult.draft.shootId=planResult.id;planResult.draft.dirty=false;cw10ReviewOpen=false;cw10ReviewEventId='';
+    toast(allApproved?'All completed client events are approved and published.':`${formEvent.name} approved and published. Other events can remain pending.`);log(`approved client event: ${f.couple} — ${formEvent.name}`);renderCheckinEvents();renderClientsWorkspace();
+  }catch(err){toast('Could not approve this event. Please try again.');}
+}
+async function cw11KeepCurrentEvent(formId,eventId){
+  const f=clientForms[formId],s=clientSubmissions[formId]||{},a=clientApprovals[formId]||{},eventApproval=a.events&&a.events[eventId],snapshot=eventApproval&&eventApproval.snapshot||a.snapshot&&a.snapshot.events&&a.snapshot.events[eventId];
+  if(!f||!snapshot){toast('No previously approved event record is available.');return;}
+  const name=f.events&&f.events[eventId]&&f.events[eventId].name||'this event';
+  if(!confirm(`Keep the currently approved details for ${name} and reject only this event’s new client changes?`))return;
+  const now=Date.now(),updates={};updates[`clientSubmissions/${formId}/events/${eventId}`]=snapshot;updates[`clientSubmissions/${formId}/reviewedAt`]=now;updates[`clientSubmissions/${formId}/reviewDecision`]='kept_current_event';updates[`clientApprovals/${formId}/events/${eventId}/lastDecision`]='kept_current';updates[`clientApprovals/${formId}/events/${eventId}/reviewedAt`]=now;
+  try{await db.ref().update(updates);clientSubmissions[formId]={...s,events:{...(s.events||{}),[eventId]:ciClone(snapshot)},reviewedAt:now,reviewDecision:'kept_current_event'};cw10ReviewOpen=false;cw10ReviewEventId='';toast(`Current ${name} details kept.`);log(`kept current client event details: ${f.couple} — ${name}`);renderClientsWorkspace();}
+  catch(err){toast('Could not keep the current event details.');}
+}
+function cw10ApproveReview(formId){
+  const eventId=cw10ReviewEventId;cw10ReviewOpen=false;cw10ReviewEventId='';
+  if(eventId){cw11ApproveClientEvent(formId,eventId);return;}
+  approveClientForm(formId);
+}
+async function cw10KeepCurrent(formId){
+  if(cw10ReviewEventId){await cw11KeepCurrentEvent(formId,cw10ReviewEventId);return;}
+  const f=clientForms[formId],s=clientSubmissions[formId]||{},a=clientApprovals[formId]||{},snapshot=a.snapshot||{};
+  if(!f||a.status!=='changes_pending'||!snapshot.events){toast('No previously confirmed record is available.');return;}
+  if(!Object.keys(f.events||{}).every(id=>snapshot.events[id])){toast('This update includes a new event. Review it before deciding.');return;}
+  if(!confirm(`Keep the currently confirmed details for ${f.couple} and reject the newly submitted changes?`))return;
+  const now=Date.now(),restored={...s,contact:snapshot.contact||{},events:snapshot.events,reviewedAt:now,reviewDecision:'kept_current'},updates={};
+  updates[`clientSubmissions/${formId}`]=restored;updates[`clientApprovals/${formId}`]={...a,status:'approved',reviewedAt:now,reviewedBy:editor,lastDecision:'kept_current'};updates[`clientForms/${formId}/locked`]=true;updates[`clientForms/${formId}/updatedAt`]=now;
+  try{await db.ref().update(updates);clientSubmissions[formId]=restored;cw10ReviewOpen=false;cw10ReviewEventId='';toast('Current studio details kept.');log(`kept current client details after review: ${f.couple}`);renderClientsWorkspace();}
+  catch(err){toast('Could not keep the current details. Please try again.');}
 }
 
 restoreView();
