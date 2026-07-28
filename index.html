@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.2-workflow-2026-07-28">
+<meta name="totw-build" content="v12.2.1-readiness-2026-07-29">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -5451,32 +5451,40 @@ function cw10AttentionBanner(state,eventId=''){
   if(!review)return '';
   return `<button type="button" class="cw10-attention" data-event-id="${esc(eventId)}" onclick="cw10OpenReview(this.dataset.eventId)"><span class="cw10-attention-icon">!</span><span><strong>${esc(review.title)}</strong><small>${esc(review.copy)}</small></span><span class="cw10-attention-action">Review update →</span></button>`;
 }
-function cw10TeamLine(state,event){
-  const draft=cw11GetPlanDraft(state,event),crew=Object.values(draft.crew||{});
-  if(!crew.length)return 'No team yet';
-  return crew.map(c=>`${ciRoleCode(c.role)} ${c.name||'Crew'}`).join(' · ');
+function cw10TeamStaffing(state,event){
+  const draft=cw11GetPlanDraft(state,event),crewEntries=Object.entries(draft.crew||{}),requirements=draft.requirements||{};
+  const roles=[...new Set(CW11_CANDID_ROLES.concat(CW11_TRADITIONAL_ROLES).concat(Object.keys(requirements)))];
+  const gaps=[],slots=[];
+  roles.forEach(role=>{
+    const required=Math.max(0,Number(requirements[role])||0),count=crewEntries.filter(([,c])=>(c.role||'Other')===role).length;
+    if(!required&&!count)return;
+    const code=ciRoleCode(role);
+    slots.push({role,code,count,required});
+    if(count<required)gaps.push({role,code,count,required,need:required-count});
+  });
+  const summary=ciRequirementSummary(draft.crew,requirements);
+  return {draft,crewEntries,gaps,slots,summary,complete:!gaps.length&&!!crewEntries.length};
 }
-function cw10ShotListReminder(state,event){
-  const draft=cw11GetPlanDraft(state,event),needed=[...new Set(Object.values(draft.crew||{}).map(c=>ciTeamType(c.role)).filter(Boolean))];
-  if(!needed.length)return '';
-  const resource=cw10EventResource(state,event),missing=[];
-  if(needed.includes('candid')&&!resource.candid.items.length)missing.push('Candid');
-  if(needed.includes('traditional')&&!resource.traditional.items.length)missing.push('Traditional');
-  return missing.length?`Add ${missing.join(' & ')} shot list in Settings`: '';
+function cw10TeamLine(state,event){
+  const staff=cw10TeamStaffing(state,event);
+  if(!staff.crewEntries.length&&!staff.gaps.length)return 'No team yet — assign CP / CV / TP / TV';
+  const assigned=staff.crewEntries.map(([,c])=>`${ciRoleCode(c.role)} ${c.name||'Crew'}`);
+  const missing=staff.gaps.map(g=>`Need ${g.code} ${g.count}/${g.required}`);
+  return [...assigned,...missing].join(' · ')||'No team yet';
 }
 function cw10RenderOverview(state){
-  const events=state.events,statuses=events.map(e=>({event:e,status:cw10EventStatus(state,e),team:cw10TeamLine(state,e),listNote:cw10ShotListReminder(state,e)}));
-  const withTeam=statuses.filter(x=>x.team!=='No team yet').length;
-  const rows=statuses.map(({event,status,team,listNote})=>{
+  const events=state.events,statuses=events.map(e=>({event:e,status:cw10EventStatus(state,e),team:cw10TeamLine(state,e),staff:cw10TeamStaffing(state,e)}));
+  const ready=statuses.filter(x=>['ready','complete','live'].includes(x.status.key)).length,pct=events.length?Math.round(ready/events.length*100):0;
+  const rows=statuses.map(({event,status,team})=>{
     const details=cw10CurrentDetails(state,event),date=cw10DateBlock(event.date),venue=details.venueName||'Venue awaiting confirmation';
-    return `<button type="button" class="cw10-overview-row" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw10-date-block"><small>${esc(date.m)}</small><strong>${esc(date.d)}</strong></span><span class="cw10-overview-main"><strong>${esc(event.name)}</strong><small>${esc(ciFmtTime(details.startTime))} · ${esc(venue)}</small><small style="display:block;margin-top:4px;color:#9A938B">${esc(team)}${listNote?' · '+esc(listNote):''}</small></span><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span><span class="cw10-row-arrow">→</span></button>`;
+    return `<button type="button" class="cw10-overview-row" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw10-date-block"><small>${esc(date.m)}</small><strong>${esc(date.d)}</strong></span><span class="cw10-overview-main"><strong>${esc(event.name)}</strong><small>${esc(ciFmtTime(details.startTime))} · ${esc(venue)}</small><small style="display:block;margin-top:4px;color:${status.key==='attention'||status.key==='planning'?'#C4A574':'#9A938B'}">${esc(team)}</small></span><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span><span class="cw10-row-arrow">→</span></button>`;
   }).join('');
-  const dates=cwWorkspaceDates(state),reminders=statuses.map(x=>x.listNote).filter(Boolean);
+  const dates=cwWorkspaceDates(state);
   return `<div class="cw10-content">${cw10PageHead('Client workspace',state.entry.name,`${cw10DateRange(dates)} · Everything for this wedding in one place.`,cw10ClientActions(state))}
     ${cw10AttentionBanner(state)}
-    <section class="cw10-readiness"><div class="cw10-readiness-top"><div><span>Wedding readiness</span><strong>${events.length?`${withTeam} of ${events.length} events have a team`:'Client events not created'}</strong></div><span>${events.length?`${events.length} event${events.length===1?'':'s'}`:''}</span></div>
-    <div class="cw10-readiness-items" style="margin-top:10px;display:grid;gap:8px">${statuses.length?statuses.map(({event,team,listNote,status})=>`<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px solid #2A2D30"><span><b style="color:#E8E2D8">${esc(event.name)}</b> · ${esc(cw10CompactDate(event.date))}<br><small style="color:#8E8880">${esc(team)}</small>${listNote?`<br><small style="color:#BFA27A">${esc(listNote)}</small>`:''}</span><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span></div>`).join(''):'<span style="color:#817A72">Create the private client link to see events here.</span>'}</div>
-    ${reminders.length?`<p style="margin-top:12px;color:#9A938B;font-size:8.5px">Shot lists and common Pinterest boards are managed in Settings. You can also add an optional board while assigning crew on each event.</p>`:''}</section>
+    <section class="cw10-readiness"><div class="cw10-readiness-top"><div><span>Wedding readiness</span><strong>${events.length?`${ready} of ${events.length} events ready`:'Client events not created'}</strong></div><span>${pct}%</span></div><div class="cw10-progress"><i style="width:${pct}%"></i></div>
+    <div class="cw10-readiness-items" style="margin-top:12px;display:grid;gap:0">${statuses.length?statuses.map(({event,team,status})=>`<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid #2A2D30"><span><b style="color:#E8E2D8">${esc(event.name)}</b> · ${esc(cw10CompactDate(event.date))}<br><small style="color:${status.key==='attention'||status.key==='planning'?'#C4A574':'#8E8880'}">${esc(team)}</small></span><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span></div>`).join(''):'<span style="color:#817A72">Create the private client link to see events here.</span>'}</div>
+    <p style="margin-top:12px;color:#6F6963;font-size:8px">Shot lists can be added later in Settings. Common Pinterest boards in Settings (and any optional event board) show to the Candid team after check-in.</p></section>
     <div class="cw10-section-title"><div><h3>Events</h3><p>Open an event to edit team, timings, or optional Pinterest board.</p></div></div>
     ${events.length?`<div class="cw10-overview-list">${rows}</div>`:`<div class="cw10-empty-state"><h3>No client events yet</h3><p>Create the private event-details link. Crew Planner can help prefill the setup, but it will not create event cards here.</p><button type="button" class="cw10-primary" onclick="openClientSetupForSelected()">Create client link</button></div>`}
   </div>`;
@@ -5642,8 +5650,16 @@ function cw11GetPlanDraft(state,event){
     const saved=c.arrivalTime||c.reportTime||teamArrival;
     crew[uid]={...ciClone(c),arrivalTime:saved,reportTime:saved,arrivalOverride:c.arrivalTimeMode==='individual'||!!(saved&&teamArrival&&saved!==teamArrival)};
   });
-  const requirements=ciClone(shoot&&shoot.crewRequirements||{});
-  CW11_CANDID_ROLES.concat(CW11_TRADITIONAL_ROLES).forEach(role=>{if(!(Number(requirements[role])>0)&&Object.values(crew).some(c=>(c.role||'Other')===role))requirements[role]=Math.max(1,Number(requirements[role])||0);});
+  const requirements=shoot?ciClone(ciRequirementsForEvent(shoot)):{};
+  const hasSavedRequirements=!!(shoot&&shoot.crewRequirements&&typeof shoot.crewRequirements==='object');
+  CW11_CANDID_ROLES.concat(CW11_TRADITIONAL_ROLES).forEach(role=>{
+    const count=Object.values(crew).filter(c=>(c.role||'Other')===role).length;
+    if(!(Number(requirements[role])>0)&&count)requirements[role]=count;
+    if(!hasSavedRequirements&&!(Number(requirements[role])>0))requirements[role]=1;
+  });
+  if(!Object.keys(crew).length&&!Object.values(requirements).some(n=>Number(n)>0)){
+    CW11_CANDID_ROLES.concat(CW11_TRADITIONAL_ROLES).forEach(role=>{requirements[role]=1;});
+  }
   const assignment=shoot?ciResourceAssignment(shoot,event.name):{};
   const draft={
     key,clientKey:state.entry.key,formId:event.formId,eventId:event.eventId,shootId:shootId||'',dirty:false,
@@ -5856,19 +5872,21 @@ function cw11RenderPlanning(state,event){
   const draft=cw11GetPlanDraft(state,event),resource=cw10EventResource(state,event),crewCount=Object.keys(draft.crew||{}).length,published=cw11IsPublished(state,event)&&!(resource.shoot&&resource.shoot.planningOnly);
   const started=cw11EventStarted(draft);
   const copyOptions=state.events.filter(e=>e.eventId!==event.eventId&&Object.keys(cw11GetPlanDraft(state,e).crew||{}).length).map(e=>`<option value="${esc(e.eventId)}">${esc(e.name)} · ${esc(cw10CompactDate(e.date))}</option>`).join('');
-  const listNote=cw10ShotListReminder(state,event),teamTitle=crewCount?'Edit team':'Assign team';
+  const teamTitle=crewCount?'Edit team':'Assign team';
   const dirtyCount=cw11DirtyDrafts().length;
+  const staff=cw10TeamStaffing(state,event),gapNote=staff.gaps.length?`<div class="cw11-plan-note" style="margin-top:10px"><i>!</i><div><strong>Still needed for this event:</strong>${staff.gaps.map(g=>`${g.code} ${g.count}/${g.required}`).join(' · ')}</div></div>`:'';
   return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Planning Details</h3><p>${teamTitle}, timings, and an optional Pinterest board for this event.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
     ${published?'':`<div class="cw11-plan-note"><i>i</i><div><strong>You can finish planning before client approval.</strong>This timing and team stay internal. Approval publishes the same event record to the assigned crew—nothing is duplicated.</div></div>`}
     ${started?`<div class="cw11-plan-note"><i>✓</i><div><strong>This shoot has started.</strong>Operational timings and checked-in assignments are locked to protect the attendance record.</div></div>`:''}
     <div class="cw11-plan-fields"><div class="cw11-field"><label for="cw11StartTime">Event start</label><input id="cw11StartTime" type="time" value="${esc(draft.startTime)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','startTime',this.value)"><small>Used as the scheduled shoot start.</small></div>
     <div class="cw11-field"><label for="cw11EndTime">Expected end</label><input id="cw11EndTime" type="time" value="${esc(draft.endTime)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','endTime',this.value)"><small>Defaults to seven hours after start.</small></div>
     <div class="cw11-field"><label for="cw11TeamArrival">Overall team arrival</label><input id="cw11TeamArrival" type="time" value="${esc(draft.teamArrival)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','teamArrival',this.value)"><small>Defaults to one hour before the event.</small></div></div>
-    <div class="cw11-team"><div class="cw11-section-head"><div><h4>${esc(teamTitle)}</h4><p>${crewCount} registered crew · manual assignment</p></div></div>
+    <div class="cw11-team"><div class="cw11-section-head"><div><h4>${esc(teamTitle)}</h4><p>${crewCount} registered crew · ${staff.summary.filled}/${staff.summary.required||0} required roles filled</p></div></div>
+    ${gapNote}
     ${cw11TeamSectionHtml(event.eventId,draft,'Candid team',CW11_CANDID_ROLES)}
     ${cw11TeamSectionHtml(event.eventId,draft,'Traditional team',CW11_TRADITIONAL_ROLES)}
     ${copyOptions?`<div class="cw11-section-actions" style="margin-top:9px"><select aria-label="Copy team from another event" onchange="cw11CopyTeam('${esc(event.eventId)}',this.value);this.value=''"><option value="">Copy team from another event…</option>${copyOptions}</select></div>`:''}</div>
-    <div class="cw11-plan-fields" style="margin-top:14px"><div class="cw11-field" style="grid-column:1/-1"><label for="cw11Pinterest">Optional Pinterest board</label><input id="cw11Pinterest" type="url" value="${esc(draft.pinterestUrl||'')}" placeholder="https://pinterest.com/…" onchange="cw11SetPinterest('${esc(event.eventId)}',this.value)"><small>Optional for this event only. Common shot lists and boards stay in Settings.${listNote?' · '+esc(listNote):''}</small></div></div>
+    <div class="cw11-plan-fields" style="margin-top:14px"><div class="cw11-field" style="grid-column:1/-1"><label for="cw11Pinterest">Optional Pinterest board</label><input id="cw11Pinterest" type="url" value="${esc(draft.pinterestUrl||'')}" placeholder="https://pinterest.com/…" onchange="cw11SetPinterest('${esc(event.eventId)}',this.value)"><small>Optional for this event. If empty, Candid still sees the common board from Settings after check-in.</small></div></div>
     <div class="cw10-panel-actions" style="margin-top:8px"><button type="button" class="cw10-text" data-event-name="${esc(event.name)}" onclick="cwOpenSettings(this.dataset.eventName)">Open Settings · shot lists &amp; boards</button></div>
     <footer class="cw11-plan-footer"><div class="cw11-save-copy" id="cw11SaveCopy">${dirtyCount?`<strong class="cw11-plan-dirty">${dirtyCount} unsaved event plan${dirtyCount===1?'':'s'}</strong>`:'<strong>All planning changes saved</strong>'}</div><div class="cw11-save-actions"><button type="button" class="cw10-soft cw11-save-all" id="cw11SaveAll" ${dirtyCount<2?'hidden':''} onclick="cw11SaveAllPlans()">Save all<span class="cw11-save-count">${dirtyCount}</span></button><button type="button" class="cw10-primary" id="cw11SaveCurrent" ${draft.dirty?'':'disabled'} onclick="cw11SaveCurrentPlan()">Save event plan</button></div></footer>
   </section>`;
@@ -5906,14 +5924,20 @@ function cw10EventStatus(state,event){
   const eventApproval=cw11EventApprovalState(state,event),selectedDiff=cw10DiffEntries(state,event.eventId);
   if(eventApproval.changed&&state.submission.submittedAt&&selectedDiff.length)return {key:'attention',text:'Update pending'};
   if(!clientEventDone(details))return {key:'planning',text:details.startTime||details.venueName?'Details incomplete':'Details pending'};
+  const staff=cw10TeamStaffing(state,event);
   if(!eventApproval.approved){
-    const draft=cw11GetPlanDraft(state,event);
-    if(Object.keys(draft.crew||{}).length)return {key:'attention',text:'Plan ready · approval pending'};
+    if(staff.complete)return {key:'attention',text:'Plan ready · approval pending'};
+    if(staff.gaps.length)return {key:'attention',text:`Need ${staff.gaps.map(g=>g.code).join(' · ')}`};
+    if(staff.crewEntries.length)return {key:'attention',text:'Approval pending'};
     return {key:'attention',text:'Approval pending'};
   }
-  if(!shoot)return {key:'planning',text:'Plan pending'};
-  if(!shoot.mapsUrl)return {key:'attention',text:'Map missing'};
-  const crew=Object.keys(shoot.crew||{});if(!crew.length)return {key:'attention',text:'Team pending'};
+  if(!shoot&&!staff.crewEntries.length)return {key:'planning',text:'Plan pending'};
+  if(shoot&&!shoot.mapsUrl)return {key:'attention',text:'Map missing'};
+  if(!staff.crewEntries.length)return {key:'attention',text:'Team pending'};
+  if(staff.gaps.length){
+    const short=staff.gaps.map(g=>`${g.code} ${g.count}/${g.required}`).join(' · ');
+    return {key:'attention',text:staff.gaps.length<=2?`Need ${short}`:`Team ${staff.summary.filled}/${staff.summary.required}`};
+  }
   return {key:'ready',text:'Ready'};
 }
 function cw10RenderSidebar(state){
