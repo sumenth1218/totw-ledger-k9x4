@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="client-planning-workspace-v11-2026-07-28">
+<meta name="totw-build" content="crew-planner-verified-sync-v12-2026-07-28">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1093,6 +1093,68 @@ body.cw10-client-mode .vtabs{margin-top:14px}
 .cw11-record-body{padding:0 15px 15px;border-top:1px solid #2C2F32}
 .cw11-plan-dirty{color:#D0A761}
 
+/* V12 — exact-event Crew Planner sync */
+.cw12-planner-sync{margin:14px 16px 0;border:1px solid #303438;border-radius:10px;background:#121416;overflow:hidden}
+.cw12-sync-main{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:center;padding:12px 13px}
+.cw12-sync-icon{width:27px;height:27px;display:grid;place-content:center;border-radius:8px;background:#213127;color:#91B49A;font:8px var(--mono)}
+.cw12-planner-sync.review .cw12-sync-icon,.cw12-planner-sync.decision .cw12-sync-icon{background:#382B1B;color:#D8B476}
+.cw12-planner-sync.warning .cw12-sync-icon,.cw12-planner-sync.locked .cw12-sync-icon{background:#361E23;color:#D59AA5}
+.cw12-planner-sync.none .cw12-sync-icon{background:#25272A;color:#8D8881}
+.cw12-sync-copy{min-width:0}
+.cw12-sync-copy span{display:block;color:#77716B;font:7.3px var(--mono);letter-spacing:.09em;text-transform:uppercase}
+.cw12-sync-copy strong{display:block;margin-top:3px;color:#E8E2D9;font-size:10px}
+.cw12-sync-copy small{display:block;margin-top:4px;color:#8A847C;font-size:8.3px;line-height:1.45}
+.cw12-sync-badge{align-self:start;padding:6px 8px;border:1px solid #34503C;border-radius:99px;color:#8FB298;font:7px var(--mono);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.cw12-planner-sync.review .cw12-sync-badge,.cw12-planner-sync.decision .cw12-sync-badge{border-color:#66502E;color:#D3AE70}
+.cw12-planner-sync.warning .cw12-sync-badge,.cw12-planner-sync.locked .cw12-sync-badge{border-color:#673843;color:#D798A5}
+.cw12-planner-sync.none .cw12-sync-badge{border-color:#3A3D40;color:#89837D}
+.cw12-sync-detail{display:grid;gap:7px;padding:0 13px 12px 51px}
+.cw12-sync-line{display:flex;gap:7px;align-items:flex-start;color:#99928A;font-size:8.3px;line-height:1.45}
+.cw12-sync-line:before{content:"";width:4px;height:4px;flex:none;margin-top:4px;border-radius:50%;background:#6C665F}
+.cw12-sync-line.warn{color:#CAA373}.cw12-sync-line.warn:before{background:#C19455}
+.cw12-sync-line.bad{color:#D298A3}.cw12-sync-line.bad:before{background:#B95C70}
+.cw12-sync-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:0 13px 12px 51px}
+.cw12-sync-actions button{min-height:31px}
+.cw12-team-summary{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:10px 11px;border:1px solid #2E3134;border-radius:9px;background:#121416}
+.cw12-team-pill{display:inline-flex;align-items:center;gap:6px;max-width:230px;padding:6px 8px;border:1px solid #34373A;border-radius:99px;background:#181A1C;color:#CFC8BE;font-size:8.3px}
+.cw12-team-pill b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.cw12-team-pill em{color:#8A837B;font:6.8px var(--mono);font-style:normal;letter-spacing:.04em}
+.cw12-team-empty{color:#7D7770;font-size:8.5px}
+.cw12-team-count{margin-left:auto;color:#817A72;font:7px var(--mono);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.cw12-team-details{margin-top:9px}
+.cw12-event-override{display:inline-flex;align-items:center;gap:5px;color:#C9A56D;font:7px var(--mono);letter-spacing:.05em;text-transform:uppercase}
+.cw12-event-override:before{content:"";width:5px;height:5px;border-radius:50%;background:#BE9150}
+.cw12-month-picker{display:flex;align-items:center;gap:9px;min-width:250px;padding:5px 6px 5px 11px;border:1px solid #36393C;border-radius:9px;background:#151719}
+.cw12-month-picker span{color:#77716B;font:7px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.cw12-month-picker select{width:100%;min-width:0;height:31px;border:0;background:#111315;color:#E7E0D7;font-size:9.5px;outline:none;color-scheme:dark}
+.cw12-month-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:5px 0 14px;color:#817A72;font-size:8.5px}
+.cw12-month-summary strong{color:#CFC7BD;font-weight:500}
+
+#tabDeliverables{min-height:70vh}
+.cw12-deliverables-page{max-width:1280px;margin:0 auto;padding:30px 34px 70px}
+.cw12-deliverables-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:18px}
+.cw12-deliverables-head h2{font:500 36px/1 var(--display)}
+.cw12-deliverables-head p{max-width:650px;margin-top:7px;color:#8B857D;font-size:10px;line-height:1.55}
+.cw12-delivery-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:17px}
+.cw12-delivery-metric{padding:13px 14px;border:1px solid #303337;border-radius:10px;background:#151719}
+.cw12-delivery-metric span,.cw12-delivery-metric strong,.cw12-delivery-metric small{display:block}
+.cw12-delivery-metric span{color:#77716B;font:7px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.cw12-delivery-metric strong{margin-top:6px;font:500 24px/1 var(--display)}
+.cw12-delivery-metric small{margin-top:5px;color:#77716B;font-size:8px}
+.cw12-delivery-group{margin-top:14px;border:1px solid #303337;border-radius:12px;background:#141618;overflow:hidden}
+.cw12-delivery-group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border-bottom:1px solid #2D3033;background:#191B1D}
+.cw12-delivery-group-head h3{font:500 18px var(--display)}.cw12-delivery-group-head span{color:#7E7871;font:7px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.cw12-delivery-client{width:100%;display:grid;grid-template-columns:56px minmax(180px,1.1fr) minmax(210px,1fr) auto;gap:13px;align-items:center;padding:12px 14px;border:0;border-bottom:1px solid #292C2F;background:transparent;color:#E7E0D7;text-align:left;cursor:pointer}
+.cw12-delivery-client:last-child{border-bottom:0}
+.cw12-delivery-client:hover{background:#1A1C1E}
+.cw12-last-date{width:48px;height:48px;display:grid;place-content:center;border:1px solid #393C3F;border-radius:9px;background:#111315;text-align:center}
+.cw12-last-date b{font:500 19px/1 var(--display)}.cw12-last-date small{margin-top:2px;color:#8A837A;font:6.5px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.cw12-delivery-name h4{font:500 18px var(--display)}.cw12-delivery-name p,.cw12-delivery-progress small{margin-top:4px;color:#7F7972;font-size:8px;line-height:1.4}
+.cw12-delivery-progress b{display:block;font-size:9px;font-weight:500}
+.cw12-delivery-status{justify-self:end;padding:6px 8px;border:1px solid #3C493F;border-radius:99px;color:#8FA997;font:7px var(--mono);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.cw12-delivery-status.overdue{border-color:#633743;color:#D49AA6}.cw12-delivery-status.pending{border-color:#5C4A30;color:#D1AD74}.cw12-delivery-status.not-started{border-color:#3B3E41;color:#8F8982}
+.cw12-deliverables-empty{padding:38px;border:1px dashed #36393C;border-radius:12px;color:#817B74;text-align:center;font-size:10px}
+
 @media(max-width:1180px){
   .cw10-workspace-shell{grid-template-columns:280px minmax(0,1fr)}
   .cw11-event-context{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1129,6 +1191,19 @@ body.cw10-client-mode .vtabs{margin-top:14px}
   .cw11-resources-wrap{margin:13px 13px 0}.cw11-plan-resources{grid-template-columns:1fr}
   .cw11-plan-footer{position:static;align-items:flex-start;flex-direction:column;padding:13px}
   .cw11-save-actions{width:100%}.cw11-save-actions button{flex:1}
+  .cw12-sync-main{grid-template-columns:auto minmax(0,1fr)}
+  .cw12-sync-badge{grid-column:2;justify-self:start}
+  .cw12-sync-detail,.cw12-sync-actions{padding-left:13px}
+  .cw12-sync-actions{display:grid;grid-template-columns:1fr}
+  .cw12-sync-actions button{width:100%}
+  .cw12-team-count{width:100%;margin-left:0}
+  .cw12-month-picker{width:100%;min-width:0}
+  .cw12-deliverables-page{padding:22px 14px 50px}
+  .cw12-deliverables-head{align-items:flex-start;flex-direction:column}
+  .cw12-deliverables-head h2{font-size:31px}
+  .cw12-delivery-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cw12-delivery-client{grid-template-columns:49px minmax(0,1fr);gap:10px;padding:11px}
+  .cw12-delivery-progress{grid-column:2}.cw12-delivery-status{grid-column:2;justify-self:start}
   .cw10-overview-row{grid-template-columns:46px minmax(0,1fr) 16px;min-height:92px;padding:12px 11px}
   .cw10-overview-main{align-self:start;padding-top:4px}
   .cw10-event-state{grid-column:2;align-self:start;margin-top:-9px;white-space:normal}
@@ -1172,6 +1247,7 @@ body.cw10-client-mode .vtabs{margin-top:14px}
   <button id="vtClientForms" onclick="openClientsHome()">Clients</button>
   <button id="vtPlan" onclick="setView('plan')">Crew Planner</button>
   <button id="vtCheckins" onclick="setView('shoots')">Shoot Operations</button>
+  <button id="vtDeliveries" onclick="setView('deliverables')">Deliverables</button>
   <button id="vtProd" onclick="setView('business')">Business</button>
   <button id="vtShots" onclick="setView('settings')">Settings</button>
 </div>
@@ -1312,6 +1388,10 @@ body.cw10-client-mode .vtabs{margin-top:14px}
    </section>
   </div>
  </div>
+</div>
+
+<div id="tabDeliverables" style="display:none">
+ <div id="cw12DeliverablesRoot"></div>
 </div>
 
 <div id="tabProd" style="display:none">
@@ -1734,13 +1814,13 @@ function start(){
   db.ref('prod').on('value',s=>{prods=s.val()||{};renderProdAll();renderClientsWorkspace();});
   db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
   db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();renderCheckinFormOptions();renderMoodSec();previewClientFormEvents();publishCrewEvents();renderClientsWorkspace();});
-  db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();});
+  db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();renderClientsWorkspace();});
   db.ref('sentSnaps').on('value',s=>{sentSnaps=s.val()||{};renderPlanTeam();});
   db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();renderClientsWorkspace();});
   db.ref('shotLists').on('value',s=>{shotLists=s.val()||{};loadShotEd();refreshShotTypeOptions();ciChecklistStatus();renderClientsWorkspace();});
   db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();renderClientsWorkspace();});
   db.ref('shotEventMoods').on('value',s=>{shotEventMoods=s.val()||{};renderEventBoards();renderClientsWorkspace();});
-  db.ref('crewProfiles').on('value',s=>{crewProfiles=s.val()||{};renderCheckinTeam();renderCrewProfiles();});
+  db.ref('crewProfiles').on('value',s=>{crewProfiles=s.val()||{};renderCheckinTeam();renderCrewProfiles();renderClientsWorkspace();});
   db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};checkinEventsLoaded=true;renderCheckinEvents();ensureApprovedClientShoots();renderClientsWorkspace();});
   db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};ciBackfillVenuePins();renderCheckinEvents();renderClientsWorkspace();});
   db.ref('clientForms').on('value',s=>{clientForms=s.val()||{};clientFormsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();});
@@ -2738,21 +2818,23 @@ function calendarCoupleMap(){
 /* ---- view tabs ---- */
 function setView(v){
   v=({clientforms:'clients',prod:'business',shots:'settings',checkins:'shoots'})[v]||v;
-  const led=document.getElementById('tabLedger'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots'),ci=document.getElementById('tabCheckins'),cf=document.getElementById('tabClientForms');
-  if(!led||!pr||!pl||!sh||!ci||!cf)return;
+  const led=document.getElementById('tabLedger'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots'),ci=document.getElementById('tabCheckins'),cf=document.getElementById('tabClientForms'),dl=document.getElementById('tabDeliverables');
+  if(!led||!pr||!pl||!sh||!ci||!cf||!dl)return;
   document.getElementById('vtEnq').classList.toggle('on',v==='ledger');
   document.getElementById('vtPlan').classList.toggle('on',v==='plan');
   document.getElementById('vtProd').classList.toggle('on',v==='business');
   document.getElementById('vtShots').classList.toggle('on',v==='settings');
   document.getElementById('vtCheckins').classList.toggle('on',v==='shoots');
   document.getElementById('vtClientForms').classList.toggle('on',v==='clients');
+  document.getElementById('vtDeliveries').classList.toggle('on',v==='deliverables');
   led.style.display=v==='ledger'?'':'none';
   pl.style.display=v==='plan'?'':'none';
   pr.style.display=v==='business'?'':'none';
   sh.style.display=v==='settings'?'':'none';
   ci.style.display=v==='shoots'?'':'none';
   cf.style.display=v==='clients'?'':'none';
-  const titles={ledger:'Dates <em>&amp;</em> Enquiries',clients:'Clients',plan:'Crew <em>Planner</em>',settings:'Studio <em>Settings</em>',shoots:'Shoot <em>Operations</em>',business:'Business <em>Overview</em>'};
+  dl.style.display=v==='deliverables'?'':'none';
+  const titles={ledger:'Dates <em>&amp;</em> Enquiries',clients:'Clients',plan:'Crew <em>Planner</em>',settings:'Studio <em>Settings</em>',shoots:'Shoot <em>Operations</em>',deliverables:'Delivery <em>Overview</em>',business:'Business <em>Overview</em>'};
   const pageTitle=document.getElementById('pageTitle'),calendarYearTabs=document.getElementById('calendarYearTabs'),calendarLegend=document.getElementById('calendarLegend');
   if(pageTitle)pageTitle.innerHTML=titles[v]||titles.ledger;
   document.body.classList.toggle('cw10-client-mode',v==='clients');
@@ -2765,6 +2847,7 @@ function setView(v){
   if(v==='settings'){renderShots();renderEventBoards();renderMoodSec();loadShotEd();}
   if(v==='shoots'){renderCheckinFormOptions();renderCheckinEvents();}
   if(v==='clients'){renderClientForms();}
+  if(v==='deliverables'){renderGlobalDeliverables();}
 }
 function restoreView(){setView(localStorage.getItem('totw_view')||'ledger');}
 
@@ -3304,7 +3387,7 @@ function renderTeam(){
    :'<div class="empty">No crew logged yet. Add who shot what inside any wedding.</div>');
 }
 function personTog(k){openPerson=openPerson===k?null:k;renderTeam();}
-function renderProdAll(){renderProd();renderProdAlerts();renderTeam();updateDatalists();}
+function renderProdAll(){renderProd();renderProdAlerts();renderTeam();updateDatalists();renderGlobalDeliverables();}
 function toggleSeason(){
   const sec=document.getElementById('seasonSec');
   sec.classList.toggle('open');
@@ -5173,6 +5256,7 @@ function renderCheckinEvents(){
 /* ===================== CLIENT FOLDERS V10 ===================== */
 let cw10FolderFilter='upcoming';
 let cw10FolderQuery='';
+let cw12ClientMonth=localStorage.getItem('totw_client_month')||'';
 let cw10SelectedEventId=localStorage.getItem('totw_client_event')||'';
 let cw10OpenPanels=new Set(['details']);
 let cw10ReviewOpen=false;
@@ -5223,6 +5307,26 @@ function cw10DateBlock(iso){
   if(!iso)return {m:'—',d:'—'};
   const [,m,d]=iso.split('-').map(Number);
   return {m:MN[m-1].slice(0,3),d:String(d)};
+}
+function cw12MonthLabel(month){
+  if(!/^\d{4}-\d{2}$/.test(month||''))return month==='unscheduled'?'Dates pending':'Select month';
+  const [year,index]=month.split('-').map(Number);return `${MN[index-1]} ${year}`;
+}
+function cw12ClientMonths(states){
+  const months=[...new Set(states.flatMap(({state})=>cwWorkspaceDates(state).map(date=>date.slice(0,7))).filter(value=>/^\d{4}-\d{2}$/.test(value)))].sort();
+  if(states.some(({state})=>!cwWorkspaceDates(state).length))months.push('unscheduled');
+  return months;
+}
+function cw12EnsureClientMonth(states){
+  const months=cw12ClientMonths(states);
+  if(months.includes(cw12ClientMonth))return months;
+  const calendar=months.filter(month=>month!=='unscheduled'),current=ciTodayIso().slice(0,7);
+  cw12ClientMonth=calendar.find(month=>month>=current)||calendar.at(-1)||months[0]||'';
+  if(cw12ClientMonth)localStorage.setItem('totw_client_month',cw12ClientMonth);
+  return months;
+}
+function cw12SetClientMonth(value){
+  cw12ClientMonth=String(value||'');localStorage.setItem('totw_client_month',cw12ClientMonth);renderClientsWorkspace();
 }
 function cw10SingleLegacyShootMatch(e,formEvent){
   if(!e||!formEvent||e.date!==formEvent.date)return false;
@@ -5353,27 +5457,70 @@ function cw10FolderSearch(value){
   });
 }
 function cw10RenderFolderPage(all){
-  const states=all.map(entry=>({entry,state:cwState(entry)})),counts={upcoming:0,attention:0,delivering:0,completed:0};
-  states.forEach(x=>Object.entries(cw10FolderBucket(x.state)).forEach(([k,v])=>{if(v)counts[k]++;}));
-  const query=cw10FolderQuery.trim().toLowerCase(),filtered=states.filter(x=>{
-    const bucket=cw10FolderBucket(x.state);
-    return bucket[cw10FolderFilter]&&(!query||x.entry.name.toLowerCase().includes(query));
+  const states=all.map(entry=>({entry,state:cwState(entry)})),months=cw12EnsureClientMonth(states),query=cw10FolderQuery.trim().toLowerCase();
+  const filtered=states.filter(({entry,state})=>{
+    const dates=cwWorkspaceDates(state),inMonth=cw12ClientMonth==='unscheduled'?!dates.length:dates.some(date=>date.slice(0,7)===cw12ClientMonth);
+    return inMonth&&(!query||entry.name.toLowerCase().includes(query));
+  }).sort((a,b)=>{
+    const first=x=>cwWorkspaceDates(x.state).find(date=>date.slice(0,7)===cw12ClientMonth)||'9999-12-31';
+    return first(a).localeCompare(first(b))||a.entry.name.localeCompare(b.entry.name);
   });
-  const filters=[['upcoming','Upcoming'],['attention','Needs attention'],['delivering','Delivering'],['completed','Completed']].map(([key,label])=>`<button type="button" class="${cw10FolderFilter===key?'on':''}" onclick="cw10SetFolderFilter('${key}')">${label}<span>${counts[key]}</span></button>`).join('');
+  const monthOptions=months.map(month=>`<option value="${esc(month)}" ${month===cw12ClientMonth?'selected':''}>${esc(cw12MonthLabel(month))}</option>`).join('');
   const cards=filtered.map(({entry,state},index)=>{
-    const dates=cwWorkspaceDates(state),next=state.events.find(e=>e.date>=ciTodayIso()),signal=cw10FolderSignal(state),eventCount=state.events.length;
+    const dates=cwWorkspaceDates(state),monthEvents=state.events.filter(e=>cw12ClientMonth==='unscheduled'||e.date.slice(0,7)===cw12ClientMonth),next=monthEvents.find(e=>e.date>=ciTodayIso())||monthEvents.at(-1),signal=cw10FolderSignal(state),eventCount=state.events.length;
     return `<button type="button" class="cw10-folder-card" data-client-key="${esc(entry.key)}" onclick="selectClientWorkspace(this.dataset.clientKey)">
       <div class="cw10-folder-cover cw10-tone-${cw10Tone(entry.name)}"><span class="cw10-folder-number">${String(index+1).padStart(2,'0')}</span><span class="cw10-folder-monogram">${esc(cw10Initials(entry.name).toUpperCase())}</span><span class="cw10-folder-corner"></span></div>
       <div class="cw10-folder-meta"><div class="cw10-folder-title"><h3>${esc(entry.name)}</h3><i>↗</i></div><span class="cw10-folder-dates">${esc(cw10DateRange(dates))} · ${eventCount} event${eventCount===1?'':'s'}</span>
-      <div class="cw10-folder-status"><span>${next?'Next · '+esc(next.name):eventCount?'No upcoming event':'Event details not created'}</span><span class="${signal.kind}">${esc(signal.text)}</span></div></div>
+      <div class="cw10-folder-status"><span>${next?esc(next.name)+' · '+esc(cw10CompactDate(next.date)):eventCount?'No event in private link':'Event details not created'}</span><span class="${signal.kind}">${esc(signal.text)}</span></div></div>
     </button>`;
   }).join('');
   return `<section class="cw10-folder-page">
-    <div class="cw10-folder-head"><div><div class="cw10-kicker">Studio workspace</div><h2>Clients</h2><p>Every wedding has one folder. Open it to see that couple’s events, Studio Plan, Shoot Record, deliveries, costs and activity.</p></div>
-    <div class="cw10-folder-tools"><label class="cw10-search"><span>⌕</span><input id="cw10Search" type="search" value="${esc(cw10FolderQuery)}" placeholder="Search clients" oninput="cw10FolderSearch(this.value)"></label><button type="button" class="cw10-primary" onclick="openClientSetup()">+ Client link</button><button type="button" class="cw10-soft" onclick="signOutLedger()">Sign out</button></div></div>
-    <nav class="cw10-folder-filters" aria-label="Client filters">${filters}</nav>
-    <div class="cw10-folder-grid">${cards||`<div class="cw10-folder-empty">No clients match this view.</div>`}</div>
+    <div class="cw10-folder-head"><div><div class="cw10-kicker">Studio workspace</div><h2>Clients</h2><p>Select a wedding month, then open one client folder. Weddings that cross months remain discoverable in both months.</p></div>
+    <div class="cw10-folder-tools"><label class="cw12-month-picker"><span>Wedding month</span><select id="cw12ClientMonth" onchange="cw12SetClientMonth(this.value)" ${monthOptions?'':'disabled'}>${monthOptions||'<option>No dated clients</option>'}</select></label><label class="cw10-search"><span>⌕</span><input id="cw10Search" type="search" value="${esc(cw10FolderQuery)}" placeholder="Search this month" oninput="cw10FolderSearch(this.value)"></label><button type="button" class="cw10-primary" onclick="openClientSetup()">+ Client link</button><button type="button" class="cw10-soft" onclick="signOutLedger()">Sign out</button></div></div>
+    <div class="cw12-month-summary"><span><strong>${filtered.length}</strong> client${filtered.length===1?'':'s'} in ${esc(cw12MonthLabel(cw12ClientMonth))}</span><span>Sorted by first event in the selected month</span></div>
+    <div class="cw10-folder-grid">${cards||`<div class="cw10-folder-empty">No clients are scheduled in ${esc(cw12MonthLabel(cw12ClientMonth))}.</div>`}</div>
   </section>`;
+}
+function cw12LastEventInfo(state){
+  const eventDates=state.events.map(event=>event.date).filter(Boolean),prodDates=(state.prod&&state.prod.days||[]).map(day=>day.date).filter(Boolean),dates=eventDates.length?eventDates:prodDates.length?prodDates:cwWorkspaceDates(state);
+  const lastDate=[...dates].sort().at(-1)||'',names=state.events.filter(event=>event.date===lastDate).map(event=>event.name);
+  return {lastDate,names:[...new Set(names)]};
+}
+function cw12DeliveryRow(entry){
+  const state=cwState(entry),last=cw12LastEventInfo(state),now=Date.now(),pending=state.prod?state.stages.filter(stage=>!(state.prod.stages||{})[stage.k]?.done):[],overdue=state.prod?pending.filter(stage=>stageState(state.prod,stage,now).cls==='bad').length:0,next=pending.filter(stage=>stage.due).sort((a,b)=>a.due-b.due)[0];
+  let status='Not started',statusClass='not-started';
+  if(last.lastDate&&last.lastDate>ciTodayIso()){status='Wedding upcoming';statusClass='pending';}
+  else if(state.prod&&state.stages.length&&state.stageDone===state.stages.length){status='Complete';statusClass='';}
+  else if(overdue){status=`${overdue} overdue`;statusClass='overdue';}
+  else if(state.prod){status='In delivery';statusClass='pending';}
+  const progress=state.prod&&state.stages.length?`${state.stageDone}/${state.stages.length} deliverables complete`:'Delivery record not started';
+  const nextCopy=next?`Next: ${next.l}${next.due?' · '+fullDate(next.due):''}`:state.prod?'No pending dated deliverable':'Open the client folder to start';
+  return {entry,state,last,overdue,next,status,statusClass,progress,nextCopy};
+}
+function cw12OpenClientDeliveries(key){
+  cwSelectedKey=String(key||'');cwSection='deliveries';cw10SelectedEventId='';cw10ReviewOpen=false;
+  localStorage.setItem('totw_client_workspace',cwSelectedKey);localStorage.setItem('totw_client_section','deliveries');localStorage.removeItem('totw_client_event');
+  setView('clients');renderClientsWorkspace();document.getElementById('cwRoot')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderGlobalDeliverables(){
+  const root=document.getElementById('cw12DeliverablesRoot');if(!root)return;
+  const rows=cwDirectory().map(cw12DeliveryRow).sort((a,b)=>{
+    if(!a.last.lastDate&&!b.last.lastDate)return a.entry.name.localeCompare(b.entry.name);
+    if(!a.last.lastDate)return 1;if(!b.last.lastDate)return -1;
+    return a.last.lastDate.localeCompare(b.last.lastDate)||a.entry.name.localeCompare(b.entry.name);
+  });
+  const groups=new Map();
+  rows.forEach(row=>{const key=row.last.lastDate?row.last.lastDate.slice(0,7):'pending';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row);});
+  const inDelivery=rows.filter(row=>row.state.prod&&row.state.stageDone<row.state.stages.length&&(!row.last.lastDate||row.last.lastDate<=ciTodayIso())).length,overdue=rows.filter(row=>row.overdue).length,complete=rows.filter(row=>row.state.prod&&row.state.stages.length&&row.state.stageDone===row.state.stages.length).length;
+  const groupHtml=[...groups.entries()].map(([month,items])=>{
+    const label=month==='pending'?'Dates pending':cw12MonthLabel(month);
+    const itemHtml=items.map(row=>{
+      const date=row.last.lastDate?cw10DateBlock(row.last.lastDate):{m:'—',d:'—'},eventCopy=row.last.names.length?`Last event · ${row.last.names.join(' + ')}`:row.last.lastDate?'Last scheduled coverage day':'Last event date pending';
+      return `<button type="button" class="cw12-delivery-client" data-client-key="${esc(row.entry.key)}" onclick="cw12OpenClientDeliveries(this.dataset.clientKey)"><span class="cw12-last-date"><b>${esc(date.d)}</b><small>${esc(date.m)}</small></span><span class="cw12-delivery-name"><h4>${esc(row.entry.name)}</h4><p>${esc(eventCopy)}${row.last.lastDate?' · '+esc(ciDateLong(row.last.lastDate)):''}</p></span><span class="cw12-delivery-progress"><b>${esc(row.progress)}</b><small>${esc(row.nextCopy)}</small></span><span class="cw12-delivery-status ${esc(row.statusClass)}">${esc(row.status)}</span></button>`;
+    }).join('');
+    return `<section class="cw12-delivery-group"><div class="cw12-delivery-group-head"><h3>${esc(label)}</h3><span>${items.length} client${items.length===1?'':'s'} · ordered by final event</span></div>${itemHtml}</section>`;
+  }).join('');
+  root.innerHTML=`<section class="cw12-deliverables-page"><div class="cw12-deliverables-head"><div><div class="cw10-kicker">Client delivery control</div><h2>Deliverables</h2><p>Every client is ordered by the date of their final event. Older finished weddings appear first, so the delivery queue follows when coverage actually ended.</p></div><button type="button" class="cw10-soft" onclick="signOutLedger()">Sign out</button></div><div class="cw12-delivery-metrics"><div class="cw12-delivery-metric"><span>All clients</span><strong>${rows.length}</strong><small>Booked client folders</small></div><div class="cw12-delivery-metric"><span>In delivery</span><strong>${inDelivery}</strong><small>Final event completed</small></div><div class="cw12-delivery-metric"><span>Overdue</span><strong>${overdue}</strong><small>At least one late item</small></div><div class="cw12-delivery-metric"><span>Complete</span><strong>${complete}</strong><small>All tracked items done</small></div></div>${groupHtml||'<div class="cw12-deliverables-empty">Client delivery records will appear here.</div>'}</section>`;
 }
 function cw10SelectDefaultEvent(state){
   if(state.events.some(e=>e.eventId===cw10SelectedEventId))return;
@@ -5602,6 +5749,7 @@ function renderClientsWorkspace(){
   if(cwSelectedKey&&!all.some(x=>x.key===cwSelectedKey))cwSelectedKey='';
   const entry=all.find(x=>x.key===cwSelectedKey)||null;
   root.innerHTML=entry?cw10RenderWorkspace(entry):cw10RenderFolderPage(all);
+  renderGlobalDeliverables();
 }
 
 /* ===================== CLIENT PLANNING WORKSPACE V11 ===================== */
@@ -5612,6 +5760,214 @@ let cw11RecordOpen=false;
 let cw11ClientDetailsOpen=false;
 let cw11ResourcesOpen=false;
 let cw11Saving=false;
+const cw12TeamDetailsOpen=new Set();
+
+const CW12_PLANNER_ROLES={
+  cp:'Candid Photographer',
+  cv:'Candid Cinematographer',
+  tp:'Traditional Photographer',
+  tv:'Traditional Videographer',
+  ex:'Other'
+};
+function cw12NameKey(value){
+  return String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+}
+function cw12EventTokens(value){
+  const aliases={mehendi:'mehndi',mehandi:'mehndi',mehndi:'mehndi'};
+  const raw=String(value||'').replace(/\s+\band\b\s+/gi,' + ');
+  return [...new Set(eventTypeParts(raw).map(name=>{
+    const key=shotListKey(name);return aliases[key]||key;
+  }).filter(Boolean))].sort();
+}
+function cw12SameTokenSet(a,b){return a.length===b.length&&a.every((value,index)=>value===b[index]);}
+function cw12PlannerFingerprint(rowKey,row){
+  const cells=row&&row.cells||{},need=row&&row.need||{};
+  return JSON.stringify([rowKey||'',row&&row.iso||'',row&&row.couple||'',row&&row.event||'',...['cp','cv','tp','tv','ex'].map(key=>String(cells[key]||'').trim()),...['cp','cv','tp','tv','ex'].map(key=>!!need[key])]);
+}
+function cw12PlannerMatch(state,event){
+  const who=cw12NameKey(state&&state.entry&&state.entry.name||event&&event.couple),eventTokens=cw12EventTokens(event&&event.name);
+  const same=Object.entries(plans||{}).filter(([key,row])=>row&&!planHidden[key]&&row.iso===event.date&&cw12NameKey(row.couple)===who).map(([key,row])=>({rowKey:key,row,tokens:cw12EventTokens(row.event)}));
+  const exact=same.filter(candidate=>candidate.tokens.length&&cw12SameTokenSet(candidate.tokens,eventTokens));
+  if(exact.length===1)return {kind:'exact',...exact[0],same};
+  if(exact.length>1)return {kind:'ambiguous',candidates:exact,same};
+  const combined=same.filter(candidate=>candidate.tokens.length>eventTokens.length&&eventTokens.every(token=>candidate.tokens.includes(token)));
+  if(combined.length===1){
+    const hit=combined[0],affected=(state.events||[]).filter(item=>item.date===event.date&&cw12EventTokens(item.name).every(token=>hit.tokens.includes(token)));
+    return {kind:'combined',...hit,same,affected};
+  }
+  if(combined.length>1)return {kind:'ambiguous',candidates:combined,same};
+  return {kind:'none',same};
+}
+function cw12ProfileMatches(name){
+  const key=cw12NameKey(name);
+  return Object.entries(crewProfiles||{}).filter(([,profile])=>cw12NameKey(profile&&profile.name)===key);
+}
+function cw12PlannerImport(match,draft){
+  const row=match&&match.row||{},cells=row.cells||{},need=row.need||{},crew={},requirements={},missing=[],ambiguous=[],duplicates=[],matched=[];
+  Object.entries(CW12_PLANNER_ROLES).forEach(([cellKey,role])=>{
+    const names=planNames(cells[cellKey]||''),roleUids=[];
+    names.forEach(name=>{
+      const hits=cw12ProfileMatches(name);
+      if(!hits.length){missing.push(name);return;}
+      if(hits.length>1){ambiguous.push(name);return;}
+      const [uid,profile]=hits[0];
+      if(crew[uid]){duplicates.push(`${profile.name||name}: ${ciRoleCode(crew[uid].role)} and ${ciRoleCode(role)}`);return;}
+      const previous=draft&&draft.crew&&draft.crew[uid]||{},arrival=previous.arrivalOverride?(previous.arrivalTime||draft.teamArrival):draft.teamArrival;
+      crew[uid]={name:profile.name||name,phone:profile.phone||'',email:profile.email||'',role,arrivalTime:arrival,reportTime:arrival,arrivalOverride:!!previous.arrivalOverride,arrivalTimeMode:previous.arrivalOverride?'individual':'overall',isLead:!!previous.isLead};
+      roleUids.push(uid);matched.push(profile.name||name);
+    });
+    const count=roleUids.length;
+    if(count||need[cellKey])requirements[role]=Math.max(count,need[cellKey]?1:0);
+  });
+  const emptyRequired=Object.entries(CW12_PLANNER_ROLES).filter(([cellKey])=>need[cellKey]&&!planNames(cells[cellKey]||'').length).map(([,role])=>ciRoleCode(role));
+  const crewRows=Object.entries(crew).sort(([a],[b])=>a.localeCompare(b));
+  if(crewRows.length&&!crewRows.some(([,member])=>member.isLead)){
+    const preferred=crewRows.find(([,member])=>member.role==='Candid Photographer')||crewRows[0];
+    preferred[1].isLead=true;
+  }
+  return {
+    crew,requirements,missing:[...new Set(missing)],ambiguous:[...new Set(ambiguous)],duplicates:[...new Set(duplicates)],
+    emptyRequired:[...new Set(emptyRequired)],matched,sourceFingerprint:cw12PlannerFingerprint(match.rowKey,row),
+    teamFingerprint:JSON.stringify(crewRows.map(([uid,member])=>[uid,member.role])),sourceRowKey:match.rowKey||'',sourceEvent:row.event||'',sourceLocation:row.loc||''
+  };
+}
+function cw12CrewFingerprint(crew){
+  return JSON.stringify(Object.entries(crew||{}).map(([uid,member])=>[uid,member&&member.role||'Other']).sort((a,b)=>a[0].localeCompare(b[0])));
+}
+function cw12TeamDiff(current,next){
+  const before=new Map(Object.entries(current||{}).map(([uid,member])=>[uid,member])),after=new Map(Object.entries(next||{}).map(([uid,member])=>[uid,member]));
+  const added=[],removed=[],changed=[];
+  after.forEach((member,uid)=>{if(!before.has(uid))added.push(member.name||crewProfiles[uid]?.name||'Crew member');else if((before.get(uid).role||'Other')!==(member.role||'Other'))changed.push(`${member.name||crewProfiles[uid]?.name||'Crew member'}: ${ciRoleCode(before.get(uid).role)} → ${ciRoleCode(member.role)}`);});
+  before.forEach((member,uid)=>{if(!after.has(uid))removed.push(member.name||crewProfiles[uid]?.name||'Crew member');});
+  return {added,removed,changed,text:[added.length?`Add ${added.join(', ')}`:'',removed.length?`Remove ${removed.join(', ')}`:'',changed.length?changed.join(' · '):''].filter(Boolean).join(' · ')||'No team changes'};
+}
+function cw12EventStarted(draft){
+  if(!draft||!draft.shootId)return false;
+  return !!Object.values(checkinAttendance[draft.shootId]||{}).some(attendance=>attendance&&attendance.checkedInAt);
+}
+function cw12PlannerLocationWarning(state,event,match){
+  const planner=String(match&&match.row&&match.row.loc||'').trim(),details=cw10CurrentDetails(state,event),venue=String(details.venueName||'').trim(),maps=String(details.mapsUrl||'').trim();
+  if(!planner||!venue&&!maps)return '';
+  const clean=value=>cw12NameKey(String(value||'').replace(/^https?:\/\//i,'').replace(/[/?#=&]+/g,' '));
+  const p=clean(planner),v=clean(venue),m=clean(maps);
+  if(p&&(p===v||p===m||v&&p.includes(v)||v&&v.includes(p)))return '';
+  return `Planner location differs: ${planner}. Client venue and Maps remain authoritative.`;
+}
+function cw12ConflictNames(draft,event){
+  if(!draft||!event||!draft.startTime)return [];
+  const target=ciEventInterval({date:event.date,functionStart:draft.startTime,functionEnd:draft.endTime,reportingTime:draft.teamArrival});if(!target)return [];
+  const names=[];
+  Object.entries(draft.crew||{}).forEach(([uid,member])=>{
+    const conflict=Object.entries(checkinEvents||{}).find(([id,other])=>{
+      if(id===draft.shootId||!other||!other.crew||!other.crew[uid])return false;
+      const interval=ciEventInterval(other);return interval&&target.start<interval.end&&interval.start<target.end;
+    });
+    if(conflict)names.push(`${member.name||crewProfiles[uid]?.name||'Crew member'} overlaps ${conflict[1].couple||''} ${conflict[1].eventName||'another event'}`.trim());
+  });
+  return [...new Set(names)];
+}
+function cw12SetPlannerSync(draft,match,imported,mode='follow'){
+  draft.plannerSync={
+    mode,sourceRowKey:match&&match.rowKey||imported&&imported.sourceRowKey||'',
+    sourceEvent:match&&match.row&&match.row.event||imported&&imported.sourceEvent||'',
+    sourceFingerprint:imported&&imported.sourceFingerprint||'',
+    sourceTeamFingerprint:imported&&imported.teamFingerprint||'',
+    combined:match&&match.kind==='combined',updatedAt:Date.now()
+  };
+}
+function cw12ApplyPlannerTeam(draft,match,imported,{markDirty=true,mode='follow'}={}){
+  draft.crew=ciClone(imported.crew||{});draft.requirements=ciClone(imported.requirements||{});
+  cw12SetPlannerSync(draft,match,imported,mode);draft.teamTouched=false;
+  if(markDirty)draft.dirty=true;
+}
+function cw12ReconcilePlanner(state,event,draft){
+  const match=cw12PlannerMatch(state,event),started=cw12EventStarted(draft),published=cw11IsPublished(state,event),sync=draft.plannerSync||null;
+  let imported=match.row?cw12PlannerImport(match,draft):null,status={kind:match.kind,match,imported,started,published};
+  if(match.kind==='none'){
+    status.kind=sync&&sync.sourceRowKey?(started?'locked':'review'):'none';
+    status.reason=sync&&sync.sourceRowKey?'The previously linked Crew Planner row is no longer available.':'No exact Crew Planner event matches this client event.';
+  }else if(match.kind==='ambiguous'){
+    status.kind='warning';status.reason='More than one Crew Planner row matches this event. Nothing was imported.';
+  }else if(match.kind==='combined'&&!(sync&&sync.mode==='follow'&&sync.sourceRowKey===match.rowKey)){
+    status.kind=sync&&sync.mode==='ignore'&&sync.sourceRowKey===match.rowKey?'override':'decision';
+    status.reason=sync&&sync.mode==='ignore'?'This combined Planner row is intentionally not used for the client events.':'A combined Crew Planner row needs one decision before its team can be attached.';
+  }else{
+    const sourceSame=!!(sync&&sync.sourceRowKey===match.rowKey),fingerprintChanged=!!(sync&&sourceSame&&sync.sourceFingerprint!==imported.sourceFingerprint),sameTeam=cw12CrewFingerprint(draft.crew)===imported.teamFingerprint;
+    if(sync&&sync.mode==='follow'&&sourceSame){
+      if(fingerprintChanged||!sameTeam){
+        if(started){status.kind='locked';status.reason='Crew Planner changed after check-in. The live shoot remains locked.';}
+        else if(published){status.kind='review';status.reason='Crew Planner changed after this event was published. Review the team difference before updating crew.';}
+        else{
+          cw12ApplyPlannerTeam(draft,match,imported);
+          draft.plannerSync.autoUpdatedFingerprint=imported.sourceFingerprint;
+          status.kind='auto_updated';status.reason='The internal plan now follows the latest Crew Planner team.';
+        }
+      }else if(!published&&draft.dirty&&sync.autoUpdatedFingerprint===imported.sourceFingerprint){
+        status.kind='auto_updated';status.reason='The internal plan now follows the latest Crew Planner team. Save the event plan when ready.';
+      }else{status.kind='synced';status.reason='Exact event, registered names and roles match the Crew Planner.';}
+    }else if(sync&&['override','ignore'].includes(sync.mode)){
+      if(started){status.kind='locked';status.reason='This event has an event-only team and is locked after check-in.';}
+      else if(sync.sourceFingerprint!==imported.sourceFingerprint||sync.sourceRowKey!==match.rowKey){status.kind='review';status.reason='Crew Planner changed after an event-only adjustment. Review before replacing it.';}
+      else{status.kind='override';status.reason='This event uses an event-only team instead of following Crew Planner automatically.';}
+    }else if(!Object.keys(draft.crew||{}).length&&!started&&match.kind==='exact'){
+      cw12ApplyPlannerTeam(draft,match,imported);status.kind='imported';status.reason='The exact Crew Planner team was added automatically. Save the event plan when ready.';
+    }else if(sameTeam){
+      cw12SetPlannerSync(draft,match,imported,'follow');status.kind='synced';status.reason='The current event team exactly matches Crew Planner.';
+    }else{
+      status.kind=started?'locked':'review';status.reason=started?'The shoot has started, so the different Planner team cannot replace the live assignment.':'Crew Planner has a different team. Review it before replacing the current event assignment.';
+    }
+  }
+  if(imported){
+    status.teamDiff=cw12TeamDiff(draft.crew,imported.crew);
+    status.locationWarning=cw12PlannerLocationWarning(state,event,match);
+    status.conflicts=cw12ConflictNames(draft,event);
+    status.importWarnings=[
+      imported.missing.length?`Not registered: ${imported.missing.join(', ')}`:'',
+      imported.ambiguous.length?`Duplicate registered names: ${imported.ambiguous.join(', ')}`:'',
+      imported.duplicates.length?`One person appears in multiple roles: ${imported.duplicates.join(', ')}`:'',
+      imported.emptyRequired.length?`Planner roles still empty: ${imported.emptyRequired.join(', ')}`:''
+    ].filter(Boolean);
+    if(['synced','imported','auto_updated'].includes(status.kind)&&(status.importWarnings.length||status.conflicts.length))status.kind='warning';
+  }else{status.teamDiff={added:[],removed:[],changed:[],text:'No Planner team available'};status.locationWarning='';status.conflicts=[];status.importWarnings=[];}
+  draft.plannerStatus=status;return status;
+}
+function cw12ToggleTeam(eventId){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event),key=draft.key;
+  if(cw12TeamDetailsOpen.has(key)){cw12TeamDetailsOpen.delete(key);cw11AddCrewOpen=false;}else cw12TeamDetailsOpen.add(key);
+  renderClientsWorkspace();
+}
+function cw12MarkTeamOverride(draft){
+  if(!draft)return;const status=draft.plannerStatus,match=status&&status.match,imported=status&&status.imported;
+  if(match&&match.row&&imported)cw12SetPlannerSync(draft,match,imported,'override');
+  else draft.plannerSync={...(draft.plannerSync||{}),mode:'override',updatedAt:Date.now()};
+  draft.teamTouched=true;
+}
+async function cw12AcceptPlannerTeam(eventId,applyCombined=false){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const current=cw11GetPlanDraft(state,event),match=cw12PlannerMatch(state,event);
+  if(!match.row){toast('No single Crew Planner row is available to apply.');return;}
+  if(cw12EventStarted(current)){toast('This event is locked because a crew member has checked in.');return;}
+  const targets=applyCombined&&match.kind==='combined'?(match.affected||[]):[event],drafts=[];
+  targets.forEach(target=>{
+    const targetDraft=cw11GetPlanDraft(state,target);if(cw12EventStarted(targetDraft))return;
+    const targetMatch=applyCombined?match:cw12PlannerMatch(state,target),imported=cw12PlannerImport(targetMatch,targetDraft);
+    cw12ApplyPlannerTeam(targetDraft,targetMatch,imported);drafts.push(targetDraft);
+  });
+  if(!drafts.length){toast('No unlocked event is available to update.');return;}
+  await cw11SavePlans(drafts,applyCombined?`Crew Planner team applied to ${drafts.length} events.`:`Crew Planner team applied to ${event.name}.`);
+}
+async function cw12KeepCurrentTeam(eventId,ignoreCombined=false){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event),match=cw12PlannerMatch(state,event),targets=ignoreCombined&&match.kind==='combined'?(match.affected||[]):[event],drafts=[];
+  targets.forEach(target=>{
+    const targetDraft=cw11GetPlanDraft(state,target),targetMatch=ignoreCombined?match:cw12PlannerMatch(state,target),imported=targetMatch.row?cw12PlannerImport(targetMatch,targetDraft):null;
+    if(imported)cw12SetPlannerSync(targetDraft,targetMatch,imported,ignoreCombined?'ignore':'override');
+    else targetDraft.plannerSync={...(targetDraft.plannerSync||{}),mode:'override',updatedAt:Date.now()};
+    targetDraft.teamTouched=true;targetDraft.dirty=true;drafts.push(targetDraft);
+  });
+  await cw11SavePlans(drafts,ignoreCombined?'Combined Crew Planner row ignored for these client events.':`Current event team kept for ${event.name}.`);
+}
 
 function cw11DraftKey(formId,eventId){return `${formId||''}|${eventId||''}`;}
 function cw11ShiftTime(value,minutes){
@@ -5626,7 +5982,7 @@ function cw11IsPublished(state,event){
 }
 function cw11GetPlanDraft(state,event){
   const key=cw11DraftKey(event.formId,event.eventId),cached=cw11PlanDrafts.get(key);
-  if(cached)return cached;
+  if(cached){cw12ReconcilePlanner(state,event,cached);return cached;}
   const row=cw10ShootRow(state,event),shootId=row&&row[0],shoot=row&&row[1],details=cw10CurrentDetails(state,event);
   const startTime=shoot&&(shoot.functionStart||shoot.scheduledStart)||details.startTime||'';
   const clientEnd=details.endTime||'',autoEnd=cw11ShiftTime(startTime,420),endTime=shoot&&shoot.functionEnd||clientEnd||autoEnd;
@@ -5638,12 +5994,13 @@ function cw11GetPlanDraft(state,event){
   });
   const draft={
     key,clientKey:state.entry.key,formId:event.formId,eventId:event.eventId,shootId:shootId||'',dirty:false,
-    startTime,endTime,teamArrival,crew,requirements:ciClone(shoot&&shoot.crewRequirements||{}),
+    date:event.date,eventName:event.name,startTime,endTime,teamArrival,crew,requirements:ciClone(shoot&&shoot.crewRequirements||{}),
     arrivalMode:shoot&&shoot.reportingTimeMode||((shoot&&shoot.reportingTime&&shoot.reportingTime!==autoArrival)?'manual':'auto'),
     endMode:shoot&&shoot.functionEndMode||(shoot&&shoot.functionEnd&&shoot.functionEnd!==clientEnd?'manual':clientEnd?'client':'auto'),
-    timingOverride:!!(shoot&&shoot.studioTimingOverride)
+    timingOverride:!!(shoot&&shoot.studioTimingOverride),plannerSync:ciClone(shoot&&shoot.plannerSync||null),teamTouched:false
   };
   cw11PlanDrafts.set(key,draft);
+  cw12ReconcilePlanner(state,event,draft);
   return draft;
 }
 function cw11DirtyDrafts(clientKey=cwSelectedKey){
@@ -5670,6 +6027,7 @@ function cw11RecomputeTimingOverride(state,event,draft){
 function cw11SetPlanTime(eventId,field,value){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
   const draft=cw11GetPlanDraft(state,event),oldStart=draft.startTime,oldArrival=draft.teamArrival,oldAutoEnd=cw11ShiftTime(oldStart,420),oldAutoArrival=cw11ShiftTime(oldStart,-60);
+  if(cw12EventStarted(draft)){toast('Operational timings are locked after crew check-in.');return;}
   if(field==='startTime'){
     draft.startTime=value;
     if(!draft.endTime||draft.endMode==='auto'||draft.endTime===oldAutoEnd){draft.endTime=cw11ShiftTime(value,420);draft.endMode='auto';}
@@ -5695,21 +6053,23 @@ function cw11CrewPickChanged(uid){
 }
 function cw11AddCrew(eventId){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event);if(cw12EventStarted(draft)){toast('This event team is locked because a crew member has checked in.');return;}
   const uid=document.getElementById('cw11AddCrew')?.value,role=document.getElementById('cw11AddRole')?.value,p=crewProfiles[uid];
   if(!uid||!p){toast('Choose a registered crew member.');return;}
-  const draft=cw11GetPlanDraft(state,event);if(draft.crew[uid]){toast(`${p.name||'This crew member'} is already assigned.`);return;}
+  if(draft.crew[uid]){toast(`${p.name||'This crew member'} is already assigned.`);return;}
   draft.crew[uid]={name:p.name||'',phone:p.phone||'',email:p.email||'',role:role||p.role||'Other',arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false,isLead:!Object.values(draft.crew).some(c=>c.isLead)};
-  cw11AddCrewOpen=false;cw11MarkDraft(draft);renderClientsWorkspace();
+  cw12MarkTeamOverride(draft);cw11AddCrewOpen=false;cw11MarkDraft(draft);renderClientsWorkspace();
 }
 function cw11SetCrewRole(eventId,uid,role){
   const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft||!draft.crew[uid])return;
-  draft.crew[uid].role=role;cw11MarkDraft(draft);
+  if(cw11CrewLocked(draft,uid)){toast('This event team is locked after check-in.');return;}
+  draft.crew[uid].role=role;cw12MarkTeamOverride(draft);cw11MarkDraft(draft);
 }
-function cw11CrewLocked(draft,uid){return !!(draft.shootId&&checkinAttendance[draft.shootId]&&checkinAttendance[draft.shootId][uid]&&checkinAttendance[draft.shootId][uid].checkedInAt);}
+function cw11CrewLocked(draft,uid){return cw12EventStarted(draft);}
 function cw11RemoveCrew(eventId,uid){
   const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft||!draft.crew[uid])return;
   if(cw11CrewLocked(draft,uid)){toast('Checked-in crew cannot be removed from this event.');return;}
-  delete draft.crew[uid];cw11CrewTimeOpen.delete(`${draft.key}|${uid}`);cw11MarkDraft(draft);renderClientsWorkspace();
+  delete draft.crew[uid];cw12MarkTeamOverride(draft);cw11CrewTimeOpen.delete(`${draft.key}|${uid}`);cw11MarkDraft(draft);renderClientsWorkspace();
 }
 function cw11ToggleLead(eventId,uid){
   const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft||!draft.crew[uid]||cw11CrewLocked(draft,uid))return;
@@ -5721,6 +6081,7 @@ function cw11ToggleCrewTime(eventId,uid){
 }
 function cw11SetCrewTime(eventId,uid,value){
   const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event),c=draft&&draft.crew[uid];if(!c)return;
+  if(cw11CrewLocked(draft,uid)){toast('This event team is locked after check-in.');return;}
   c.arrivalOverride=!!value;c.arrivalTime=value||draft.teamArrival;c.reportTime=c.arrivalTime;cw11MarkDraft(draft);
   const summary=document.getElementById(`cw11ArrivalSummary_${uid}`);if(summary)summary.innerHTML=`<b>${c.arrivalOverride?'Individual '+esc(ciFmtTime(c.arrivalTime)):'Overall '+esc(ciFmtTime(draft.teamArrival))}</b><small>${c.arrivalOverride?'Overrides this event only':'Follows overall team arrival'}</small>`;
 }
@@ -5732,8 +6093,9 @@ function cw11CopyTeam(eventId,sourceEventId){
   if(!sourceEventId)return;
   const {state,event}=cw11CurrentStateEvent(eventId),source=state&&state.events.find(e=>e.eventId===sourceEventId);if(!state||!event||!source)return;
   const draft=cw11GetPlanDraft(state,event),from=cw11GetPlanDraft(state,source);if(!Object.keys(from.crew||{}).length){toast('That event does not have a team yet.');return;}
+  if(cw12EventStarted(draft)){toast('This event team is locked because a crew member has checked in.');return;}
   draft.crew={};Object.entries(from.crew).forEach(([uid,c])=>{draft.crew[uid]={...ciClone(c),arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false};});
-  draft.requirements=ciClone(from.requirements);cw11MarkDraft(draft);renderClientsWorkspace();toast(`Team copied from ${source.name}.`);
+  draft.requirements=ciClone(from.requirements);cw12MarkTeamOverride(draft);cw11MarkDraft(draft);renderClientsWorkspace();toast(`Team copied from ${source.name}.`);
 }
 function cw11PlanPayload(state,event,draft){
   if(!draft.startTime)return {error:`Add the event start time for ${event.name}.`};
@@ -5756,6 +6118,7 @@ function cw11PlanPayload(state,event,draft){
     brideReadyLocation:details.brideReadyLocation||old.brideReadyLocation||null,groomReadyLocation:details.groomReadyLocation||old.groomReadyLocation||null,
     clientNotes:details.notes||old.clientNotes||null,clientFormId:event.formId,clientEventId:event.eventId,crew,
     crewRequirements:ciClone(draft.requirements||old.crewRequirements||{}),resourceAssignments:old.resourceAssignments||null,
+    plannerSync:draft.plannerSync?ciClone(draft.plannerSync):old.plannerSync||null,
     planningOnly:!published,publicationStatus:published?'published':'approval_pending',setupStatus:Object.keys(crew).length?(published?'prepared':'planned_pending_approval'):'crew_pending',
     createdAt:old.createdAt||Date.now(),createdBy:old.createdBy||editor,updatedAt:Date.now(),updatedBy:editor
   };
@@ -5818,6 +6181,40 @@ function cw11AppendPublicationUpdates(formId,f,updates){
     });
   });
 }
+function cw12PlannerSyncHtml(state,event,draft){
+  const status=cw12ReconcilePlanner(state,event,draft),match=status.match||{},imported=status.imported||{},kind=status.kind;
+  const labels={
+    synced:['Crew Planner verified','Verified'],
+    imported:['Team added from Crew Planner','Imported'],
+    auto_updated:['Internal plan updated from Crew Planner','Updated'],
+    review:['Crew Planner changed — review update','Review'],
+    decision:['Combined Planner row needs one decision','Choose'],
+    warning:['Planner team needs attention','Check'],
+    none:['No exact Crew Planner event match','No match'],
+    locked:['Crew Planner changed — live assignment locked','Locked'],
+    override:['Event-only team','Override'],
+    ambiguous:['Multiple Crew Planner rows match','Check']
+  },label=labels[kind]||labels.warning,details=[];
+  if(match.row)details.push({text:`Matched row: ${match.row.event||'Unnamed event'} · ${ciDateLong(match.row.iso||event.date)} · ${imported.matched?.length||0} registered crew`,type:''});
+  if(kind==='review'&&status.teamDiff&&status.teamDiff.text!=='No team changes')details.push({text:status.teamDiff.text,type:'warn'});
+  (status.importWarnings||[]).forEach(text=>details.push({text,type:'bad'}));
+  (status.conflicts||[]).forEach(text=>details.push({text,type:'bad'}));
+  if(status.locationWarning)details.push({text:status.locationWarning,type:'warn'});
+  let actions='';
+  if(kind==='review'&&match.row)actions=`<button type="button" class="cw10-primary" onclick="cw12AcceptPlannerTeam('${esc(event.eventId)}',false)">Accept Planner update</button><button type="button" class="cw10-soft" onclick="cw12KeepCurrentTeam('${esc(event.eventId)}',false)">Keep current event team</button>`;
+  else if(kind==='decision'&&match.row){
+    const count=Math.max(1,(match.affected||[]).length);
+    actions=`<button type="button" class="cw10-primary" onclick="cw12AcceptPlannerTeam('${esc(event.eventId)}',true)">Apply team to ${count} event${count===1?'':'s'}</button><button type="button" class="cw10-soft" onclick="cw12KeepCurrentTeam('${esc(event.eventId)}',true)">Do not use combined row</button>`;
+  }else if(kind==='override'&&match.row)actions=`<button type="button" class="cw10-soft" onclick="cw12AcceptPlannerTeam('${esc(event.eventId)}',${match.kind==='combined'?'true':'false'})">Follow Crew Planner again</button>`;
+  else if(['none','ambiguous'].includes(match.kind)||kind==='none')actions=`<button type="button" class="cw10-soft" onclick="setView('plan')">Open Crew Planner</button>`;
+  else if(kind==='warning')actions=`<button type="button" class="cw10-soft" onclick="cw12ToggleTeam('${esc(event.eventId)}')">Review / adjust team</button>`;
+  return `<section class="cw12-planner-sync ${esc(kind)}"><div class="cw12-sync-main"><span class="cw12-sync-icon">${['synced','imported','auto_updated'].includes(kind)?'✓':kind==='locked'?'×':'!'}</span><div class="cw12-sync-copy"><span>Crew Planner verification</span><strong>${esc(label[0])}</strong><small>${esc(status.reason||'Review this event’s Planner connection.')}</small></div><span class="cw12-sync-badge">${esc(label[1])}</span></div>${details.length?`<div class="cw12-sync-detail">${details.map(item=>`<div class="cw12-sync-line ${esc(item.type)}">${esc(item.text)}</div>`).join('')}</div>`:''}${actions?`<div class="cw12-sync-actions">${actions}</div>`:''}</section>`;
+}
+function cw12TeamSummaryHtml(crew){
+  const rows=Object.entries(crew||{}).sort((a,b)=>(a[1].role||'').localeCompare(b[1].role||'')||(a[1].name||'').localeCompare(b[1].name||''));
+  if(!rows.length)return `<div class="cw12-team-summary"><span class="cw12-team-empty">No registered crew is attached to this event yet.</span><span class="cw12-team-count">0 crew</span></div>`;
+  return `<div class="cw12-team-summary">${rows.map(([uid,member])=>`<span class="cw12-team-pill"><b>${esc(member.name||crewProfiles[uid]?.name||'Crew member')}</b><em>${esc(ciRoleCode(member.role||'Other'))}${member.isLead?' · Lead':''}</em></span>`).join('')}<span class="cw12-team-count">${rows.length} crew</span></div>`;
+}
 function cw11CrewRow(eventId,draft,uid,c){
   const locked=cw11CrewLocked(draft,uid),open=cw11CrewTimeOpen.has(`${draft.key}|${uid}`),arrival=c.arrivalOverride?(c.arrivalTime||draft.teamArrival):draft.teamArrival;
   const options=CI_ROLES.map(role=>`<option ${role===(c.role||'Other')?'selected':''}>${esc(role)}</option>`).join('');
@@ -5829,7 +6226,7 @@ function cw11CrewRow(eventId,draft,uid,c){
 }
 function cw11RenderPlanning(state,event){
   const draft=cw11GetPlanDraft(state,event),resource=cw10EventResource(state,event),crew=Object.entries(draft.crew||{}).sort((a,b)=>(a[1].role||'').localeCompare(b[1].role||'')||(a[1].name||'').localeCompare(b[1].name||'')),published=cw11IsPublished(state,event)&&!(resource.shoot&&resource.shoot.planningOnly);
-  const started=!!(draft.shootId&&Object.values(checkinAttendance[draft.shootId]||{}).some(a=>a&&a.checkedInAt));
+  const started=cw12EventStarted(draft),teamOpen=cw12TeamDetailsOpen.has(draft.key),plannerMode=draft.plannerSync&&draft.plannerSync.mode||'';
   const assigned=new Set(crew.map(([uid])=>uid)),available=Object.entries(crewProfiles||{}).filter(([uid])=>!assigned.has(uid)).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
   const crewOptions=available.map(([uid,p])=>`<option value="${esc(uid)}">${esc(p.name||'Unnamed')} · ${esc(ciRoleCode(p.role||''))}</option>`).join('');
   const roleOptions=CI_ROLES.map(role=>`<option>${esc(role)}</option>`).join('');
@@ -5837,15 +6234,17 @@ function cw11RenderPlanning(state,event){
   const lists=[resource.candid.items.length?`Candid · ${resource.candid.items.length} shots`:'Candid list pending',resource.traditional.items.length?`Traditional · ${resource.traditional.items.length} shots`:'Traditional list pending'].join(' · ');
   const boards=resource.boards.length?resource.boards.map(([name])=>name).join(', '):'No event-specific boards';
   const dirtyCount=cw11DirtyDrafts().length;
-  return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Planning Details</h3><p>Set this event’s operational timing and team here. Individual arrival overrides stay optional.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
+  return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Planning Details</h3><p>Client details control the event facts. The team is verified against the exact Crew Planner event.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
     ${published?'':`<div class="cw11-plan-note"><i>i</i><div><strong>You can finish planning before client approval.</strong>This timing and team stay internal. Approval publishes the same event record to the assigned crew—nothing is duplicated.</div></div>`}
     ${started?`<div class="cw11-plan-note"><i>✓</i><div><strong>This shoot has started.</strong>Operational timings and checked-in assignments are locked to protect the attendance record.</div></div>`:''}
+    ${cw12PlannerSyncHtml(state,event,draft)}
     <div class="cw11-plan-fields"><div class="cw11-field"><label for="cw11StartTime">Event start</label><input id="cw11StartTime" type="time" value="${esc(draft.startTime)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','startTime',this.value)"><small>Used as the scheduled shoot start.</small></div>
     <div class="cw11-field"><label for="cw11EndTime">Expected end</label><input id="cw11EndTime" type="time" value="${esc(draft.endTime)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','endTime',this.value)"><small>Defaults to seven hours after start.</small></div>
     <div class="cw11-field"><label for="cw11TeamArrival">Overall team arrival</label><input id="cw11TeamArrival" type="time" value="${esc(draft.teamArrival)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','teamArrival',this.value)"><small>Defaults to one hour before the event.</small></div></div>
-    <div class="cw11-team"><div class="cw11-section-head"><div><h4>Assigned team</h4><p>${crew.length} crew member${crew.length===1?'':'s'} · one overall arrival time</p></div><div class="cw11-section-actions"><button type="button" class="cw10-soft" onclick="cw11ToggleAddCrew()">${cw11AddCrewOpen?'Close team tools':'+ Add or copy team'}</button></div></div>
-    <div class="cw11-team-list">${crew.length?crew.map(([uid,c])=>cw11CrewRow(event.eventId,draft,uid,c)).join(''):'<div class="cw11-empty-team">No crew assigned yet. Add the team now—even while the client update is awaiting approval.</div>'}</div>
-    ${cw11AddCrewOpen?`<div class="cw11-add-team"><div class="cw11-add-team-head"><div><strong>Team tools</strong><small>Add one person, or reuse the team from another event.</small></div></div>${copyOptions?`<div class="cw11-add-grid" style="grid-template-columns:minmax(170px,1fr) minmax(170px,1fr)"><span style="color:#817B73;font-size:8.5px">Copy an existing event team</span><select aria-label="Copy team from another event" onchange="cw11CopyTeam('${esc(event.eventId)}',this.value);this.value=''"><option value="">Choose event…</option>${copyOptions}</select></div>`:''}<div class="cw11-add-grid"><select id="cw11AddCrew" onchange="cw11CrewPickChanged(this.value)"><option value="">Choose crew member…</option>${crewOptions}</select><select id="cw11AddRole">${roleOptions}</select><button type="button" class="cw10-primary" onclick="cw11AddCrew('${esc(event.eventId)}')">Add to event</button></div></div>`:''}</div>
+    <div class="cw11-team"><div class="cw11-section-head"><div><h4>Crew Planner team</h4><p>${crew.length} registered crew · ${plannerMode==='override'||plannerMode==='ignore'?'<span class="cw12-event-override">event-only adjustment</span>':'one verified source'}</p></div><div class="cw11-section-actions"><button type="button" class="cw10-soft" onclick="cw12ToggleTeam('${esc(event.eventId)}')">${teamOpen?'Hide team details':'Review / adjust team'}</button></div></div>
+    ${cw12TeamSummaryHtml(draft.crew)}
+    ${teamOpen?`<div class="cw12-team-details"><div class="cw11-team-list">${crew.length?crew.map(([uid,c])=>cw11CrewRow(event.eventId,draft,uid,c)).join(''):'<div class="cw11-empty-team">No crew assigned. Fix the matching Planner row, or use the event-only adjustment below.</div>'}</div><div class="cw11-section-actions" style="margin-top:9px;justify-content:flex-start"><button type="button" class="cw10-soft" ${started?'disabled':''} onclick="cw11ToggleAddCrew()">${cw11AddCrewOpen?'Close event adjustment':'+ Event-only adjustment'}</button></div>
+    ${cw11AddCrewOpen?`<div class="cw11-add-team"><div class="cw11-add-team-head"><div><strong>Event-only adjustment</strong><small>Use this only for a last-minute exception. Future Planner changes will require review instead of replacing it silently.</small></div></div>${copyOptions?`<div class="cw11-add-grid" style="grid-template-columns:minmax(170px,1fr) minmax(170px,1fr)"><span style="color:#817B73;font-size:8.5px">Copy another event’s current team</span><select aria-label="Copy team from another event" onchange="cw11CopyTeam('${esc(event.eventId)}',this.value);this.value=''"><option value="">Choose event…</option>${copyOptions}</select></div>`:''}<div class="cw11-add-grid"><select id="cw11AddCrew" onchange="cw11CrewPickChanged(this.value)"><option value="">Choose crew member…</option>${crewOptions}</select><select id="cw11AddRole">${roleOptions}</select><button type="button" class="cw10-primary" onclick="cw11AddCrew('${esc(event.eventId)}')">Add to this event</button></div></div>`:''}</div>`:''}</div>
     <div class="cw11-resources-wrap"><button type="button" class="cw11-resources-toggle" onclick="cw11ToggleResources()" aria-expanded="${cw11ResourcesOpen?'true':'false'}"><span><span>Lists &amp; boards</span><strong>${esc(lists)} · ${esc(boards)}</strong></span><em>${cw11ResourcesOpen?'Close':'Manage'} ${cw11ResourcesOpen?'⌃':'⌄'}</em></button>${cw11ResourcesOpen?`<div class="cw11-resources-body"><div class="cw11-plan-resources"><div class="cw11-resource"><span>Shot lists</span><strong>${esc(lists)}</strong><small>Common templates connect by event name.</small></div><div class="cw11-resource"><span>Creative boards</span><strong>${esc(boards)}</strong><small>Event, Portraits and Other remain event-specific.</small></div></div><div class="cw10-panel-actions"><button type="button" class="cw10-text" data-event-name="${esc(event.name)}" onclick="cwOpenSettings(this.dataset.eventName)">Edit common lists</button>${draft.shootId?`<button type="button" class="cw10-text" onclick="cwOpenShoot('${esc(draft.shootId)}')">Open lists &amp; boards setup</button>`:'<span style="color:#6F6963;font-size:8px">Save this plan once to add event-specific boards.</span>'}</div></div>`:''}</div>
     <footer class="cw11-plan-footer"><div class="cw11-save-copy" id="cw11SaveCopy">${dirtyCount?`<strong class="cw11-plan-dirty">${dirtyCount} unsaved event plan${dirtyCount===1?'':'s'}</strong>`:'<strong>All planning changes saved</strong>'}</div><div class="cw11-save-actions"><button type="button" class="cw10-soft cw11-save-all" id="cw11SaveAll" ${dirtyCount<2?'hidden':''} onclick="cw11SaveAllPlans()">Save all<span class="cw11-save-count">${dirtyCount}</span></button><button type="button" class="cw10-primary" id="cw11SaveCurrent" ${draft.dirty?'':'disabled'} onclick="cw11SaveCurrentPlan()">Save event plan</button></div></footer>
   </section>`;
@@ -5883,10 +6282,13 @@ function cw10EventStatus(state,event){
   const eventApproval=cw11EventApprovalState(state,event),selectedDiff=cw10DiffEntries(state,event.eventId);
   if(eventApproval.changed&&state.submission.submittedAt&&selectedDiff.length)return {key:'attention',text:'Update pending'};
   if(!clientEventDone(details))return {key:'planning',text:details.startTime||details.venueName?'Details incomplete':'Details pending'};
+  const draft=cw11GetPlanDraft(state,event),planner=draft.plannerStatus||{},plannerText={review:'Planner update',decision:'Planner decision',warning:'Planner check',locked:'Planner changed · locked'}[planner.kind];
   if(!eventApproval.approved){
-    if(shoot&&Object.keys(shoot.crew||{}).length)return {key:'attention',text:'Plan ready · approval pending'};
+    if(plannerText)return {key:'attention',text:plannerText};
+    if(Object.keys(draft.crew||{}).length)return {key:'attention',text:'Plan ready · approval pending'};
     return {key:'attention',text:'Approval pending'};
   }
+  if(plannerText)return {key:'attention',text:plannerText};
   if(!shoot)return {key:'planning',text:'Plan pending'};
   if(!shoot.mapsUrl)return {key:'attention',text:'Map missing'};
   const crew=Object.keys(shoot.crew||{});if(!crew.length)return {key:'attention',text:'Team pending'};
