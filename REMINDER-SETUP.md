@@ -1,15 +1,61 @@
-# Tale of Two Crew WhatsApp Reminders
+# Tale of Two Crew Reminder Pilot
 
-This build uses official WhatsApp Business messaging for crew reminders. It
-does not ask the crew for browser notification permission, register devices or
-send test notifications.
+This build adds a private Telegram pilot alongside the existing Calendar
+Reminder build. The pilot links only the signed-in test user's Crew profile,
+sends one on-demand private test reminder and records the **I'll Be There**
+button response in the Ledger. It does not contact other crew members and does
+not enable automatic Telegram scheduling.
 
-## What is automatic
+## Telegram pilot setup
 
-- A WhatsApp message is sent when a crew member is assigned or their assignment
+1. In Telegram, open `@BotFather`, run `/newbot`, and create a bot named
+   `Tale of Two Crew`.
+2. Copy the bot token. Do not place it in HTML, commit it to GitHub or share it
+   in chat.
+3. From the project folder, save it as a Firebase secret:
+
+   ```bash
+   firebase functions:secrets:set TELEGRAM_BOT_TOKEN
+   ```
+
+4. Deploy the three Telegram pilot functions:
+
+   ```bash
+   npm --prefix functions install
+   firebase deploy --only functions:createTelegramActivation,functions:sendTelegramTest,functions:telegramWebhook
+   ```
+
+5. Sign in to `crew.html` with the test Google account and create a Crew
+   profile if needed.
+6. Tap **Activate Telegram Test**, press **Start** in Telegram, allow Telegram
+   notifications and tap **Notifications Enabled**.
+7. Return to the Crew App, tap **Send Test Reminder**, then press
+   **I'll Be There** in Telegram.
+
+The bot webhook configures itself when the activation link is created. The
+Crew App then shows the delivery and confirmation proof. The Telegram bot token
+stays only in Firebase Secrets.
+
+## What remains off during the pilot
+
+- No automatic assignment messages
+- No previous-evening reminders
+- No automatic two-hour reminders
+- No crew-wide activation links
+- No WhatsApp API messages
+
+## Legacy WhatsApp code retained but not activated
+
+The earlier WhatsApp reminder functions remain in the source so no previous
+work is lost. They are not part of the three-function Telegram pilot deployment.
+Do not deploy all functions unless the official WhatsApp API is intentionally
+being activated later.
+
+When deliberately deployed and configured, that older flow can:
+
+- Send a WhatsApp message when a crew member is assigned or their assignment
   details materially change.
-- A WhatsApp reminder is sent two hours before that crew member's reporting
-  time.
+- Send a WhatsApp reminder two hours before that crew member's reporting time.
 - A member-specific arrival-time override is used when present. Otherwise, the
   event's overall team reporting time is used.
 - Each send is claimed and recorded once to prevent duplicate messages.
@@ -18,6 +64,29 @@ send test notifications.
   Completed states.
 
 All reminder calculations use Asia/Kolkata.
+
+## Calendar reminder fallback
+
+After a crew member confirms an assignment, the Crew App shows an **Add this
+shoot to your calendar** card.
+
+- **Google Calendar** opens a pre-filled Google Calendar event for Android or
+  anyone who uses Google Calendar. The Crew App asks the member to add a
+  two-hour notification before saving because Google's public pre-fill link
+  does not set per-event notifications.
+- **Apple / Other** downloads a standard `.ics` event containing a two-hour
+  display alarm.
+- The event begins at that crew member's individual reporting time and blocks
+  time through the expected end of coverage.
+- The title, role, venue, directions, reporting time and exact Crew App link are
+  included.
+- If the date, reporting time, venue, role or event changes after the calendar
+  link was opened, the Crew App asks that person to update their calendar.
+
+Calendar events are free and do not need the WhatsApp Business API. The crew
+member must still tap Save/Add inside their calendar, and calendar notifications
+must be allowed in their phone settings. The Ledger records that the calendar
+link was opened; a browser cannot prove that the final calendar save happened.
 
 ## Official WhatsApp setup
 
@@ -67,7 +136,7 @@ Add one dynamic URL button to each template. Use this base:
 
 The backend supplies `?event=EVENT_ID` as the dynamic value.
 
-## Configure and deploy
+## Optional WhatsApp setup — do not use for this pilot
 
 Set the WhatsApp access token as a Firebase secret:
 

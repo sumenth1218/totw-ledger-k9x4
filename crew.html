@@ -89,6 +89,22 @@ h2{font-family:var(--display);font-size:29px;font-weight:600;line-height:1.05}
 .contact-actions{display:flex;gap:7px}.round-link{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold);text-decoration:none;font-size:13px}
 .action-stack{display:grid;gap:9px;margin-top:14px}
 .confirm-note{text-align:center;font-size:11px;color:var(--soft);margin-top:9px}
+.calendar-card{margin-top:12px;background:linear-gradient(145deg,#FFFDF8,#F3ECDE);box-shadow:0 10px 32px rgba(31,27,20,.06)}
+.calendar-card-head{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:center}
+.calendar-card-head .ico{width:42px;height:42px;font-size:18px}
+.calendar-card h3{font-family:var(--body);font-size:14px;font-weight:650}
+.calendar-card p{font-size:11.5px;line-height:1.5;color:var(--soft);margin-top:4px}
+.calendar-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.calendar-options button{padding-left:8px;padding-right:8px}
+.calendar-state{display:flex;align-items:center;gap:7px;margin-top:11px;font-size:10.5px;color:var(--leaf)}
+.calendar-state:before{content:'✓';width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:var(--leaf-soft);font-size:10px;font-weight:700}
+.telegram-pilot{margin-bottom:18px;background:linear-gradient(145deg,#F8FBFF,#EAF5FF);border:1px solid #D9ECFA}
+.telegram-pilot-head{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:center}.telegram-pilot-head .ico{background:#2AABEE;color:#fff}
+.telegram-pilot h3{font-family:var(--body);font-size:15px;font-weight:700}.telegram-pilot p{font-size:11.5px;line-height:1.55;color:var(--soft);margin-top:4px}
+.telegram-pilot .pilot-status{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:11px;font-weight:650;color:var(--soft)}
+.telegram-pilot .pilot-dot{width:8px;height:8px;border-radius:50%;background:#CFBEBE}.telegram-pilot .pilot-dot.ok{background:var(--leaf)}
+.telegram-pilot .pilot-actions{display:grid;gap:8px;margin-top:14px}.telegram-pilot .pilot-actions button{width:100%}
+.telegram-pilot .pilot-proof{margin-top:12px;padding-top:11px;border-top:1px solid rgba(42,171,238,.18);font-size:10.5px;color:var(--leaf)}
 .success{background:linear-gradient(145deg,#61785F,#455C46);color:#fff;border:0;text-align:center;padding:25px 20px}.success .mark{width:55px;height:55px;border:1.5px solid rgba(255,255,255,.8);border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:25px}.success h2{font-family:var(--body);font-size:22px;font-weight:500}.success p{font-size:12px;color:rgba(255,255,255,.78);margin-top:7px}
 .late-card{background:var(--red-soft);border-color:#E0B9B1;color:var(--red);text-align:center}.late-card h2{font-family:var(--body);font-size:20px}.late-card p{font-size:12.5px;margin-top:8px;line-height:1.5}
 .resource{display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:center}.resource+.resource{margin-top:10px}.resource .ricon{width:46px;height:46px;border-radius:50%;background:var(--leaf-soft);color:var(--leaf);display:flex;align-items:center;justify-content:center;font-size:21px}.resource b{display:block;font-size:13.5px}.resource small{font-size:11px;color:var(--soft)}
@@ -140,6 +156,7 @@ h2{font-family:var(--display);font-size:29px;font-weight:600;line-height:1.05}
 
   <section class="screen" id="dashboardScreen">
     <div class="dashboard-head"><div class="eyebrow">Upcoming assignments</div><h1 id="helloTitle">Your shoots.</h1><p class="lead">Open a client to view your events, arrival time and venue.</p></div>
+    <div id="telegramPilot"></div>
     <div class="shoot-list" id="shootList"></div>
     <button class="signout" onclick="signOutCrew()">Sign out</button>
   </section>
@@ -154,6 +171,7 @@ h2{font-family:var(--display);font-size:29px;font-weight:600;line-height:1.05}
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
 <script>
 const FIREBASE={
   apiKey:"AIzaSyCV14o1M9eUANLRxG_JrDZH2aGfqY3kjA4",authDomain:"tot-ledger.firebaseapp.com",
@@ -170,7 +188,7 @@ const DEFAULT_SHOTS={
 const MN=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const eventParam=new URLSearchParams(location.search).get('event')||'';
-let auth=null,db=null,user=null,profile=null,assignments={},events={},attendanceMap={},activeId='',activeEvent=null,attendance={},shotLists={},shotMoods={},shotEventMoods={},items=[],checklistSections={},attendanceWrite=Promise.resolve();
+let auth=null,db=null,fn=null,user=null,profile=null,assignments={},events={},attendanceMap={},activeId='',activeEvent=null,attendance={},shotLists={},shotMoods={},shotEventMoods={},items=[],checklistSections={},attendanceWrite=Promise.resolve(),telegramProfileListener=null;
 
 function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id===id));window.scrollTo(0,0)}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.remove('on'),2800)}
@@ -183,6 +201,32 @@ function addHoursToTime(t,hours=7){if(!t)return '';const parts=String(t).trim().
 function eventTimingRange(t){const end=addHoursToTime(t,7);return end?`${fmtTime(t)} – ${fmtTime(end)}`:fmtTime(t)}
 function assignmentTime(e){const me=(e.crew||{})[user.uid]||{};return me.arrivalTime||me.reportTime||e.reportingTime||e.scheduledStart||e.functionStart||'23:59'}
 function assignmentMinutes(e){const t=String(assignmentTime(e)).trim(),m=t.match(/^(\d{1,2}):(\d{2})(?:\s*([AP]M))?/i);if(!m)return 1439;let h=+m[1],min=+m[2];if(m[3]){h%=12;if(m[3].toUpperCase()==='PM')h+=12}return h*60+min}
+function calendarTimeParts(date,time){
+ const dm=String(date||'').match(/^(\d{4})-(\d{2})-(\d{2})$/),tm=String(time||'').trim().match(/^(\d{1,2}):(\d{2})(?:\s*([AP]M))?$/i);
+ if(!dm||!tm)return null;let h=+tm[1],m=+tm[2];if(tm[3]){h%=12;if(tm[3].toUpperCase()==='PM')h+=12}
+ return {year:+dm[1],month:+dm[2],day:+dm[3],hour:h,minute:m};
+}
+function calendarStamp(ms){const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${d.getUTCFullYear()}${p(d.getUTCMonth()+1)}${p(d.getUTCDate())}T${p(d.getUTCHours())}${p(d.getUTCMinutes())}00`}
+function calendarEventData(){
+ const me=currentCrew(),startParts=calendarTimeParts(activeEvent.date,me.arrivalTime||me.reportTime||activeEvent.reportingTime),shootParts=calendarTimeParts(activeEvent.date,activeEvent.functionStart||activeEvent.scheduledStart);
+ if(!startParts)return null;
+ const ms=p=>Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute),startMs=ms(startParts);let endMs=shootParts?ms(shootParts)+7*3600000:startMs+8*3600000;if(endMs<=startMs)endMs+=86400000;
+ const eventName=eventNamesFor(activeEvent).join(' + '),role=me.role||profile.role||'Crew',venue=activeEvent.venueName||'Venue to be updated',assignmentUrl=`${location.origin}${location.pathname}?event=${encodeURIComponent(activeId)}`;
+ const details=[`Crew: ${me.name||profile.name||''}`,`Role: ${role}`,`Reporting: ${fmtTime(me.arrivalTime||me.reportTime||activeEvent.reportingTime)}`,`Shoot starts: ${fmtTime(activeEvent.functionStart||activeEvent.scheduledStart)}`,`Venue: ${venue}`,activeEvent.mapsUrl?`Directions: ${activeEvent.mapsUrl}`:'',activeEvent.clientNotes?`Note: ${activeEvent.clientNotes}`:'',`Assignment: ${assignmentUrl}`].filter(Boolean).join('\n');
+ return {title:`TOTW Shoot - ${activeEvent.couple} - ${eventName}`,eventName,role,venue,details,assignmentUrl,start:calendarStamp(startMs),end:calendarStamp(endMs)};
+}
+function calendarScheduleKey(){const me=currentCrew();return [activeEvent.date,me.arrivalTime||me.reportTime||activeEvent.reportingTime,activeEvent.functionStart||activeEvent.scheduledStart,activeEvent.venueName,activeEvent.mapsUrl,me.role,eventNamesFor(activeEvent).join('|')].map(x=>String(x||'')).join('~')}
+function icsEscape(value){return String(value||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/;/g,'\\;').replace(/,/g,'\\,')}
+function calendarIcs(){
+ const x=calendarEventData();if(!x)return '';
+ const uid=`totw-${safeKey(activeId)}-${safeKey(user.uid)}@studio.taleoftwoweddings.com`,stamp=calendarStamp(Date.now());
+ return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Tale of Two Weddings//Crew Assignment//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VTIMEZONE','TZID:Asia/Kolkata','BEGIN:STANDARD','DTSTART:19700101T000000','TZOFFSETFROM:+0530','TZOFFSETTO:+0530','TZNAME:IST','END:STANDARD','END:VTIMEZONE','BEGIN:VEVENT',`UID:${uid}`,`DTSTAMP:${stamp}Z`,`DTSTART;TZID=Asia/Kolkata:${x.start}`,`DTEND;TZID=Asia/Kolkata:${x.end}`,`SUMMARY:${icsEscape(x.title)}`,`LOCATION:${icsEscape(x.venue)}`,`DESCRIPTION:${icsEscape(x.details)}`,`URL:${x.assignmentUrl}`,'BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:-PT2H',`DESCRIPTION:${icsEscape(`Reporting in 2 hours for ${activeEvent.couple} - ${x.eventName}`)}`,'END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
+}
+function googleCalendarUrl(){
+ const x=calendarEventData();if(!x)return '';
+ const q=new URLSearchParams({action:'TEMPLATE',text:x.title,dates:`${x.start}/${x.end}`,ctz:'Asia/Kolkata',details:x.details,location:x.venue});
+ return `https://calendar.google.com/calendar/render?${q.toString()}`;
+}
 function fmtClock(ms){if(!ms)return '—';return new Date(ms).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})}
 function teamType(role){const r=String(role||'').toLowerCase();if(r.includes('traditional'))return 'traditional';if(r.includes('candid'))return 'candid';return ''}
 function safeKey(value){return String(value||'').trim().toLowerCase().replace(/[.#$\[\]\/]/g,'_').replace(/\s+/g,'-')}
@@ -197,7 +241,7 @@ function waPhone(v){const n=phoneDigits(v);return n.length===10?'91'+n:n}
 function distanceM(a,b,c,d){const R=6371000,p=x=>x*Math.PI/180,dp=p(c-a),dl=p(d-b),q=Math.sin(dp/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
 function durationText(start,end){if(!start||!end)return 'Working duration will appear once the actual shoot start is confirmed.';let m=Math.max(0,Math.round((end-start)/60000)),h=Math.floor(m/60);m%=60;return `Total shoot duration: ${h?`${h} hr${h===1?'':'s'} `:''}${m} min`;}
 async function boot(){
- try{firebase.initializeApp(FIREBASE);auth=firebase.auth();db=firebase.database()}catch(e){screen('loginScreen');showError('loginError','Could not connect. Reload and try again.');return}
+ try{firebase.initializeApp(FIREBASE);auth=firebase.auth();db=firebase.database();fn=firebase.app().functions('asia-southeast1')}catch(e){screen('loginScreen');showError('loginError','Could not connect. Reload and try again.');return}
  try{await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)}catch(e){}
  auth.onAuthStateChanged(async u=>{
    user=u||null;
@@ -236,8 +280,35 @@ async function loadDashboard(){
  const ids=Object.keys(assignments).filter(k=>assignments[k]===true);
  await Promise.all(ids.map(async id=>{try{const [s,a]=await Promise.all([db.ref('crewCheckins/events/'+id).once('value'),db.ref(`crewCheckins/attendance/${id}/${user.uid}`).once('value')]);if(s.exists())events[id]=s.val();attendanceMap[id]=a.val()||{};}catch(e){}}));
  document.getElementById('helloTitle').textContent=`Hello, ${(profile.name||'').split(' ')[0]||'there'}.`;
+ watchTelegramPilot();
  renderDashboard();
  if(eventParam&&events[eventParam])openEvent(eventParam);else screen('dashboardScreen');
+}
+function watchTelegramPilot(){
+ if(telegramProfileListener)telegramProfileListener.off();
+ telegramProfileListener=db.ref(`crewProfiles/${user.uid}/telegram`);
+ telegramProfileListener.on('value',snap=>{profile.telegram=snap.val()||{};renderTelegramPilot()});
+}
+function renderTelegramPilot(){
+ const host=document.getElementById('telegramPilot');if(!host||!profile)return;
+ const t=profile.telegram||{},activated=!!t.chatId,ready=!!t.notificationsAcknowledgedAt,confirmed=!!t.lastTestConfirmedAt;
+ const status=confirmed?'Pilot passed — confirmation recorded':ready?'Ready for a private test reminder':activated?'Telegram linked — acknowledge notifications in the bot':'Not activated';
+ let action='';
+ if(!activated)action='<button class="primary" onclick="activateTelegramPilot()">Activate Telegram Test</button>';
+ else if(!ready)action='<button class="secondary" onclick="activateTelegramPilot()">Open Telegram Setup</button>';
+ else action='<button class="primary" onclick="sendTelegramPilot()" '+(confirmed?'':'')+'>Send Test Reminder</button>';
+ host.innerHTML=`<div class="card telegram-pilot"><div class="telegram-pilot-head"><div class="ico">➤</div><div><h3>Telegram reminder pilot</h3><p>This test is private to your Telegram account. No crew members will be contacted.</p></div></div><div class="pilot-status"><span class="pilot-dot ${activated?'ok':''}"></span>${esc(status)}</div><div class="pilot-actions">${action}</div>${confirmed?`<div class="pilot-proof">✓ Test message delivered and “I’ll Be There” recorded at ${esc(fmtClock(t.lastTestConfirmedAt))}</div>`:''}</div>`;
+}
+async function activateTelegramPilot(){
+ try{
+   toast('Creating your private Telegram link…');
+   const call=fn.httpsCallable('createTelegramActivation'),result=await call();
+   if(!result.data||!result.data.url)throw new Error('Missing activation link');
+   location.href=result.data.url;
+ }catch(e){toast(e&&e.message&&e.message.includes('not configured')?'Telegram bot setup is not deployed yet.':'Could not open Telegram setup. Please try again.')}
+}
+async function sendTelegramPilot(){
+ try{toast('Sending your private test reminder…');await fn.httpsCallable('sendTelegramTest')();toast('Test sent — open Telegram and tap I’ll Be There')}catch(e){toast('Could not send the Telegram test. Please try again.')}
 }
 function renderDashboard(){
  const el=document.getElementById('shootList');
@@ -281,6 +352,11 @@ function assignmentCards(){
  const teamCount=team.length;
  return `<div class="section-title">Your assignment</div><div class="card assignment"><div class="avatar">${esc(initials(me.name))}</div><div><b>${esc(me.name)}</b><span>${esc(me.role)}</span></div></div><div class="section-title">Team details</div><details class="card team-details"><summary><span>Team for this event</span><small>${teamCount} ${teamCount===1?'member':'members'}</small></summary><div class="team-rows">${rows}</div></details>`;
 }
+function calendarCard(){
+ if(!activeEvent.date||!calendarEventData())return '';
+ const changed=attendance.calendarScheduleKey&&attendance.calendarScheduleKey!==calendarScheduleKey(),opened=!!attendance.calendarOpenedAt&&!changed;
+ return `<div class="card calendar-card"><div class="calendar-card-head"><div class="ico">▣</div><div><h3>${changed?'Update your calendar':'Add this shoot to your calendar'}</h3><p>${changed?'The reporting details changed after you last opened the calendar link. Add the updated event and remove the old one.':'Save this shoot now so your phone calendar can remind you before reporting.'}</p></div></div><div class="calendar-options"><button class="secondary" onclick="addGoogleCalendar()">Google Calendar</button><button class="secondary" onclick="addIcsCalendar()">Apple / Other</button></div>${opened?'<div class="calendar-state">Calendar link opened on this device</div>':''}<p class="confirm-note">Apple/Other includes a two-hour alert. Google Calendar will ask you to set it before saving.</p></div>`;
+}
 function contactDetails(){
  const team=Object.entries(activeEvent.crew||{}),contactRow=activeEvent.clientContactName?`<div class="team-row"><div class="avatar">${esc(initials(activeEvent.clientContactName))}</div><div><b>${esc(activeEvent.clientContactName)}</b><small>On-site contact${activeEvent.clientContactPhone?' · '+esc(activeEvent.clientContactPhone):''}</small></div>${activeEvent.clientContactPhone?`<div class="contact-actions"><a class="round-link" aria-label="Call ${esc(activeEvent.clientContactName)}" href="tel:${esc(phoneDigits(activeEvent.clientContactPhone))}">☎</a><a class="round-link" aria-label="WhatsApp ${esc(activeEvent.clientContactName)}" href="https://wa.me/${esc(waPhone(activeEvent.clientContactPhone))}" target="_blank" rel="noopener">◉</a></div>`:''}</div>`:'';
  const rows=team.map(([uid,x])=>{const ph=waPhone(x.phone);return `<div class="team-row"><div class="avatar">${esc(initials(x.name))}</div><div><b>${esc(x.name)}${uid===user.uid?' · You':''}${x.isLead?' · Lead':''}</b><small>${esc(x.role)}</small></div><div class="contact-actions"><a class="round-link" aria-label="Call ${esc(x.name)}" href="tel:${esc(phoneDigits(x.phone))}">☎</a><a class="round-link" aria-label="WhatsApp ${esc(x.name)}" href="https://wa.me/${esc(ph)}" target="_blank" rel="noopener">◉</a></div></div>`}).join('');
@@ -298,6 +374,7 @@ function renderEvent(){
    if(dayState==='today')html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" id="checkBtn" ${hasLocation?'onclick="checkIn()"':'disabled'}>${hasLocation?'Check In':'Maps link pending'}</button></div>${hasLocation?'':'<p class="confirm-note">Tale of Two will update the venue link before check-in.</p>'}`;
    else if(dayState==='upcoming')html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" disabled>Check In available on ${esc(fmtDate(activeEvent.date))}</button></div>`;
    else html+=`<div class="action-stack"><button class="quiet" disabled>Assignment confirmed</button><button class="primary" disabled>Event date has passed</button></div>`;
+   if(dayState!=='past')html+=calendarCard();
    html+=lockedResources();
  }else if(!attendance.checkedOutAt){
    html=resources()+contactDetails();
@@ -326,6 +403,16 @@ function resources(){
 function updateProgress(){Object.entries(checklistSections||{}).forEach(([key,section])=>{const list=section.items||[],b=document.getElementById('progressBar_'+key),l=document.getElementById('progressLabel_'+key);if(!b||!l)return;const n=list.filter(x=>x.done).length;b.style.width=`${list.length?n/list.length*100:0}%`;l.textContent=`${n} of ${list.length} ticked`;});}
 function persistAttendance(next){attendance={...attendance,...next,updatedAt:Date.now()};attendanceMap[activeId]=attendance;const snapshot=JSON.parse(JSON.stringify(attendance));attendanceWrite=attendanceWrite.catch(()=>{}).then(()=>db.ref(`crewCheckins/attendance/${activeId}/${user.uid}`).set(snapshot));return attendanceWrite;}
 async function confirmAssignment(){try{await persistAttendance({confirmedAt:Date.now()});toast('Assignment confirmed');renderEvent()}catch(e){toast('Could not confirm. Please try again.') }}
+function recordCalendarOpen(provider){persistAttendance({calendarOpenedAt:Date.now(),calendarProvider:provider,calendarScheduleKey:calendarScheduleKey()}).then(renderEvent).catch(()=>{});}
+function addGoogleCalendar(){
+ const url=googleCalendarUrl();if(!url){toast('Reporting date or time is missing.');return}
+ if(!confirm('Google Calendar will open now. Before tapping Save, add a notification for 2 hours before reporting.'))return;
+ const tab=window.open(url,'_blank','noopener');if(!tab)location.href=url;recordCalendarOpen('google');
+}
+function addIcsCalendar(){
+ const ics=calendarIcs();if(!ics){toast('Reporting date or time is missing.');return}
+ const name=`TOTW-${safeKey(activeEvent.couple)}-${safeKey(eventNamesFor(activeEvent).join('-'))}.ics`,a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'}));a.download=name;a.rel='noopener';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(a.href),1500);recordCalendarOpen('ics');
+}
 function checkIn(){
  if(eventDayState(activeEvent&&activeEvent.date)!=='today'){toast('Check-in is available only on the event day.');renderEvent();return}
  const b=document.getElementById('checkBtn');b.disabled=true;b.textContent='Checking location…';
