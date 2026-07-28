@@ -1,4 +1,4 @@
-TALE OF TWO WEDDINGS — DARK CLIENT WORKSPACE v8
+TALE OF TWO WEDDINGS — CLIENT EVENT SOURCE FIX v9
 
 UPLOAD:
 1. Unzip this package.
@@ -6,14 +6,8 @@ UPLOAD:
 3. Replace the current files when GitHub asks.
 4. Do not upload the ZIP itself.
 
-The files changed by this update are:
+The only file changed by this update is:
 - index.html
-- crew.html
-- crew-sw.js
-- crew-manifest.webmanifest
-- event-details.html
-- checklist-candid.html
-- checklist-traditional.html
 
 IMPORTANT — THESE CONTRACTS ARE PRESERVED:
 - Dates & Enquiries data and workflow are unchanged.
@@ -25,14 +19,13 @@ IMPORTANT — THESE CONTRACTS ARE PRESERVED:
 - Multiple events for one couple on the same date remain separate event records.
 
 WHAT IS NEW:
-- A refined dark visual system across the owner Ledger, client form, crew app and both checklist pages.
-- One client workspace for Event Details, Lists & Boards, Shoot Operations, Deliveries and Costs.
-- A client overview showing readiness, unfinished actions and the event timeline.
-- Every client event remains separate, while all related information is visible from one place.
-- Lists & Boards show common Candid and Traditional lists plus Event, Portrait and Other boards.
-- Shoot Operations show crew confirmation, check-in, checkout and card-handover state.
-- Deliveries and Costs remain available globally and are also surfaced inside the relevant client.
-- Mobile navigation uses a compact two-row layout without horizontal scrolling.
+- The selected private client link is now the only source of event cards inside a client workspace.
+- Dates & Enquiries and Crew Planner can still supply the client directory, but they no longer create extra timeline, Lists & Boards, or client Shoot Operations cards.
+- Matching crew shoots attach to the correct private-link event using stable link identifiers first, with a safe legacy date/name fallback.
+- Spelling variants such as Mehndi, Mehendi and Mehandi reconcile without creating duplicate cards.
+- Combined legacy labels such as “Haldi & Mehendi” or “Haldi & Sangeet” no longer appear as additional planning events.
+- Legitimate same-day events saved in the client link remain separate.
+- The wedding-level team assignment workspace is now consistently dark: crew cards, filters, dropdowns, event footers and action states have proper contrast.
 
 NOT CHANGED:
 - Dates & Enquiries logic

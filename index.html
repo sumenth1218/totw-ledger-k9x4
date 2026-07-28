@@ -682,11 +682,28 @@ input::placeholder,textarea::placeholder{color:#77736C}
 .ci-assignment-event,.ci-assignment-role,.ci-assignment-sidebar,.ci-assignment-member{background:#17191B!important;border-color:#34373A!important;color:var(--ink)}
 .ci-assignment-event-top,.ci-assignment-sidebar-head{background:#202225!important;border-color:#35383B!important}
 .ci-assignment-controls,.ci-assignment-role-head{border-color:#303337}
-.ci-assignment-target,.ci-requirement button,.ci-assignment-arrival input,.ci-assignment-copy select,.ci-assignment-copy-row button,.ci-assignment-search,.ci-assignment-add select,.ci-assignment-member-time input{
-  background:#121416!important;color:var(--ink)!important;border-color:#3B3E41!important
+.ci-assignment-target,.ci-requirement button,.ci-assignment-arrival input,.ci-assignment-copy select,.ci-assignment-copy-row button,.ci-assignment-search,.ci-role-add select,.ci-assignment-extra select,.ci-assignment-member-time input{
+  background:#121416!important;color:var(--ink)!important;border-color:#3B3E41!important;color-scheme:dark
 }
 .ci-assignment-role.drag-over{background:#15241F!important;border-color:#638D86!important}
 .ci-assignment-empty{border-color:#3A3D40;color:#858078}
+.ci-assignment-member-time{border-color:#303337}
+.ci-assignment-member-actions button,.ci-assignment-event-footer button{
+  background:#202225!important;color:#C7C0B5!important;border-color:#414448!important
+}
+.ci-assignment-member-actions button:hover,.ci-assignment-event-footer button:hover{background:#292C2F!important;color:#FFF!important}
+.ci-assignment-member-actions button.on{background:#302719!important;color:#D8B678!important;border-color:#8F7040!important}
+.ci-assignment-event-footer{background:#121416;border-color:#303337}
+.ci-assignment-event-footer button.primary{background:#EAE4DA!important;color:#111214!important;border-color:#EAE4DA!important}
+.ci-assignment-event-footer button:disabled,.ci-assignment-member-actions button:disabled{opacity:.42}
+.ci-assignment-filters button{background:#17191B;color:#AAA398;border-color:#3A3D40}
+.ci-assignment-filters button:hover{background:#222427;color:#F1ECE3}
+.ci-assignment-filters button.on{background:#EAE4DA;color:#111214;border-color:#EAE4DA}
+.ci-assignment-crew{background:#17191B!important;color:var(--ink);border-color:#34373A!important}
+.ci-assignment-crew:hover{background:#202326!important;border-color:#555A5E!important}
+.ci-assignment-avatar{background:#292B2E;color:#D8D1C6}
+.ci-assignment-crew b{color:var(--ink)}
+.ci-assignment-crew small{color:var(--ink-soft)}
 .ci-assignment-footer{background:rgba(20,22,24,.96);border-color:#34373A}
 .ci-assignment-footer button,.ci-assignment-save{background:#EAE4DA;color:#111214;border-color:#EAE4DA}
 .stage-row,.role-row{border-color:#2E3033}
@@ -3959,6 +3976,15 @@ const ciTodayIso=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return `
 function cwKey(name){
   return String(name||'').trim().toLowerCase().replace(/\band\b/g,'&').replace(/\s*&\s*/g,' & ').replace(/\s+/g,' ');
 }
+function cwEventPartKeys(value){
+  const parts=eventTypeParts(value),source=parts.length?parts:[String(value||'')],aliases={
+    mehendi:'mehndi',mehandi:'mehndi',mehndi:'mehndi',sangeeth:'sangeet'
+  };
+  return [...new Set(source.map(part=>{
+    const key=String(part||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+    return aliases[key]||key;
+  }).filter(Boolean))];
+}
 function cwDirectory(){
   const map=new Map(),ensure=(name,rank=0)=>{
     const clean=String(name||'').trim();if(!clean)return null;
@@ -3989,17 +4015,43 @@ function cwShootComplete(id,e){
   const crew=Object.keys(e&&e.crew||{}),all=checkinAttendance[id]||{};
   return !!(e&&(e.completedAt||e.status==='completed'||crew.length&&crew.every(uid=>all[uid]&&all[uid].checkedOutAt)));
 }
-function cwUnifiedEvents(entry){
-  const rows=new Map(),add=(name,date,extra={},priority=0)=>{
-    const clean=String(name||'Event').trim()||'Event';if(!date)return;
-    const key=`${date}|${shotListKey(clean)}`,old=rows.get(key);
-    if(!old||priority>=old.priority)rows.set(key,{...(old||{}),name:clean,date,priority,...extra});
-  };
-  (entry.formIds||[]).forEach(formId=>{const f=clientForms[formId]||{},s=clientSubmissions[formId]||{};Object.entries(f.events||{}).forEach(([eventId,e])=>add(e.name,e.date,{formId,eventId,details:(s.events||{})[eventId]||{},order:Number(e.order)||0},4));});
-  (entry.shootIds||[]).forEach(shootId=>{const e=checkinEvents[shootId];if(!e)return;const refs=Array.isArray(e.linkedEvents)?e.linkedEvents:Object.values(e.linkedEvents||{});if(refs.length)refs.forEach((r,i)=>add(r.name||e.eventName,r.date||e.date,{shootId,formId:r.formId||'',eventId:r.eventId||'',order:Number(r.order)||i},3));else ciEventNames(e).forEach((name,i)=>add(name,e.date,{shootId,order:i},3));});
-  Object.values(plans||{}).forEach(p=>{if(p&&cwKey(p.couple)===entry.key)eventTypeParts(p.event).forEach((name,i)=>add(name,p.iso,{order:i},2));});
-  const cal=calendarCoupleMap()[entry.name];if(cal)Object.entries(cal.events||{}).forEach(([date,names])=>(names||[]).forEach((name,i)=>add(name,date,{order:i},1)));
-  return [...rows.values()].sort((a,b)=>a.date.localeCompare(b.date)||String(a.details&&a.details.startTime||'23:59').localeCompare(String(b.details&&b.details.startTime||'23:59'))||a.order-b.order||a.name.localeCompare(b.name));
+function cwShootExactLink(e,formId,eventId){
+  const refs=Array.isArray(e&&e.linkedEvents)?e.linkedEvents:Object.values(e&&e.linkedEvents||{});
+  return refs.some(r=>r&&r.eventId===eventId&&(!r.formId||r.formId===formId))||
+    !!(e&&e.clientEventId===eventId&&(!e.clientFormId||e.clientFormId===formId));
+}
+function cwShootMatchesFormEvent(e,formId,eventId,formEvent){
+  if(cwShootExactLink(e,formId,eventId))return true;
+  if(!e||!formEvent||e.date!==formEvent.date)return false;
+  const wanted=cwEventPartKeys(formEvent.name),available=new Set(ciEventNames(e).flatMap(cwEventPartKeys));
+  return !!wanted.length&&wanted.every(key=>available.has(key));
+}
+function cwRelevantShoots(entry,formRow){
+  if(!formRow)return [];
+  const [formId,form]=formRow,formEvents=Object.entries(form&&form.events||{});
+  return (entry.shootIds||[]).map(id=>[id,checkinEvents[id]]).filter(([,e])=>
+    !!e&&formEvents.some(([eventId,formEvent])=>cwShootMatchesFormEvent(e,formId,eventId,formEvent))
+  );
+}
+function cwFindShootForFormEvent(shoots,formId,eventId,formEvent){
+  return shoots.find(([,e])=>cwShootExactLink(e,formId,eventId))||
+    shoots.find(([,e])=>cwShootMatchesFormEvent(e,formId,eventId,formEvent))||null;
+}
+function cwUnifiedEvents(entry,formRow=cwPrimaryForm(entry),shoots=null){
+  if(!formRow)return [];
+  const [formId,form]=formRow,s=clientSubmissions[formId]||{},linkedShoots=shoots||cwRelevantShoots(entry,formRow);
+  return Object.entries(form.events||{}).map(([eventId,e])=>{
+    const shootRow=cwFindShootForFormEvent(linkedShoots,formId,eventId,e);
+    return {
+      name:String(e.name||'Event').trim()||'Event',
+      date:e.date,
+      formId,
+      eventId,
+      shootId:shootRow?shootRow[0]:'',
+      details:(s.events||{})[eventId]||{},
+      order:Number(e.order)||0
+    };
+  }).filter(e=>e.date).sort((a,b)=>a.date.localeCompare(b.date)||String(a.details&&a.details.startTime||'23:59').localeCompare(String(b.details&&b.details.startTime||'23:59'))||a.order-b.order||a.name.localeCompare(b.name));
 }
 function cwListItems(eventName,team,assignedKey=''){
   const key=assignedKey||shotListKey(eventName),remote=shotLists&&shotLists[key]&&shotLists[key][team];
@@ -4028,7 +4080,7 @@ function cwShootResource(id,e){
   return {events,teams,listReady:listTotal>0&&listReady,listTotal,boardTotal};
 }
 function cwState(entry){
-  const formRow=cwPrimaryForm(entry),prodRow=cwPrimaryProd(entry),shoots=(entry.shootIds||[]).map(id=>[id,checkinEvents[id]]).filter(([,e])=>e),events=cwUnifiedEvents(entry);
+  const formRow=cwPrimaryForm(entry),prodRow=cwPrimaryProd(entry),shoots=cwRelevantShoots(entry,formRow),events=cwUnifiedEvents(entry,formRow,shoots);
   const formId=formRow&&formRow[0],form=formRow&&formRow[1],submission=formId?clientSubmissions[formId]||{}:{},approval=formId?clientApprovals[formId]||{}:{};
   const formEvents=form?Object.entries(form.events||{}):[],detailDone=formEvents.filter(([id])=>clientEventDone((submission.events||{})[id])).length,detailsOk=!!form&&approval.status==='approved';
   const activeShoots=shoots.filter(([id,e])=>!cwShootComplete(id,e)),completedShoots=shoots.filter(([id,e])=>cwShootComplete(id,e));
@@ -4045,6 +4097,9 @@ function cwState(entry){
   else if(detailsOk&&crewReady&&resourcesOk){stage='Ready';stageClass='ready';}
   return {entry,events,formRow,formId,form,submission,approval,formEvents,detailDone,detailsOk,shoots,activeShoots,completedShoots,crewReady,resourceRows,resourcesOk,prodRow,prodId,prod,stages,stageDone,deliveriesOk,costs,costsOk,stage,stageClass};
 }
+function cwWorkspaceDates(state){
+  return state.form?[...new Set(state.events.map(e=>e.date).filter(Boolean))].sort():state.entry.dates;
+}
 function cwStatusCopy(state){
   const detailTotal=state.formEvents.length,boards=state.resourceRows.reduce((n,x)=>n+x.boardTotal,0),crewTotal=state.shoots.reduce((n,[,e])=>n+Object.keys(e.crew||{}).length,0);
   return [
@@ -4060,7 +4115,7 @@ function renderClientsWorkspace(){
   const query=String(document.getElementById('cwSearch')?.value||'').trim().toLowerCase(),all=cwDirectory(),list=all.filter(x=>!query||x.name.toLowerCase().includes(query));
   if(cwSelectedKey&&!all.some(x=>x.key===cwSelectedKey))cwSelectedKey='';
   if(!cwSelectedKey&&all.length)cwSelectedKey=all[0].key;
-  listEl.innerHTML=list.length?list.map(entry=>{const state=cwState(entry),next=entry.dates.find(d=>d>=ciTodayIso()),dot=state.stage==='Live'?'live':state.detailsOk&&state.crewReady&&state.resourcesOk?'ready':'attention';return `<button type="button" class="cw-client-item ${entry.key===cwSelectedKey?'on':''}" data-client-key="${esc(entry.key)}" onclick="selectClientWorkspace(this.dataset.clientKey)"><span class="cw-client-item-top"><b>${esc(entry.name)}</b><i class="cw-item-dot ${dot}"></i></span><small>${esc(state.stage)} · ${state.events.length} event${state.events.length===1?'':'s'}${next?' · '+esc(fmt(next)):''}</small></button>`;}).join(''):'<div class="empty" style="padding:22px 10px">No matching clients.</div>';
+  listEl.innerHTML=list.length?list.map(entry=>{const state=cwState(entry),next=cwWorkspaceDates(state).find(d=>d>=ciTodayIso()),dot=state.stage==='Live'?'live':state.detailsOk&&state.crewReady&&state.resourcesOk?'ready':'attention';return `<button type="button" class="cw-client-item ${entry.key===cwSelectedKey?'on':''}" data-client-key="${esc(entry.key)}" onclick="selectClientWorkspace(this.dataset.clientKey)"><span class="cw-client-item-top"><b>${esc(entry.name)}</b><i class="cw-item-dot ${dot}"></i></span><small>${esc(state.stage)} · ${state.events.length} event${state.events.length===1?'':'s'}${next?' · '+esc(fmt(next)):''}</small></button>`;}).join(''):'<div class="empty" style="padding:22px 10px">No matching clients.</div>';
   const selected=all.find(x=>x.key===cwSelectedKey)||null;renderClientWorkspaceMain(selected);
 }
 function selectClientWorkspace(key){
@@ -4075,7 +4130,7 @@ function setClientSection(section){
 function renderClientWorkspaceMain(entry){
   const empty=document.getElementById('cwEmpty'),box=document.getElementById('cwClient');if(!empty||!box)return;
   if(!entry){empty.style.display='grid';box.style.display='none';return;}
-  empty.style.display='none';box.style.display='block';const state=cwState(entry),next=entry.dates.find(d=>d>=ciTodayIso()),dates=entry.dates;
+  empty.style.display='none';box.style.display='block';const state=cwState(entry),dates=cwWorkspaceDates(state),next=dates.find(d=>d>=ciTodayIso());
   document.getElementById('cwTitle').textContent=entry.name;
   document.getElementById('cwSummary').textContent=`${state.events.length} event${state.events.length===1?'':'s'}${dates.length?' · '+ciDateLong(dates[0])+(dates.length>1?' – '+ciDateLong(dates.at(-1)):''):''}${next?' · Next '+ciDateLong(next):''}`;
   const stage=document.getElementById('cwStage');stage.textContent=state.stage;stage.className='cw-stage '+state.stageClass;
@@ -4111,10 +4166,10 @@ function cwRenderOverview(state){
       <div class="cw-card ${totalShoots&&shootsDone===totalShoots?'good':''}"><div class="cw-card-label">Shoot progress</div><div class="cw-card-value">${totalShoots?shootsDone+'/'+totalShoots:'Not prepared'}</div><div class="cw-card-copy">${totalShoots?'Completed event shoots.':'Shoot records appear after approved client details are published.'}</div></div>
     </div>
     <div style="height:18px"></div><div class="cw-panel-head"><div><h3 style="font-size:23px">Needs attention</h3><p>${issues.length} current ${issues.length===1?'item':'items'}</p></div></div><div class="cw-issue-list">${issueHtml}</div>
-    ${state.events.length?`<div style="height:22px"></div><div class="cw-panel-head"><div><h3 style="font-size:23px">Event timeline</h3><p>Same-day events remain separate records.</p></div><button class="btn-mini" onclick="setClientSection('details')">View details</button></div><div class="cw-event-stack">${state.events.map(e=>cwEventSummary(e,state)).join('')}</div>`:''}`;
+    ${state.events.length?`<div style="height:22px"></div><div class="cw-panel-head"><div><h3 style="font-size:23px">Event timeline</h3><p>Shown only from this client’s private link; same-day events remain separate.</p></div><button class="btn-mini" onclick="setClientSection('details')">View details</button></div><div class="cw-event-stack">${state.events.map(e=>cwEventSummary(e,state)).join('')}</div>`:''}`;
 }
 function cwEventSummary(e,state){
-  const shoot=e.shootId?checkinEvents[e.shootId]:state.shoots.find(([,x])=>x.date===e.date&&ciEventNames(x).some(n=>shotListKey(n)===shotListKey(e.name)))?.[1],details=e.details||{},done=clientEventDone(details);
+  const shoot=e.shootId?checkinEvents[e.shootId]:state.shoots.find(([,x])=>cwShootMatchesFormEvent(x,e.formId,e.eventId,e))?.[1],details=e.details||{},done=clientEventDone(details);
   return `<article class="cw-event-card"><div class="cw-event-top"><div><div class="cw-date">${esc(ciDateLong(e.date))}${details.startTime?' · '+esc(ciFmtTime(details.startTime)):''}</div><h4>${esc(e.name)}</h4></div><span class="cw-event-status ${done?'ok':details.startTime||details.venueName?'warn':'bad'}">${done?'Details complete':details.startTime||details.venueName?'In progress':'Details awaited'}</span></div><div class="cw-event-details"><div class="cw-detail"><span>Venue</span><b>${esc(details.venueName||shoot?.venueName||'Awaited')}</b></div><div class="cw-detail"><span>Crew</span><b>${shoot?Object.keys(shoot.crew||{}).length+' assigned':'Not prepared'}</b></div><div class="cw-detail"><span>Event record</span><b>${e.shootId||shoot?'Shoot prepared':'Planning'}</b></div></div></article>`;
 }
 function cwRenderDetails(state){
@@ -4125,7 +4180,7 @@ function cwRenderDetails(state){
   return `<div class="cw-panel-head"><div><h3>Event Details</h3><p>${esc(label)} · ${state.detailDone}/${state.formEvents.length} events complete${contact.fullName?' · Last contributor '+esc(contact.fullName):''}</p></div><div class="cw-panel-actions">${actions}</div></div><div class="cw-event-stack">${events||'<div class="cw-empty-state">No events in this link.</div>'}</div>`;
 }
 function cwEventResourceCard(e,state){
-  const shootRow=e.shootId?[e.shootId,checkinEvents[e.shootId]]:state.shoots.find(([,x])=>x.date===e.date&&ciEventNames(x).some(n=>shotListKey(n)===shotListKey(e.name))),shootId=shootRow&&shootRow[0],shoot=shootRow&&shootRow[1];
+  const shootRow=e.shootId?[e.shootId,checkinEvents[e.shootId]]:state.shoots.find(([,x])=>cwShootMatchesFormEvent(x,e.formId,e.eventId,e)),shootId=shootRow&&shootRow[0],shoot=shootRow&&shootRow[1];
   const assignment=shoot?ciResourceAssignment(shoot,e.name):{},candid=cwListItems(e.name,'candid',assignment.candidListKey||''),traditional=cwListItems(e.name,'traditional',assignment.traditionalListKey||'');
   const specific=shotMoods[moodKey(state.entry.name,e.name,e.date)]||{},common=shotEventMoods[eventBoardKey(e.name)]||{};
   const eventBoard=assignment.pinterestUrl||specific.url||(common.active!==false?common.url:'')||'',portrait=assignment.portraitMoodUrl||'',other=assignment.otherMoodUrl||'';
@@ -4145,7 +4200,7 @@ function cwRenderShoots(state){
   return `<div class="cw-panel-head"><div><h3>Shoot Operations</h3><p>${state.activeShoots.length} active · ${state.completedShoots.length} completed</p></div><button class="btn-mini" onclick="setView('shoots')">All shoots</button></div><div class="cw-shoot-stack">${cards}</div>`;
 }
 function cwProductionEmpty(){
-  const state=cwEntry()?cwState(cwEntry()):null,dates=state?state.entry.dates:[];if(!cwProductionFormOpen)return `<div class="cw-empty-state"><h4>Production not started</h4><p>Create the record here using this client’s existing event dates. This does not alter Dates &amp; Enquiries or Crew Planner.</p><button class="btn-mini" onclick="cwProductionFormOpen=true;renderClientsWorkspace()">Start production record</button></div>`;
+  const state=cwEntry()?cwState(cwEntry()):null,dates=state?cwWorkspaceDates(state):[];if(!cwProductionFormOpen)return `<div class="cw-empty-state"><h4>Production not started</h4><p>Create the record here using this client’s private-link event dates. This does not alter Dates &amp; Enquiries or Crew Planner.</p><button class="btn-mini" onclick="cwProductionFormOpen=true;renderClientsWorkspace()">Start production record</button></div>`;
   return `<div class="cw-empty-state"><h4>Start production record</h4><p>${dates.length} existing shoot date${dates.length===1?'':'s'} will be copied into this record.</p><div class="cw-inline-form" style="text-align:left"><input id="cwDiskA" placeholder="Hard disk I"><input id="cwDiskB" placeholder="Hard disk II"><label class="full" style="display:flex;gap:8px;align-items:center;font-size:11px;color:var(--ink-soft)"><input id="cwAlbum" type="checkbox" checked style="width:auto"> Album included in package</label><button class="btn-mini full" onclick="cwCreateProduction()">Create production record</button></div></div>`;
 }
 function cwRenderDeliveries(state){
@@ -4185,7 +4240,7 @@ function cwOpenBusiness(id){openProdId=id;setView('business');renderProd();setTi
 function cwCreateProduction(){
   const entry=cwEntry();if(!entry)return;const a=document.getElementById('cwDiskA')?.value.trim(),b=document.getElementById('cwDiskB')?.value.trim();
   if(!a||!b){toast('Name both hard disks before starting production.');return;}if(a.toLowerCase()===b.toLowerCase()){toast('Disk II must be a different drive.');return;}
-  const events=cwUnifiedEvents(entry),dates=entry.dates.length?entry.dates:[...new Set(events.map(e=>e.date))].sort();if(!dates.length){toast('No shoot dates are available for this client.');return;}
+  const events=cwUnifiedEvents(entry),dates=[...new Set(events.map(e=>e.date).filter(Boolean))].sort();if(!dates.length){toast('Create the client event-details link before starting production here.');return;}
   const id=uid('p'),eventMap={};events.forEach(e=>(eventMap[e.date]=eventMap[e.date]||[]).push(e.name));
   prods[id]={couple:entry.name,diskA:a,diskB:b,deliv:{album:!!document.getElementById('cwAlbum')?.checked},days:dates.map(date=>({date,events:[...new Set(eventMap[date]||[])],gb:0,roles:[],fmt:false})),stages:{},pay:{adv:{amt:0,paid:false},pre:{amt:0,paid:false},fin:{amt:0,paid:false}},by:editor,at:stamp(),t:Date.now()};
   writeProd(id);cwProductionFormOpen=false;log(`created production from client workspace: ${entry.name}`);toast('Production record created.');renderClientsWorkspace();
