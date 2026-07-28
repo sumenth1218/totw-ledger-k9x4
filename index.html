@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.2.3-pdfs-2026-07-29">
+<meta name="totw-build" content="v12.2.4-confirm-pdf-2026-07-29">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -3441,12 +3441,12 @@ function pieSVG(data){
   }).join('');
   return `<svg viewBox="0 0 560 220" width="100%" style="max-width:540px;display:block;margin:4px 0 2px" xmlns="http://www.w3.org/2000/svg">${paths}${legend}</svg>`;
 }
-function openPrint(title,inner){
+function openPrint(title,inner,css=PDF_CSS){
   const w=window.open('','_blank');
   if(!w){toast('Allow pop-ups to export the PDF.');return;}
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>${PDF_CSS}</head><body>${inner}</body></html>`);
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">${css}</head><body>${inner}</body></html>`);
   w.document.close();
-  setTimeout(()=>{w.focus();w.print();},350);
+  setTimeout(()=>{w.focus();w.print();},450);
 }
 function fullDate(v){
   if(!v)return '—';
@@ -3570,39 +3570,86 @@ function exportClientConfirmationPDF(formId){
   const approvedCount=events.filter(e=>cw11EventApprovalState(state,e).approved).length;
   if(!approvedCount&&!state.submission.submittedAt){toast('Wait until the client has submitted details, then export for confirmation.');return;}
   const contact=state.submission.contact||{};
+  const CONFIRM_PDF_CSS=`
+<style>
+@page{margin:18mm 16mm}
+*{box-sizing:border-box}
+body{
+  margin:0;color:#1C1916;background:#F7F3EC;
+  font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  font-size:15px;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.sheet{max-width:720px;margin:0 auto}
+.topbar{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding-bottom:18px;border-bottom:1px solid #D9D2C6}
+.mark{display:flex;align-items:center;gap:10px}
+.mark-ii{width:28px;height:28px;border:1px solid #1C1916;display:flex;align-items:center;justify-content:center;font-family:'Spline Sans Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.08em}
+.brand{font-family:'Spline Sans Mono',ui-monospace,monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#7A7368}
+.eyebrow{font-family:'Spline Sans Mono',ui-monospace,monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#8A8276;margin:28px 0 10px}
+.hero{margin:8px 0 6px;font-size:42px;font-weight:500;line-height:1.02;letter-spacing:-.01em}
+.hero em{font-style:italic;color:#A6434E;font-weight:400}
+.lede{max-width:460px;margin:14px 0 0;font-size:16px;line-height:1.55;color:#3F3A34}
+.meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:22px}
+.meta .cell{min-width:160px}
+.meta .label{font-family:'Spline Sans Mono',ui-monospace,monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#8A8276;margin-bottom:4px}
+.meta .value{font-size:17px;font-weight:500}
+.rule{height:1px;background:#D9D2C6;margin:28px 0 8px}
+.events{margin-top:6px}
+.event{padding:20px 0 18px;border-bottom:1px solid #E4DDD2;page-break-inside:avoid}
+.event:last-child{border-bottom:0}
+.event-date{font-family:'Spline Sans Mono',ui-monospace,monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8A8276;margin-bottom:6px}
+.event-name{font-size:28px;font-weight:500;line-height:1.1;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1.35fr;gap:18px 28px}
+@media print{.grid{grid-template-columns:1fr 1.35fr}}
+.field .label{font-family:'Spline Sans Mono',ui-monospace,monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#8A8276;margin-bottom:5px}
+.field .value{font-size:18px;font-weight:500;line-height:1.3}
+.field a{color:#A6434E;text-decoration:none;border-bottom:1px solid rgba(166,67,78,.35);font-size:14px;font-family:'Spline Sans Mono',ui-monospace,monospace;letter-spacing:.04em}
+.note{margin-top:12px;padding-top:10px;border-top:1px solid #EDE7DC}
+.note .label{font-family:'Spline Sans Mono',ui-monospace,monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#8A8276;margin-bottom:4px}
+.note .value{font-size:15px;line-height:1.5;color:#3F3A34}
+.sign{margin-top:34px;padding-top:22px;border-top:1px solid #1C1916}
+.sign p{margin:0;font-size:17px;line-height:1.55}
+.sign .studio{margin-top:4px;font-style:italic;color:#A6434E}
+.foot{margin-top:18px;font-family:'Spline Sans Mono',ui-monospace,monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#9A9286}
+</style>`;
   const blocks=events.map(event=>{
-    const d=cw10CurrentDetails(state,event),approval=cw11EventApprovalState(state,event);
+    const d=cw10CurrentDetails(state,event);
     const timing=`${d.startTime?ciFmtTime(d.startTime):'—'}${d.endTime?' – '+ciFmtTime(d.endTime):''}`;
-    const maps=d.mapsUrl?`<div style="margin-top:6px"><a href="${esc(d.mapsUrl)}" style="color:#1B1A17">Open Google Maps</a></div>`:'';
-    const extras=[
-      d.contactName||d.contactPhone?`<div class="band" style="margin-top:10px"><div class="b"><div class="k">On-ground contact</div><div class="v" style="font-size:14px">${esc(d.contactName||'—')}${d.contactPhone?' · '+esc(d.contactPhone):''}</div></div></div>`:'',
-      d.brideReadyLocation?`<p style="margin:8px 0 0"><span class="muted">Bride preparation</span><br>${esc(d.brideReadyLocation)}</p>`:'',
-      d.groomReadyLocation?`<p style="margin:8px 0 0"><span class="muted">Groom preparation</span><br>${esc(d.groomReadyLocation)}</p>`:'',
-      d.notes?`<p style="margin:10px 0 0"><span class="muted">Notes</span><br>${esc(d.notes)}</p>`:''
-    ].join('');
-    return `<section style="margin:22px 0 0;padding:16px 0 4px;border-top:1px solid #E7E4DC;page-break-inside:avoid">
-      <div class="sub" style="margin:0 0 4px">${esc(ciDateLong(event.date))}${approval.approved?' · Confirmed studio record':state.submission.submittedAt?' · As submitted':' · Draft'}</div>
-      <h1 style="font-size:20px;margin:0 0 8px">${esc(event.name)}</h1>
-      <div class="band">
-        <div class="b"><div class="k">Timing</div><div class="v" style="font-size:16px">${esc(timing)}</div></div>
-        <div class="b"><div class="k">Venue</div><div class="v" style="font-size:16px">${esc(d.venueName||'To be confirmed')}</div></div>
+    const maps=d.mapsUrl?`<div style="margin-top:8px"><a href="${esc(d.mapsUrl)}" target="_blank" rel="noopener">Open map</a></div>`:'';
+    const extras=[];
+    if(d.contactName||d.contactPhone)extras.push(`<div class="field"><div class="label">On-ground contact</div><div class="value">${esc(d.contactName||'—')}${d.contactPhone?`<div style="font-size:14px;font-weight:400;color:#5A534B;margin-top:3px">${esc(d.contactPhone)}</div>`:''}</div></div>`);
+    if(d.brideReadyLocation)extras.push(`<div class="field"><div class="label">Bride preparation</div><div class="value">${esc(d.brideReadyLocation)}</div></div>`);
+    if(d.groomReadyLocation)extras.push(`<div class="field"><div class="label">Groom preparation</div><div class="value">${esc(d.groomReadyLocation)}</div></div>`);
+    return `<article class="event">
+      <div class="event-date">${esc(ciDateLong(event.date))}</div>
+      <h2 class="event-name">${esc(event.name)}</h2>
+      <div class="grid">
+        <div class="field"><div class="label">Timing</div><div class="value">${esc(timing)}</div></div>
+        <div class="field"><div class="label">Venue</div><div class="value">${esc(d.venueName||'To be confirmed')}${maps}</div></div>
+        ${extras.join('')}
       </div>
-      ${maps}${extras}
-    </section>`;
+      ${d.notes?`<div class="note"><div class="label">Notes</div><div class="value">${esc(d.notes)}</div></div>`:''}
+    </article>`;
   }).join('');
   const next=events.find(e=>e.date>=ciTodayIso())||events[0];
-  const confirmBy=next&&next.date?(()=>{const d=new Date(next.date+'T00:00:00');d.setDate(d.getDate()-7);return fullDate(d);})():'one week before the first event';
-  const inner=`
-    <div class="brand">Tale of Two Weddings</div>
-    <h1>Event details for your review</h1>
-    <div class="sub">${esc(state.entry.name)}</div>
-    <p style="font-size:13px;line-height:1.7;max-width:520px;margin:0 0 8px">Please review the details below and confirm everything is correct. Reply on WhatsApp if anything needs to change.</p>
-    <p class="sub" style="margin-bottom:4px">Kindly confirm by ${esc(confirmBy)}</p>
-    ${contact.name||contact.phone||contact.email?`<div class="band" style="margin-top:14px"><div class="b"><div class="k">Primary contact</div><div class="v" style="font-size:14px">${esc([contact.name,contact.phone,contact.email].filter(Boolean).join(' · ')||'—')}</div></div></div>`:''}
-    ${blocks}
-    <p style="margin-top:28px;line-height:1.7">With care,<br>Tale of Two Weddings</p>
-    <div class="sub" style="margin-top:24px">Generated ${esc(fullDate(Date.now()))} · For client confirmation only</div>`;
-  openPrint(`Tale of Two Weddings — Confirmation — ${state.entry.name}`,inner);
+  const confirmBy=next&&next.date?(()=>{const d=new Date(next.date+'T00:00:00');d.setDate(d.getDate()-7);return fullDate(d);})():'one week before your first event';
+  const couple=String(state.entry.name||'').trim();
+  const coupleHtml=couple.includes('&')?couple.split('&').map((part,i)=>i?` <em>&amp;</em> ${esc(part.trim())}`:esc(part.trim())).join(''):esc(couple);
+  const contactLine=[contact.name,contact.phone,contact.email].filter(Boolean).join(' · ');
+  const inner=`<div class="sheet">
+    <div class="topbar">
+      <div class="mark"><span class="mark-ii">II</span><span class="brand">Tale of Two Weddings</span></div>
+      <span class="brand">Confirmation</span>
+    </div>
+    <div class="eyebrow">Prepared for</div>
+    <h1 class="hero">${coupleHtml}</h1>
+    <p class="lede">Please review every detail below. If anything needs to change, reply on WhatsApp before ${esc(confirmBy)}.</p>
+    ${contactLine?`<div class="meta"><div class="cell"><div class="label">Primary contact</div><div class="value">${esc(contactLine)}</div></div><div class="cell"><div class="label">Events</div><div class="value">${events.length}</div></div></div>`:`<div class="meta"><div class="cell"><div class="label">Events</div><div class="value">${events.length}</div></div></div>`}
+    <div class="rule"></div>
+    <div class="events">${blocks}</div>
+    <div class="sign"><p>With care,</p><p class="studio">Tale of Two Weddings</p></div>
+    <div class="foot">Generated ${esc(fullDate(Date.now()))} · For your confirmation only</div>
+  </div>`;
+  openPrint(`Tale of Two Weddings — Confirmation — ${state.entry.name}`,inner,CONFIRM_PDF_CSS);
 }
 
 /* ---- enquiry date-event tags ---- */
