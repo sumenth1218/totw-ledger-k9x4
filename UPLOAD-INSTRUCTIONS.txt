@@ -1,0 +1,40 @@
+TALE OF TWO WEDDINGS — REFINED SHOOT WORKFLOW UPDATE
+
+UPLOAD / REPLACE:
+- index.html
+- crew.html
+- crew-sw.js
+
+The ZIP also contains the complete clean website as a backup.
+
+DELETE THESE OLD REMINDER FILES FROM GITHUB IF THEY ARE STILL PRESENT:
+- REMINDER-SETUP.md
+- firebase.json
+- functions (delete the entire folder)
+- .firebaserc
+
+Do not delete or change any Firebase Realtime Database data.
+Existing events, crew registrations, assignments, attendance and shot lists remain intact.
+
+WHAT THIS UPDATE FIXES:
+- Late check-in now shows the late-arrival card and number of minutes late.
+- On-time check-in still shows the on-time confirmation card.
+- Shot lists unlock immediately after successful check-in.
+- Exact assigned lists are used first.
+- Saved event-name lists and safe built-in fallbacks are used when required.
+- Separate checklist sections remain intact for simultaneous/multiple events.
+- Checkout now asks for cards used, card custody and handover details after tapping Check Out.
+- Same-day crew can choose whether they are continuing to their next assigned shoot.
+- Every event can have an event mood board plus optional portrait and other mood boards.
+- The shot-list editor now shows only unique event names from Crew Planning.
+- One common Candid list and one common Traditional list are saved per event name, regardless of couple or date.
+- Tomorrow's share banner now excludes completed, started and fully confirmed shoots.
+- Completed shoots appear only in the collapsed Completed Shoots archive.
+- Owner navigation is reordered and renamed around the real workflow.
+- The main page title now changes with the selected section.
+- Mobile navigation shows all six areas in a clear two-row layout.
+- Telegram, calendar and automatic WhatsApp reminder code has been removed.
+
+NORMAL MANUAL WHATSAPP FEATURES REMAIN:
+- Crew/team contact buttons
+- Manual share-assignment button
