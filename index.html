@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.2.4-confirm-pdf-2026-07-29">
+<meta name="totw-build" content="v12.2.5-crew-pull-deliveries-2026-07-29">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1473,6 +1473,7 @@ body.cw10-client-mode .vtabs{margin-top:14px}
   <datalist id="dlCouples"></datalist>
   <datalist id="dlDisks"></datalist>
   <datalist id="dlPeople"></datalist>
+  <datalist id="dlProdRoles"></datalist>
  </div>
 </div>
 
@@ -1720,6 +1721,7 @@ let openClientCards = new Set(); // expanded client detail cards; collapsed by d
 let cwSelectedKey = localStorage.getItem('totw_client_workspace') || '';
 let cwSection = localStorage.getItem('totw_client_section') || 'overview';
 let cwDeliveryFormOpen = false;
+let cwDeliveryEditKey = '';
 let cwProductionFormOpen = false;
 let planRowMeta = {};    // runtime: rowKey -> identity for editors
 let openProdId = null;
@@ -2650,9 +2652,82 @@ function toast(msg){
 const EVQ=['Haldi','Mehendi','Sangeet','Bride Making','Groom Making','Vratam','Wedding','Reception','Cocktail','Engagement'];
 const ROLES=['Traditional Photo','Traditional Video','Candid Photo','Candid Video','Drone','LED','Live Streaming'];
 const NODATA=new Set(['LED','Live Streaming']);
+const CI_ROLE_TO_PROD={
+  'Candid Photographer':'Candid Photo',
+  'Candid Cinematographer':'Candid Video',
+  'Traditional Photographer':'Traditional Photo',
+  'Traditional Videographer':'Traditional Video',
+  'Drone Operator':'Drone',
+  'LED Assistant':'LED'
+};
 function dayHasRole(d,role){return (d.roles||[]).some(r=>r.role===role);}
 function diKey(d){return (d.date||'').replace(/[^0-9]/g,'');}
 const DAYMS=86400000;
+function ciRoleToProdRole(role){
+  const r=String(role||'').trim();
+  if(CI_ROLE_TO_PROD[r])return CI_ROLE_TO_PROD[r];
+  if(ROLES.includes(r))return r;
+  const low=r.toLowerCase();
+  if(low.includes('drone'))return 'Drone';
+  if(low.includes('led'))return 'LED';
+  if(low.includes('live'))return 'Live Streaming';
+  if(low.includes('candid')&&(low.includes('video')||low.includes('cinema')||low.includes('film')))return 'Candid Video';
+  if(low.includes('candid'))return 'Candid Photo';
+  if(low.includes('traditional')&&(low.includes('video')||low.includes('film')))return 'Traditional Video';
+  if(low.includes('traditional'))return 'Traditional Photo';
+  return r||'Candid Photo';
+}
+function prodNewRoleRow(role,person,pay){
+  const r=ciRoleToProdRole(role);
+  return {role:r,person:String(person||'').trim(),pay:+pay||0,cards:NODATA.has(r)?[]:[{a:false,b:false,v:false}]};
+}
+function prodClientCrewForDay(p,day){
+  const coupleKey=cwKey(p&&p.couple),date=day&&day.date;if(!coupleKey||!date)return [];
+  const found=new Map();
+  Object.values(checkinEvents||{}).forEach(e=>{
+    if(!e||cwKey(e.couple)!==coupleKey||e.date!==date)return;
+    Object.values(e.crew||{}).forEach(c=>{
+      const person=String(c&&c.name||'').trim();if(!person)return;
+      const row=prodNewRoleRow(c.role,person,0),key=row.person.toLowerCase()+'|'+row.role;
+      if(!found.has(key))found.set(key,row);
+    });
+  });
+  return [...found.values()];
+}
+function pullCrewFromClientsDay(id,di,quiet){
+  const p=prods[id],day=p&&p.days&&p.days[di];if(!day)return 0;
+  const incoming=prodClientCrewForDay(p,day);
+  if(!incoming.length){if(!quiet)toast('No Clients team found for this shoot day.');return 0;}
+  day.roles=day.roles||[];
+  const existing=new Map();
+  day.roles.forEach(r=>{const person=String(r.person||'').trim();if(person)existing.set(person.toLowerCase()+'|'+(r.role||''),r);});
+  let added=0;
+  incoming.forEach(inc=>{
+    const key=inc.person.toLowerCase()+'|'+inc.role;
+    if(existing.has(key))return;
+    day.roles.push(inc);existing.set(key,inc);added++;regPerson(inc.person,inc.role);
+  });
+  if(!quiet){
+    writeProd(id);
+    toast(added?`Pulled ${added} from Clients. Type ₹ pay for each.`:(incoming.length?'Team already listed for this day.':'No Clients team found.'));
+    if(added)log(`pulled client team into ${p.couple} · ${fmt(day.date)} (+${added})`);
+  }
+  return added;
+}
+function pullCrewFromClients(id,di){pullCrewFromClientsDay(id,di,false);if(typeof renderClientsWorkspace==='function')renderClientsWorkspace();}
+function pullCrewFromClientsAll(id){
+  const p=prods[id];if(!p||!(p.days||[]).length){toast('Add shoot days first.');return;}
+  let added=0;p.days.forEach((_,di)=>added+=pullCrewFromClientsDay(id,di,true));
+  writeProd(id);
+  toast(added?`Pulled ${added} crew from Clients across all days. Type ₹ pay on each day.`:'No new Clients team to pull — already listed or none assigned.');
+  if(added)log(`pulled client team into all days — ${p.couple} (+${added})`);
+  if(typeof renderClientsWorkspace==='function')renderClientsWorkspace();
+}
+function stageDueValue(due){
+  if(due==null||due==='')return null;
+  if(typeof due==='number'&&!Number.isNaN(due))return due;
+  const n=Date.parse(due);return Number.isNaN(n)?null:n;
+}
 // Stages derive from logged crew roles. Photo/video per shoot day; teaser+film+album once per wedding.
 function stagesFor(p){
   const out=[];
@@ -2681,9 +2756,20 @@ function stagesFor(p){
     out.push({k:'albumappr',l:'Album approval'+suffix,o:'Client',client:1,gate:1,album:1,clientPdf:false});
   }
   const hidden=p.stageHidden||{};
-  const defaults=out.filter(s=>!hidden[s.k]);
+  const meta=p.stageMeta||{};
+  const defaults=out.filter(s=>!hidden[s.k]).map(s=>{
+    const m=meta[s.k];if(!m)return s;
+    return {
+      ...s,
+      l:m.l||s.l,
+      o:m.o||s.o,
+      due:m.due!=null&&m.due!==''?stageDueValue(m.due):s.due,
+      clientPdf:m.clientPdf!=null?!!m.clientPdf:s.clientPdf,
+      client:m.o==='Client'?1:s.client
+    };
+  });
   const custom=(p.customStages||[]).map(x=>({
-    k:x.k,l:x.l,o:x.o||'Team',due:x.due?Date.parse(x.due):null,
+    k:x.k,l:x.l,o:x.o||'Team',due:stageDueValue(x.due),
     custom:1,client:x.o==='Client'?1:0,clientPdf:x.clientPdf!==false
   }));
   return defaults.concat(custom);
@@ -2779,6 +2865,12 @@ function updateDatalists(){
   }
   const dp=document.getElementById('dlPeople');
   if(dp)dp.innerHTML=Object.values(people).map(o=>`<option value="${esc(o.name)}">`).join('');
+  const dr=document.getElementById('dlProdRoles');
+  if(dr){
+    const s=new Set(ROLES);
+    Object.values(prods||{}).forEach(p=>(p.days||[]).forEach(d=>(d.roles||[]).forEach(r=>{if(r.role)s.add(r.role);})));
+    dr.innerHTML=[...s].map(n=>`<option value="${esc(n)}">`).join('');
+  }
   const im=document.getElementById('pImport');
   if(im){
     const keep=im.value;
@@ -3030,7 +3122,7 @@ function dayCard(id,p,d,di,now){
     }).join('');
     return `<div class="role-row">
       <div class="role-line">
-        <select onchange="rSet('${id}',${di},${ri},'role',this.value)">${ROLES.map(o=>`<option${r.role===o?' selected':''}>${o}</option>`).join('')}</select>
+        <input list="dlProdRoles" type="text" placeholder="Role (Drone, LED…)" value="${esc(r.role||'')}" onchange="rSet('${id}',${di},${ri},'role',this.value)" style="min-width:128px">
         <input class="person" list="dlPeople" type="text" placeholder="Who shot" value="${esc(r.person||'')}" onchange="rSet('${id}',${di},${ri},'person',this.value)">
         <input class="payin" type="number" placeholder="₹ pay" value="${r.pay||''}" onchange="rSet('${id}',${di},${ri},'pay',this.value)">
         <button class="xs" onclick="rDel('${id}',${di},${ri})">×</button>
@@ -3058,7 +3150,7 @@ function dayCard(id,p,d,di,now){
     ${al?`<div style="font-size:12px;color:#7A2A1E;margin-top:6px;font-weight:500">${al==='none'?'No cards logged — shoot was over 24h ago.':'Copies incomplete past the 24h rule.'}</div>`:''}
     ${evEd}
     ${rolesHtml}
-    <div class="role-line" style="margin-top:9px"><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="rAdd('${id}',${di})">+ Role</button>${(p.days||[]).length>1&&(d.roles||[]).some(r=>r.person&&r.person.trim())?`<button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="copyCrewToAll('${id}',${di})">Copy crew to all days</button>`:''}</div>
+    <div class="role-line" style="margin-top:9px;flex-wrap:wrap"><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pullCrewFromClients('${id}',${di})">Pull team from Clients</button><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="rAdd('${id}',${di})">+ Role</button>${(p.days||[]).length>1&&(d.roles||[]).some(r=>r.person&&r.person.trim())?`<button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="copyCrewToAll('${id}',${di})">Copy crew to all days</button>`:''}</div>
     <div class="fmt-row"><input type="checkbox" ${d.fmt?'checked':''} ${all?'':'disabled'} onchange="dSet('${id}',${di},'fmt',this.checked)"><span style="${all?'':'color:var(--ink-soft)'}">Cards formatted${all?'':' — locked until every card is on both disks and verified'}</span>${total?`<span class="sdue ${all?'ok':'warn'}" style="margin-left:auto">${ok}/${total} CARDS SAFE</span>`:''}</div>
   </div>`;
 }
@@ -3098,7 +3190,10 @@ function prodCard(id,p,now,dot){
     </div>
     <div class="p-sec">Shoot days</div>
     ${daysHtml||'<div style="font-size:13px;color:var(--ink-soft);margin-bottom:8px">No shoot days yet.</div>'}
-    <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="addDayMode('${id}')">${pdayFor===id?'Cancel':'+ Add shoot day'}</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="addDayMode('${id}')">${pdayFor===id?'Cancel':'+ Add shoot day'}</button>
+      ${(p.days||[]).length?`<button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pullCrewFromClientsAll('${id}')">Pull team from Clients · all days</button>`:''}
+    </div>
     <div id="pdayCal" style="margin-top:8px;max-width:340px"></div>
     <div class="p-sec">Pipeline</div>
     ${stagesHtml||'<div style="font-size:13px;color:var(--ink-soft)">No deliverables yet — they appear as you log who shot each day.</div>'}
@@ -3170,7 +3265,12 @@ function rDel(id,di,ri){
 }
 function rSet(id,di,ri,k,v){
   const r=prods[id].days[di].roles[ri];
-  if(k==='pay')r.pay=+v||0;else r[k]=v;
+  if(k==='pay')r.pay=+v||0;
+  else if(k==='role'){
+    r.role=ciRoleToProdRole(v);
+    if(NODATA.has(r.role))r.cards=[];
+    else if(!(r.cards||[]).length)r.cards=[{a:false,b:false,v:false}];
+  }else r[k]=v;
   if(k==='person'&&v)regPerson(v,r.role);
   writeProd(id);
 }
@@ -3272,7 +3372,7 @@ function stageAddSave(id){
   const clientPdf=document.getElementById('stagePdf-'+id).checked;
   if(!name){toast('Enter a deliverable name.');return;}
   p.customStages=p.customStages||[];
-  p.customStages.push({k:uid('s'),l:name,o:owner,due,clientPdf});
+  p.customStages.push({k:uid('s'),l:name,o:owner,due:due||null,clientPdf});
   stageAddFor=null;
   writeProd(id);
   log(`added deliverable ${name} for ${p.couple}`);
@@ -4615,12 +4715,20 @@ function cwState(entry){
   const costs=prod?crewCost(prod):{total:0,byRole:{},byPerson:{}},costsOk=!!prod&&Number(prod.pkg)>0;
   const today=ciTodayIso(),live=shoots.some(([id,e])=>e.date===today&&Object.values(checkinAttendance[id]||{}).some(a=>a&&a.checkedInAt&&!a.checkedOutAt));
   const future=events.some(e=>e.date>=today),allShootsComplete=!!shoots.length&&completedShoots.length===shoots.length;
+  const deliveriesUnlocked=cwDeliveriesUnlocked({entry,shoots,completedShoots,events,prod});
   let stage='Planning',stageClass='';
   if(live){stage='Live';stageClass='live';}
   else if(deliveriesOk){stage='Closed';stageClass='ready';}
   else if(allShootsComplete||(!future&&prod)){stage='Delivering';stageClass='';}
   else if(detailsOk&&crewReady&&resourcesOk){stage='Ready';stageClass='ready';}
-  return {entry,events,formRow,formId,form,submission,approval,formEvents,detailDone,detailsOk,shoots,activeShoots,completedShoots,crewReady,resourceRows,resourcesOk,prodRow,prodId,prod,stages,stageDone,deliveriesOk,costs,costsOk,stage,stageClass};
+  return {entry,events,formRow,formId,form,submission,approval,formEvents,detailDone,detailsOk,shoots,activeShoots,completedShoots,crewReady,resourceRows,resourcesOk,prodRow,prodId,prod,stages,stageDone,deliveriesOk,deliveriesUnlocked,costs,costsOk,stage,stageClass};
+}
+function cwDeliveriesUnlocked(state){
+  if(state.entry&&state.entry.prodOnly)return true;
+  const shoots=state.shoots||[];
+  if(shoots.length)return shoots.every(([id,e])=>cwShootComplete(id,e));
+  const last=[...(state.events||[]).map(e=>e.date).filter(Boolean)].sort().at(-1);
+  return !!(last&&last<ciTodayIso());
 }
 function cwWorkspaceDates(state){
   return state.form?[...new Set(state.events.map(e=>e.date).filter(Boolean))].sort():state.entry.dates;
@@ -4631,7 +4739,7 @@ function cwStatusCopy(state){
     {section:'details',label:'Client details',value:state.form?`${state.detailDone}/${detailTotal} complete`:'Link not created',kind:state.detailsOk?'ok':state.detailDone?'warn':''},
     {section:'shoots',label:'Crew & shoots',value:state.shoots.length?`${crewTotal} crew · ${state.shoots.length} shoots`:'Not prepared',kind:state.crewReady?'ok':''},
     {section:'resources',label:'Lists & boards',value:state.resourceRows.length?`${state.resourcesOk?'Lists ready':'Lists pending'} · ${boards} boards`:'Not prepared',kind:state.resourcesOk?'ok':state.resourceRows.length?'warn':''},
-    {section:'deliveries',label:'Deliveries',value:state.prod?`${state.stageDone}/${state.stages.length} complete`:'Not started',kind:state.deliveriesOk?'ok':state.prod?'warn':''},
+    {section:'deliveries',label:'Deliveries',value:!state.deliveriesUnlocked?'After shoots complete':state.prod?`${state.stageDone}/${state.stages.length} complete`:'Not started',kind:state.deliveriesOk?'ok':!state.deliveriesUnlocked?'':state.prod?'warn':''},
     {section:'costs',label:'Costs',value:state.prod?`${inrP(state.costs.total)} crew cost`:'Not started',kind:state.costsOk?'ok':state.prod?'warn':''}
   ];
 }
@@ -4669,7 +4777,44 @@ function cwCreateProduction(source='deliveries'){
 }
 function cwSaveDeliverable(prodId){
   const p=prods[prodId],name=document.getElementById('cwStageName')?.value.trim(),owner=document.getElementById('cwStageOwner')?.value||'Sumenth',due=document.getElementById('cwStageDue')?.value,clientPdf=!!document.getElementById('cwStagePdf')?.checked;
-  if(!p||!name){toast('Enter the deliverable name.');return;}p.customStages=p.customStages||[];p.customStages.push({k:uid('s'),l:name,o:owner,due:due?Date.parse(due+'T00:00:00'):null,clientPdf});writeProd(prodId);cwDeliveryFormOpen=false;log(`added deliverable ${name} for ${p.couple}`);toast('Deliverable added.');renderClientsWorkspace();
+  if(!p||!name){toast('Enter the deliverable name.');return;}p.customStages=p.customStages||[];p.customStages.push({k:uid('s'),l:name,o:owner,due:due||null,clientPdf});writeProd(prodId);cwDeliveryFormOpen=false;log(`added deliverable ${name} for ${p.couple}`);toast('Deliverable added.');renderClientsWorkspace();
+}
+function cwSetAlbumIncluded(prodId,checked){
+  const p=prods[prodId];if(!p)return;
+  p.deliv=p.deliv||{};p.deliv.album=!!checked;
+  if(p.deliv.album&&!(+p.albumCount>0))p.albumCount=1;
+  writeProd(prodId);renderClientsWorkspace();
+}
+function cwSetAlbumCount(prodId,v){
+  albumCountSet(prodId,v);renderClientsWorkspace();
+}
+function cwEditDeliverable(prodId,key){
+  cwDeliveryEditKey=cwDeliveryEditKey===key?'':key;cwDeliveryFormOpen=false;renderClientsWorkspace();
+}
+function cwSaveDeliverableEdit(prodId,key){
+  const p=prods[prodId];if(!p)return;
+  const name=(document.getElementById('cwEditStageName')?.value||'').trim();
+  const owner=document.getElementById('cwEditStageOwner')?.value||'Team';
+  const due=document.getElementById('cwEditStageDue')?.value||'';
+  const clientPdf=!!document.getElementById('cwEditStagePdf')?.checked;
+  if(!name){toast('Enter the deliverable name.');return;}
+  const custom=(p.customStages||[]).find(x=>x.k===key);
+  if(custom){
+    custom.l=name;custom.o=owner;custom.due=due||null;custom.clientPdf=clientPdf;
+  }else{
+    p.stageMeta=p.stageMeta||{};
+    p.stageMeta[key]={l:name,o:owner,due:due||null,clientPdf};
+  }
+  cwDeliveryEditKey='';
+  writeProd(prodId);log(`updated deliverable ${name} for ${p.couple}`);toast('Deliverable updated.');renderClientsWorkspace();
+}
+function cwRemoveDeliverable(prodId,key){
+  stageDel(prodId,key);cwDeliveryEditKey='';renderClientsWorkspace();
+}
+function stageIsoDate(due){
+  const n=stageDueValue(due);if(!n)return '';
+  const d=new Date(n);if(Number.isNaN(d.getTime()))return '';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 /* ---------------- client event-detail portal ---------------- */
@@ -5651,14 +5796,31 @@ function cw10ProductionEmpty(state,source='deliveries'){
   return `<div class="cw10-empty-state"><h3>Start production record</h3><p>${dates.length} existing shoot date${dates.length===1?'':'s'} will be copied into this record.</p><div class="cw-inline-form" style="max-width:520px;margin:14px auto 0;text-align:left"><input id="cwDiskA" placeholder="Hard disk I"><input id="cwDiskB" placeholder="Hard disk II"><label class="full" style="display:flex;gap:8px;align-items:center;font-size:10px"><input id="cwAlbum" type="checkbox" checked style="width:auto"> Album included in package</label><button type="button" class="cw10-primary full" onclick="cwCreateProduction('deliveries')">Create production record</button></div></div>`;
 }
 function cw10RenderDeliveries(state){
-  const actions=state.prod?`<button type="button" class="cw10-primary" onclick="cwDeliveryFormOpen=!cwDeliveryFormOpen;renderClientsWorkspace()">${cwDeliveryFormOpen?'Cancel':'+ Deliverable'}</button><button type="button" class="cw10-soft" onclick="exportDeliveryPDF('${state.prodId}')">Export client PDF</button>`:'';
-  if(!state.prod)return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Deliveries','Intended and actual delivery dates for this wedding.')}${cw10ProductionEmpty(state,'deliveries')}</div>`;
+  if(!state.deliveriesUnlocked){
+    const done=state.completedShoots.length,total=state.shoots.length,pending=state.activeShoots.map(([,e])=>e.eventName||'Event');
+    return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Deliveries','Opens after every shoot day for this wedding is complete.')}
+      <div class="cw10-empty-state"><h3>Deliveries unlock after the shoot</h3><p>${total?`${done} of ${total} shoot day${total===1?'':'s'} complete.`:'Prepare and complete the shoot days in Shoot Operations first.'}${pending.length?` Still open: ${esc(pending.join(', '))}.`:''}</p><p style="margin-top:10px;color:#8B857D;font-size:12px">Costs and production pay logging stay available now. Delivery tracking starts once all events are done.</p>${total?`<button type="button" class="cw10-soft" onclick="setView('shoots')">Open Shoot Operations</button>`:''}</div>
+    </div>`;
+  }
+  const actions=state.prod?`<button type="button" class="cw10-primary" onclick="cwDeliveryFormOpen=!cwDeliveryFormOpen;cwDeliveryEditKey='';renderClientsWorkspace()">${cwDeliveryFormOpen?'Cancel':'+ Deliverable'}</button><button type="button" class="cw10-soft" onclick="exportDeliveryPDF('${state.prodId}')">Export client PDF</button><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Open production detail</button>`:'';
+  if(!state.prod)return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Deliveries','Shoots are done — start the delivery record for this wedding.',actions)}${cw10ProductionEmpty(state,'deliveries')}</div>`;
   const now=Date.now(),pending=state.stages.filter(s=>!(state.prod.stages||{})[s.k]?.done),next=pending.filter(s=>s.due).sort((a,b)=>a.due-b.due)[0],overdue=pending.filter(s=>stageState(state.prod,s,now).cls==='bad').length;
-  const rows=state.stages.map(s=>{const st=(state.prod.stages||{})[s.k]||{},ss=stageState(state.prod,s,now);return `<div class="cw10-delivery-row ${st.done?'done':''}"><input type="checkbox" ${st.done?'checked':''} onchange="stageTog('${state.prodId}','${s.k}',this.checked)"><span class="cw10-delivery-main"><b>${esc(s.l)}</b><small>${s.due?'Intended · '+esc(fullDate(s.due)):'No intended date'}${st.doneT?' · Actual '+esc(fullDate(st.doneT)):''}</small></span><span class="cw10-delivery-state">${st.done?'Done':esc(ss.txt||'Not started')}</span></div>`;}).join('');
+  const albumOn=!!(state.prod.deliv&&state.prod.deliv.album),albumCount=+state.prod.albumCount>0?+state.prod.albumCount:1;
+  const rows=state.stages.map(s=>{
+    const st=(state.prod.stages||{})[s.k]||{},ss=stageState(state.prod,s,now),editing=cwDeliveryEditKey===s.k;
+    const dueIso=stageIsoDate(s.due);
+    if(editing){
+      return `<div class="cw10-delivery-row" style="display:block;padding:14px"><div class="cw-inline-form" style="padding:0;max-width:none"><input id="cwEditStageName" class="full" value="${esc(s.l)}" placeholder="Deliverable name"><select id="cwEditStageOwner" style="padding:10px;border:1px solid var(--line);border-radius:8px;background:#111315;color:var(--ink)"><option${s.o==='Sumenth'?' selected':''}>Sumenth</option><option${s.o==='Mahima'?' selected':''}>Mahima</option><option${s.o==='Team'?' selected':''}>Team</option><option${s.o==='Client'||s.client?' selected':''}>Client</option></select><input id="cwEditStageDue" type="date" value="${esc(dueIso)}"><label class="full" style="display:flex;gap:8px;align-items:center;font-size:10px"><input id="cwEditStagePdf" type="checkbox" ${s.clientPdf!==false?'checked':''} style="width:auto"> Include in client delivery PDF</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="cw10-primary" onclick="cwSaveDeliverableEdit('${state.prodId}','${s.k}')">Save changes</button><button type="button" class="cw10-soft" onclick="cwDeliveryEditKey='';renderClientsWorkspace()">Cancel</button></div></div></div>`;
+    }
+    return `<div class="cw10-delivery-row ${st.done?'done':''}"><input type="checkbox" ${st.done?'checked':''} onchange="stageTog('${state.prodId}','${s.k}',this.checked);renderClientsWorkspace()"><span class="cw10-delivery-main"><b>${esc(s.l)}</b><small>${s.due?'Intended · '+esc(fullDate(s.due)):'No intended date'}${st.doneT?' · Actual '+esc(fullDate(st.doneT)):''} · ${esc(s.client?'Client':s.o||'Team')}</small></span><span class="cw10-delivery-state">${st.done?'Done':esc(ss.txt||'Not started')}</span><span style="display:flex;gap:6px"><button type="button" class="cw10-soft" style="padding:6px 9px" onclick="cwEditDeliverable('${state.prodId}','${s.k}')">Edit</button><button type="button" class="cw10-soft" style="padding:6px 9px" onclick="cwRemoveDeliverable('${state.prodId}','${s.k}')">Remove</button></span></div>`;
+  }).join('');
   const add=cwDeliveryFormOpen?`<div class="cw-inline-form" style="padding:15px"><input id="cwStageName" class="full" placeholder="Deliverable name"><select id="cwStageOwner" style="padding:10px;border:1px solid var(--line);border-radius:8px;background:#111315;color:var(--ink)"><option>Sumenth</option><option>Mahima</option><option>Team</option><option>Client</option></select><input id="cwStageDue" type="date"><label class="full" style="display:flex;gap:8px;align-items:center;font-size:10px"><input id="cwStagePdf" type="checkbox" checked style="width:auto"> Include in client delivery PDF</label><button type="button" class="cw10-primary full" onclick="cwSaveDeliverable('${state.prodId}')">Save deliverable</button></div>`:'';
-  return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Deliveries','One clear view of intended and actual delivery dates.',actions)}
+  return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Deliveries','Edit deliverables, album count, and intended dates for this wedding.',actions)}
     <div class="cw10-metrics"><div class="cw10-metric"><span>Total deliverables</span><strong>${state.stages.length}</strong><small>Albums can stay outside the PDF</small></div><div class="cw10-metric"><span>Due next</span><strong>${next?esc(cw10CompactDate(new Date(next.due).toISOString().slice(0,10))):'—'}</strong><small>${next?esc(next.l):'Nothing pending with a date'}</small></div><div class="cw10-metric ${overdue?'':'good'}"><span>On-time status</span><strong>${overdue?overdue+' overdue':'On track'}</strong><small>${overdue?'Needs attention':'No overdue items'}</small></div></div>
-    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Delivery plan</h3><p>Completed information stays quiet; overdue work is highlighted.</p></div></div>${rows||'<div class="cw10-folder-empty">No deliverables added.</div>'}${add}</section>
+    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Album</h3><p>Turn album work on or off and set how many albums this couple needs.</p></div></div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:4px 2px 2px"><label style="display:flex;gap:8px;align-items:center;font-size:12px;color:var(--ink)"><input type="checkbox" ${albumOn?'checked':''} onchange="cwSetAlbumIncluded('${state.prodId}',this.checked)" style="width:auto"> Album included</label>${albumOn?`<label style="display:flex;gap:8px;align-items:center;font-size:12px;color:var(--ink-soft)">Albums <input type="number" min="1" value="${albumCount}" onchange="cwSetAlbumCount('${state.prodId}',this.value)" style="width:64px;padding:8px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></label>`:''}</div>
+    </section>
+    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Delivery plan</h3><p>Edit names, owners and intended dates. Remove anything that does not apply.</p></div></div>${rows||'<div class="cw10-folder-empty">No deliverables yet — they appear as you log who shot each day, or add a custom one.</div>'}${add}</section>
   </div>`;
 }
 function cw10RenderCosts(state){
@@ -5667,7 +5829,7 @@ function cw10RenderCosts(state){
   const days=(state.prod.days||[]).map(d=>{const cost=(d.roles||[]).reduce((n,r)=>n+(Number(r.pay)||0),0);return `<div class="cw10-cost-row"><span><span>${esc((d.events||[]).join(' + ')||'Shoot day')}</span><small>${esc(ciDateLong(d.date))} · ${(d.roles||[]).length} assignments</small></span><strong>${inrP(cost)}</strong></div>`;}).join('');
   return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Costs','Package value, crew cost and estimated margin for this wedding.',`<button type="button" class="cw10-soft" onclick="exportCouplePDF('${state.prodId}')">Finance PDF</button><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Open production detail</button>`)}
     <div class="cw10-metrics"><div class="cw10-metric"><span>Package value</span><strong>${pkg?inrP(pkg):'—'}</strong><small>${pkg?'Confirmed booking value':'Add the package value below'}</small></div><div class="cw10-metric"><span>Recorded crew cost</span><strong>${inrP(total)}</strong><small>${pct===null?'Ratio available after package value':pct+'% of package'}</small></div><div class="cw10-metric ${pkg&&margin>=0?'good':''}"><span>Estimated margin</span><strong>${pkg?inrP(margin):'—'}</strong><small>Before travel and overheads</small></div></div>
-    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Cost by shoot day</h3><p>Calculated from the existing production assignments.</p></div><input type="number" value="${pkg||''}" placeholder="₹ Package value" onchange="pkgSet('${state.prodId}',this.value)" style="width:150px;padding:9px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></div>${days||'<div class="cw10-folder-empty">Shoot-day costs have not been logged.</div>'}</section>
+    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Cost by shoot day</h3><p>Summary of ₹ pay entered on production shoot days. Open production detail to pull Clients team and type pay.</p></div><input type="number" value="${pkg||''}" placeholder="₹ Package value" onchange="pkgSet('${state.prodId}',this.value)" style="width:150px;padding:9px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></div>${days||'<div class="cw10-folder-empty">Shoot-day costs have not been logged.</div>'}</section>
   </div>`;
 }
 function cw10ActivityRows(state){
@@ -6085,12 +6247,12 @@ function cw10RenderSidebar(state){
     const status=cw10EventStatus(state,event),details=cw10CurrentDetails(state,event),draft=cw11PlanDrafts.get(cw11DraftKey(event.formId,event.eventId));
     return `<button type="button" class="cw10-event-nav ${cwSection==='event'&&cw10SelectedEventId===event.eventId?'on':''}" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw11-nav-event"><span class="cw10-event-name"><i class="cw10-dot ${status.key}"></i>${esc(event.name)}${draft&&draft.dirty?'<i class="cw11-dirty-dot"></i>':''}</span><small>${esc(cw10CompactDate(event.date))} · ${esc(ciFmtTime(details.startTime))}</small></span><span class="cw10-nav-note">${esc(status.text)}</span></button>`;
   }).join('');
-  const due=state.prod?state.stages.filter(s=>!(state.prod.stages||{})[s.k]?.done).length:0,activityCount=cw10ActivityRows(state).length;
+  const due=state.prod?state.stages.filter(s=>!(state.prod.stages||{})[s.k]?.done).length:0,activityCount=cw10ActivityRows(state).length,deliveryNote=!state.deliveriesUnlocked?'After shoots':due?due+' pending':'›';
   return `<aside class="cw10-sidebar"><div class="cw10-side-brand"><span class="cw10-brand"><span class="cw10-brand-mark">II</span><span><b>Tale of Two</b><small>Studio Ledger</small></span></span><button type="button" class="cw10-nav-close" aria-label="Close client navigation" onclick="cw10ToggleMobileNav(false)">×</button></div>
     <button type="button" class="cw10-back" onclick="showClientFolders()">← All clients</button>
     <div class="cw10-client-id"><span class="cw10-client-avatar">${esc(cw10Initials(state.entry.name).toUpperCase())}</span><span><h3>${esc(state.entry.name)}</h3><p>${esc(cw10DateRange(dates))} · ${state.events.length} events</p></span></div><span class="cw10-stage ${esc(state.stageClass)}">${esc(state.stage)}</span>
     <nav class="cw10-side-nav" aria-label="Client workspace"><button type="button" class="cw10-nav-button ${cwSection==='overview'?'on':''}" onclick="setClientSection('overview')"><span>Overview</span><span>›</span></button><div class="cw10-nav-label">Events</div><div class="cw10-event-list">${events||'<div style="padding:9px 10px;color:#77716B;font-size:9px">No client events yet</div>'}</div><div class="cw10-side-divider"></div>
-    <button type="button" class="cw10-nav-button ${cwSection==='deliveries'?'on':''}" onclick="setClientSection('deliveries')"><span>Deliveries</span><span class="cw10-nav-note">${due?due+' pending':'›'}</span></button><button type="button" class="cw10-nav-button ${cwSection==='costs'?'on':''}" onclick="setClientSection('costs')"><span>Costs</span><span>›</span></button><button type="button" class="cw10-nav-button ${cwSection==='activity'?'on':''}" onclick="setClientSection('activity')"><span>Activity</span><span class="cw10-nav-note">${activityCount||'›'}</span></button></nav>
+    <button type="button" class="cw10-nav-button ${cwSection==='deliveries'?'on':''}" onclick="setClientSection('deliveries')"><span>Deliveries</span><span class="cw10-nav-note">${esc(deliveryNote)}</span></button><button type="button" class="cw10-nav-button ${cwSection==='costs'?'on':''}" onclick="setClientSection('costs')"><span>Costs</span><span>›</span></button><button type="button" class="cw10-nav-button ${cwSection==='activity'?'on':''}" onclick="setClientSection('activity')"><span>Activity</span><span class="cw10-nav-note">${activityCount||'›'}</span></button></nav>
     <div class="cw10-side-footer">Select an event on the left, then complete its planning details on the right.<button type="button" onclick="signOutLedger()">Sign out</button></div>
   </aside>`;
 }
