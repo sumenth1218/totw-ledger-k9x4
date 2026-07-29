@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.2.5-crew-pull-deliveries-2026-07-29">
+<meta name="totw-build" content="v12.2.6-role-order-extras-2026-07-29">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -5201,7 +5201,13 @@ function ciAdminCardSummary(crew,all){
   const unique=x=>[...new Set(x.filter(Boolean))],parts=[recorded?`${total} card${total===1?'':'s'} used`:'Card details pending'],to=unique(handed),held=unique(withCrew);
   if(to.length)parts.push(`Handed to ${to.join(', ')}`);if(held.length)parts.push(`With ${held.join(', ')} for copying`);return {total,recorded,text:parts.join(' · ')};
 }
-function ciRoleCode(role){return ({'Candid Photographer':'CP','Candid Cinematographer':'CV','Traditional Photographer':'TP','Traditional Videographer':'TV','Drone Operator':'DR','LED Assistant':'LED'})[role]||'CREW';}
+function ciRoleCode(role){return ({'Candid Photographer':'CP','Candid Cinematographer':'CV','Traditional Photographer':'TP','Traditional Videographer':'TV','Drone Operator':'DR','LED Assistant':'LED','Live Streaming':'LIVE'})[role]||'CREW';}
+const CI_ROLE_ORDER={CP:1,CV:2,TP:3,TV:4,DR:5,LED:6,LIVE:7,CREW:9};
+function ciRoleSortKey(role){return CI_ROLE_ORDER[ciRoleCode(role)]||9;}
+function ciSortCrewEntries(entries){
+  return (entries||[]).slice().sort((a,b)=>ciRoleSortKey(a[1]&&a[1].role)-ciRoleSortKey(b[1]&&b[1].role)||String(a[1]&&a[1].name||'').localeCompare(String(b[1]&&b[1].name||'')));
+}
+function ciExtrasText(value){return String(value||'').trim();}
 function ciResourceAssignment(e,eventName){
   const all=e&&e.resourceAssignments&&typeof e.resourceAssignments==='object'?e.resourceAssignments:{};
   return all[shotListKey(eventName)]||{};
@@ -5451,12 +5457,12 @@ function renderCheckinEvents(){
   if(!list.length){el.innerHTML='<div class="empty">No crew shoots yet.</div>';return;}
   const active=list.filter(x=>!isComplete(x)),completed=list.filter(isComplete).reverse();
   const eventCard=([id,e],completedShoot=false,insideGroup=false)=>{
-    const all=checkinAttendance[id]||{},crew=Object.entries(e.crew||{}),checked=crew.filter(([uid])=>all[uid]&&all[uid].checkedInAt).length,checkedOut=crew.filter(([uid])=>all[uid]&&all[uid].checkedOutAt).length,late=crew.filter(([uid])=>all[uid]&&all[uid].late).length;
+    const all=checkinAttendance[id]||{},crew=ciSortCrewEntries(Object.entries(e.crew||{})),checked=crew.filter(([uid])=>all[uid]&&all[uid].checkedInAt).length,checkedOut=crew.filter(([uid])=>all[uid]&&all[uid].checkedOutAt).length,late=crew.filter(([uid])=>all[uid]&&all[uid].late).length;
     const staffing=ciRequirementSummary(e.crew||{},ciRequirementsForEvent(e));
     const rows=crew.map(([uid,c])=>{const a=all[uid]||{};let lab='Upcoming',cl='';if(a.checkedOutAt){lab='Completed';cl='ok'}else if(a.checkedInAt){lab='In progress';cl='ok'}const time=a.checkedInAt?`In ${ciClock(a.checkedInAt)}${a.checkedOutAt?' · Out '+ciClock(a.checkedOutAt):''}`:`Arrival ${ciFmtTime(c.arrivalTime||c.reportTime||e.reportingTime)}`;if(completedShoot){const used=a.cardsUsed==null?'—':Number(a.cardsUsed)||0,custody=(a.cardCustody==='handed_over'||a.cardCustody==='handed_to_lead')?`Handed to ${a.handedToName||'named person'}`:(a.cardCustody==='copying_with_me'||a.cardCustody==='taking_with_me')?'With crew member for copying':'Handover not recorded',nextEvent=a.continuingToNextShoot&&a.nextShootEventId&&checkinEvents[a.nextShootEventId],continuing=nextEvent?` · Continuing to ${nextEvent.eventName||'next shoot'}`:'';return `<div class="ci-row"><div><b>${esc(c.name)} — ${esc(ciRoleCode(c.role))} · ${esc(used)} card${used===1?'':'s'}</b><small>${esc(custody+continuing)}</small></div><div class="ci-row-time">${esc(time)}<div class="ci-hours">${esc(ciDuration(e.actualStartAt||a.checkedInAt,a.checkedOutAt))}</div></div><span class="ci-badge ok">Completed</span></div>`;}return `<div class="ci-row"><div><b>${esc(c.name)}${c.isLead?' · Lead':''}</b><small>${esc(c.role)} · ${esc(c.phone||'')}</small></div><div class="ci-row-time">${esc(time)}</div><span class="ci-badge ${cl}">${esc(lab)}</span></div>`;}).join('');
     const names=ciEventNames(e),neededTeams=[...new Set(crew.map(([,c])=>ciTeamType(c.role)).filter(Boolean))],listReady={candid:true,traditional:true};neededTeams.forEach(team=>{listReady[team]=names.every(name=>ciListExists(name,team)||!!(ciResourceAssignment(e,name)[team+'ListKey']&&((Array.isArray(shotLists?.[ciResourceAssignment(e,name)[team+'ListKey']]?.[team])?shotLists[ciResourceAssignment(e,name)[team+'ListKey']][team]:Object.values(shotLists?.[ciResourceAssignment(e,name)[team+'ListKey']]?.[team]||[])).length)));});
     const missingLists=[neededTeams.includes('candid')&&!listReady.candid?'Candid list':'',neededTeams.includes('traditional')&&!listReady.traditional?'Traditional list':''].filter(Boolean);
-    const teamLabel=crew.length?crew.map(([,c])=>`${ciRoleCode(c.role)} ${c.name}`).join(' · '):'No team yet';
+    const extras=ciExtrasText(e.eventExtras||e.extras),teamLabel=crew.length||extras?[...crew.map(([,c])=>`${ciRoleCode(c.role)} ${c.name}`),extras?`Extras · ${extras}`:''].filter(Boolean).join(' · '):'No team yet';
     const cards=ciAdminCardSummary(crew,all),open=ciEventCardsOpen.has(id),shootStatus=!crew.length?'Crew pending':checkedOut?'Partially checked out':checked?'In progress':e.date===ciTodayIso()?'Ready for check-in':'Upcoming',headerDetail=completedShoot?`<div class="ci-event-handover">${esc(cards.text)}</div><div class="ci-event-summary">${crew.length} crew · All checked out</div>`:!crew.length?`<div class="ci-event-glance">${staffing.filled}/${staffing.required} roles filled · Crew pending</div><div class="ci-event-summary">Open the team workspace to assign this event</div>`:`<div class="ci-event-glance">${esc(teamLabel)}</div><div class="ci-event-summary">${esc(shootStatus)} · ${checked} checked in${!e.mapsUrl?' · Maps link pending':''}${missingLists.length?' · '+missingLists.join(' & ')+' pending in Settings':''}</div>`;
     const stats=completedShoot?`<span class="ci-stat ok">${crew.length}/${crew.length} checked out</span><span class="ci-stat ok">${cards.total} card${cards.total===1?'':'s'} used</span>`:`<span class="ci-stat ${staffing.filled===staffing.required&&staffing.required?'ok':staffing.required?'late':''}">${staffing.filled}/${staffing.required} roles filled</span>${!e.mapsUrl?'<span class="ci-stat late">Maps link pending — update before check-in</span>':''}${crew.length?`<span class="ci-stat ${checked?'ok':''}">${checked} checked in</span>`:''}${late?`<span class="ci-stat late">${late} late</span>`:''}${missingLists.length?`<span class="ci-stat">${esc(missingLists.join(' · '))} in Settings</span>`:''}`;
     const timings=`Reporting ${ciFmtTime(e.reportingTime)} · Event ${ciFmtTime(e.functionStart||e.scheduledStart)}${e.functionEnd?' – '+ciFmtTime(e.functionEnd):''}`;
@@ -5733,8 +5739,8 @@ function cw10AttentionBanner(state,eventId=''){
   return `<button type="button" class="cw10-attention" data-event-id="${esc(eventId)}" onclick="cw10OpenReview(this.dataset.eventId)"><span class="cw10-attention-icon">!</span><span><strong>${esc(review.title)}</strong><small>${esc(review.copy)}</small></span><span class="cw10-attention-action">Review update →</span></button>`;
 }
 function cw10TeamStaffing(state,event){
-  const draft=cw11GetPlanDraft(state,event),crewEntries=Object.entries(draft.crew||{}),requirements=draft.requirements||{};
-  const roles=[...new Set(CW11_CANDID_ROLES.concat(CW11_TRADITIONAL_ROLES).concat(Object.keys(requirements)))];
+  const draft=cw11GetPlanDraft(state,event),crewEntries=ciSortCrewEntries(Object.entries(draft.crew||{})),requirements=draft.requirements||{};
+  const roles=[...CW11_CANDID_ROLES,...CW11_TRADITIONAL_ROLES,...Object.keys(requirements).filter(role=>!CW11_CANDID_ROLES.includes(role)&&!CW11_TRADITIONAL_ROLES.includes(role)).sort((a,b)=>ciRoleSortKey(a)-ciRoleSortKey(b))];
   const gaps=[],slots=[];
   roles.forEach(role=>{
     const required=Math.max(0,Number(requirements[role])||0),count=crewEntries.filter(([,c])=>(c.role||'Other')===role).length;
@@ -5743,15 +5749,16 @@ function cw10TeamStaffing(state,event){
     slots.push({role,code,count,required});
     if(count<required)gaps.push({role,code,count,required,need:required-count});
   });
-  const summary=ciRequirementSummary(draft.crew,requirements);
-  return {draft,crewEntries,gaps,slots,summary,complete:!gaps.length&&!!crewEntries.length};
+  const summary=ciRequirementSummary(draft.crew,requirements),extras=ciExtrasText(draft.extras);
+  return {draft,crewEntries,gaps,slots,summary,extras,complete:!gaps.length&&!!crewEntries.length};
 }
 function cw10TeamLine(state,event){
   const staff=cw10TeamStaffing(state,event);
-  if(!staff.crewEntries.length&&!staff.gaps.length)return 'No team yet — assign CP / CV / TP / TV';
+  if(!staff.crewEntries.length&&!staff.gaps.length&&!staff.extras)return 'No team yet — assign CP / CV / TP / TV';
   const assigned=staff.crewEntries.map(([,c])=>`${ciRoleCode(c.role)} ${c.name||'Crew'}`);
   const missing=staff.gaps.map(g=>`Need ${g.code} ${g.count}/${g.required}`);
-  return [...assigned,...missing].join(' · ')||'No team yet';
+  const extras=staff.extras?[`Extras · ${staff.extras}`]:[];
+  return [...assigned,...missing,...extras].join(' · ')||'No team yet';
 }
 function cw10RenderOverview(state){
   const events=state.events,statuses=events.map(e=>({event:e,status:cw10EventStatus(state,e),team:cw10TeamLine(state,e),staff:cw10TeamStaffing(state,e)}));
@@ -5921,7 +5928,7 @@ function cw11TeamMemberHtml(eventId,draft,uid,c){
   return `<div class="ci-assignment-member"><div class="ci-assignment-member-main"><div class="ci-assignment-member-name"><b>${esc(c.name||crewProfiles[uid]?.name||'Crew member')}${c.isLead?' · Lead':''}</b><small>${locked?'Checked in · assignment locked':`Uses team arrival · ${esc(ciFmtTime(draft.teamArrival))}`}</small></div><div class="ci-assignment-member-actions"><button type="button" class="${c.isLead?'on':''}" ${locked?'disabled':''} onclick="cw11ToggleLead('${esc(eventId)}','${esc(uid)}')">${c.isLead?'Lead ✓':'Make lead'}</button><button type="button" class="remove" ${locked?'disabled':''} aria-label="Remove ${esc(c.name||'crew member')}" onclick="cw11RemoveCrew('${esc(eventId)}','${esc(uid)}')">×</button></div></div><div class="ci-assignment-member-time"><label>Different arrival time (optional)</label><input type="time" value="${esc(c.arrivalOverride?arrival:'')}" ${locked?'disabled':''} onchange="cw11SetCrewTime('${esc(eventId)}','${esc(uid)}',this.value)"><button type="button" class="cw11-icon-button" onclick="cw11UseOverall('${esc(eventId)}','${esc(uid)}')">Use overall</button></div></div>`;
 }
 function cw11TeamRoleHtml(eventId,draft,role){
-  const status=cw11RoleStatus(role,draft),members=Object.entries(draft.crew||{}).filter(([,c])=>(c.role||'Other')===role);
+  const status=cw11RoleStatus(role,draft),members=ciSortCrewEntries(Object.entries(draft.crew||{}).filter(([,c])=>(c.role||'Other')===role));
   return `<section class="ci-assignment-role"><div class="ci-assignment-role-head"><div class="ci-assignment-role-name"><b>${esc(role)} <small>(${esc(ciRoleCode(role))})</small></b><small class="${status.className}">${esc(status.label)}</small></div><div class="ci-requirement" title="Required team size for this role"><button type="button" onclick="cw11AdjustRequirement('${esc(eventId)}','${esc(role)}',-1)">−</button><span>${status.required}</span><button type="button" onclick="cw11AdjustRequirement('${esc(eventId)}','${esc(role)}',1)">+</button></div></div><div class="ci-assignment-members">${members.length?members.map(([uid,c])=>cw11TeamMemberHtml(eventId,draft,uid,c)).join(''):'<div class="ci-assignment-empty">No one assigned yet. Use the dropdown below.</div>'}</div><div class="ci-role-add"><select aria-label="Add ${esc(role)}" onchange="cw11AddCrewFromSelect('${esc(eventId)}','${esc(role)}',this)">${cw11CrewSelectOptions(draft,role)}</select></div></section>`;
 }
 function cw11TeamSectionHtml(eventId,draft,title,roles){
@@ -5966,6 +5973,7 @@ function cw11GetPlanDraft(state,event){
   const draft={
     key,clientKey:state.entry.key,formId:event.formId,eventId:event.eventId,shootId:shootId||'',dirty:false,
     date:event.date,eventName:event.name,startTime,endTime,teamArrival,crew,requirements,
+    extras:ciExtrasText(shoot&&(shoot.eventExtras||shoot.extras)),
     pinterestUrl:assignment.pinterestUrl||'',
     arrivalMode:shoot&&shoot.reportingTimeMode||((shoot&&shoot.reportingTime&&shoot.reportingTime!==autoArrival)?'manual':'auto'),
     endMode:shoot&&shoot.functionEndMode||(shoot&&shoot.functionEnd&&shoot.functionEnd!==clientEnd?'manual':clientEnd?'client':'auto'),
@@ -6015,6 +6023,10 @@ function cw11SetPlanTime(eventId,field,value){
   cw11RecomputeTimingOverride(state,event,draft);cw11MarkDraft(draft);
   const end=document.getElementById('cw11EndTime'),arrival=document.getElementById('cw11TeamArrival');
   if(end)end.value=draft.endTime||'';if(arrival)arrival.value=draft.teamArrival||'';
+}
+function cw11SetExtras(eventId,value){
+  const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft)return;
+  draft.extras=ciExtrasText(value);cw11MarkDraft(draft);
 }
 function cw11SetPinterest(eventId,value){
   const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft)return;
@@ -6080,7 +6092,7 @@ function cw11CopyTeam(eventId,sourceEventId){
   const draft=cw11GetPlanDraft(state,event),from=cw11GetPlanDraft(state,source);if(!Object.keys(from.crew||{}).length){toast('That event does not have a team yet.');return;}
   if(cw11EventStarted(draft)){toast('This event team is locked because a crew member has checked in.');return;}
   draft.crew={};Object.entries(from.crew).forEach(([uid,c])=>{draft.crew[uid]={...ciClone(c),arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false};});
-  draft.requirements=ciClone(from.requirements);cw11MarkDraft(draft);renderClientsWorkspace();toast(`Team copied from ${source.name}.`);
+  draft.requirements=ciClone(from.requirements);draft.extras=ciExtrasText(from.extras);cw11MarkDraft(draft);renderClientsWorkspace();toast(`Team copied from ${source.name}.`);
 }
 function cw11PlanPayload(state,event,draft){
   if(!draft.startTime)return {error:`Add the event start time for ${event.name}.`};
@@ -6102,7 +6114,7 @@ function cw11PlanPayload(state,event,draft){
     clientContactName:details.contactName||old.clientContactName||null,clientContactPhone:details.contactPhone||old.clientContactPhone||null,
     brideReadyLocation:details.brideReadyLocation||old.brideReadyLocation||null,groomReadyLocation:details.groomReadyLocation||old.groomReadyLocation||null,
     clientNotes:details.notes||old.clientNotes||null,clientFormId:event.formId,clientEventId:event.eventId,crew,
-    crewRequirements:ciClone(draft.requirements||old.crewRequirements||{}),resourceAssignments:(()=>{
+    crewRequirements:ciClone(draft.requirements||old.crewRequirements||{}),eventExtras:ciExtrasText(draft.extras)||null,resourceAssignments:(()=>{
       const key=shotListKey(event.name),prev=old.resourceAssignments&&typeof old.resourceAssignments==='object'?ciClone(old.resourceAssignments):{},cur=prev[key]||{};
       prev[key]={...cur,eventName:event.name,pinterestUrl:draft.pinterestUrl||null,candidListKey:cur.candidListKey||null,traditionalListKey:cur.traditionalListKey||null,portraitMoodUrl:cur.portraitMoodUrl||null,otherMoodUrl:cur.otherMoodUrl||null};
       return prev;
@@ -6187,6 +6199,7 @@ function cw11RenderPlanning(state,event){
     ${gapNote}
     ${cw11TeamSectionHtml(event.eventId,draft,'Candid team',CW11_CANDID_ROLES)}
     ${cw11TeamSectionHtml(event.eventId,draft,'Traditional team',CW11_TRADITIONAL_ROLES)}
+    <div class="cw11-field" style="margin-top:12px"><label for="cw11Extras">Extras</label><input id="cw11Extras" type="text" value="${esc(draft.extras||'')}" placeholder="e.g. Drone &amp; Live" onchange="cw11SetExtras('${esc(event.eventId)}',this.value)"><small>Service only — type what this event needs. No names.</small></div>
     ${copyOptions?`<div class="cw11-section-actions" style="margin-top:9px"><select aria-label="Copy team from another event" onchange="cw11CopyTeam('${esc(event.eventId)}',this.value);this.value=''"><option value="">Copy team from another event…</option>${copyOptions}</select></div>`:''}</div>
     <div class="cw11-plan-fields" style="margin-top:14px"><div class="cw11-field" style="grid-column:1/-1"><label for="cw11Pinterest">Optional Pinterest board</label><input id="cw11Pinterest" type="url" value="${esc(draft.pinterestUrl||'')}" placeholder="https://pinterest.com/…" onchange="cw11SetPinterest('${esc(event.eventId)}',this.value)"><small>Optional for this event. If empty, Candid still sees the common board from Settings after check-in.</small></div></div>
     <div class="cw10-panel-actions" style="margin-top:8px"><button type="button" class="cw10-text" data-event-name="${esc(event.name)}" onclick="cwOpenSettings(this.dataset.eventName)">Open Settings · shot lists &amp; boards</button></div>
