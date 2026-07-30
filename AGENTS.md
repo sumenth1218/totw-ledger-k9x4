@@ -7,6 +7,7 @@ This repo is a **static HTML frontend (no build step) + an optional Firebase Clo
 ### Running the frontend (core product)
 - Serve the repo root with any static server, e.g. `python3 -m http.server 8000`, then open `http://localhost:8000/index.html`. There is no bundler/build.
 - The Firebase web config is **hardcoded in each HTML file and points at the live production project `tot-ledger`** (Realtime Database + Auth). There is no local emulator wiring: `firebase.json` only configures `functions` and there is no `.firebaserc`, so pages always talk to the live cloud project.
+- **Google sign-in caveat on local dev:** the apps use Firebase `signInWithPopup`. A plain `python3 -m http.server` can trigger a `Cross-Origin-Opener-Policy` error ("would block the window.closed call") that leaves the popup unable to hand the auth result back, so the page stays on the sign-in gate. To make popup sign-in work locally, serve with the header `Cross-Origin-Opener-Policy: same-origin-allow-popups` (e.g. a small custom `SimpleHTTPRequestHandler` that adds it). `localhost` is an authorized Firebase Auth domain by default.
 
 ### Auth / access caveats (non-obvious)
 - `index.html` (Studio Ledger) and `crew.html` require **Google sign-in**, and `index.html` additionally requires the signed-in uid to be present under `admins/` in RTDB. Without owner credentials you only see the sign-in gate — this is expected, not a bug.
