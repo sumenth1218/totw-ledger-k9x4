@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.3.1-ivory-refine-2026-07-30">
+<meta name="totw-build" content="v12.3.2-planner-wrap-overview-2026-07-30">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -401,6 +401,19 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .push-btn{background:var(--ink);color:var(--paper);border:none;border-radius:5px;padding:6px 10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
 .push-btn:hover{background:var(--teal)}
 .push-btn.arm{background:var(--sindoor)}
+.push-btn.pushed{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.push-btn.pushed:hover{background:var(--surface-3)}
+.plan-wrap-row td{padding:0 4px 12px!important;border-bottom:1px solid var(--line);vertical-align:top}
+.plan-day-wrap{gap:10px;padding:12px 14px;background:var(--surface)!important;border:1px solid var(--line);border-radius:10px;color:var(--ink)}
+.plan-wrap-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.plan-wrap-head b{font-family:var(--display);font-size:17px;font-weight:500;color:var(--ink)}
+.plan-wrap-head small{display:block;margin-top:3px;color:var(--ink-soft);font-size:11px}
+.plan-wrap-gb{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft)}
+.plan-wrap-gb input{width:88px}
+.plan-wrap-pays{display:grid;gap:6px}
+.plan-wrap-pay{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:10px;align-items:center;font-size:12px;color:var(--ink)}
+.plan-wrap-pay input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:11px;background:#fff;color:var(--ink)}
+.plan-wrap-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .alert{padding:9px 12px;font-size:12.5px;border-radius:0 6px 6px 0;margin-bottom:6px;line-height:1.5}
 .alert.r{background:var(--sindoor-soft);border-left:3px solid var(--sindoor);color:#7A2A1E}
 .alert.a{background:var(--amber-soft);border-left:3px solid var(--amber);color:#7A5A1E}
@@ -654,7 +667,7 @@ input::placeholder,textarea::placeholder{color:#77736C}
 .mini-cal.lite .mc-g i:hover,.mini-cal.dark .mc-g i:hover{background:#26282B}
 .mini-cal.lite .mc-g i.sel,.mini-cal.dark .mc-g i.sel{background:#EAE4DA;color:#101113}
 .remind{background:#282117;color:#D8B87B;border-color:#A98245}
-.pd-wrap{background:#111214!important}
+.pd-wrap{background:#FBFAF6!important}
 .plan-table th{background:var(--paper);color:#9E978C;border-color:#44464A}
 .plan-table td{border-color:#2E3033}
 .plan-table tr.ppast td{opacity:.45}
@@ -673,7 +686,7 @@ input::placeholder,textarea::placeholder{color:#77736C}
 .cf-status.changes,.sdue.bad,.ci-stat.late{background:var(--sindoor-soft);color:#DA858F}
 .ci-couple-group{box-shadow:0 15px 45px rgba(0,0,0,.14)}
 .ci-couple-savebar .btn-mini,.ci-crew-actions .btn-mini.primary{background:#EAE4DA;color:#111214;border-color:#EAE4DA}
-.ci-couple-body .ci-event,.ci-completed-group .ci-event{background:#141618!important}
+.ci-couple-body .ci-event,.ci-completed-group .ci-event{background:var(--card)!important}
 .ci-stat{background:#242629;color:#A9A298}
 .ci-event-details,.ci-resource-admin{background:#121416!important}
 .ci-inline-team>header,.ci-profile-group-head,.ci-team-group-head{background:#222427;color:var(--ink)}
@@ -1554,6 +1567,24 @@ body{background:
 .plan-table td.cpal4{background:#ECEAF3}.plan-table td.cpal5{background:#F3EDDF}
 .plan-table td.cpal6{background:#E8F0F3}.plan-table td.cpal7{background:#F3E9EE}
 
+/* Fix dark legacy rules that beat ivory on nested surfaces */
+.ci-couple-body .ci-event,.ci-completed-group .ci-event{background:var(--card)!important;color:var(--ink)!important}
+.ci-couple-body .ci-event h3,.ci-event h3,.ci-event-date,.ci-event-summary,.ci-event-glance{color:var(--ink)!important}
+.ci-event-date{color:var(--amber)!important}
+.ci-event-summary,.ci-event-glance{color:var(--ink-soft)!important}
+.pd-wrap,.person-detail .pd-wrap,.person-detail td .pd-wrap{background:var(--surface)!important;color:var(--ink)!important;border:1px solid var(--line)}
+.person-detail .cost-line,.person-detail .cost-line span,.plan-day-wrap .cost-line{color:var(--ink)!important}
+.person-detail .cost-line>span:last-child{color:var(--ink)!important}
+.person-detail td{font-size:12px;color:var(--ink-soft)}
+.team-table .person-detail td{background:transparent!important}
+.cw11-plan-head h3,.cw11-section-head h4,.cw11-plan-card,.cw11-record-card,.cw11-team-list{color:var(--ink)!important}
+.pd-wrap .dl-check{color:var(--ink)!important}
+.ci-event-choice{background:var(--surface)!important;border-color:var(--line)!important}
+.ci-event-choice.on{background:var(--amber-soft)!important;border-color:#E0CFA8!important}
+.ci-event-choice b{color:var(--ink)!important}
+.ci-event-choice small,.ci-event-empty{color:var(--ink-soft)!important}
+.ci-event-empty{border-color:var(--line)!important}
+
 /* Undo dark-mode white→surface hijack */
 [style*="background:#fff"],[style*="background: #fff"],[style*="background:white"],[style*="background: white"]{background:#fff!important}
 [style*="color:var(--paper)"]{color:var(--paper)!important}
@@ -1881,7 +1912,7 @@ body{background:
       <select id="planMonth" onchange="renderPlan()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></select>
     </div>
   </div>
-  <p class="hint" style="margin:10px 0 0">Booked dates fill in from the calendar. Type names into role cells (CP · CV · TP · TV · Extras). Use "&amp; 1" or "+1" for a lead plus an unnamed hand. Mark which roles an event needs — only those show a gap when empty. Planning only; nothing here touches Production.</p>
+  <p class="hint" style="margin:10px 0 0">Booked dates fill in from the calendar. Type names into role cells (CP · CV · TP · TV · Extras). Use "&amp; 1" or "+1" for a lead plus an unnamed hand. When a day is done, tap <strong>→ Production</strong> on that row, then log data captured (GB) and crew pay in the wrap-up panel.</p>
   <div id="planGrid" style="margin-top:10px;overflow-x:auto"></div>
   <div id="planEmpty" class="empty" style="display:none">No booked dates this month. Mark an enquiry as booked, or block dates on the calendar, and they show up here.</div>
 
@@ -2150,6 +2181,7 @@ let openCost = {};       // {prodId:{role:bool,person:bool,day:bool}} cost expan
 let pkgOpen = new Set();  // prod ids with package field revealed
 let openPerson = null;    // team member key whose shoot list is expanded
 let openPlanPerson = null; // planner: team member whose schedule is expanded
+let planWrapKey = null;    // planner row with end-of-day wrap-up open
 let stageAddFor = null;   // production record with the custom-deliverable form open
 let selCat = "WARM";
 let filterCat = "ALL";
@@ -4288,8 +4320,32 @@ function renderPlan(){
     }).join('');
     const past=r.iso<=todayISO;
     const anyCrew=PLAN_ROLES.some(([rk])=>(pl.cells&&pl.cells[rk]||'').trim());
-    const pushCell=`<td class="ppush">${past&&anyCrew?`<button class="push-btn" id="push-${r.key}" onclick="pushRow('${r.key}')">→ Production</button> `:''}<button class="xs" title="Remove this row" onclick="planDel('${r.key}')">×</button></td>`;
-    return `<tr class="${past?'ppast':''}"><td class="pd">${fmt(r.iso)}</td>${coupleCellHtml(r)}<td class="pe">${esc(r.event)}</td><td class="pl">${esc(r.loc||'')}</td>${cells}${pushCell}</tr>`;
+    const prodHit=planRowInProd(r.key);
+    const wrapOpen=planWrapKey===r.key;
+    let pushBtn='';
+    if(anyCrew){
+      if(prodHit){
+        pushBtn=`<button type="button" class="push-btn pushed" onclick="planWrapToggle('${r.key}')">${wrapOpen?'⌃ Close':'Day wrap-up'}</button> `;
+      }else{
+        pushBtn=`<button type="button" class="push-btn" id="push-${r.key}" onclick="pushRow('${r.key}')">→ Production</button> `;
+      }
+    }
+    const pushCell=`<td class="ppush">${pushBtn}<button class="xs" title="Remove this row" onclick="planDel('${r.key}')">×</button></td>`;
+    const mainRow=`<tr class="${past?'ppast':''}"><td class="pd">${fmt(r.iso)}</td>${coupleCellHtml(r)}<td class="pe">${esc(r.event)}</td><td class="pl">${esc(r.loc||'')}</td>${cells}${pushCell}</tr>`;
+    if(!prodHit||!wrapOpen)return mainRow;
+    const payRows=(prodHit.day.roles||[]).map((c,ri)=>{
+      if(!c.person||!String(c.person).trim())return '';
+      return `<div class="plan-wrap-pay"><span>${esc(c.person)} · ${esc(c.role)}</span><input type="number" min="0" placeholder="₹ pay" value="${c.pay||''}" onchange="planWrapPay('${r.key}',${ri},this.value)"></div>`;
+    }).filter(Boolean).join('')||'<div class="plan-wrap-pay" style="color:var(--ink-soft)">No named crew on this production day yet.</div>';
+    const gb=prodHit.day.gb||'';
+    const dayCost=(prodHit.day.roles||[]).reduce((t,c)=>t+(+c.pay||0),0);
+    const wrapRow=`<tr class="plan-wrap-row"><td colspan="${4+PLAN_ROLES.length+1}"><div class="pd-wrap plan-day-wrap">
+      <div class="plan-wrap-head"><div><b>End of day · ${esc(pl.couple||r.couple)} · ${fmt(pl.iso||r.iso)}</b><small>Log data captured and crew pay for this shoot day.</small></div>${dayCost?`<span style="font-family:var(--mono);font-size:11px;color:var(--ink-soft)">Team ₹${dayCost.toLocaleString('en-IN')}</span>`:''}</div>
+      <div class="plan-wrap-gb"><span>Data captured</span><input class="gb-in" type="number" min="0" placeholder="GB" value="${gb||''}" onchange="planWrapGb('${r.key}',this.value)"><span>GB on cards</span></div>
+      <div class="plan-wrap-pays">${payRows}</div>
+      <div class="plan-wrap-actions"><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pushRow('${r.key}')">Sync crew → Production</button><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="openProd('${prodHit.pid}');setView('prod')">Open in Production</button></div>
+    </div></td></tr>`;
+    return mainRow+wrapRow;
   }).join('');
   const hidCount=Object.keys(planHidden).length;
   grid.innerHTML=`<table class="plan-table">${head}${body}</table>`+(hidCount?`<div style="margin-top:8px;font-size:12px;color:var(--ink-soft)">${hidCount} removed row${hidCount!==1?'s':''} · <a href="javascript:void(0)" onclick="planRestoreAll()" style="color:var(--teal)">restore all</a></div>`:'');
@@ -4433,6 +4489,30 @@ function findProdByCouple(name){
   const hit=Object.entries(prods).find(([id,p])=>String(p.couple||'').trim().toLowerCase()===k);
   return hit?hit[0]:null;
 }
+function planRowInProd(key){
+  const pl=plans[key]||{},mt=planRowMeta[key]||{};
+  const iso=pl.iso||mt.iso,couple=pl.couple||mt.couple;
+  if(!iso||!couple)return null;
+  const pid=findProdByCouple(couple);if(!pid)return null;
+  const p=prods[pid];if(!p)return null;
+  const di=(p.days||[]).findIndex(d=>d.date===iso);
+  if(di<0)return null;
+  return {pid,p,di,day:p.days[di]};
+}
+function planWrapToggle(key){
+  planWrapKey=planWrapKey===key?null:key;
+  renderPlan();
+}
+function planWrapGb(key,val){
+  const hit=planRowInProd(key);if(!hit)return;
+  dSet(hit.pid,hit.di,'gb',val);
+  renderPlan();
+}
+function planWrapPay(key,ri,val){
+  const hit=planRowInProd(key);if(!hit)return;
+  rSet(hit.pid,hit.di,ri,'pay',val);
+  renderPlan();
+}
 function pushToProd(key){
   const pl=plans[key];if(!pl||!pl.iso)return;
   const crew=planRowCrew(pl);
@@ -4470,12 +4550,15 @@ function pushRow(key){
     pushArmKey=key;
     const b=document.getElementById('push-'+key);
     if(b){b.textContent='Re-push wipes that day — tap again';b.classList.add('arm');}
+    else toast('Re-push replaces that production day — tap Sync crew again to confirm.');
     clearTimeout(pushArmT);
     pushArmT=setTimeout(()=>{pushArmKey=null;renderPlan();},3500);
     return;
   }
   pushArmKey=null;clearTimeout(pushArmT);
   pushToProd(key);
+  planWrapKey=key;
+  renderPlan();
 }
 function planCell(key,role,val){
   const p=plans[key]=plans[key]||{cells:{},need:{}};
@@ -6914,8 +6997,8 @@ function cw10SelectDefaultEvent(state){
   if(cw10SelectedEventId)localStorage.setItem('totw_client_event',cw10SelectedEventId);
 }
 function selectClientWorkspace(key){
-  cwSelectedKey=String(key||'');cwSection='event';cw10SelectedEventId='';cw10ReviewOpen=false;cw11AddCrewOpen=false;cw11RecordOpen=false;cw11ClientDetailsOpen=false;cw11ResourcesOpen=false;
-  localStorage.setItem('totw_client_workspace',cwSelectedKey);localStorage.setItem('totw_client_section','event');localStorage.removeItem('totw_client_event');
+  cwSelectedKey=String(key||'');cwSection='overview';cw10SelectedEventId='';cw10ReviewOpen=false;cw11AddCrewOpen=false;cw11RecordOpen=false;cw11ClientDetailsOpen=false;cw11ResourcesOpen=false;
+  localStorage.setItem('totw_client_workspace',cwSelectedKey);localStorage.setItem('totw_client_section','overview');localStorage.removeItem('totw_client_event');
   renderClientsWorkspace();document.getElementById('cwRoot')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function cw10SelectEvent(eventId){
