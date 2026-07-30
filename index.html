@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.4.0-weddings-hub-2026-07-30">
+<meta name="totw-build" content="v12.4.1-contrast-fix-2026-07-30">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1560,7 +1560,27 @@ body{background:
 .ci-assignment-footer{background:rgba(255,252,247,.96)!important;border-color:var(--line)!important}
 .ci-inline-team>header,.ci-profile-group-head,.ci-team-group-head{background:var(--surface-3)!important;color:var(--ink)!important}
 .ci-crew-overview-names span{background:var(--surface-3)!important;color:var(--ink)!important}
-.cf-preview-event,.cf-review-event,.cf-change,.ci-event-choice,.ci-person{background:var(--surface)!important;border-color:var(--line)!important}
+.cf-preview-event,.cf-review-event,.cf-change,.ci-event-choice,.ci-person{background:var(--surface)!important;border-color:var(--line)!important;color:var(--ink)!important}
+.cf-preview-event input,.cf-preview-row input,.cf-create .cf-preview-event input,.cf-create .cf-preview-row input{
+  background:#fff!important;border:1px solid var(--line)!important;color:var(--ink)!important;color-scheme:light!important
+}
+.cf-preview-event input::placeholder,.cf-create .cf-preview-event input::placeholder{color:var(--ink-soft)!important;opacity:1}
+.cf-event-options{border-top-color:var(--line)!important}
+.cf-event-options>span{color:var(--amber)!important}
+.cf-event-options>small{color:var(--ink-soft)!important}
+.cf-option{color:var(--ink)!important}
+.cf-remove{color:var(--ink-soft)!important}
+.cf-add{border-color:var(--line)!important;color:var(--ink)!important}
+.ci-person{color:var(--ink)!important}
+.ci-person-top b{color:var(--ink)!important}
+.ci-person-top small{color:var(--ink-soft)!important}
+.ci-form .ci-person select,.ci-form .ci-person input,.ci-person-fields select,.ci-person-fields input{
+  background:#fff!important;border:1px solid var(--line)!important;color:var(--ink)!important;color-scheme:light!important
+}
+.ci-lead{color:var(--ink)!important}
+.ci-form .ci-team-group{border-color:var(--line)!important}
+.ci-form .ci-team-group-head{background:var(--surface-3)!important;color:var(--ink)!important}
+.ci-form .ci-team-group-head span{color:var(--ink-soft)!important}
 .cf-status.approved,.ci-badge.ok{background:var(--leaf-soft)!important;color:var(--leaf)!important}
 .cf-status.submitted{background:var(--amber-soft)!important;color:#7A5A1E!important}
 .cf-status.changes{background:var(--sindoor-soft)!important;color:var(--sindoor)!important}
