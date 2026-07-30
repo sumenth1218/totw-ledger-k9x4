@@ -1652,7 +1652,8 @@ body{background:
     <button id="vtPlan" onclick="setView('plan')">Crew Planner</button>
     <button id="vtCheckins" onclick="setView('shoots')">Shoot Operations</button>
     <button id="vtDeliveries" onclick="setView('deliverables')">Deliverables</button>
-    <button id="vtProd" onclick="setView('business')" style="display:none" aria-hidden="true">Business</button>
+    <button id="vtBiz" onclick="setView('businessOverview')">Business Overview</button>
+    <button id="vtProd" onclick="setView('business')">Production Detail</button>
     <button id="vtShots" onclick="setView('settings')">Settings</button>
   </nav>
   <div class="rail-foot">
@@ -1820,10 +1821,23 @@ body{background:
  <div id="cw12DeliverablesRoot"></div>
 </div>
 
-<div id="tabProd" style="display:none">
+<div id="tabBusinessOverview" style="display:none">
  <div class="prod-wrap">
   <div class="prod-head">
     <h2>Business Overview</h2>
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <span id="bizCount" style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-soft)"></span>
+    </div>
+  </div>
+  <p class="hint" style="margin:10px 0 8px">Completed client events that you manually send from the client workspace appear here, grouped by couple.</p>
+  <div id="bizOverviewRoot" style="margin-top:6px"></div>
+ </div>
+</div>
+
+<div id="tabProd" style="display:none">
+ <div class="prod-wrap">
+  <div class="prod-head">
+    <h2>Production Detail</h2>
     <div style="display:flex;gap:12px;align-items:baseline">
       <span id="prodCount" style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-soft)"></span>
       <button class="btn-mini" onclick="toggleProdNew()">+ New wedding</button>
@@ -3359,24 +3373,25 @@ function calendarCoupleMap(){
 /* ---- view tabs ---- */
 function setView(v){
   v=({clientforms:'clients',prod:'business',shots:'settings',checkins:'shoots'})[v]||v;
-  if(v==='business'&&!openProdId)v='deliverables';
-  const led=document.getElementById('tabLedger'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots'),ci=document.getElementById('tabCheckins'),cf=document.getElementById('tabClientForms'),dl=document.getElementById('tabDeliverables');
-  if(!led||!pr||!pl||!sh||!ci||!cf||!dl)return;
+  const led=document.getElementById('tabLedger'),bo=document.getElementById('tabBusinessOverview'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots'),ci=document.getElementById('tabCheckins'),cf=document.getElementById('tabClientForms'),dl=document.getElementById('tabDeliverables');
+  if(!led||!bo||!pr||!pl||!sh||!ci||!cf||!dl)return;
   document.getElementById('vtEnq').classList.toggle('on',v==='ledger');
   document.getElementById('vtPlan').classList.toggle('on',v==='plan');
-  document.getElementById('vtProd').classList.toggle('on',false);
+  document.getElementById('vtBiz').classList.toggle('on',v==='businessOverview');
+  document.getElementById('vtProd').classList.toggle('on',v==='business');
   document.getElementById('vtShots').classList.toggle('on',v==='settings');
   document.getElementById('vtCheckins').classList.toggle('on',v==='shoots');
   document.getElementById('vtClientForms').classList.toggle('on',v==='clients');
   document.getElementById('vtDeliveries').classList.toggle('on',v==='deliverables');
   led.style.display=v==='ledger'?'':'none';
+  bo.style.display=v==='businessOverview'?'':'none';
   pl.style.display=v==='plan'?'':'none';
   pr.style.display=v==='business'?'':'none';
   sh.style.display=v==='settings'?'':'none';
   ci.style.display=v==='shoots'?'':'none';
   cf.style.display=v==='clients'?'':'none';
   dl.style.display=v==='deliverables'?'':'none';
-  const titles={ledger:'Dates <em>&amp;</em> Enquiries',clients:'Clients',plan:'Crew <em>Planner</em>',settings:'Studio <em>Settings</em>',shoots:'Shoot <em>Operations</em>',deliverables:'Delivery <em>Overview</em>',business:'Production <em>detail</em>'};
+  const titles={ledger:'Dates <em>&amp;</em> Enquiries',clients:'Clients',plan:'Crew <em>Planner</em>',settings:'Studio <em>Settings</em>',shoots:'Shoot <em>Operations</em>',deliverables:'Delivery <em>Overview</em>',businessOverview:'Business <em>Overview</em>',business:'Production <em>detail</em>'};
   const pageTitle=document.getElementById('pageTitle'),calendarYearTabs=document.getElementById('calendarYearTabs'),calendarLegend=document.getElementById('calendarLegend');
   if(pageTitle)pageTitle.innerHTML=titles[v]||titles.ledger;
   document.body.classList.toggle('cw10-client-mode',v==='clients');
@@ -3384,6 +3399,7 @@ function setView(v){
   if(calendarLegend)calendarLegend.style.display=v==='ledger'?'':'none';
   localStorage.setItem('totw_view',v);
   hidePop();
+  if(v==='businessOverview')renderBusinessOverview();
   if(v==='business')renderProdAll();
   if(v==='plan')renderPlan();
   if(v==='settings'){renderShots();renderEventBoards();renderMoodSec();loadShotEd();}
@@ -3391,7 +3407,7 @@ function setView(v){
   if(v==='clients'){renderClientForms();}
   if(v==='deliverables'){renderGlobalDeliverables();}
 }
-function restoreView(){const v=localStorage.getItem('totw_view')||'ledger';setView(v==='business'?'deliverables':v);}
+function restoreView(){const v=localStorage.getItem('totw_view')||'ledger';setView(v);}
 
 /* ---- creation ---- */
 function toggleProdNew(){
@@ -3550,6 +3566,29 @@ function renderProd(){
     const cal=document.getElementById('pdayCal');
     if(cal){cal.innerHTML='<div class="mini-cal lite" id="mcPday"></div>';renderMiniCal('pday');}
   }
+}
+function businessEventKey(event){
+  const fallback=`${String(event.date||'').replace(/[^a-z0-9]+/gi,'_')}__${String(event.name||'event').replace(/[^a-z0-9]+/gi,'_')}`;
+  return `${event.formId||'local'}__${event.eventId||fallback}`;
+}
+function businessEventsForProd(id,p){
+  return Object.entries((p&&p.businessEvents)||{}).map(([key,row])=>({key,...row,prodId:id})).sort((a,b)=>
+    String(a.date||'9999-12-31').localeCompare(String(b.date||'9999-12-31'))||
+    String(a.eventName||'').localeCompare(String(b.eventName||''))
+  );
+}
+function renderBusinessOverview(){
+  const root=document.getElementById('bizOverviewRoot');
+  if(!root)return;
+  const grouped=Object.entries(prods).map(([id,p])=>({id,p,events:businessEventsForProd(id,p)})).filter(row=>row.events.length);
+  const count=document.getElementById('bizCount');
+  const totalEvents=grouped.reduce((sum,row)=>sum+row.events.length,0);
+  if(count)count.textContent=grouped.length?`${grouped.length} CLIENT${grouped.length===1?'':'S'} · ${totalEvents} EVENT${totalEvents===1?'':'S'}`:'';
+  if(!grouped.length){
+    root.innerHTML='<div class="empty">No completed client events have been sent to Business Overview yet.</div>';
+    return;
+  }
+  root.innerHTML=grouped.sort((a,b)=>String(a.p.couple||'').localeCompare(String(b.p.couple||''))).map(({id,p,events})=>`<details class="cw12-delivery-group" open><summary class="cw12-delivery-group-head" style="cursor:pointer"><h3>${esc(p.couple||'Unnamed couple')}</h3><span>${events.length} synced event${events.length===1?'':'s'} · open production detail anytime</span></summary>${events.map(row=>`<div class="cw12-delivery-client" style="cursor:default"><span class="cw12-last-date"><b>${esc(cw10DateBlock(row.date).d)}</b><small>${esc(cw10DateBlock(row.date).m)}</small></span><span class="cw12-delivery-name"><h4>${esc(row.eventName||'Event')}</h4><p>${esc(ciDateLong(row.date))}${row.syncedAt?` · sent ${esc(ciUpdatedDateTime(row.syncedAt))}`:''}</p></span><span class="cw12-delivery-progress"><b>${esc(row.status||'Completed')}</b><small>${esc(row.summary||'Ready for business tracking')}</small></span><span style="display:flex;gap:8px"><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${id}')">Open production detail</button></span></div>`).join('')}</details>`).join('');
 }
 function openProd(id,forceOpen=false){openProdId=forceOpen?id:(openProdId===id?null:id);pdayFor=null;evEditP=null;renderProd();}
 function addDayMode(id){
@@ -3940,7 +3979,7 @@ function renderTeam(){
    :'<div class="empty">No crew logged yet. Add who shot what inside any wedding.</div>');
 }
 function personTog(k){openPerson=openPerson===k?null:k;renderTeam();}
-function renderProdAll(){renderProd();renderProdAlerts();renderTeam();updateDatalists();renderGlobalDeliverables();}
+function renderProdAll(){renderProd();renderBusinessOverview();renderProdAlerts();renderTeam();updateDatalists();renderGlobalDeliverables();}
 function toggleSeason(){
   const sec=document.getElementById('seasonSec');
   sec.classList.toggle('open');
@@ -5533,6 +5572,73 @@ function cwProdDeliveriesLocked(prodId){
 function cwWorkspaceDates(state){
   return state.form?[...new Set(state.events.map(e=>e.date).filter(Boolean))].sort():state.entry.dates;
 }
+function cwBusinessProdSeed(state){
+  const dates=cwWorkspaceDates(state);
+  return {
+    couple:state.entry.name,
+    diskA:'',
+    diskB:'',
+    deliv:{album:false},
+    days:dates.map(d=>({date:d,events:state.events.filter(event=>event.date===d).map(event=>event.name),gb:0,roles:[],fmt:false})),
+    businessEvents:{},
+    stages:{},
+    pay:{adv:{amt:0,paid:false},pre:{amt:0,paid:false},fin:{amt:0,paid:false}},
+    by:editor,
+    at:stamp(),
+    t:Date.now()
+  };
+}
+function cwBusinessSummary(state,event){
+  const details=cw10CurrentDetails(state,event),staff=cw10TeamStaffing(state,event);
+  return [
+    details.venueName||'Venue confirmed',
+    ciFmtTime(details.startTime)||'Time confirmed',
+    staff.crewEntries.length?`${staff.crewEntries.length} crew assigned`:'crew pending'
+  ].filter(Boolean).join(' · ');
+}
+function cwBusinessSyncMeta(state,event){
+  const prodId=state.prodId||'',eventKey=businessEventKey(event),prod=prodId&&prods[prodId],row=prod&&prod.businessEvents&&prod.businessEvents[eventKey];
+  return {prodId,eventKey,row,synced:!!row};
+}
+async function cwSendEventToBusiness(eventId){
+  const entry=cwEntry();if(!entry)return;
+  const state=cwState(entry),event=state.events.find(e=>e.eventId===eventId);if(!event)return;
+  const shoot=event.shootId&&checkinEvents[event.shootId];
+  if(!shoot||!cwShootComplete(event.shootId,shoot)){toast('Only completed Shoot Operations events can be sent to Business.');return;}
+  let prodId=state.prodId;
+  if(!prodId){
+    prodId=uid('p');
+    prods[prodId]=cwBusinessProdSeed(state);
+  }
+  const prod=prods[prodId]||(prods[prodId]=cwBusinessProdSeed(state));
+  if(!prod.businessEvents)prod.businessEvents={};
+  const eventKey=businessEventKey(event);
+  if(prod.businessEvents[eventKey]){toast('This event is already in Business Overview.');return;}
+  prod.businessEvents[eventKey]={
+    clientKey:state.entry.key,
+    couple:state.entry.name,
+    eventId:event.eventId,
+    eventName:event.name,
+    date:event.date,
+    shootId:event.shootId,
+    syncedAt:Date.now(),
+    syncedBy:editor,
+    status:'Completed',
+    summary:cwBusinessSummary(state,event)
+  };
+  try{
+    if(liveMode&&db)await db.ref('prod/'+prodId).set(prod);
+    else localStorage.setItem('totw_prod',JSON.stringify(prods));
+    toast(`${event.name} sent to Business Overview.`);
+    log(`sent client event to business: ${state.entry.name} — ${event.name}`);
+    if(localStorage.getItem('totw_view')==='businessOverview')renderBusinessOverview();
+    renderClientsWorkspace();
+  }catch(err){
+    if(!state.prodId)delete prods[prodId];
+    else delete prod.businessEvents[eventKey];
+    toast('Could not send this event to Business. Please try again.');
+  }
+}
 function cwStatusCopy(state){
   const detailTotal=state.formEvents.length,boards=state.resourceRows.reduce((n,x)=>n+x.boardTotal,0),crewTotal=state.shoots.reduce((n,[,e])=>n+Object.keys(e.crew||{}).length,0);
   return [
@@ -6542,8 +6648,13 @@ function cw10RenderOverview(state){
   const events=state.events,statuses=events.map(e=>({event:e,status:cw10EventStatus(state,e),team:cw10TeamLine(state,e),staff:cw10TeamStaffing(state,e)}));
   const ready=statuses.filter(x=>['ready','complete','live'].includes(x.status.key)).length,pct=events.length?Math.round(ready/events.length*100):0;
   const rows=statuses.map(({event,status,team})=>{
-    const details=cw10CurrentDetails(state,event),date=cw10DateBlock(event.date),venue=details.venueName||'Venue awaiting confirmation';
-    return `<button type="button" class="cw10-overview-row" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw10-date-block"><small>${esc(date.m)}</small><strong>${esc(date.d)}</strong></span><span class="cw10-overview-main"><strong>${esc(event.name)}</strong><small>${esc(ciFmtTime(details.startTime))} · ${esc(venue)}</small><small class="cw10-team-copy ${status.key==='attention'||status.key==='planning'?'attention':''}" style="display:block;margin-top:4px">${esc(team)}</small></span><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span><span class="cw10-row-arrow">→</span></button>`;
+    const details=cw10CurrentDetails(state,event),date=cw10DateBlock(event.date),venue=details.venueName||'Venue awaiting confirmation',syncMeta=cwBusinessSyncMeta(state,event);
+    const businessAction=status.key==='complete'
+      ?(syncMeta.synced
+        ?`<button type="button" class="cw10-soft" style="padding:6px 9px" onclick="event.stopPropagation();setView('businessOverview')">Sent to Business</button>`
+        :`<button type="button" class="cw10-soft" style="padding:6px 9px" onclick="event.stopPropagation();cwSendEventToBusiness('${event.eventId}')">Send to Business</button>`)
+      :'';
+    return `<button type="button" class="cw10-overview-row" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw10-date-block"><small>${esc(date.m)}</small><strong>${esc(date.d)}</strong></span><span class="cw10-overview-main"><strong>${esc(event.name)}</strong><small>${esc(ciFmtTime(details.startTime))} · ${esc(venue)}</small><small class="cw10-team-copy ${status.key==='attention'||status.key==='planning'?'attention':''}" style="display:block;margin-top:4px">${esc(team)}</small></span><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span>${businessAction}<span class="cw10-row-arrow">→</span></button>`;
   }).join('');
   const dates=cwWorkspaceDates(state);
   return `<div class="cw10-content">${cw10PageHead('Client workspace',state.entry.name,`${cw10DateRange(dates)} · Everything for this wedding in one place.`,cw10ClientActions(state))}
@@ -7068,7 +7179,13 @@ function cw10RenderEvent(state){
   const event=state.events.find(e=>e.eventId===cw10SelectedEventId);
   if(!event)return `<div class="cw10-content">${cw10PageHead('Client workspace',state.entry.name,'No private-link event is available yet.',cw10ClientActions(state))}<div class="cw10-empty-state"><h3>Create the client event link</h3><p>Events in this workspace come only from that private link.</p><button type="button" class="cw10-primary" onclick="openClientSetupForSelected()">Create client link</button></div></div>`;
   const details=cw10CurrentDetails(state,event),status=cw10EventStatus(state,event),dirty=cw11DirtyDrafts().length;
-  const actions=`${cw10ReviewSummary(state,event.eventId)?'':`<span class="cw10-large-status"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span>`}${dirty?`<button type="button" class="cw10-soft" onclick="cw11SaveAllPlans()">Save all · ${dirty}</button>`:''}`;
+  const syncMeta=cwBusinessSyncMeta(state,event),canSend=status.key==='complete';
+  const businessAction=canSend
+    ?(syncMeta.synced
+      ?`<button type="button" class="cw10-soft" onclick="setView('businessOverview')">Sent to Business</button>`
+      :`<button type="button" class="cw10-primary" onclick="cwSendEventToBusiness('${event.eventId}')">Send to Business</button>`)
+    :'';
+  const actions=`${cw10ReviewSummary(state,event.eventId)?'':`<span class="cw10-large-status"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span>`}${businessAction}${dirty?`<button type="button" class="cw10-soft" onclick="cw11SaveAllPlans()">Save all · ${dirty}</button>`:''}`;
   return `<div class="cw10-content cw11-event-content">${cw10PageHead(`${ciDateLong(event.date)} · ${ciFmtTime(details.startTime)}`,event.name,details.venueName||'Venue awaiting confirmation',actions)}
     ${cw10AttentionBanner(state,event.eventId)}
     ${cw11RenderEventContext(state,event)}
