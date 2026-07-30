@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.2.9-shotlist-nine-2026-07-30">
+<meta name="totw-build" content="v12.2.11-mood-from-planner-2026-07-30">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1542,7 +1542,7 @@ body.cw10-client-mode .vtabs{margin-top:14px}
       <span id="moodSecMeta">Hide ▾</span>
     </div>
     <div class="act-body">
-      <p class="hint" style="margin:10px 0 8px">Pick the couple, then one exact event, then paste the Pinterest link. That board appears above the common board for that event only.</p>
+      <p class="hint" style="margin:10px 0 8px">Synced from Crew Planner. Combined days are split into separate events (e.g. Haldi and Sangeet on the same date stay separate).</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:12px">
         <label style="display:grid;gap:5px;margin:0;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);min-width:180px;flex:1.1">Couple
           <select id="moodCouple" onchange="moodCoupleChanged()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);width:100%"></select>
@@ -1566,7 +1566,7 @@ body.cw10-client-mode .vtabs{margin-top:14px}
       <span id="shotEditMeta">Hide ▾</span>
     </div>
     <div class="act-body">
-      <p class="hint" style="margin:10px 0 8px">Studio keeps one common list for each of these nine events. In Clients → Planning you choose which list an event uses for Candid and Traditional.</p>
+      <p class="hint" style="margin:10px 0 8px">Nine studio defaults, plus any future events you add. Each event has its own Candid and Traditional list. In Clients → Planning you choose which list an event uses.</p>
       <input id="shotEdType" type="hidden" value="">
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
         <div style="display:flex;gap:6px;padding:3px;border:1px solid var(--line);border-radius:8px;background:#fff">
@@ -1576,12 +1576,14 @@ body.cw10-client-mode .vtabs{margin-top:14px}
         <select id="shotEdTeam" onchange="loadShotEd()" style="display:none">
           <option value="candid">Candid</option><option value="traditional">Traditional</option>
         </select>
+        <button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="shotEdAddCustom()">+ Add event</button>
       </div>
       <div id="shotEdPicker" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px"></div>
       <div id="shotEdMeta" class="hint" style="margin:0 0 8px"></div>
       <textarea id="shotEdArea" rows="10" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:var(--body);font-size:14px;color:var(--ink);line-height:1.6;resize:vertical"></textarea>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
         <button class="btn-mini" onclick="saveShotEd()">Save this list</button>
+        <button type="button" class="btn-mini" id="shotEdRemoveExtra" style="display:none;background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="shotEdRemoveCustom()">Remove custom event</button>
       </div>
     </div>
   </div>
@@ -1719,6 +1721,7 @@ let planHidden = {};     // rowKey -> true; deleted planner rows (survives sheet
 let sentSnaps = {};      // personKey -> {at, items:{iso|couple:{iso,couple,event,role}}} — last-sent schedule baselines (survives sheet sync)
 let shotSubs = {};       // shotChecklists: pushId -> {client,eventType,eventDate,team,crewName,startTime,endTime,items[],submittedAt}
 let shotLists = {};      // shotLists: eventKey -> {candid:[],traditional:[]} — editable defaults for the crew pages
+let shotListExtras = {}; // shotListExtras: key -> {name} — future custom shot-list events
 let shotMoods = {};      // shotMoods: groupKey -> {url} — mood board link per event
 let shotEventMoods = {}; // shotEventMoods: category -> {name,url,active} — common reusable event boards
 let crewProfiles = {};   // crewProfiles: Firebase uid -> one-time crew profile
@@ -1834,12 +1837,13 @@ function start(){
   db.ref('sentSnaps').on('value',s=>{sentSnaps=s.val()||{};renderPlanTeam();});
   db.ref('shotChecklists').on('value',s=>{shotSubs=s.val()||{};renderShots();renderClientsWorkspace();});
   db.ref('shotLists').on('value',s=>{shotLists=s.val()||{};loadShotEd();refreshShotTypeOptions();ciChecklistStatus();renderClientsWorkspace();});
+  db.ref('shotListExtras').on('value',s=>{shotListExtras=s.val()||{};refreshShotEditTypeOptions();renderClientsWorkspace();});
   db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();renderClientsWorkspace();});
   db.ref('shotEventMoods').on('value',s=>{shotEventMoods=s.val()||{};renderEventBoards();renderClientsWorkspace();});
   db.ref('crewProfiles').on('value',s=>{crewProfiles=s.val()||{};renderCheckinTeam();renderCrewProfiles();renderClientsWorkspace();});
   db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};checkinEventsLoaded=true;renderCheckinEvents();ensureApprovedClientShoots();renderClientsWorkspace();});
   db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};ciBackfillVenuePins();renderCheckinEvents();renderClientsWorkspace();});
-  db.ref('clientForms').on('value',s=>{clientForms=s.val()||{};clientFormsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();});
+  db.ref('clientForms').on('value',s=>{clientForms=s.val()||{};clientFormsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();renderMoodSec();});
   db.ref('clientSubmissions').on('value',s=>{clientSubmissions=s.val()||{};clientSubmissionsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();});
   db.ref('clientApprovals').on('value',s=>{clientApprovals=s.val()||{};clientApprovalsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();});
   document.getElementById('footNote').textContent='Private shared ledger. Signed in as '+editor+'.';
@@ -4416,22 +4420,44 @@ function shotListStorageKey(name){
   const key=shotListKey(name);
   return SHOT_LIST_STORAGE_ALIASES[key]||key;
 }
+function shotExtraNames(){
+  return Object.values(shotListExtras||{}).map(x=>{
+    if(!x)return '';
+    if(typeof x==='string')return x.trim();
+    return String(x.name||'').trim();
+  }).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+}
+function shotAllEventNames(){
+  const byKey=new Map();
+  SHOT_CORE_EVENTS.forEach(name=>byKey.set(shotListStorageKey(name),{name,group:'core'}));
+  shotExtraNames().forEach(name=>{
+    const key=shotListStorageKey(name);
+    if(!byKey.has(key))byKey.set(key,{name,group:'custom'});
+  });
+  return [...byKey.values()];
+}
+function shotIsCustomEvent(name){
+  const key=shotListStorageKey(name);
+  return !SHOT_CORE_EVENTS.some(n=>shotListStorageKey(n)===key)&&shotExtraNames().some(n=>shotListStorageKey(n)===key);
+}
 function shotCoreLabelForKey(key){
   const wanted=String(key||'');
-  return SHOT_CORE_EVENTS.find(name=>shotListStorageKey(name)===wanted)||prettyShotType(wanted);
+  const hit=shotAllEventNames().find(x=>shotListStorageKey(x.name)===wanted);
+  return hit?hit.name:prettyShotType(wanted);
 }
 function shotListGuessKey(eventName){
+  const all=shotAllEventNames();
   const direct=shotListStorageKey(eventName);
-  if(SHOT_CORE_EVENTS.some(name=>shotListStorageKey(name)===direct))return direct;
+  if(all.some(x=>shotListStorageKey(x.name)===direct))return direct;
   for(const part of eventTypeParts(eventName)){
     const key=shotListStorageKey(part);
-    if(SHOT_CORE_EVENTS.some(name=>shotListStorageKey(name)===key))return key;
+    if(all.some(x=>shotListStorageKey(x.name)===key))return key;
   }
   return '';
 }
 function shotCoreSelectOptions(selectedKey,includeAuto=false){
   const selected=String(selectedKey||'');
-  return `${includeAuto?`<option value="">Auto · match event name</option>`:'<option value="">Choose shot list…</option>'}`+SHOT_CORE_EVENTS.map(name=>{
+  return `${includeAuto?`<option value="">Auto · match event name</option>`:'<option value="">Choose shot list…</option>'}`+shotAllEventNames().map(({name})=>{
     const key=shotListStorageKey(name);
     return `<option value="${esc(key)}" ${selected===key?'selected':''}>${esc(name)}</option>`;
   }).join('');
@@ -4448,7 +4474,7 @@ function shotListStatus(name){
   return {key,candid:count('candid'),traditional:count('traditional')};
 }
 function shotEditCatalog(){
-  return SHOT_CORE_EVENTS.map(name=>({name,key:shotListStorageKey(name),group:'core'}));
+  return shotAllEventNames().map(x=>({name:x.name,key:shotListStorageKey(x.name),group:x.group}));
 }
 function refreshShotEditTypeOptions(){
   renderShotEditPicker();
@@ -4465,8 +4491,10 @@ function renderShotEditPicker(){
   box.innerHTML=all.map(x=>{
     const st=shotListStatus(x.name),team=document.getElementById('shotEdTeam')?.value||'candid',side=st[team],on=shotListStorageKey(selected)===x.key;
     const badge=side.source==='saved'?`${side.count} saved`:side.source==='default'?`${side.count} default`:'empty';
-    return `<button type="button" class="btn-mini" onclick="shotEdSelectEvent(decodeURIComponent('${encodeURIComponent(x.name)}'))" style="margin:0;${on?'':'background:transparent;color:var(--ink);border:1px solid var(--line)'}" title="${esc(x.name)}">${esc(x.name)} <small style="opacity:.75">${esc(badge)}</small></button>`;
+    return `<button type="button" class="btn-mini" onclick="shotEdSelectEvent(decodeURIComponent('${encodeURIComponent(x.name)}'))" style="margin:0;${on?'':'background:transparent;color:var(--ink);border:1px solid var(--line)'}" title="${esc(x.name)}">${esc(x.name)}${x.group==='custom'?' · custom':''} <small style="opacity:.75">${esc(badge)}</small></button>`;
   }).join('');
+  const removeBtn=document.getElementById('shotEdRemoveExtra');
+  if(removeBtn)removeBtn.style.display=shotIsCustomEvent(selected)?'':'none';
   shotEdSyncTeamButtons();
   updateShotEdMeta();
 }
@@ -4488,9 +4516,34 @@ function shotEdSyncTeamButtons(){
 function updateShotEdMeta(){
   const meta=document.getElementById('shotEdMeta'); if(!meta)return;
   const name=document.getElementById('shotEdType')?.value||'',team=document.getElementById('shotEdTeam')?.value||'candid';
-  if(!name){meta.textContent='Pick one of the nine studio events above.';return;}
+  if(!name){meta.textContent='Pick an event above, or add a future one.';return;}
   const st=shotListStatus(name),side=st[team];
-  meta.textContent=`Editing ${name} · ${team} · ${side.source==='saved'?`${side.count} saved shots`:(side.source==='default'?`${side.count} default shots — save to customise`:'No shots yet')}`;
+  meta.textContent=`Editing ${name} · ${team} · ${side.source==='saved'?`${side.count} saved shots`:(side.source==='default'?`${side.count} default shots — save to customise`:'No shots yet')} · switch Candid/Traditional above for the other list`;
+}
+function shotEdAddCustom(){
+  if(!liveMode){toast('Needs live sync to save.');return;}
+  const name=String(prompt('New event name for shot lists (Candid + Traditional):')||'').trim();
+  if(!name)return;
+  const key=shotListStorageKey(name);
+  if(SHOT_CORE_EVENTS.some(n=>shotListStorageKey(n)===key)){toast('That event already exists in the studio defaults.');shotEdSelectEvent(SHOT_CORE_EVENTS.find(n=>shotListStorageKey(n)===key));return;}
+  if(shotExtraNames().some(n=>shotListStorageKey(n)===key)){toast('That custom event already exists.');shotEdSelectEvent(shotExtraNames().find(n=>shotListStorageKey(n)===key));return;}
+  db.ref('shotListExtras/'+key).set({name,by:editor,at:stamp()}).then(()=>{
+    toast(`Added “${name}”. Edit Candid and Traditional lists separately.`);
+    log(`added custom shot-list event: ${name}`);
+    shotEdSelectEvent(name);
+  }).catch(()=>toast('Could not add the event. Please try again.'));
+}
+function shotEdRemoveCustom(){
+  if(!liveMode)return;
+  const name=document.getElementById('shotEdType')?.value||'';
+  if(!shotIsCustomEvent(name)){toast('Studio default events cannot be removed.');return;}
+  if(!confirm(`Remove custom event “${name}” from shot lists?\n\nSaved Candid/Traditional lists for it will stay in the database until cleared separately.`))return;
+  const key=shotListStorageKey(name);
+  db.ref('shotListExtras/'+key).remove().then(()=>{
+    toast(`Removed “${name}”.`);
+    shotEdSelectEvent(SHOT_CORE_EVENTS[0]);
+    renderShotEditPicker();
+  }).catch(()=>toast('Could not remove the event.'));
 }
 function toggleShotEdit(){
   const s=document.getElementById('shotEditSec');
@@ -4502,6 +4555,8 @@ function loadShotEd(){
   const area=document.getElementById('shotEdArea'); if(!area)return;
   const name=document.getElementById('shotEdType')?.value.trim()||'',t=shotListStorageKey(name), tm=document.getElementById('shotEdTeam')?.value||'candid';
   shotEdSyncTeamButtons();updateShotEdMeta();
+  const removeBtn=document.getElementById('shotEdRemoveExtra');
+  if(removeBtn)removeBtn.style.display=shotIsCustomEvent(name)?'':'none';
   if(!name){area.value='';area.placeholder='Pick an event above to edit its common shot list.';return;}
   area.placeholder='Add one shot per line';
   const remote=shotLists&&shotLists[t]&&shotLists[t][tm];
@@ -4513,7 +4568,7 @@ function saveShotEd(){
   const name=document.getElementById('shotEdType')?.value.trim()||'',t=shotListStorageKey(name), tm=document.getElementById('shotEdTeam')?.value||'candid';
   const arr=document.getElementById('shotEdArea').value.split('\n').map(x=>x.trim()).filter(Boolean);
   if(!name){toast('Pick an event first.');return;}
-  if(!SHOT_CORE_EVENTS.some(x=>shotListStorageKey(x)===t)){toast('Shot lists are limited to the nine studio events.');return;}
+  if(!shotAllEventNames().some(x=>shotListStorageKey(x.name)===t)){toast('Choose a studio event or add a custom one first.');return;}
   if(!arr.length){toast('The list is empty — add at least one shot.');return;}
   db.ref('shotLists/'+t+'/'+tm).set(arr).then(()=>{
     log('updated '+tm+' shot list for '+name+' ('+arr.length+' shots)');
@@ -4554,30 +4609,45 @@ function moodParseChoice(value){
   const date=raw.slice(0,i),name=raw.slice(i+1).trim();
   return date&&name?{date,name}:null;
 }
+function moodCouplesAdmin(){
+  const today=ciTodayIso(),map={};
+  Object.entries(plans||{}).forEach(([key,p])=>{
+    if(!p||!p.iso||!p.couple||planHidden[key])return;
+    const name=String(p.couple).trim(); if(!name)return;
+    if(!map[name]||p.iso<map[name])map[name]=p.iso;
+  });
+  const rows=Object.entries(map);
+  if(rows.length)return rows.sort((a,b)=>{
+    const aUp=a[1]>=today?0:1,bUp=b[1]>=today?0:1;
+    return aUp-bUp||a[1].localeCompare(b[1])||a[0].localeCompare(b[0]);
+  });
+  return upcomingCouplesAdmin();
+}
 function moodEventsForCouple(couple){
   const who=String(couple||'').trim(),found=new Map();
   const add=(date,name)=>{
-    const eventName=String(name||'').trim(); if(!who||!date||!eventName)return;
-    eventTypeParts(eventName).forEach(part=>{
-      const key=`${date}|${shotListKey(part)}`;
-      if(!found.has(key))found.set(key,{date,name:part});
+    const raw=String(name||'').trim(); if(!who||!date||!raw||raw==='—')return;
+    const parts=eventTypeParts(raw);
+    (parts.length?parts:[raw]).forEach(part=>{
+      const eventName=String(part||'').trim(); if(!eventName)return;
+      const key=`${date}|${shotListKey(eventName)}`;
+      if(!found.has(key))found.set(key,{date,name:eventName});
     });
   };
+  // Primary: Crew Planner rows for this couple — one option per day/event part
+  Object.entries(plans||{}).forEach(([key,p])=>{
+    if(!p||!p.iso||planHidden[key]||cwKey(p.couple)!==cwKey(who))return;
+    add(p.iso,p.event);
+  });
+  if(found.size)return [...found.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name));
+  // Fallback if Planner has no rows yet
   Object.values(clientForms||{}).forEach(f=>{
     if(!f||cwKey(f.couple)!==cwKey(who))return;
-    Object.values(f.events||{}).forEach(e=>{if(e&&e.date)add(e.date,e.name);});
+    Object.values(f.events||{}).forEach(e=>{if(e&&e.date&&e.name)add(e.date,e.name);});
   });
   Object.values(checkinEvents||{}).forEach(e=>{
     if(!e||cwKey(e.couple)!==cwKey(who)||!e.date)return;
     ciEventNames(e).forEach(name=>add(e.date,name));
-  });
-  const map=calendarCoupleMap(),row=map[who]||Object.entries(map).find(([n])=>cwKey(n)===cwKey(who))?.[1];
-  if(row){
-    (row.dates||[]).forEach(date=>{(row.events&&row.events[date]||[]).forEach(name=>add(date,name));});
-  }
-  Object.values(plans||{}).forEach(p=>{
-    if(!p||!p.iso||cwKey(p.couple)!==cwKey(who))return;
-    add(p.iso,p.event);
   });
   return [...found.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name));
 }
@@ -4589,7 +4659,7 @@ function toggleMoodSec(){
 function renderMoodSec(){
   const sel=document.getElementById('moodCouple'); if(!sel)return;
   const keepCouple=sel.value,keepChoice=document.getElementById('moodEventChoice')?.value||'';
-  const ups=upcomingCouplesAdmin(),today=ciTodayIso();
+  const ups=moodCouplesAdmin(),today=ciTodayIso();
   sel.innerHTML='<option value="">Pick the couple…</option>'+ups.map(([n,iso])=>`<option value="${esc(n)}">${esc(n)} · ${iso>=today?`from ${esc(fmt(iso))}`:`last ${esc(fmt(iso))}`}</option>`).join('');
   if(keepCouple)sel.value=keepCouple;
   moodCoupleChanged(keepChoice);
@@ -4618,8 +4688,8 @@ function moodCoupleChanged(keepChoice=''){
   if(hint){
     hint.style.display='';
     hint.textContent=events.length
-      ?`${events.length} exact event${events.length===1?'':'s'} ready — pick one event (not a combined day), then paste the link.`
-      :'No exact events found yet. Create the private client link or add the wedding in Dates / Planner first.';
+      ?`${events.length} Crew Planner event${events.length===1?'':'s'} · each day/event is listed separately.`
+      :'No Crew Planner rows for this couple yet. Add them in Crew Planner first.';
   }
   moodEventChoiceChanged();
 }
@@ -4910,8 +4980,8 @@ function cwOpenShoot(id){
 function cwOpenSettings(eventName){
   setView('settings');const sec=document.getElementById('shotEditSec');if(sec&&!sec.classList.contains('open'))toggleShotEdit();
   const wanted=String(eventName||'').trim();
-  const match=SHOT_CORE_EVENTS.find(name=>shotListStorageKey(name)===shotListStorageKey(wanted)||name.toLowerCase()===wanted.toLowerCase())||wanted;
-  if(match)shotEdSelectEvent(match);else{renderShotEditPicker();loadShotEd();}
+  const match=shotAllEventNames().find(x=>shotListStorageKey(x.name)===shotListStorageKey(wanted)||x.name.toLowerCase()===wanted.toLowerCase());
+  if(match)shotEdSelectEvent(match.name);else if(wanted)shotEdSelectEvent(wanted);else{renderShotEditPicker();loadShotEd();}
   setTimeout(()=>sec?.scrollIntoView({behavior:'smooth',block:'start'}),60);
 }
 function cwOpenBusiness(id){openProdId=id;setView('business');renderProd();setTimeout(()=>document.getElementById('prodList')?.scrollIntoView({behavior:'smooth',block:'start'}),60);}
