@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.2.8-settings-shotlists-2026-07-30">
+<meta name="totw-build" content="v12.2.9-shotlist-nine-2026-07-30">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1566,10 +1566,9 @@ body.cw10-client-mode .vtabs{margin-top:14px}
       <span id="shotEditMeta">Hide ▾</span>
     </div>
     <div class="act-body">
-      <p class="hint" style="margin:10px 0 8px">Start with the core studio events. Search only if you need a rarer name. One common list applies to every couple with that event name.</p>
+      <p class="hint" style="margin:10px 0 8px">Studio keeps one common list for each of these nine events. In Clients → Planning you choose which list an event uses for Candid and Traditional.</p>
       <input id="shotEdType" type="hidden" value="">
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
-        <input id="shotEdSearch" type="search" placeholder="Search events…" oninput="renderShotEditPicker()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:200px;flex:1">
         <div style="display:flex;gap:6px;padding:3px;border:1px solid var(--line);border-radius:8px;background:#fff">
           <button type="button" class="btn-mini" id="shotEdTeamCandid" onclick="shotEdSetTeam('candid')" style="margin:0">Candid</button>
           <button type="button" class="btn-mini" id="shotEdTeamTraditional" onclick="shotEdSetTeam('traditional')" style="margin:0;background:transparent;color:var(--ink-soft);border:0">Traditional</button>
@@ -1583,7 +1582,6 @@ body.cw10-client-mode .vtabs{margin-top:14px}
       <textarea id="shotEdArea" rows="10" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:var(--body);font-size:14px;color:var(--ink);line-height:1.6;resize:vertical"></textarea>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
         <button class="btn-mini" onclick="saveShotEd()">Save this list</button>
-        <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="shotEdAddCustom()">+ Custom event</button>
       </div>
     </div>
   </div>
@@ -4412,9 +4410,34 @@ function refreshShotTypeOptions(){
   el.innerHTML=plannerEventTypes().map(name=>`<option value="${esc(name)}">`).join('');
   refreshShotEditTypeOptions();
 }
-const SHOT_CORE_EVENTS=['Bride Making','Groom Making','Haldi','Mehndi','Sangeet','Cocktail','Engagement','Wedding','Ceremony','Reception','Edurukollu','Baraat','Couple Portraits'];
+const SHOT_CORE_EVENTS=['Engagement','Bride Making','Groom Making','Haldi','Mehendi','Wedding','Reception','Sangeet','Cocktail Party'];
+const SHOT_LIST_STORAGE_ALIASES={mehendi:'mehndi',mehandi:'mehndi',mehndi:'mehndi',cocktail:'cocktail-party','cocktail-party':'cocktail-party',wedding:'ceremony',ceremony:'ceremony'};
+function shotListStorageKey(name){
+  const key=shotListKey(name);
+  return SHOT_LIST_STORAGE_ALIASES[key]||key;
+}
+function shotCoreLabelForKey(key){
+  const wanted=String(key||'');
+  return SHOT_CORE_EVENTS.find(name=>shotListStorageKey(name)===wanted)||prettyShotType(wanted);
+}
+function shotListGuessKey(eventName){
+  const direct=shotListStorageKey(eventName);
+  if(SHOT_CORE_EVENTS.some(name=>shotListStorageKey(name)===direct))return direct;
+  for(const part of eventTypeParts(eventName)){
+    const key=shotListStorageKey(part);
+    if(SHOT_CORE_EVENTS.some(name=>shotListStorageKey(name)===key))return key;
+  }
+  return '';
+}
+function shotCoreSelectOptions(selectedKey,includeAuto=false){
+  const selected=String(selectedKey||'');
+  return `${includeAuto?`<option value="">Auto · match event name</option>`:'<option value="">Choose shot list…</option>'}`+SHOT_CORE_EVENTS.map(name=>{
+    const key=shotListStorageKey(name);
+    return `<option value="${esc(key)}" ${selected===key?'selected':''}>${esc(name)}</option>`;
+  }).join('');
+}
 function shotListStatus(name){
-  const key=shotListKey(name),remote=shotLists&&shotLists[key]||{},def=SHOT_DEFAULTS[key]||{};
+  const key=shotListStorageKey(name),remote=shotLists&&shotLists[key]||{},def=SHOT_DEFAULTS[key]||{};
   const count=tm=>{
     const v=remote[tm];
     const arr=Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);
@@ -4425,22 +4448,7 @@ function shotListStatus(name){
   return {key,candid:count('candid'),traditional:count('traditional')};
 }
 function shotEditCatalog(){
-  const byKey=new Map();
-  const add=(name,group)=>{
-    const clean=String(name||'').trim(); if(!clean)return;
-    const key=shotListKey(clean); if(!key)return;
-    const cur=byKey.get(key);
-    if(!cur){byKey.set(key,{name:clean,key,group});return;}
-    if(cur.group!=='core'&&group==='core'){cur.name=clean;cur.group='core';}
-  };
-  SHOT_CORE_EVENTS.forEach(name=>add(name,'core'));
-  Object.keys(SHOT_DEFAULTS||{}).forEach(key=>add(prettyShotType(key),'core'));
-  Object.keys(shotLists||{}).forEach(key=>add(prettyShotType(key),'saved'));
-  plannerEventTypes().forEach(name=>add(name,'other'));
-  return [...byKey.values()].sort((a,b)=>{
-    const rank={core:0,saved:1,other:2};
-    return (rank[a.group]-rank[b.group])||a.name.localeCompare(b.name);
-  });
+  return SHOT_CORE_EVENTS.map(name=>({name,key:shotListStorageKey(name),group:'core'}));
 }
 function refreshShotEditTypeOptions(){
   renderShotEditPicker();
@@ -4449,20 +4457,16 @@ function renderShotEditPicker(){
   const box=document.getElementById('shotEdPicker'); if(!box)return;
   const typeEl=document.getElementById('shotEdType');
   let selected=typeEl?.value||'';
-  const q=String(document.getElementById('shotEdSearch')?.value||'').trim().toLowerCase();
   const all=shotEditCatalog();
   if(!selected){
-    const first=all.find(x=>x.group==='core')||all[0];
+    const first=all[0];
     if(first&&typeEl){typeEl.value=first.name;selected=first.name;loadShotEd();}
   }
-  let rows=all.filter(x=>!q||x.name.toLowerCase().includes(q)||x.key.includes(q));
-  if(!q)rows=rows.filter(x=>x.group==='core'||x.group==='saved'||shotListKey(x.name)===shotListKey(selected));
-  if(!rows.length){box.innerHTML='<div class="empty" style="padding:8px 2px">No events match that search.</div>';shotEdSyncTeamButtons();updateShotEdMeta();return;}
-  box.innerHTML=rows.map(x=>{
-    const st=shotListStatus(x.name),team=document.getElementById('shotEdTeam')?.value||'candid',side=st[team],on=shotListKey(selected)===x.key;
+  box.innerHTML=all.map(x=>{
+    const st=shotListStatus(x.name),team=document.getElementById('shotEdTeam')?.value||'candid',side=st[team],on=shotListStorageKey(selected)===x.key;
     const badge=side.source==='saved'?`${side.count} saved`:side.source==='default'?`${side.count} default`:'empty';
     return `<button type="button" class="btn-mini" onclick="shotEdSelectEvent(decodeURIComponent('${encodeURIComponent(x.name)}'))" style="margin:0;${on?'':'background:transparent;color:var(--ink);border:1px solid var(--line)'}" title="${esc(x.name)}">${esc(x.name)} <small style="opacity:.75">${esc(badge)}</small></button>`;
-  }).join('')+(q?'':`<button type="button" class="btn-mini" onclick="document.getElementById('shotEdSearch').focus()" style="margin:0;background:transparent;color:var(--ink-soft);border:1px dashed var(--line)">Search more events…</button>`);
+  }).join('');
   shotEdSyncTeamButtons();
   updateShotEdMeta();
 }
@@ -4484,15 +4488,9 @@ function shotEdSyncTeamButtons(){
 function updateShotEdMeta(){
   const meta=document.getElementById('shotEdMeta'); if(!meta)return;
   const name=document.getElementById('shotEdType')?.value||'',team=document.getElementById('shotEdTeam')?.value||'candid';
-  if(!name){meta.textContent='Pick a core event above, or search for a rarer name.';return;}
+  if(!name){meta.textContent='Pick one of the nine studio events above.';return;}
   const st=shotListStatus(name),side=st[team];
   meta.textContent=`Editing ${name} · ${team} · ${side.source==='saved'?`${side.count} saved shots`:(side.source==='default'?`${side.count} default shots — save to customise`:'No shots yet')}`;
-}
-function shotEdAddCustom(){
-  const name=prompt('Custom event name for this common shot list:');
-  if(!name||!name.trim())return;
-  shotEdSelectEvent(name.trim());
-  toast(`Editing “${name.trim()}”. Add shots, then save.`);
 }
 function toggleShotEdit(){
   const s=document.getElementById('shotEditSec');
@@ -4502,7 +4500,7 @@ function toggleShotEdit(){
 }
 function loadShotEd(){
   const area=document.getElementById('shotEdArea'); if(!area)return;
-  const name=document.getElementById('shotEdType')?.value.trim()||'',t=shotListKey(name), tm=document.getElementById('shotEdTeam')?.value||'candid';
+  const name=document.getElementById('shotEdType')?.value.trim()||'',t=shotListStorageKey(name), tm=document.getElementById('shotEdTeam')?.value||'candid';
   shotEdSyncTeamButtons();updateShotEdMeta();
   if(!name){area.value='';area.placeholder='Pick an event above to edit its common shot list.';return;}
   area.placeholder='Add one shot per line';
@@ -4512,9 +4510,10 @@ function loadShotEd(){
 }
 function saveShotEd(){
   if(!liveMode){toast('Needs live sync to save.');return;}
-  const name=document.getElementById('shotEdType')?.value.trim()||'',t=shotListKey(name), tm=document.getElementById('shotEdTeam')?.value||'candid';
+  const name=document.getElementById('shotEdType')?.value.trim()||'',t=shotListStorageKey(name), tm=document.getElementById('shotEdTeam')?.value||'candid';
   const arr=document.getElementById('shotEdArea').value.split('\n').map(x=>x.trim()).filter(Boolean);
   if(!name){toast('Pick an event first.');return;}
+  if(!SHOT_CORE_EVENTS.some(x=>shotListStorageKey(x)===t)){toast('Shot lists are limited to the nine studio events.');return;}
   if(!arr.length){toast('The list is empty — add at least one shot.');return;}
   db.ref('shotLists/'+t+'/'+tm).set(arr).then(()=>{
     log('updated '+tm+' shot list for '+name+' ('+arr.length+' shots)');
@@ -4829,10 +4828,11 @@ function cwUnifiedEvents(entry,formRow=cwPrimaryForm(entry),shoots=null){
   }).filter(e=>e.date).sort((a,b)=>a.date.localeCompare(b.date)||String(a.details&&a.details.startTime||'23:59').localeCompare(String(b.details&&b.details.startTime||'23:59'))||a.order-b.order||a.name.localeCompare(b.name));
 }
 function cwListItems(eventName,team,assignedKey=''){
-  const key=assignedKey||shotListKey(eventName),remote=shotLists&&shotLists[key]&&shotLists[key][team];
+  const key=assignedKey||shotListStorageKey(eventName)||shotListKey(eventName);
+  const remote=shotLists&&shotLists[key]&&shotLists[key][team];
   const arr=Array.isArray(remote)?remote:(remote&&typeof remote==='object'?Object.values(remote):[]);
   if(arr.length)return {items:arr,source:'Assigned common list',key};
-  const fallback=(SHOT_DEFAULTS[shotListKey(eventName)]&&SHOT_DEFAULTS[shotListKey(eventName)][team])||[];
+  const fallback=(SHOT_DEFAULTS[key]&&SHOT_DEFAULTS[key][team])||[];
   return {items:fallback,source:fallback.length?'Built-in safety list':'No list assigned',key};
 }
 function cwShootResource(id,e){
@@ -4909,7 +4909,9 @@ function cwOpenShoot(id){
 }
 function cwOpenSettings(eventName){
   setView('settings');const sec=document.getElementById('shotEditSec');if(sec&&!sec.classList.contains('open'))toggleShotEdit();
-  if(eventName)shotEdSelectEvent(eventName);else{renderShotEditPicker();loadShotEd();}
+  const wanted=String(eventName||'').trim();
+  const match=SHOT_CORE_EVENTS.find(name=>shotListStorageKey(name)===shotListStorageKey(wanted)||name.toLowerCase()===wanted.toLowerCase())||wanted;
+  if(match)shotEdSelectEvent(match);else{renderShotEditPicker();loadShotEd();}
   setTimeout(()=>sec?.scrollIntoView({behavior:'smooth',block:'start'}),60);
 }
 function cwOpenBusiness(id){openProdId=id;setView('business');renderProd();setTimeout(()=>document.getElementById('prodList')?.scrollIntoView({behavior:'smooth',block:'start'}),60);}
@@ -5261,8 +5263,11 @@ function ciDateChanged(){
   document.getElementById('ciEvent').value='';document.getElementById('ciMapLink').value='';document.getElementById('ciVenueLat').value='';document.getElementById('ciVenueLng').value='';document.getElementById('ciVenueName').value='';document.getElementById('ciFunctionStart').value='';document.getElementById('ciFunctionEnd').value='';toggleCiManualEvent(false);renderCiEventChoices(available.length===1?[ciEventRefKey(available[0])]:[]);ciApplyPlannerRow(row);ciEventsChanged();
 }
 function ciListExists(eventName,team){
-  const exact=shotListKey(eventName),fallback=({'pellikuthuru':'haldi','mangala-snanam':'haldi','mehendi':'mehndi','cocktail':'sangeet','sangeet-cocktail':'sangeet','after-party':'sangeet','wedding-ceremony':'ceremony','wedding':'ceremony','muhurtham':'ceremony','pheras':'ceremony','edurukollu':'ceremony'})[exact]||exact;
-  return [exact,fallback].some(k=>{const v=shotLists&&shotLists[k]&&shotLists[k][team];return !!((Array.isArray(v)&&v.length)||(v&&typeof v==='object'&&Object.keys(v).length));})||!!(SHOT_DEFAULTS[fallback]&&SHOT_DEFAULTS[fallback][team]&&SHOT_DEFAULTS[fallback][team].length);
+  const keys=[shotListStorageKey(eventName),shotListKey(eventName)].filter(Boolean);
+  return [...new Set(keys)].some(k=>{
+    const v=shotLists&&shotLists[k]&&shotLists[k][team];
+    return !!((Array.isArray(v)&&v.length)||(v&&typeof v==='object'&&Object.keys(v).length)||(SHOT_DEFAULTS[k]&&SHOT_DEFAULTS[k][team]&&SHOT_DEFAULTS[k][team].length));
+  });
 }
 function ciChecklistStatus(){
   const box=document.getElementById('ciChecklistResult');if(!box)return;
@@ -6122,10 +6127,13 @@ function cw11GetPlanDraft(state,event){
     CW11_CANDID_ROLES.concat(CW11_TRADITIONAL_ROLES).forEach(role=>{requirements[role]=1;});
   }
   const assignment=shoot?ciResourceAssignment(shoot,event.name):{};
+  const guessed=shotListGuessKey(event.name);
   const draft={
     key,clientKey:state.entry.key,formId:event.formId,eventId:event.eventId,shootId:shootId||'',dirty:false,
     date:event.date,eventName:event.name,startTime,endTime,teamArrival,crew,requirements,
     extras:ciExtrasText(shoot&&(shoot.eventExtras||shoot.extras)),
+    candidListKey:assignment.candidListKey||guessed||'',
+    traditionalListKey:assignment.traditionalListKey||guessed||'',
     pinterestUrl:assignment.pinterestUrl||'',
     arrivalMode:shoot&&shoot.reportingTimeMode||((shoot&&shoot.reportingTime&&shoot.reportingTime!==autoArrival)?'manual':'auto'),
     endMode:shoot&&shoot.functionEndMode||(shoot&&shoot.functionEnd&&shoot.functionEnd!==clientEnd?'manual':clientEnd?'client':'auto'),
@@ -6179,6 +6187,12 @@ function cw11SetPlanTime(eventId,field,value){
 function cw11SetExtras(eventId,value){
   const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft)return;
   draft.extras=ciExtrasText(value);cw11MarkDraft(draft);
+}
+function cw11SetShotList(eventId,team,value){
+  const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft)return;
+  const key=String(value||'').trim();
+  if(team==='traditional')draft.traditionalListKey=key;else draft.candidListKey=key;
+  cw11MarkDraft(draft);renderClientsWorkspace();
 }
 function cw11SetPinterest(eventId,value){
   const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft)return;
@@ -6244,7 +6258,9 @@ function cw11CopyTeam(eventId,sourceEventId){
   const draft=cw11GetPlanDraft(state,event),from=cw11GetPlanDraft(state,source);if(!Object.keys(from.crew||{}).length){toast('That event does not have a team yet.');return;}
   if(cw11EventStarted(draft)){toast('This event team is locked because a crew member has checked in.');return;}
   draft.crew={};Object.entries(from.crew).forEach(([uid,c])=>{draft.crew[uid]={...ciClone(c),arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false};});
-  draft.requirements=ciClone(from.requirements);draft.extras=ciExtrasText(from.extras);cw11MarkDraft(draft);renderClientsWorkspace();toast(`Team copied from ${source.name}.`);
+  draft.requirements=ciClone(from.requirements);draft.extras=ciExtrasText(from.extras);
+  draft.candidListKey=from.candidListKey||'';draft.traditionalListKey=from.traditionalListKey||'';
+  cw11MarkDraft(draft);renderClientsWorkspace();toast(`Team copied from ${source.name}.`);
 }
 function cw11PlanPayload(state,event,draft){
   if(!draft.startTime)return {error:`Add the event start time for ${event.name}.`};
@@ -6268,7 +6284,7 @@ function cw11PlanPayload(state,event,draft){
     clientNotes:details.notes||old.clientNotes||null,clientFormId:event.formId,clientEventId:event.eventId,crew,
     crewRequirements:ciClone(draft.requirements||old.crewRequirements||{}),eventExtras:ciExtrasText(draft.extras)||null,resourceAssignments:(()=>{
       const key=shotListKey(event.name),prev=old.resourceAssignments&&typeof old.resourceAssignments==='object'?ciClone(old.resourceAssignments):{},cur=prev[key]||{};
-      prev[key]={...cur,eventName:event.name,pinterestUrl:draft.pinterestUrl||null,candidListKey:cur.candidListKey||null,traditionalListKey:cur.traditionalListKey||null,portraitMoodUrl:cur.portraitMoodUrl||null,otherMoodUrl:cur.otherMoodUrl||null};
+      prev[key]={...cur,eventName:event.name,pinterestUrl:draft.pinterestUrl||null,candidListKey:draft.candidListKey||null,traditionalListKey:draft.traditionalListKey||null,portraitMoodUrl:cur.portraitMoodUrl||null,otherMoodUrl:cur.otherMoodUrl||null};
       return prev;
     })(),
     plannerSync:old.plannerSync||null,
@@ -6341,7 +6357,8 @@ function cw11RenderPlanning(state,event){
   const teamTitle=crewCount?'Edit team':'Assign team';
   const dirtyCount=cw11DirtyDrafts().length;
   const staff=cw10TeamStaffing(state,event),gapNote=staff.gaps.length?`<div class="cw11-plan-note" style="margin-top:10px"><i>!</i><div><strong>Still needed for this event:</strong>${staff.gaps.map(g=>`${g.code} ${g.count}/${g.required}`).join(' · ')}</div></div>`:'';
-  return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Planning Details</h3><p>${teamTitle}, timings, and an optional Pinterest board for this event.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
+  const candidList=cwListItems(event.name,'candid',draft.candidListKey||''),tradList=cwListItems(event.name,'traditional',draft.traditionalListKey||'');
+  return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Planning Details</h3><p>${teamTitle}, shot lists, timings, and an optional Pinterest board for this event.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
     ${published?'':`<div class="cw11-plan-note"><i>i</i><div><strong>You can finish planning before client approval.</strong>This timing and team stay internal. Approval publishes the same event record to the assigned crew—nothing is duplicated.</div></div>`}
     ${started?`<div class="cw11-plan-note"><i>✓</i><div><strong>This shoot has started.</strong>Operational timings and checked-in assignments are locked to protect the attendance record.</div></div>`:''}
     <div class="cw11-plan-fields"><div class="cw11-field"><label for="cw11StartTime">Event start</label><input id="cw11StartTime" type="time" value="${esc(draft.startTime)}" ${started?'disabled':''} onchange="cw11SetPlanTime('${esc(event.eventId)}','startTime',this.value)"><small>Used as the scheduled shoot start.</small></div>
@@ -6353,8 +6370,12 @@ function cw11RenderPlanning(state,event){
     ${cw11TeamSectionHtml(event.eventId,draft,'Traditional team',CW11_TRADITIONAL_ROLES)}
     <div class="cw11-field" style="margin-top:12px"><label for="cw11Extras">Extras</label><input id="cw11Extras" type="text" value="${esc(draft.extras||'')}" placeholder="e.g. Drone &amp; Live" onchange="cw11SetExtras('${esc(event.eventId)}',this.value)"><small>Service only — type what this event needs. No names.</small></div>
     ${copyOptions?`<div class="cw11-section-actions" style="margin-top:9px"><select aria-label="Copy team from another event" onchange="cw11CopyTeam('${esc(event.eventId)}',this.value);this.value=''"><option value="">Copy team from another event…</option>${copyOptions}</select></div>`:''}</div>
-    <div class="cw11-plan-fields" style="margin-top:14px"><div class="cw11-field" style="grid-column:1/-1"><label for="cw11Pinterest">Optional Pinterest board</label><input id="cw11Pinterest" type="url" value="${esc(draft.pinterestUrl||'')}" placeholder="https://pinterest.com/…" onchange="cw11SetPinterest('${esc(event.eventId)}',this.value)"><small>Optional for this event. If empty, Candid still sees the common board from Settings after check-in.</small></div></div>
-    <div class="cw10-panel-actions" style="margin-top:8px"><button type="button" class="cw10-text" data-event-name="${esc(event.name)}" onclick="cwOpenSettings(this.dataset.eventName)">Open Settings · shot lists &amp; boards</button></div>
+    <div class="cw11-plan-fields" style="margin-top:14px">
+      <div class="cw11-field"><label for="cw11CandidList">Candid shot list</label><select id="cw11CandidList" onchange="cw11SetShotList('${esc(event.eventId)}','candid',this.value)">${shotCoreSelectOptions(draft.candidListKey)}</select><small>${candidList.items.length?`${candidList.items.length} shots · ${esc(candidList.source)}`:'No shots in this list yet — edit in Settings'}</small></div>
+      <div class="cw11-field"><label for="cw11TradList">Traditional shot list</label><select id="cw11TradList" onchange="cw11SetShotList('${esc(event.eventId)}','traditional',this.value)">${shotCoreSelectOptions(draft.traditionalListKey)}</select><small>${tradList.items.length?`${tradList.items.length} shots · ${esc(tradList.source)}`:'No shots in this list yet — edit in Settings'}</small></div>
+      <div class="cw11-field" style="grid-column:1/-1"><label for="cw11Pinterest">Optional Pinterest board</label><input id="cw11Pinterest" type="url" value="${esc(draft.pinterestUrl||'')}" placeholder="https://pinterest.com/…" onchange="cw11SetPinterest('${esc(event.eventId)}',this.value)"><small>Optional for this event. If empty, Candid still sees the common board from Settings after check-in.</small></div>
+    </div>
+    <div class="cw10-panel-actions" style="margin-top:8px"><button type="button" class="cw10-text" data-event-name="${esc(draft.candidListKey?shotCoreLabelForKey(draft.candidListKey):event.name)}" onclick="cwOpenSettings(this.dataset.eventName)">Open Settings · edit shot lists</button></div>
     <footer class="cw11-plan-footer"><div class="cw11-save-copy" id="cw11SaveCopy">${dirtyCount?`<strong class="cw11-plan-dirty">${dirtyCount} unsaved event plan${dirtyCount===1?'':'s'}</strong>`:'<strong>All planning changes saved</strong>'}</div><div class="cw11-save-actions"><button type="button" class="cw10-soft cw11-save-all" id="cw11SaveAll" ${dirtyCount<2?'hidden':''} onclick="cw11SaveAllPlans()">Save all<span class="cw11-save-count">${dirtyCount}</span></button><button type="button" class="cw10-primary" id="cw11SaveCurrent" ${draft.dirty?'':'disabled'} onclick="cw11SaveCurrentPlan()">Save event plan</button></div></footer>
   </section>`;
 }
