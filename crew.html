@@ -181,7 +181,11 @@ const DEFAULT_SHOTS={
  mehndi:{traditional:["Wide of the mehndi setup and seating","Artist's hands applying the design (macro)","Finished mehndi — both hands, both feet","Family group photo","Bride solo portrait showing full mehndi"],candid:["Bride's face mid-application (boredom, excitement, chatting)","Friends dancing or singing in the background","Guests showing off their own mehndi","Grandparents watching from the side","The groom's name hidden in the design, if there is one"]},
  sangeet:{traditional:["Stage and decor wide before the crowd fills in","Each performance group, posed after their act","Couple's entry","Family dance formal frame","Couple portrait against the stage backdrop"],candid:["Mid-dance action, unscripted joining-in moments","Someone missing a step and laughing about it","Couple reacting to performances from their seats","Backstage nerves before a performance","Kids dancing at the edge of the floor"]},
  ceremony:{traditional:["Mandap wide shot before the couple arrives","Baraat / entry formal sequence","Jaimala","Kanyadaan","Saptapadi / pheras","Sindoor","Mangalsutra","Priest and family during key rituals","Formal couple portrait post-ceremony","Full family group photo"],candid:["Bride's expression right before she is led in","Groom's reaction seeing the bride","Parents' faces during kanyadaan","Tears, laughter, or nerves during rituals","Guests reacting in real time","Mangalsutra close-up","Feet during pheras","Hands during rituals"]},
- reception:{traditional:["Stage and decor wide before guests enter","Couple's grand entry","Formal portraits with each side of the family","Cake cutting / ring ceremony if included","Couple solo portraits on the stage"],candid:["Guests' reactions during the entry","First dance or impromptu dancing","Couple in conversation with guests","Kids running around, elders seated and observing","Final goodbye hugs and farewell moments"]}
+ reception:{traditional:["Stage and decor wide before guests enter","Couple's grand entry","Formal portraits with each side of the family","Cake cutting / ring ceremony if included","Couple solo portraits on the stage"],candid:["Guests' reactions during the entry","First dance or impromptu dancing","Couple in conversation with guests","Kids running around, elders seated and observing","Final goodbye hugs and farewell moments"]},
+ engagement:{traditional:["Ring exchange / proposal formal frame","Couple portraits after the moment","Family group celebrating the engagement","Close-up of the ring on the hand","Wide of the venue or setting"],candid:["Genuine reaction at the proposal","Family members congratulating the couple","Quiet in-between glances and laughter","Detail moments: hands, flowers, notes","Guests celebrating in the background"]},
+ "bride-making":{traditional:["Room and decor before preparations begin","Details: attire, jewellery, shoes and accessories","Hair and makeup progression formal frames","Bride with parents / bridal party group","Final reveal portrait before leaving"],candid:["Quiet nerves or laughter during makeup","Mother or sister helping with jewellery","Candid reflections in the mirror","Hands adjusting lehenga or veil","First look reactions from close family"]},
+ "groom-making":{traditional:["Room and outfit details before dressing","Groom formal portrait in full attire","Groom with parents / groomsmen group","Accessories close-ups: watch, shoes, sherwani","Final ready portrait before departure"],candid:["Friends helping him dress","Nervous jokes and side conversations","Father or brother adjusting the outfit","Quiet moment alone before leaving","Reactions when he first sees himself ready"]},
+ "cocktail-party":{traditional:["Stage and decor wide before the crowd fills in","Couple's entry","Each planned performance or toast, posed after","Family dance formal frame","Couple portrait against the party backdrop"],candid:["Mid-dance and unscripted joining-in moments","Couple reacting from their seats or on the floor","Guests laughing between performances","Backstage nerves before a toast or act","Kids and elders at the edge of the celebration"]}
 };
 const MN=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -213,9 +217,12 @@ function defaultShotKey(name){
  return ({
   'haldi':'haldi','pellikuthuru':'haldi','mangala-snanam':'haldi',
   'mehndi':'mehndi','mehendi':'mehndi',
-  'sangeet':'sangeet','cocktail':'sangeet','sangeet-cocktail':'sangeet','after-party':'sangeet',
+  'sangeet':'sangeet','cocktail':'cocktail-party','cocktail-party':'cocktail-party','sangeet-cocktail':'sangeet','after-party':'sangeet',
   'ceremony':'ceremony','wedding-ceremony':'ceremony','wedding':'ceremony','muhurtham':'ceremony','pheras':'ceremony','edurukollu':'ceremony',
-  'reception':'reception'
+  'reception':'reception',
+  'engagement':'engagement',
+  'bride-making':'bride-making','bride-getting-ready':'bride-making',
+  'groom-making':'groom-making','groom-getting-ready':'groom-making'
  })[key]||'';
 }
 function shotItemsFor(eventName,team,assignedKey){
@@ -362,7 +369,6 @@ function resources(){
 }
 function updateProgress(){Object.entries(checklistSections||{}).forEach(([key,section])=>{const list=section.items||[],b=document.getElementById('progressBar_'+key),l=document.getElementById('progressLabel_'+key);if(!b||!l)return;const n=list.filter(x=>x.done).length;b.style.width=`${list.length?n/list.length*100:0}%`;l.textContent=`${n} of ${list.length} ticked`;});}
 function persistAttendance(next){attendance={...attendance,...next,updatedAt:Date.now()};attendanceMap[activeId]=attendance;const snapshot=JSON.parse(JSON.stringify(attendance));attendanceWrite=attendanceWrite.catch(()=>{}).then(()=>db.ref(`crewCheckins/attendance/${activeId}/${user.uid}`).set(snapshot));return attendanceWrite;}
-async function confirmAssignment(){try{await persistAttendance({confirmedAt:Date.now()});toast('Assignment confirmed');renderEvent()}catch(e){toast('Could not confirm. Please try again.') }}
 function checkIn(){
  if(eventDayState(activeEvent&&activeEvent.date)!=='today'){toast('Check-in is available only on the event day.');renderEvent();return}
  const b=document.getElementById('checkBtn');b.disabled=true;b.textContent='Checking location…';

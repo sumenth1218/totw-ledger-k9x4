@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.2.11-mood-from-planner-2026-07-30">
+<meta name="totw-build" content="v12.2.12-go-live-fixes-2026-07-30">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -3352,6 +3352,7 @@ function pkgSet(id,v){
 }
 function stageTog(id,k,checked){
   const p=prods[id];if(!p)return;
+  if(typeof cwProdDeliveriesLocked==='function'&&cwProdDeliveriesLocked(id)){toast('Deliveries unlock after every client shoot is completed.');return;}
   p.stages=p.stages||{};
   const s=stagesFor(p).find(x=>x.k===k)||{l:'Stage'};
   const now=Date.now();
@@ -3384,6 +3385,7 @@ function stageAddToggle(id){
 }
 function stageAddSave(id){
   const p=prods[id];if(!p)return;
+  if(typeof cwProdDeliveriesLocked==='function'&&cwProdDeliveriesLocked(id)){toast('Deliveries unlock after every client shoot is completed.');return;}
   const name=(document.getElementById('stageName-'+id).value||'').trim();
   const owner=document.getElementById('stageOwner-'+id).value||'Team';
   const due=document.getElementById('stageDue-'+id).value||'';
@@ -3398,6 +3400,7 @@ function stageAddSave(id){
 }
 function stageDel(id,k){
   const p=prods[id];if(!p)return;
+  if(typeof cwProdDeliveriesLocked==='function'&&cwProdDeliveriesLocked(id)){toast('Deliveries unlock after every client shoot is completed.');return;}
   const s=stagesFor(p).find(x=>x.k===k);if(!s)return;
   if(s.custom)p.customStages=(p.customStages||[]).filter(x=>x.k!==k);
   else{
@@ -3683,10 +3686,8 @@ function exportClientConfirmationPDF(formId){
   const entry=(formId&&cwDirectory().find(x=>x.formIds&&x.formIds.includes(formId)))||cwEntry();
   if(!entry){toast('Open a client folder first.');return;}
   const state=cwState(entry);if(!state.formId){toast('Create the private client link first.');return;}
-  const events=state.events||[];
-  if(!events.length){toast('No client events are available to export.');return;}
-  const approvedCount=events.filter(e=>cw11EventApprovalState(state,e).approved).length;
-  if(!approvedCount&&!state.submission.submittedAt){toast('Wait until the client has submitted details, then export for confirmation.');return;}
+  const events=(state.events||[]).filter(e=>cw11EventApprovalState(state,e).approved);
+  if(!events.length){toast('Approve at least one event before exporting the confirmation PDF.');return;}
   const contact=state.submission.contact||{};
   const CONFIRM_PDF_CSS=`
 <style>
@@ -4219,6 +4220,70 @@ const SHOT_DEFAULTS = {
       "Couple in conversation with guests",
       "Kids running around, elders seated and observing",
       "Final goodbye hugs and farewell moments"
+    ]
+  },
+  "engagement": {
+    "traditional": [
+      "Ring exchange / proposal formal frame",
+      "Couple portraits after the moment",
+      "Family group celebrating the engagement",
+      "Close-up of the ring on the hand",
+      "Wide of the venue or setting"
+    ],
+    "candid": [
+      "Genuine reaction at the proposal",
+      "Family members congratulating the couple",
+      "Quiet in-between glances and laughter",
+      "Detail moments: hands, flowers, notes",
+      "Guests celebrating in the background"
+    ]
+  },
+  "bride-making": {
+    "traditional": [
+      "Room and decor before preparations begin",
+      "Details: attire, jewellery, shoes and accessories",
+      "Hair and makeup progression formal frames",
+      "Bride with parents / bridal party group",
+      "Final reveal portrait before leaving"
+    ],
+    "candid": [
+      "Quiet nerves or laughter during makeup",
+      "Mother or sister helping with jewellery",
+      "Candid reflections in the mirror",
+      "Hands adjusting lehenga or veil",
+      "First look reactions from close family"
+    ]
+  },
+  "groom-making": {
+    "traditional": [
+      "Room and outfit details before dressing",
+      "Groom formal portrait in full attire",
+      "Groom with parents / groomsmen group",
+      "Accessories close-ups: watch, shoes, sherwani",
+      "Final ready portrait before departure"
+    ],
+    "candid": [
+      "Friends helping him dress",
+      "Nervous jokes and side conversations",
+      "Father or brother adjusting the outfit",
+      "Quiet moment alone before leaving",
+      "Reactions when he first sees himself ready"
+    ]
+  },
+  "cocktail-party": {
+    "traditional": [
+      "Stage and decor wide before the crowd fills in",
+      "Couple's entry",
+      "Each planned performance or toast, posed after",
+      "Family dance formal frame",
+      "Couple portrait against the party backdrop"
+    ],
+    "candid": [
+      "Mid-dance and unscripted joining-in moments",
+      "Couple reacting from their seats or on the floor",
+      "Guests laughing between performances",
+      "Backstage nerves before a toast or act",
+      "Kids and elders at the edge of the celebration"
     ]
   }
 };
@@ -4945,10 +5010,22 @@ function cwState(entry){
 }
 function cwDeliveriesUnlocked(state){
   if(state.entry&&state.entry.prodOnly)return true;
+  const events=state.events||[];
+  if(events.length){
+    return events.every(ev=>{
+      if(!ev||!ev.shootId)return false;
+      const shoot=checkinEvents[ev.shootId];
+      return !!shoot&&cwShootComplete(ev.shootId,shoot);
+    });
+  }
   const shoots=state.shoots||[];
-  if(shoots.length)return shoots.every(([id,e])=>cwShootComplete(id,e));
-  const last=[...(state.events||[]).map(e=>e.date).filter(Boolean)].sort().at(-1);
-  return !!(last&&last<ciTodayIso());
+  return !!shoots.length&&shoots.every(([id,e])=>cwShootComplete(id,e));
+}
+function cwProdDeliveriesLocked(prodId){
+  if(!prodId||typeof cwDirectory!=='function'||typeof cwState!=='function')return false;
+  const entry=cwDirectory().find(x=>(x.prodIds||[]).includes(prodId));
+  if(!entry||entry.prodOnly)return false;
+  return !cwDeliveriesUnlocked(cwState(entry));
 }
 function cwWorkspaceDates(state){
   return state.form?[...new Set(state.events.map(e=>e.date).filter(Boolean))].sort():state.entry.dates;
@@ -5001,6 +5078,7 @@ function cwCreateProduction(source='deliveries'){
 }
 function cwSaveDeliverable(prodId){
   const p=prods[prodId],name=document.getElementById('cwStageName')?.value.trim(),owner=document.getElementById('cwStageOwner')?.value||'Sumenth',due=document.getElementById('cwStageDue')?.value,clientPdf=!!document.getElementById('cwStagePdf')?.checked;
+  if(typeof cwProdDeliveriesLocked==='function'&&cwProdDeliveriesLocked(prodId)){toast('Deliveries unlock after every client shoot is completed.');return;}
   if(!p||!name){toast('Enter the deliverable name.');return;}p.customStages=p.customStages||[];p.customStages.push({k:uid('s'),l:name,o:owner,due:due||null,clientPdf});writeProd(prodId);cwDeliveryFormOpen=false;log(`added deliverable ${name} for ${p.couple}`);toast('Deliverable added.');renderClientsWorkspace();
 }
 function cwSetAlbumIncluded(prodId,checked){
@@ -5017,6 +5095,7 @@ function cwEditDeliverable(prodId,key){
 }
 function cwSaveDeliverableEdit(prodId,key){
   const p=prods[prodId];if(!p)return;
+  if(typeof cwProdDeliveriesLocked==='function'&&cwProdDeliveriesLocked(prodId)){toast('Deliveries unlock after every client shoot is completed.');return;}
   const name=(document.getElementById('cwEditStageName')?.value||'').trim();
   const owner=document.getElementById('cwEditStageOwner')?.value||'Team';
   const due=document.getElementById('cwEditStageDue')?.value||'';
@@ -5102,11 +5181,6 @@ function clientEventSortValue(entry,sub){const[k,e]=entry,x=(sub.events||{})[k]|
 function renderClientForms(){
   refreshClientCoupleOptions();renderClientsWorkspace();
 }
-function approvedClientEvent(couple,date,eventName){
-  const who=String(couple||'').trim().toLowerCase(),ek=shotListKey(eventName);
-  for(const [id,f] of Object.entries(clientForms||{})){if(!f||String(f.couple||'').trim().toLowerCase()!==who||(clientApprovals[id]||{}).status!=='approved')continue;for(const [k,e] of Object.entries(f.events||{})){if(e.date===date&&shotListKey(e.name)===ek)return {...((clientSubmissions[id]&&clientSubmissions[id].events||{})[k]||{}),formId:id,eventId:k,eventName:e.name,eventDate:e.date};}}
-  return null;
-}
 function ciScheduledEdited(){const scheduled=document.getElementById('ciScheduled'),eventStart=document.getElementById('ciFunctionStart');scheduled.dataset.mode='manual';eventStart.value=scheduled.value||'';}
 function ciFunctionTimeChanged(){const scheduled=document.getElementById('ciScheduled');if(scheduled.dataset.mode!=='manual'){scheduled.value=document.getElementById('ciFunctionStart').value||'';scheduled.dataset.mode='auto';}}
 function ciEventRefKey(x){return x&&x.formId&&x.eventId?`${x.formId}|${x.eventId}`:`manual|${shotListKey(x&&x.name||'')}`;}
@@ -5160,27 +5234,6 @@ function ciClientEventIsLinked(formId,eventId,couple,date,eventName){
     if(ci.clientFormId===formId&&ci.clientEventId===eventId)return true;
     return !refs.length&&!ci.clientFormId&&String(ci.couple||'').trim().toLowerCase()===who&&ci.date===date&&shotListKey(ci.eventName||ci.checklistType)===nameKey;
   });
-}
-function ciClientShootRecord(formId,eventId,f,e,s,now=Date.now()){
-  const details=((s.events||{})[eventId])||{},mapData=ciMapData(details.mapsUrl||'');
-  return {couple:String(f.couple||'').trim(),eventName:e.name||'Event',eventNames:[e.name||'Event'],date:e.date||'',dateOverride:false,checklistType:e.name||'Event',linkedEvents:[{formId,eventId,name:e.name||'Event',date:e.date||'',order:Number(e.order)||0}],mapsUrl:details.mapsUrl||'',venueName:details.venueName||(mapData&&mapData.name)||'Venue to be updated',venueLat:mapData?mapData.lat:null,venueLng:mapData?mapData.lng:null,radiusM:500,reportingTime:details.startTime||'',scheduledStart:details.startTime||'',scheduledStartMode:'auto',functionStart:details.startTime||'',functionEnd:details.endTime||'',clientContactName:details.contactName||null,clientContactPhone:details.contactPhone||null,brideReadyLocation:details.brideReadyLocation||null,groomReadyLocation:details.groomReadyLocation||null,clientNotes:details.notes||null,clientFormId:formId,clientEventId:eventId,crew:{},resourceAssignments:null,actualStartAt:null,createdAt:now,createdBy:editor,updatedAt:now,updatedBy:editor,setupStatus:'crew_pending'};
-}
-async function ensureApprovedClientShoots(){
-  if(approvedShootSyncRunning||!db||!clientFormsLoaded||!clientSubmissionsLoaded||!clientApprovalsLoaded||!checkinEventsLoaded)return;
-  const updates={},now=Date.now();
-  Object.entries(clientForms||{}).forEach(([formId,f])=>{
-    if(!f||(clientApprovals[formId]||{}).status!=='approved')return;
-    const s=clientSubmissions[formId]||{};
-    Object.entries(f.events||{}).forEach(([eventId,e])=>{
-      if(!e||!e.date||ciClientEventIsLinked(formId,eventId,f.couple,e.date,e.name))return;
-      updates[`crewCheckins/events/client_${formId}_${eventId}`]=ciClientShootRecord(formId,eventId,f,e,s,now);
-    });
-  });
-  if(!Object.keys(updates).length)return;
-  approvedShootSyncRunning=true;
-  try{await db.ref().update(updates);toast(`${Object.keys(updates).length} approved client event${Object.keys(updates).length===1?' is':'s are'} now ready in Check-ins for crew setup.`);}
-  catch(err){console.warn('Approved client shoot sync failed',err);}
-  finally{approvedShootSyncRunning=false;}
 }
 async function approveClientForm(id){
   const f=clientForms[id],s=clientSubmissions[id]||{};if(!f||!s.submittedAt)return;const missing=Object.entries(f.events||{}).filter(([k])=>!clientEventDone((s.events||{})[k]));if(missing.length){toast('Every event needs timings, venue and Maps link before approval.');return;}if(!confirm(`Approve ${f.couple}'s details and publish them to matching crew shoots?`))return;
@@ -5260,11 +5313,6 @@ async function deleteCrewProfile(uid){
   try{
     await db.ref().update(updates);delete crewProfiles[uid];renderCrewProfiles();renderCheckinTeam();toast(`${p.name||'Crew member'} deleted.`);log(`deleted registered crew profile: ${p.name||uid}`);
   }catch(err){toast('Could not delete this crew profile. Please try again.');}
-}
-function approvedClientCheckinRows(couple=''){
-  const who=String(couple||'').trim().toLowerCase(),today=ciTodayIso(),rows=[];
-  Object.entries(clientForms||{}).forEach(([id,f])=>{if(!f||(clientApprovals[id]||{}).status!=='approved'||(who&&String(f.couple||'').trim().toLowerCase()!==who))return;Object.entries(f.events||{}).forEach(([eventId,e])=>{if(!e||!e.date||e.date<today)return;rows.push({formId:id,eventId,couple:String(f.couple||'').trim(),date:e.date,name:e.name||'',order:Number(e.order)||0,details:((clientSubmissions[id]&&clientSubmissions[id].events)||{})[eventId]||{}});});});
-  return rows.sort((a,b)=>a.date.localeCompare(b.date)||(a.details.startTime||'23:59').localeCompare(b.details.startTime||'23:59')||a.order-b.order||a.name.localeCompare(b.name));
 }
 function renderCheckinFormOptions(){
   const dl=document.getElementById('ciCouples');if(dl){
@@ -5954,7 +6002,7 @@ function cw10ToggleMobileNav(open){
 }
 function cw10ClientActions(state){
   if(!state.formId)return `<button type="button" class="cw10-primary" onclick="openClientSetupForSelected()">Create client link</button>`;
-  const canConfirm=!!(state.submission.submittedAt||state.events.some(e=>cw11EventApprovalState(state,e).approved));
+  const canConfirm=state.events.some(e=>cw11EventApprovalState(state,e).approved);
   return `${state.form.open!==false&&!state.form.locked?`<button type="button" class="cw10-soft" onclick="shareClientForm('${state.formId}')">WhatsApp link</button>`:''}<button type="button" class="cw10-soft" onclick="copyText(clientPortalUrl('${state.formId}'),'Private client link copied.')">Copy client link</button>${canConfirm?`<button type="button" class="cw10-soft" onclick="exportClientConfirmationPDF('${state.formId}')">Confirmation PDF</button>`:''}<button type="button" class="cw10-soft" onclick="openClientSetupForSelected()">Edit setup</button>`;
 }
 function cw10PageHead(kicker,title,description,actions=''){
