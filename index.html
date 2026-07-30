@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.3.2-planner-wrap-overview-2026-07-30">
+<meta name="totw-build" content="v12.4.0-weddings-hub-2026-07-30">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -855,7 +855,7 @@ header{padding:34px 0 22px}
 #tabClientForms{min-height:70vh}
 #cwRoot{min-height:620px}
 body.cw10-client-mode .wrap>header{display:none}
-body.cw10-client-mode .app-rail{/* keep rail visible in Clients */}
+body.cw10-client-mode .app-rail{/* keep rail visible in Weddings */}
 .cw10-folder-page{max-width:1240px;margin:0 auto;padding:8px 0 42px}
 .cw10-folder-head{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:25px}
 .cw10-kicker{font:9px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#C6A36C;margin-bottom:8px}
@@ -950,6 +950,8 @@ body.cw10-client-mode .app-rail{/* keep rail visible in Clients */}
 .cw10-overview-list{display:grid;border:1px solid #2F3235;border-radius:12px;background:#151719;overflow:hidden}
 .cw10-overview-row{display:grid;grid-template-columns:48px minmax(0,1fr) auto 18px;gap:13px;align-items:center;min-height:76px;padding:10px 14px;border:0;border-bottom:1px solid #292C2F;background:transparent;color:#F0EAE1;text-align:left;cursor:pointer}
 .cw10-overview-row:last-child{border-bottom:0}.cw10-overview-row:hover{background:#1A1C1E}
+.cw10-overview-side{display:flex;flex-direction:column;align-items:flex-end;gap:7px;min-width:0}
+.cw10-overview-side .cw10-primary,.cw10-overview-side .cw10-soft{padding:6px 9px;white-space:nowrap}
 .cw10-date-block{height:47px;display:grid;place-content:center;text-align:center;border:1px solid #333639;border-radius:8px;background:#111315}.cw10-date-block small{color:#8C857D;font:7px var(--mono);letter-spacing:.1em;text-transform:uppercase}.cw10-date-block strong{font:500 19px var(--display)}
 .cw10-overview-main strong,.cw10-overview-main small{display:block}.cw10-overview-main strong{font:500 19px var(--display)}.cw10-overview-main small{margin-top:3px;color:#8D877F;font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cw10-event-state{display:flex;align-items:center;gap:6px;color:#8F8982;font-size:8.5px;white-space:nowrap}.cw10-row-arrow{color:#67625D}
@@ -997,7 +999,7 @@ body.cw10-client-mode .app-rail{/* keep rail visible in Clients */}
   .cw10-main{border-radius:12px}.cw10-topline{display:none}.cw10-mobile-bar{height:54px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 13px;border-bottom:1px solid #2B2E31}.cw10-mobile-menu{width:34px;height:34px;border:1px solid #35383B;border-radius:8px;background:#191B1D;color:#D8D1C7}.cw10-mobile-client{min-width:0;flex:1;border:0;background:transparent;color:#F1ECE3;text-align:left}.cw10-mobile-client b,.cw10-mobile-client small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cw10-mobile-client b{font:500 16px var(--display)}.cw10-mobile-client small{color:#79736D;font-size:8px}
   .cw10-content{padding:21px 13px 32px}.cw10-page-head{align-items:flex-start;flex-direction:column;margin-bottom:17px}.cw10-page-actions{justify-content:flex-start}.cw10-page-head h2{font-size:34px}
   .cw10-attention{grid-template-columns:auto minmax(0,1fr)}.cw10-attention-action{grid-column:2}
-  .cw10-overview-row{grid-template-columns:44px minmax(0,1fr) 16px}.cw10-event-state{grid-column:2}.cw10-row-arrow{grid-column:3;grid-row:1/3}.cw10-overview-main small{white-space:normal}
+  .cw10-overview-row{grid-template-columns:44px minmax(0,1fr) 16px}.cw10-overview-side{grid-column:2;align-items:flex-start}.cw10-event-state{grid-column:auto}.cw10-row-arrow{grid-column:3;grid-row:1/3}.cw10-overview-main small{white-space:normal}
   .cw10-panel-head{grid-template-columns:27px minmax(0,1fr) 14px}.cw10-panel-summary{grid-column:2;grid-row:2;text-align:left}.cw10-chevron{grid-column:3;grid-row:1/3}
   .cw10-field-grid,.cw10-plan-grid,.cw10-record-grid,.cw10-metrics{grid-template-columns:1fr}.cw10-notes{flex-direction:column}.cw10-source-badge{align-self:flex-start}
   .cw10-compare-row{grid-template-columns:1fr}.cw10-compare-arrow{transform:rotate(90deg);text-align:center}
@@ -1220,6 +1222,7 @@ body.cw10-client-mode .app-rail{/* keep rail visible in Clients */}
   .cw12-delivery-client{grid-template-columns:49px minmax(0,1fr);gap:10px;padding:11px}
   .cw12-delivery-progress{grid-column:2}.cw12-delivery-status{grid-column:2;justify-self:start}
   .cw10-overview-row{grid-template-columns:46px minmax(0,1fr) 16px;min-height:92px;padding:12px 11px}
+  .cw10-overview-side{grid-column:2;align-items:flex-start}
   .cw10-overview-main{align-self:start;padding-top:4px}
   .cw10-event-state{grid-column:2;align-self:start;margin-top:-9px;white-space:normal}
   .cw10-row-arrow{grid-column:3;grid-row:1/3;align-self:center}
@@ -1247,6 +1250,8 @@ body{background:
 .app-rail .vtabs button{flex:none!important;width:100%;text-align:left;padding:12px 14px!important;min-height:0!important;border-radius:10px!important;color:rgba(247,243,236,.62)!important;font-size:10px!important;letter-spacing:.1em!important;background:transparent!important;border:0!important;transition:background .2s ease,color .2s ease,transform .15s ease}
 .app-rail .vtabs button:hover{background:rgba(255,255,255,.06)!important;color:#FFFCF7!important}
 .app-rail .vtabs button.on{background:rgba(196,164,106,.14)!important;color:#F7EFD9!important;box-shadow:inset 3px 0 0 var(--champagne),0 0 0 1px rgba(196,164,106,.22)!important;font-weight:600}
+.app-rail .vtabs button.rail-hidden,#vtBiz,#vtDeliveries{display:none!important}
+.app-rail .vtabs button.rail-hidden{display:none!important}
 .rail-foot{padding-top:14px;border-top:1px solid rgba(255,255,255,.1);margin-top:12px}
 .rail-foot .signout-btn{width:100%;border-color:rgba(255,255,255,.18)!important;color:rgba(247,243,236,.7)!important;padding:10px;border-radius:9px}
 .rail-foot .signout-btn:hover{border-color:rgba(255,255,255,.35)!important;color:#FFFCF7!important;background:rgba(255,255,255,.05)}
@@ -1648,12 +1653,12 @@ body{background:
   </div>
   <nav class="vtabs" aria-label="Primary">
     <button id="vtEnq" class="on" onclick="setView('ledger')">Dates &amp; Enquiries</button>
-    <button id="vtClientForms" onclick="openClientsHome()">Clients</button>
+    <button id="vtClientForms" onclick="openClientsHome()">Weddings</button>
     <button id="vtPlan" onclick="setView('plan')">Crew Planner</button>
     <button id="vtCheckins" onclick="setView('shoots')">Shoot Operations</button>
-    <button id="vtDeliveries" onclick="setView('deliverables')">Deliverables</button>
-    <button id="vtBiz" onclick="setView('businessOverview')">Business Overview</button>
-    <button id="vtProd" onclick="setView('business')">Production Detail</button>
+    <button id="vtDeliveries" class="rail-hidden" onclick="setView('deliverables')">Deliverables</button>
+    <button id="vtBiz" class="rail-hidden" onclick="setView('businessOverview')">Business Overview</button>
+    <button id="vtProd" onclick="setView('business')">Data &amp; custody</button>
     <button id="vtShots" onclick="setView('settings')">Settings</button>
   </nav>
   <div class="rail-foot">
@@ -1824,12 +1829,12 @@ body{background:
 <div id="tabBusinessOverview" style="display:none">
  <div class="prod-wrap">
   <div class="prod-head">
-    <h2>Business Overview</h2>
+    <h2>Handoff archive</h2>
     <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
       <span id="bizCount" style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-soft)"></span>
     </div>
   </div>
-  <p class="hint" style="margin:10px 0 8px">Completed client events that you manually send from the client workspace appear here, grouped by couple.</p>
+  <p class="hint" style="margin:10px 0 8px">Completed events confirmed from a wedding Overview appear here for reference. Prefer Weddings → Overview for handoff status.</p>
   <div id="bizOverviewRoot" style="margin-top:6px"></div>
  </div>
 </div>
@@ -1837,16 +1842,17 @@ body{background:
 <div id="tabProd" style="display:none">
  <div class="prod-wrap">
   <div class="prod-head">
-    <h2>Production Detail</h2>
+    <h2>Data &amp; custody</h2>
     <div style="display:flex;gap:12px;align-items:baseline">
       <span id="prodCount" style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-soft)"></span>
       <button class="btn-mini" onclick="toggleProdNew()">+ New wedding</button>
     </div>
   </div>
+  <p class="hint" style="margin:10px 0 0">Studio-wide disks, pay, alerts and season tools. Linked weddings should usually start their production record from Weddings → Deliver or Finance.</p>
 
   <div class="panel-card" id="prodNew" style="display:none;margin-top:14px">
     <h2>New wedding</h2>
-    <p class="hint">Pick the couple, name their two designated disks, tick what they bought, tap the shoot dates.</p>
+    <p class="hint">For production-only or edge cases: pick the couple, name their two designated disks, tick what they bought, tap the shoot dates. Prefer Weddings → Deliver / Finance when a folder already exists.</p>
     <div class="field">
       <label for="pImport">Import an existing booking (optional)</label>
       <select id="pImport" onchange="pImportPick()"><option value="">—</option></select>
@@ -2006,7 +2012,7 @@ body{background:
       <span id="shotEditMeta">Hide ▾</span>
     </div>
     <div class="act-body">
-      <p class="hint" style="margin:10px 0 8px">Nine studio defaults, plus any future events you add. Each event has its own Candid and Traditional list. In Clients → Planning you choose which list an event uses.</p>
+      <p class="hint" style="margin:10px 0 8px">Nine studio defaults, plus any future events you add. Each event has its own Candid and Traditional list. In Weddings → Events planning you choose which list an event uses.</p>
       <input id="shotEdType" type="hidden" value="">
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
         <div style="display:flex;gap:6px;padding:3px;border:1px solid var(--line);border-radius:8px;background:#fff">
@@ -3372,26 +3378,26 @@ function calendarCoupleMap(){
 
 /* ---- view tabs ---- */
 function setView(v){
-  v=({clientforms:'clients',prod:'business',shots:'settings',checkins:'shoots'})[v]||v;
+  v=({clientforms:'clients',prod:'business',shots:'settings',checkins:'shoots',businessOverview:'clients',deliverables:'clients'})[v]||v;
   const led=document.getElementById('tabLedger'),bo=document.getElementById('tabBusinessOverview'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots'),ci=document.getElementById('tabCheckins'),cf=document.getElementById('tabClientForms'),dl=document.getElementById('tabDeliverables');
   if(!led||!bo||!pr||!pl||!sh||!ci||!cf||!dl)return;
   document.getElementById('vtEnq').classList.toggle('on',v==='ledger');
   document.getElementById('vtPlan').classList.toggle('on',v==='plan');
-  document.getElementById('vtBiz').classList.toggle('on',v==='businessOverview');
+  document.getElementById('vtBiz').classList.toggle('on',false);
   document.getElementById('vtProd').classList.toggle('on',v==='business');
   document.getElementById('vtShots').classList.toggle('on',v==='settings');
   document.getElementById('vtCheckins').classList.toggle('on',v==='shoots');
   document.getElementById('vtClientForms').classList.toggle('on',v==='clients');
-  document.getElementById('vtDeliveries').classList.toggle('on',v==='deliverables');
+  document.getElementById('vtDeliveries').classList.toggle('on',false);
   led.style.display=v==='ledger'?'':'none';
-  bo.style.display=v==='businessOverview'?'':'none';
+  bo.style.display='none';
   pl.style.display=v==='plan'?'':'none';
   pr.style.display=v==='business'?'':'none';
   sh.style.display=v==='settings'?'':'none';
   ci.style.display=v==='shoots'?'':'none';
   cf.style.display=v==='clients'?'':'none';
-  dl.style.display=v==='deliverables'?'':'none';
-  const titles={ledger:'Dates <em>&amp;</em> Enquiries',clients:'Clients',plan:'Crew <em>Planner</em>',settings:'Studio <em>Settings</em>',shoots:'Shoot <em>Operations</em>',deliverables:'Delivery <em>Overview</em>',businessOverview:'Business <em>Overview</em>',business:'Production <em>detail</em>'};
+  dl.style.display='none';
+  const titles={ledger:'Dates <em>&amp;</em> Enquiries',clients:'Weddings',plan:'Crew <em>Planner</em>',settings:'Studio <em>Settings</em>',shoots:'Shoot <em>Operations</em>',business:'Data <em>&amp;</em> custody'};
   const pageTitle=document.getElementById('pageTitle'),calendarYearTabs=document.getElementById('calendarYearTabs'),calendarLegend=document.getElementById('calendarLegend');
   if(pageTitle)pageTitle.innerHTML=titles[v]||titles.ledger;
   document.body.classList.toggle('cw10-client-mode',v==='clients');
@@ -3399,15 +3405,17 @@ function setView(v){
   if(calendarLegend)calendarLegend.style.display=v==='ledger'?'':'none';
   localStorage.setItem('totw_view',v);
   hidePop();
-  if(v==='businessOverview')renderBusinessOverview();
   if(v==='business')renderProdAll();
   if(v==='plan')renderPlan();
   if(v==='settings'){renderShots();renderEventBoards();renderMoodSec();loadShotEd();}
   if(v==='shoots'){renderCheckinFormOptions();renderCheckinEvents();}
   if(v==='clients'){renderClientForms();}
-  if(v==='deliverables'){renderGlobalDeliverables();}
 }
-function restoreView(){const v=localStorage.getItem('totw_view')||'ledger';setView(v);}
+function restoreView(){
+  let v=localStorage.getItem('totw_view')||'ledger';
+  if(v==='businessOverview'||v==='deliverables')v='clients';
+  setView(v);
+}
 
 /* ---- creation ---- */
 function toggleProdNew(){
@@ -3583,12 +3591,12 @@ function renderBusinessOverview(){
   const grouped=Object.entries(prods).map(([id,p])=>({id,p,events:businessEventsForProd(id,p)})).filter(row=>row.events.length);
   const count=document.getElementById('bizCount');
   const totalEvents=grouped.reduce((sum,row)=>sum+row.events.length,0);
-  if(count)count.textContent=grouped.length?`${grouped.length} CLIENT${grouped.length===1?'':'S'} · ${totalEvents} EVENT${totalEvents===1?'':'S'}`:'';
+  if(count)count.textContent=grouped.length?`${grouped.length} WEDDING${grouped.length===1?'':'S'} · ${totalEvents} EVENT${totalEvents===1?'':'S'}`:'';
   if(!grouped.length){
-    root.innerHTML='<div class="empty">No completed client events have been sent to Business Overview yet.</div>';
+    root.innerHTML='<div class="empty">No completed events have been handed off for post-shoot tracking yet.</div>';
     return;
   }
-  root.innerHTML=grouped.sort((a,b)=>String(a.p.couple||'').localeCompare(String(b.p.couple||''))).map(({id,p,events})=>`<details class="cw12-delivery-group" open><summary class="cw12-delivery-group-head" style="cursor:pointer"><h3>${esc(p.couple||'Unnamed couple')}</h3><span>${events.length} synced event${events.length===1?'':'s'} · open production detail anytime</span></summary>${events.map(row=>`<div class="cw12-delivery-client" style="cursor:default"><span class="cw12-last-date"><b>${esc(cw10DateBlock(row.date).d)}</b><small>${esc(cw10DateBlock(row.date).m)}</small></span><span class="cw12-delivery-name"><h4>${esc(row.eventName||'Event')}</h4><p>${esc(ciDateLong(row.date))}${row.syncedAt?` · sent ${esc(ciUpdatedDateTime(row.syncedAt))}`:''}</p></span><span class="cw12-delivery-progress"><b>${esc(row.status||'Completed')}</b><small>${esc(row.summary||'Ready for business tracking')}</small></span><span style="display:flex;gap:8px"><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${id}')">Open production detail</button></span></div>`).join('')}</details>`).join('');
+  root.innerHTML=grouped.sort((a,b)=>String(a.p.couple||'').localeCompare(String(b.p.couple||''))).map(({id,p,events})=>`<details class="cw12-delivery-group" open><summary class="cw12-delivery-group-head" style="cursor:pointer"><h3>${esc(p.couple||'Unnamed couple')}</h3><span>${events.length} handed-off event${events.length===1?'':'s'} · open data &amp; custody anytime</span></summary>${events.map(row=>`<div class="cw12-delivery-client" style="cursor:default"><span class="cw12-last-date"><b>${esc(cw10DateBlock(row.date).d)}</b><small>${esc(cw10DateBlock(row.date).m)}</small></span><span class="cw12-delivery-name"><h4>${esc(row.eventName||'Event')}</h4><p>${esc(ciDateLong(row.date))}${row.syncedAt?` · handed off ${esc(ciUpdatedDateTime(row.syncedAt))}`:''}</p></span><span class="cw12-delivery-progress"><b>${esc(row.status||'Completed')}</b><small>${esc(row.summary||'Ready for post-shoot tracking')}</small></span><span style="display:flex;gap:8px"><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${id}')">Open data &amp; custody</button></span></div>`).join('')}</details>`).join('');
 }
 function openProd(id,forceOpen=false){openProdId=forceOpen?id:(openProdId===id?null:id);pdayFor=null;evEditP=null;renderProd();}
 function addDayMode(id){
@@ -3638,7 +3646,7 @@ function dayCard(id,p,d,di,now){
     ${al?`<div style="font-size:12px;color:#7A2A1E;margin-top:6px;font-weight:500">${al==='none'?'No cards logged — shoot was over 24h ago.':'Copies incomplete past the 24h rule.'}</div>`:''}
     ${evEd}
     ${rolesHtml}
-    <div class="role-line" style="margin-top:9px;flex-wrap:wrap"><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pullCrewFromClients('${id}',${di})">Pull team from Clients</button><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="rAdd('${id}',${di})">+ Role</button>${(p.days||[]).length>1&&(d.roles||[]).some(r=>r.person&&r.person.trim())?`<button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="copyCrewToAll('${id}',${di})">Copy crew to all days</button>`:''}</div>
+    <div class="role-line" style="margin-top:9px;flex-wrap:wrap"><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pullCrewFromClients('${id}',${di})">Pull team from Weddings</button><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="rAdd('${id}',${di})">+ Role</button>${(p.days||[]).length>1&&(d.roles||[]).some(r=>r.person&&r.person.trim())?`<button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="copyCrewToAll('${id}',${di})">Copy crew to all days</button>`:''}</div>
     <div class="fmt-row"><input type="checkbox" ${d.fmt?'checked':''} ${all?'':'disabled'} onchange="dSet('${id}',${di},'fmt',this.checked)"><span style="${all?'':'color:var(--ink-soft)'}">Cards formatted${all?'':' — locked until every card is on both disks and verified'}</span>${total?`<span class="sdue ${all?'ok':'warn'}" style="margin-left:auto">${ok}/${total} CARDS SAFE</span>`:''}</div>
   </div>`;
 }
@@ -3680,7 +3688,7 @@ function prodCard(id,p,now,dot){
     ${daysHtml||'<div style="font-size:13px;color:var(--ink-soft);margin-bottom:8px">No shoot days yet.</div>'}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
       <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="addDayMode('${id}')">${pdayFor===id?'Cancel':'+ Add shoot day'}</button>
-      ${(p.days||[]).length?`<button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pullCrewFromClientsAll('${id}')">Pull team from Clients · all days</button>`:''}
+      ${(p.days||[]).length?`<button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pullCrewFromClientsAll('${id}')">Pull team from Weddings · all days</button>`:''}
     </div>
     <div id="pdayCal" style="margin-top:8px;max-width:340px"></div>
     <div class="p-sec">Pipeline</div>
@@ -4382,7 +4390,7 @@ function renderPlan(){
       <div class="plan-wrap-head"><div><b>End of day · ${esc(pl.couple||r.couple)} · ${fmt(pl.iso||r.iso)}</b><small>Log data captured and crew pay for this shoot day.</small></div>${dayCost?`<span style="font-family:var(--mono);font-size:11px;color:var(--ink-soft)">Team ₹${dayCost.toLocaleString('en-IN')}</span>`:''}</div>
       <div class="plan-wrap-gb"><span>Data captured</span><input class="gb-in" type="number" min="0" placeholder="GB" value="${gb||''}" onchange="planWrapGb('${r.key}',this.value)"><span>GB on cards</span></div>
       <div class="plan-wrap-pays">${payRows}</div>
-      <div class="plan-wrap-actions"><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pushRow('${r.key}')">Sync crew → Production</button><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="openProd('${prodHit.pid}',true);setView('prod')">Open in Production</button></div>
+      <div class="plan-wrap-actions"><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pushRow('${r.key}')">Sync crew → Production</button><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="openProd('${prodHit.pid}',true);setView('business')">Open data &amp; custody</button></div>
     </div></td></tr>`;
     return mainRow+wrapRow;
   }).join('');
@@ -4573,6 +4581,10 @@ function pushToProd(key){
   const crew=planRowCrew(pl);
   let pid=findProdByCouple(pl.couple);
   if(!pid){
+    if(cwFormByCoupleName(pl.couple)){
+      toast('This couple has a Weddings folder. Open Weddings → Deliver or Finance and start the wedding production record first.');
+      return;
+    }
     pid=uid('p');
     prods[pid]={couple:pl.couple,diskA:'',diskB:'',deliv:{album:false},days:[],stages:{},
       pay:{adv:{amt:0,paid:false},pre:{amt:0,paid:false},fin:{amt:0,paid:false}},by:editor,at:stamp(),t:Date.now()};
@@ -5604,7 +5616,7 @@ async function cwSendEventToBusiness(eventId){
   const entry=cwEntry();if(!entry)return;
   const state=cwState(entry),event=state.events.find(e=>e.eventId===eventId);if(!event)return;
   const shoot=event.shootId&&checkinEvents[event.shootId];
-  if(!shoot||!cwShootComplete(event.shootId,shoot)){toast('Only completed Shoot Operations events can be sent to Business.');return;}
+  if(!shoot||!cwShootComplete(event.shootId,shoot)){toast('Only completed Shoot Operations events can be handed off.');return;}
   let prodId=state.prodId;
   if(!prodId){
     prodId=uid('p');
@@ -5613,7 +5625,7 @@ async function cwSendEventToBusiness(eventId){
   const prod=prods[prodId]||(prods[prodId]=cwBusinessProdSeed(state));
   if(!prod.businessEvents)prod.businessEvents={};
   const eventKey=businessEventKey(event);
-  if(prod.businessEvents[eventKey]){toast('This event is already in Business Overview.');return;}
+  if(prod.businessEvents[eventKey]){toast('This event is already handed off for post-shoot tracking.');return;}
   prod.businessEvents[eventKey]={
     clientKey:state.entry.key,
     couple:state.entry.name,
@@ -5629,14 +5641,14 @@ async function cwSendEventToBusiness(eventId){
   try{
     if(liveMode&&db)await db.ref('prod/'+prodId).set(prod);
     else localStorage.setItem('totw_prod',JSON.stringify(prods));
-    toast(`${event.name} sent to Business Overview.`);
-    log(`sent client event to business: ${state.entry.name} — ${event.name}`);
-    if(localStorage.getItem('totw_view')==='businessOverview')renderBusinessOverview();
+    toast(`${event.name} handed off for post-shoot tracking.`);
+    log(`handed off client event: ${state.entry.name} — ${event.name}`);
+    if(typeof renderBusinessOverview==='function')renderBusinessOverview();
     renderClientsWorkspace();
   }catch(err){
     if(!state.prodId)delete prods[prodId];
     else delete prod.businessEvents[eventKey];
-    toast('Could not send this event to Business. Please try again.');
+    toast('Could not hand off this event. Please try again.');
   }
 }
 function cwStatusCopy(state){
@@ -5645,8 +5657,8 @@ function cwStatusCopy(state){
     {section:'details',label:'Client details',value:state.form?`${state.detailDone}/${detailTotal} complete`:'Link not created',kind:state.detailsOk?'ok':state.detailDone?'warn':''},
     {section:'shoots',label:'Crew & shoots',value:state.shoots.length?`${crewTotal} crew · ${state.shoots.length} shoots`:'Not prepared',kind:state.crewReady?'ok':''},
     {section:'resources',label:'Lists & boards',value:state.resourceRows.length?`${state.resourcesOk?'Lists ready':'Lists pending'} · ${boards} boards`:'Not prepared',kind:state.resourcesOk?'ok':state.resourceRows.length?'warn':''},
-    {section:'deliveries',label:'Deliveries',value:!state.deliveriesUnlocked?'After shoots complete':state.prod?`${state.stageDone}/${state.stages.length} complete`:'Not started',kind:state.deliveriesOk?'ok':!state.deliveriesUnlocked?'':state.prod?'warn':''},
-    {section:'costs',label:'Costs',value:state.prod?`${inrP(state.costs.total)} crew cost`:'Not started',kind:state.costsOk?'ok':state.prod?'warn':''}
+    {section:'deliveries',label:'Deliver',value:!state.deliveriesUnlocked?'After shoots complete':state.prod?`${state.stageDone}/${state.stages.length} complete`:'Not started',kind:state.deliveriesOk?'ok':!state.deliveriesUnlocked?'':state.prod?'warn':''},
+    {section:'costs',label:'Finance',value:state.prod?`${inrP(state.costs.total)} crew cost`:'Not started',kind:state.costsOk?'ok':state.prod?'warn':''}
   ];
 }
 function openClientSetup(name=''){
@@ -5683,7 +5695,7 @@ function cwCreateProduction(source='deliveries'){
   const id=uid('p'),eventMap={};events.forEach(e=>(eventMap[e.date]=eventMap[e.date]||[]).push(e.name));
   if(!events.length)dates.forEach(date=>{eventMap[date]=eventMap[date]||['Wedding'];});
   prods[id]={couple:entry.name,diskA:a||'',diskB:b||'',deliv:{album:source==='costs'?!!document.getElementById('cwCostAlbum')?.checked:!!document.getElementById('cwAlbum')?.checked},days:dates.map(date=>({date,events:[...new Set(eventMap[date]||[])],gb:0,roles:[],fmt:false})),stages:{},pay:{adv:{amt:0,paid:false},pre:{amt:0,paid:false},fin:{amt:0,paid:false}},by:editor,at:stamp(),t:Date.now()};
-  writeProd(id);cwProductionFormOpen=false;log(`created production from client workspace: ${entry.name}`);toast(source==='costs'?'Finance record created.':'Production record created.');renderClientsWorkspace();
+  writeProd(id);cwProductionFormOpen=false;log(`created production from client workspace: ${entry.name}`);toast('Wedding production record created.');renderClientsWorkspace();
 }
 function cwSaveDeliverable(prodId){
   const p=prods[prodId],name=document.getElementById('cwStageName')?.value.trim(),owner=document.getElementById('cwStageOwner')?.value||'Sumenth',due=document.getElementById('cwStageDue')?.value,clientPdf=!!document.getElementById('cwStagePdf')?.checked;
@@ -6547,11 +6559,12 @@ function cw10RenderFolderPage(all){
     </button>`;
   }).join('');
   return `<section class="cw10-folder-page">
-    <div class="cw10-folder-head"><div><div class="cw10-kicker">Studio workspace</div><h2>Clients</h2><p>Select a wedding month, then open one client folder. Weddings that cross months remain discoverable in both months.</p></div>
-    <div class="cw10-folder-tools"><label class="cw12-month-picker"><span>Wedding month</span><select id="cw12ClientMonth" onchange="cw12SetClientMonth(this.value)" ${monthOptions?'':'disabled'}>${monthOptions||'<option>No dated clients</option>'}</select></label><label class="cw10-search"><span>⌕</span><input id="cw10Search" type="search" value="${esc(cw10FolderQuery)}" placeholder="Search all clients" oninput="cw10FolderSearch(this.value)"></label><button type="button" class="cw10-primary" onclick="openClientSetup()">+ Client link</button><button type="button" class="cw10-soft" onclick="signOutLedger()">Sign out</button></div></div>
-    <div class="cw12-month-summary"><span><strong>${filtered.length}</strong> client${filtered.length===1?'':'s'}${query?' matching search':cw12ClientMonth==='all'?' total':` in ${esc(cw12MonthLabel(cw12ClientMonth))}`}</span><span>${query?'Search ignores month filter':cw12ClientMonth==='all'?'Sorted by first event date':'Sorted by first event in the selected month'}</span></div>
-    <div class="cw10-folder-grid">${cards||`<div class="cw10-folder-empty">${query?`No clients match “${esc(cw10FolderQuery.trim())}”.`:cw12ClientMonth==='all'?'No client folders yet.':`No private-link clients in ${esc(cw12MonthLabel(cw12ClientMonth))} yet. Bookings in Dates &amp; Enquiries still count toward this month — create a client link when you need a folder. Pending deliveries for older production-only couples stay under Deliverables.`}</div>`}</div>
+    <div class="cw10-folder-head"><div><div class="cw10-kicker">Studio workspace</div><h2>Weddings</h2><p>Select a wedding month, then open one wedding folder. Weddings that cross months remain discoverable in both months.</p></div>
+    <div class="cw10-folder-tools"><label class="cw12-month-picker"><span>Wedding month</span><select id="cw12ClientMonth" onchange="cw12SetClientMonth(this.value)" ${monthOptions?'':'disabled'}>${monthOptions||'<option>No dated weddings</option>'}</select></label><label class="cw10-search"><span>⌕</span><input id="cw10Search" type="search" value="${esc(cw10FolderQuery)}" placeholder="Search all weddings" oninput="cw10FolderSearch(this.value)"></label><button type="button" class="cw10-primary" onclick="openClientSetup()">+ Client link</button><button type="button" class="cw10-soft" onclick="signOutLedger()">Sign out</button></div></div>
+    <div class="cw12-month-summary"><span><strong>${filtered.length}</strong> wedding${filtered.length===1?'':'s'}${query?' matching search':cw12ClientMonth==='all'?' total':` in ${esc(cw12MonthLabel(cw12ClientMonth))}`}</span><span>${query?'Search ignores month filter':cw12ClientMonth==='all'?'Sorted by first event date':'Sorted by first event in the selected month'}</span></div>
+    <div class="cw10-folder-grid">${cards||`<div class="cw10-folder-empty">${query?`No weddings match “${esc(cw10FolderQuery.trim())}”.`:cw12ClientMonth==='all'?'No wedding folders yet.':`No private-link weddings in ${esc(cw12MonthLabel(cw12ClientMonth))} yet. Bookings in Dates &amp; Enquiries still count toward this month — create a client link when you need a folder. Pending deliveries for older production-only couples appear in the Delivery queue below.`}</div>`}</div>
     ${(()=>{const unlinked=cwUnlinkedCalendarNames();return unlinked.length?`<details class="cw10-unlinked-names" style="margin-top:18px"><summary style="cursor:pointer;color:#817A72;font-size:9px;padding:8px 2px">Unlinked calendar names (${unlinked.length})</summary><div style="display:flex;flex-wrap:wrap;gap:7px;padding:10px 2px 2px">${unlinked.map(name=>`<span style="padding:6px 9px;border:1px solid #34373A;border-radius:99px;color:#9A938B;font-size:8.5px">${esc(name)}</span>`).join('')}</div><p style="margin:8px 2px 0;color:#6F6963;font-size:8px">These appear in Dates &amp; Enquiries or Crew Planner but do not have a private client link yet.</p></details>`:'';})()}
+    ${cw12DeliveryQueueSection()}
   </section>`;
 }
 function cw12LastEventInfo(state){
@@ -6567,7 +6580,7 @@ function cw12DeliveryRow(entry){
   else if(overdue){status=`${overdue} overdue`;statusClass='overdue';}
   else if(state.prod){status='In delivery';statusClass='pending';}
   const progress=state.prod&&state.stages.length?`${state.stageDone}/${state.stages.length} deliverables complete`:'Delivery record not started';
-  const nextCopy=next?`Next: ${next.l}${next.due?' · '+fullDate(next.due):''}`:state.prod?'No pending dated deliverable':'Open the client folder to start';
+  const nextCopy=next?`Next: ${next.l}${next.due?' · '+fullDate(next.due):''}`:state.prod?'No pending dated deliverable':'Open the wedding folder to start';
   return {entry,state,last,overdue,next,status,statusClass,progress,nextCopy};
 }
 function cw12OpenClientDeliveries(key){
@@ -6575,8 +6588,7 @@ function cw12OpenClientDeliveries(key){
   localStorage.setItem('totw_client_workspace',cwSelectedKey);localStorage.setItem('totw_client_section','deliveries');localStorage.removeItem('totw_client_event');
   setView('clients');renderClientsWorkspace();document.getElementById('cwRoot')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
-function renderGlobalDeliverables(){
-  const root=document.getElementById('cw12DeliverablesRoot');if(!root)return;
+function cw12DeliveryQueueData(){
   const rows=cwDeliveryDirectory().map(cw12DeliveryRow).sort((a,b)=>{
     if(!a.last.lastDate&&!b.last.lastDate)return a.entry.name.localeCompare(b.entry.name);
     if(!a.last.lastDate)return 1;if(!b.last.lastDate)return -1;
@@ -6591,9 +6603,20 @@ function renderGlobalDeliverables(){
       const date=row.last.lastDate?cw10DateBlock(row.last.lastDate):{m:'—',d:'—'},eventCopy=row.entry.prodOnly?'Production record · delivery tracking':row.last.names.length?`Last event · ${row.last.names.join(' + ')}`:row.last.lastDate?'Last scheduled coverage day':'Last event date pending';
       return `<button type="button" class="cw12-delivery-client" data-client-key="${esc(row.entry.key)}" onclick="cw12OpenClientDeliveries(this.dataset.clientKey)"><span class="cw12-last-date"><b>${esc(date.d)}</b><small>${esc(date.m)}</small></span><span class="cw12-delivery-name"><h4>${esc(row.entry.name)}${row.entry.prodOnly?' <small style="color:#9A938B;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase"> · production</small>':''}</h4><p>${esc(eventCopy)}${row.last.lastDate?' · '+esc(ciDateLong(row.last.lastDate)):''}</p></span><span class="cw12-delivery-progress"><b>${esc(row.progress)}</b><small>${esc(row.nextCopy)}</small></span><span class="cw12-delivery-status ${esc(row.statusClass)}">${esc(row.status)}</span></button>`;
     }).join('');
-    return `<section class="cw12-delivery-group"><div class="cw12-delivery-group-head"><h3>${esc(label)}</h3><span>${items.length} client${items.length===1?'':'s'} · ordered by final event</span></div>${itemHtml}</section>`;
+    return `<section class="cw12-delivery-group"><div class="cw12-delivery-group-head"><h3>${esc(label)}</h3><span>${items.length} wedding${items.length===1?'':'s'} · ordered by final event</span></div>${itemHtml}</section>`;
   }).join('');
-  root.innerHTML=`<section class="cw12-deliverables-page"><div class="cw12-deliverables-head"><div><div class="cw10-kicker">Client delivery control</div><h2>Deliverables</h2><p>Every client is ordered by the date of their final event. Older finished weddings appear first. Production-only records (no private client link yet) stay here for delivery tracking and do not create Clients folders.</p></div><button type="button" class="cw10-soft" onclick="signOutLedger()">Sign out</button></div><div class="cw12-delivery-metrics"><div class="cw12-delivery-metric"><span>All tracked</span><strong>${rows.length}</strong><small>${prodOnly?prodOnly+' production-only · ':''}Client links + production</small></div><div class="cw12-delivery-metric"><span>In delivery</span><strong>${inDelivery}</strong><small>Final event completed</small></div><div class="cw12-delivery-metric"><span>Overdue</span><strong>${overdue}</strong><small>At least one late item</small></div><div class="cw12-delivery-metric"><span>Complete</span><strong>${complete}</strong><small>All tracked items done</small></div></div><section class="cw12-delivery-group" style="margin-bottom:18px"><div class="cw12-delivery-group-head"><h3>Season finance</h3><span>Studio-only PDF · cost per couple, person and role</span></div><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;padding:4px 2px 8px"><div><label style="display:block;color:#8B857D;font-size:8px;margin-bottom:4px">From</label><input id="cw12SeasonFrom" type="date" value="2026-01-01" style="padding:8px 10px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></div><div><label style="display:block;color:#8B857D;font-size:8px;margin-bottom:4px">To</label><input id="cw12SeasonTo" type="date" value="2026-12-31" style="padding:8px 10px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></div><button type="button" class="cw10-soft" onclick="exportSeasonPDF()">Export season PDF</button></div></section>${groupHtml||'<div class="cw12-deliverables-empty">Client delivery records will appear here.</div>'}</section>`;
+  const metrics=`<div class="cw12-delivery-metrics"><div class="cw12-delivery-metric"><span>All tracked</span><strong>${rows.length}</strong><small>${prodOnly?prodOnly+' production-only · ':''}Wedding links + production</small></div><div class="cw12-delivery-metric"><span>In delivery</span><strong>${inDelivery}</strong><small>Final event completed</small></div><div class="cw12-delivery-metric"><span>Overdue</span><strong>${overdue}</strong><small>At least one late item</small></div><div class="cw12-delivery-metric"><span>Complete</span><strong>${complete}</strong><small>All tracked items done</small></div></div>`;
+  const season=`<section class="cw12-delivery-group" style="margin-bottom:18px"><div class="cw12-delivery-group-head"><h3>Season finance</h3><span>Studio-only PDF · cost per couple, person and role</span></div><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;padding:4px 2px 8px"><div><label style="display:block;color:#8B857D;font-size:8px;margin-bottom:4px">From</label><input id="cw12SeasonFrom" type="date" value="2026-01-01" style="padding:8px 10px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></div><div><label style="display:block;color:#8B857D;font-size:8px;margin-bottom:4px">To</label><input id="cw12SeasonTo" type="date" value="2026-12-31" style="padding:8px 10px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></div><button type="button" class="cw10-soft" onclick="exportSeasonPDF()">Export season PDF</button></div></section>`;
+  return {rows,metrics,season,groupHtml:groupHtml||'<div class="cw12-deliverables-empty">Delivery records will appear here.</div>'};
+}
+function cw12DeliveryQueueSection(){
+  const q=cw12DeliveryQueueData();
+  return `<section class="cw12-deliverables-page" style="margin-top:28px;padding:0"><div class="cw12-deliverables-head"><div><div class="cw10-kicker">Studio delivery</div><h2>Delivery queue</h2><p>Ordered by final event date. Tap a row to open that wedding’s Deliver section. Production-only records stay visible here.</p></div></div>${q.metrics}${q.season}${q.groupHtml}</section>`;
+}
+function renderGlobalDeliverables(){
+  const root=document.getElementById('cw12DeliverablesRoot');if(!root)return;
+  // Delivery queue + season PDF live on Weddings home (cw12DeliveryQueueSection). Keep panel node for setView safety.
+  root.innerHTML='';
 }
 function setClientSection(section){
   const mapped={details:'event',resources:'event',shoots:'event'}[section]||section;
@@ -6651,19 +6674,24 @@ function cw10RenderOverview(state){
     const details=cw10CurrentDetails(state,event),date=cw10DateBlock(event.date),venue=details.venueName||'Venue awaiting confirmation',syncMeta=cwBusinessSyncMeta(state,event);
     const businessAction=status.key==='complete'
       ?(syncMeta.synced
-        ?`<button type="button" class="cw10-soft" style="padding:6px 9px" onclick="event.stopPropagation();setView('businessOverview')">Sent to Business</button>`
-        :`<button type="button" class="cw10-soft" style="padding:6px 9px" onclick="event.stopPropagation();cwSendEventToBusiness('${event.eventId}')">Send to Business</button>`)
+        ?`<button type="button" class="cw10-soft" onclick="event.stopPropagation();cwOpenBusiness('${syncMeta.prodId}')">Handed off</button>`
+        :`<button type="button" class="cw10-primary" onclick="event.stopPropagation();cwSendEventToBusiness('${event.eventId}')">Confirm handoff</button>`)
       :'';
-    return `<button type="button" class="cw10-overview-row" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw10-date-block"><small>${esc(date.m)}</small><strong>${esc(date.d)}</strong></span><span class="cw10-overview-main"><strong>${esc(event.name)}</strong><small>${esc(ciFmtTime(details.startTime))} · ${esc(venue)}</small><small class="cw10-team-copy ${status.key==='attention'||status.key==='planning'?'attention':''}" style="display:block;margin-top:4px">${esc(team)}</small></span><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span>${businessAction}<span class="cw10-row-arrow">→</span></button>`;
+    return `<button type="button" class="cw10-overview-row" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw10-date-block"><small>${esc(date.m)}</small><strong>${esc(date.d)}</strong></span><span class="cw10-overview-main"><strong>${esc(event.name)}</strong><small>${esc(ciFmtTime(details.startTime))} · ${esc(venue)}</small><small class="cw10-team-copy ${status.key==='attention'||status.key==='planning'?'attention':''}" style="display:block;margin-top:4px">${esc(team)}</small></span><span class="cw10-overview-side"><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span>${businessAction}</span><span class="cw10-row-arrow">→</span></button>`;
   }).join('');
+  const handedOff=statuses.filter(({event,status})=>status.key==='complete'&&cwBusinessSyncMeta(state,event).synced);
+  const handoffSummary=handedOff.length?`<section class="cw10-data-card" style="margin-top:18px"><div class="cw10-data-head"><div><h3>Handoff</h3><p>${handedOff.length} event${handedOff.length===1?'':'s'} handed off for post-shoot tracking.</p></div>${state.prodId?`<button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Open data &amp; custody</button>`:''}</div>
+    <div style="padding:4px 16px 14px">${handedOff.map(({event})=>{const meta=cwBusinessSyncMeta(state,event);return `<div class="cw10-cost-row"><span><span>${esc(event.name)}</span><small>${esc(cw10CompactDate(event.date))}${meta.row&&meta.row.syncedAt?' · '+esc(ciUpdatedDateTime(meta.row.syncedAt)):''}</small></span><strong>Handed off</strong></div>`;}).join('')}</div>
+  </section>`:'';
   const dates=cwWorkspaceDates(state);
-  return `<div class="cw10-content">${cw10PageHead('Client workspace',state.entry.name,`${cw10DateRange(dates)} · Everything for this wedding in one place.`,cw10ClientActions(state))}
+  return `<div class="cw10-content">${cw10PageHead('Wedding workspace',state.entry.name,`${cw10DateRange(dates)} · Everything for this wedding in one place.`,cw10ClientActions(state))}
     ${cw10AttentionBanner(state)}
     <section class="cw10-readiness"><div class="cw10-readiness-top"><div><span>Wedding readiness</span><strong>${events.length?`${ready} of ${events.length} events ready`:'Client events not created'}</strong></div><span>${pct}%</span></div><div class="cw10-progress"><i style="width:${pct}%"></i></div>
     <div class="cw10-readiness-items" style="margin-top:12px;display:grid;gap:0">${statuses.length?statuses.map(({event,team,status})=>`<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line)"><span><b style="color:var(--ink)">${esc(event.name)}</b> · ${esc(cw10CompactDate(event.date))}<br><small style="color:${status.key==='attention'||status.key==='planning'?'var(--amber)':'var(--ink-soft)'}">${esc(team)}</small></span><span class="cw10-event-state"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span></div>`).join(''):'<span style="color:var(--ink-soft)">Create the private client link to see events here.</span>'}</div>
     <p style="margin-top:12px;color:#6F6963;font-size:8px">Shot lists can be added later in Settings. Common Pinterest boards in Settings (and any optional event board) show to the Candid team after check-in.</p></section>
-    <div class="cw10-section-title"><div><h3>Events</h3><p>Open an event to edit team, timings, or optional Pinterest board.</p></div></div>
+    <div class="cw10-section-title"><div><h3>Events</h3><p>Open an event to edit team, timings, or optional Pinterest board. Confirm handoff on completed shoots.</p></div></div>
     ${events.length?`<div class="cw10-overview-list">${rows}</div>`:`<div class="cw10-empty-state"><h3>No client events yet</h3><p>Create the private event-details link. Crew Planner can help prefill the setup, but it will not create event cards here.</p><button type="button" class="cw10-primary" onclick="openClientSetupForSelected()">Create client link</button></div>`}
+    ${handoffSummary}
   </div>`;
 }
 
@@ -6685,21 +6713,21 @@ function cw10RenderShootRecord(state,event){
 function cw10ProductionEmpty(state,source='deliveries'){
   const dates=cwWorkspaceDates(state);
   if(source==='costs'){
-    if(!cwProductionFormOpen)return `<div class="cw10-empty-state"><h3>Finance not started</h3><p>Create a finance record from this wedding’s dates. Hard disks belong under Deliveries / production detail — not here.</p><button type="button" class="cw10-primary" onclick="cwProductionFormOpen=true;renderClientsWorkspace()">Start finance record</button></div>`;
-    return `<div class="cw10-empty-state"><h3>Start finance record</h3><p>${dates.length} shoot date${dates.length===1?'':'s'} will be copied so you can track package value and crew cost.</p><div class="cw-inline-form" style="max-width:520px;margin:14px auto 0;text-align:left"><label class="full" style="display:flex;gap:8px;align-items:center;font-size:10px"><input id="cwCostAlbum" type="checkbox" checked style="width:auto"> Album included in package</label><button type="button" class="cw10-primary full" onclick="cwCreateProduction('costs')">Create finance record</button></div></div>`;
+    if(!cwProductionFormOpen)return `<div class="cw10-empty-state"><h3>Finance not started</h3><p>Start the wedding production record from this wedding’s dates. Hard disks and deep custody tools live under Deliver / Data &amp; custody.</p><button type="button" class="cw10-primary" onclick="cwProductionFormOpen=true;renderClientsWorkspace()">Start wedding production record</button></div>`;
+    return `<div class="cw10-empty-state"><h3>Start wedding production record</h3><p>${dates.length} shoot date${dates.length===1?'':'s'} will be copied so you can track package value and crew cost.</p><div class="cw-inline-form" style="max-width:520px;margin:14px auto 0;text-align:left"><label class="full" style="display:flex;gap:8px;align-items:center;font-size:10px"><input id="cwCostAlbum" type="checkbox" checked style="width:auto"> Album included in package</label><button type="button" class="cw10-primary full" onclick="cwCreateProduction('costs')">Create wedding production record</button></div></div>`;
   }
-  if(!cwProductionFormOpen)return `<div class="cw10-empty-state"><h3>Production not started</h3><p>Create the delivery record from this client’s dates. Add hard disks here if you already know them.</p><button type="button" class="cw10-primary" onclick="cwProductionFormOpen=true;renderClientsWorkspace()">Start production record</button></div>`;
-  return `<div class="cw10-empty-state"><h3>Start production record</h3><p>${dates.length} existing shoot date${dates.length===1?'':'s'} will be copied into this record.</p><div class="cw-inline-form" style="max-width:520px;margin:14px auto 0;text-align:left"><input id="cwDiskA" placeholder="Hard disk I"><input id="cwDiskB" placeholder="Hard disk II"><label class="full" style="display:flex;gap:8px;align-items:center;font-size:10px"><input id="cwAlbum" type="checkbox" checked style="width:auto"> Album included in package</label><button type="button" class="cw10-primary full" onclick="cwCreateProduction('deliveries')">Create production record</button></div></div>`;
+  if(!cwProductionFormOpen)return `<div class="cw10-empty-state"><h3>Deliver not started</h3><p>Start the wedding production record from this wedding’s dates. Add hard disks here if you already know them.</p><button type="button" class="cw10-primary" onclick="cwProductionFormOpen=true;renderClientsWorkspace()">Start wedding production record</button></div>`;
+  return `<div class="cw10-empty-state"><h3>Start wedding production record</h3><p>${dates.length} existing shoot date${dates.length===1?'':'s'} will be copied into this record.</p><div class="cw-inline-form" style="max-width:520px;margin:14px auto 0;text-align:left"><input id="cwDiskA" placeholder="Hard disk I"><input id="cwDiskB" placeholder="Hard disk II"><label class="full" style="display:flex;gap:8px;align-items:center;font-size:10px"><input id="cwAlbum" type="checkbox" checked style="width:auto"> Album included in package</label><button type="button" class="cw10-primary full" onclick="cwCreateProduction('deliveries')">Create wedding production record</button></div></div>`;
 }
 function cw10RenderDeliveries(state){
   if(!state.deliveriesUnlocked){
     const done=state.completedShoots.length,total=state.shoots.length,pending=state.activeShoots.map(([,e])=>e.eventName||'Event');
-    return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Deliveries','Opens after every shoot day for this wedding is complete.')}
-      <div class="cw10-empty-state"><h3>Deliveries unlock after the shoot</h3><p>${total?`${done} of ${total} shoot day${total===1?'':'s'} complete.`:'Prepare and complete the shoot days in Shoot Operations first.'}${pending.length?` Still open: ${esc(pending.join(', '))}.`:''}</p><p style="margin-top:10px;color:#8B857D;font-size:12px">Costs and production pay logging stay available now. Delivery tracking starts once all events are done.</p>${total?`<button type="button" class="cw10-soft" onclick="setView('shoots')">Open Shoot Operations</button>`:''}</div>
+    return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Deliver','Opens after every shoot day for this wedding is complete.')}
+      <div class="cw10-empty-state"><h3>Deliver unlocks after the shoot</h3><p>${total?`${done} of ${total} shoot day${total===1?'':'s'} complete.`:'Prepare and complete the shoot days in Shoot Operations first.'}${pending.length?` Still open: ${esc(pending.join(', '))}.`:''}</p><p style="margin-top:10px;color:#8B857D;font-size:12px">Finance and production pay logging stay available now. Delivery tracking starts once all events are done.</p>${total?`<button type="button" class="cw10-soft" onclick="setView('shoots')">Open Shoot Operations</button>`:''}</div>
     </div>`;
   }
-  const actions=state.prod?`<button type="button" class="cw10-primary" onclick="cwDeliveryFormOpen=!cwDeliveryFormOpen;cwDeliveryEditKey='';renderClientsWorkspace()">${cwDeliveryFormOpen?'Cancel':'+ Deliverable'}</button><button type="button" class="cw10-soft" onclick="exportDeliveryPDF('${state.prodId}')">Export client PDF</button><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Open production detail</button>`:'';
-  if(!state.prod)return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Deliveries','Shoots are done — start the delivery record for this wedding.',actions)}${cw10ProductionEmpty(state,'deliveries')}</div>`;
+  const actions=state.prod?`<button type="button" class="cw10-primary" onclick="cwDeliveryFormOpen=!cwDeliveryFormOpen;cwDeliveryEditKey='';renderClientsWorkspace()">${cwDeliveryFormOpen?'Cancel':'+ Deliverable'}</button><button type="button" class="cw10-soft" onclick="exportDeliveryPDF('${state.prodId}')">Export client PDF</button><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Open data &amp; custody</button>`:'';
+  if(!state.prod)return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Deliver','Shoots are done — start the wedding production record for delivery tracking.',actions)}${cw10ProductionEmpty(state,'deliveries')}</div>`;
   const now=Date.now(),pending=state.stages.filter(s=>!(state.prod.stages||{})[s.k]?.done),next=pending.filter(s=>s.due).sort((a,b)=>a.due-b.due)[0],overdue=pending.filter(s=>stageState(state.prod,s,now).cls==='bad').length;
   const albumOn=!!(state.prod.deliv&&state.prod.deliv.album),albumCount=+state.prod.albumCount>0?+state.prod.albumCount:1;
   const rows=state.stages.map(s=>{
@@ -6711,7 +6739,7 @@ function cw10RenderDeliveries(state){
     return `<div class="cw10-delivery-row ${st.done?'done':''}"><input type="checkbox" ${st.done?'checked':''} onchange="stageTog('${state.prodId}','${s.k}',this.checked);renderClientsWorkspace()"><span class="cw10-delivery-main"><b>${esc(s.l)}</b><small>${s.due?'Intended · '+esc(fullDate(s.due)):'No intended date'}${st.doneT?' · Actual '+esc(fullDate(st.doneT)):''} · ${esc(s.client?'Client':s.o||'Team')}</small></span><span class="cw10-delivery-state">${st.done?'Done':esc(ss.txt||'Not started')}</span><span style="display:flex;gap:6px"><button type="button" class="cw10-soft" style="padding:6px 9px" onclick="cwEditDeliverable('${state.prodId}','${s.k}')">Edit</button><button type="button" class="cw10-soft" style="padding:6px 9px" onclick="cwRemoveDeliverable('${state.prodId}','${s.k}')">Remove</button></span></div>`;
   }).join('');
   const add=cwDeliveryFormOpen?`<div class="cw-inline-form" style="padding:15px"><input id="cwStageName" class="full" placeholder="Deliverable name"><select id="cwStageOwner" style="padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)"><option>Sumenth</option><option>Mahima</option><option>Team</option><option>Client</option></select><input id="cwStageDue" type="date"><label class="full" style="display:flex;gap:8px;align-items:center;font-size:10px"><input id="cwStagePdf" type="checkbox" checked style="width:auto"> Include in client delivery PDF</label><button type="button" class="cw10-primary full" onclick="cwSaveDeliverable('${state.prodId}')">Save deliverable</button></div>`:'';
-  return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Deliveries','Edit deliverables, album count, and intended dates for this wedding.',actions)}
+  return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Deliver','Edit deliverables, album count, and intended dates for this wedding.',actions)}
     <div class="cw10-metrics"><div class="cw10-metric"><span>Total deliverables</span><strong>${state.stages.length}</strong><small>Albums can stay outside the PDF</small></div><div class="cw10-metric"><span>Due next</span><strong>${next?esc(cw10CompactDate(new Date(next.due).toISOString().slice(0,10))):'—'}</strong><small>${next?esc(next.l):'Nothing pending with a date'}</small></div><div class="cw10-metric ${overdue?'':'good'}"><span>On-time status</span><strong>${overdue?overdue+' overdue':'On track'}</strong><small>${overdue?'Needs attention':'No overdue items'}</small></div></div>
     <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Album</h3><p>Turn album work on or off and set how many albums this couple needs.</p></div></div>
       <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:4px 2px 2px"><label style="display:flex;gap:8px;align-items:center;font-size:12px;color:var(--ink)"><input type="checkbox" ${albumOn?'checked':''} onchange="cwSetAlbumIncluded('${state.prodId}',this.checked)" style="width:auto"> Album included</label>${albumOn?`<label style="display:flex;gap:8px;align-items:center;font-size:12px;color:var(--ink-soft)">Albums <input type="number" min="1" value="${albumCount}" onchange="cwSetAlbumCount('${state.prodId}',this.value)" style="width:64px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)"></label>`:''}</div>
@@ -6720,12 +6748,12 @@ function cw10RenderDeliveries(state){
   </div>`;
 }
 function cw10RenderCosts(state){
-  if(!state.prod)return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Costs','Package value, crew cost and estimated margin for this wedding.')}${cw10ProductionEmpty(state,'costs')}</div>`;
+  if(!state.prod)return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Finance','Package value, crew cost and estimated margin for this wedding.')}${cw10ProductionEmpty(state,'costs')}</div>`;
   const pkg=Number(state.prod.pkg)||0,total=state.costs.total,margin=pkg-total,pct=pkg?Math.round(total/pkg*100):null;
   const days=(state.prod.days||[]).map(d=>{const cost=(d.roles||[]).reduce((n,r)=>n+(Number(r.pay)||0),0);return `<div class="cw10-cost-row"><span><span>${esc((d.events||[]).join(' + ')||'Shoot day')}</span><small>${esc(ciDateLong(d.date))} · ${(d.roles||[]).length} assignments</small></span><strong>${inrP(cost)}</strong></div>`;}).join('');
-  return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Costs','Package value, crew cost and estimated margin for this wedding.',`<button type="button" class="cw10-soft" onclick="exportCouplePDF('${state.prodId}')">Finance PDF</button><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Open production detail</button>`)}
+  return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Finance','Package value, crew cost and estimated margin for this wedding.',`<button type="button" class="cw10-soft" onclick="exportCouplePDF('${state.prodId}')">Finance PDF</button><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Open data &amp; custody</button>`)}
     <div class="cw10-metrics"><div class="cw10-metric"><span>Package value</span><strong>${pkg?inrP(pkg):'—'}</strong><small>${pkg?'Confirmed booking value':'Add the package value below'}</small></div><div class="cw10-metric"><span>Recorded crew cost</span><strong>${inrP(total)}</strong><small>${pct===null?'Ratio available after package value':pct+'% of package'}</small></div><div class="cw10-metric ${pkg&&margin>=0?'good':''}"><span>Estimated margin</span><strong>${pkg?inrP(margin):'—'}</strong><small>Before travel and overheads</small></div></div>
-    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Cost by shoot day</h3><p>Summary of ₹ pay entered on production shoot days. Open production detail to pull Clients team and type pay.</p></div><input type="number" value="${pkg||''}" placeholder="₹ Package value" onchange="pkgSet('${state.prodId}',this.value)" style="width:150px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)"></div>${days||'<div class="cw10-folder-empty">Shoot-day costs have not been logged.</div>'}</section>
+    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Cost by shoot day</h3><p>Summary of ₹ pay entered on production shoot days. Open data &amp; custody to pull Weddings team and type pay.</p></div><input type="number" value="${pkg||''}" placeholder="₹ Package value" onchange="pkgSet('${state.prodId}',this.value)" style="width:150px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)"></div>${days||'<div class="cw10-folder-empty">Shoot-day costs have not been logged.</div>'}</section>
   </div>`;
 }
 function cw10ActivityRows(state){
@@ -6770,7 +6798,7 @@ function cw10CloseReview(){cw10ReviewOpen=false;cw10ReviewEventId='';renderClien
 function cw10RenderWorkspace(entry){
   const state=cwState(entry);cw10SelectDefaultEvent(state);
   const content=({overview:cw10RenderOverview,event:cw10RenderEvent,deliveries:cw10RenderDeliveries,costs:cw10RenderCosts,activity:cw10RenderActivity})[cwSection](state);
-  return `<div class="cw10-workspace-shell"><button type="button" class="cw10-mobile-backdrop" aria-label="Close client navigation" onclick="cw10ToggleMobileNav(false)"></button>${cw10RenderSidebar(state)}<main class="cw10-main"><div class="cw10-mobile-bar"><button type="button" class="cw10-mobile-menu" aria-label="Open client navigation" onclick="cw10ToggleMobileNav(true)">☰</button><button type="button" class="cw10-mobile-client" onclick="setClientSection('overview')"><b>${esc(entry.name)}</b><small>${esc(state.stage)} · ${esc(cw10DateRange(cwWorkspaceDates(state)))}</small></button><button type="button" class="cw10-mobile-menu" aria-label="All clients" onclick="showClientFolders()">←</button></div><div class="cw10-topline"><button type="button" onclick="showClientFolders()">Clients <span>/</span> ${esc(entry.name)}</button><small>${entry.prodOnly?'Production delivery tracking':'One client · one event record'}</small></div>${content}</main></div>${cw10RenderReview(state)}`;
+  return `<div class="cw10-workspace-shell"><button type="button" class="cw10-mobile-backdrop" aria-label="Close wedding navigation" onclick="cw10ToggleMobileNav(false)"></button>${cw10RenderSidebar(state)}<main class="cw10-main"><div class="cw10-mobile-bar"><button type="button" class="cw10-mobile-menu" aria-label="Open wedding navigation" onclick="cw10ToggleMobileNav(true)">☰</button><button type="button" class="cw10-mobile-client" onclick="setClientSection('overview')"><b>${esc(entry.name)}</b><small>${esc(state.stage)} · ${esc(cw10DateRange(cwWorkspaceDates(state)))}</small></button><button type="button" class="cw10-mobile-menu" aria-label="All weddings" onclick="showClientFolders()">←</button></div><div class="cw10-topline"><button type="button" onclick="showClientFolders()">Weddings <span>/</span> ${esc(entry.name)}</button><small>${entry.prodOnly?'Production delivery tracking':'One wedding · one event record'}</small></div>${content}</main></div>${cw10RenderReview(state)}`;
 }
 function renderClientsWorkspace(){
   const root=document.getElementById('cwRoot');if(!root)return;
@@ -7166,24 +7194,24 @@ function cw10RenderSidebar(state){
     return `<button type="button" class="cw10-event-nav ${cwSection==='event'&&cw10SelectedEventId===event.eventId?'on':''}" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw11-nav-event"><span class="cw10-event-name"><i class="cw10-dot ${status.key}"></i>${esc(event.name)}${draft&&draft.dirty?'<i class="cw11-dirty-dot"></i>':''}</span><small>${esc(cw10CompactDate(event.date))} · ${esc(ciFmtTime(details.startTime))}</small></span><span class="cw10-nav-note">${esc(status.text)}</span></button>`;
   }).join('');
   const due=state.prod?state.stages.filter(s=>!(state.prod.stages||{})[s.k]?.done).length:0,activityCount=cw10ActivityRows(state).length,deliveryNote=!state.deliveriesUnlocked?'After shoots':due?due+' pending':'›';
-  return `<aside class="cw10-sidebar"><div class="cw10-side-brand"><span class="cw10-brand"><span class="cw10-brand-mark">II</span><span><b>Tale of Two</b><small>Studio Ledger</small></span></span><button type="button" class="cw10-nav-close" aria-label="Close client navigation" onclick="cw10ToggleMobileNav(false)">×</button></div>
-    <button type="button" class="cw10-back" onclick="showClientFolders()">← All clients</button>
+  return `<aside class="cw10-sidebar"><div class="cw10-side-brand"><span class="cw10-brand"><span class="cw10-brand-mark">II</span><span><b>Tale of Two</b><small>Studio Ledger</small></span></span><button type="button" class="cw10-nav-close" aria-label="Close wedding navigation" onclick="cw10ToggleMobileNav(false)">×</button></div>
+    <button type="button" class="cw10-back" onclick="showClientFolders()">← All weddings</button>
     <div class="cw10-client-id"><span class="cw10-client-avatar">${esc(cw10Initials(state.entry.name).toUpperCase())}</span><span><h3>${esc(state.entry.name)}</h3><p>${esc(cw10DateRange(dates))} · ${state.events.length} events</p></span></div><span class="cw10-stage ${esc(state.stageClass)}">${esc(state.stage)}</span>
-    <nav class="cw10-side-nav" aria-label="Client workspace"><button type="button" class="cw10-nav-button ${cwSection==='overview'?'on':''}" onclick="setClientSection('overview')"><span>Overview</span><span>›</span></button><div class="cw10-nav-label">Events</div><div class="cw10-event-list">${events||'<div style="padding:9px 10px;color:#77716B;font-size:9px">No client events yet</div>'}</div><div class="cw10-side-divider"></div>
-    <button type="button" class="cw10-nav-button ${cwSection==='deliveries'?'on':''}" onclick="setClientSection('deliveries')"><span>Deliveries</span><span class="cw10-nav-note">${esc(deliveryNote)}</span></button><button type="button" class="cw10-nav-button ${cwSection==='costs'?'on':''}" onclick="setClientSection('costs')"><span>Costs</span><span>›</span></button><button type="button" class="cw10-nav-button ${cwSection==='activity'?'on':''}" onclick="setClientSection('activity')"><span>Activity</span><span class="cw10-nav-note">${activityCount||'›'}</span></button></nav>
+    <nav class="cw10-side-nav" aria-label="Wedding workspace"><button type="button" class="cw10-nav-button ${cwSection==='overview'?'on':''}" onclick="setClientSection('overview')"><span>Overview</span><span>›</span></button><div class="cw10-nav-label">Events</div><div class="cw10-event-list">${events||'<div style="padding:9px 10px;color:#77716B;font-size:9px">No client events yet</div>'}</div><div class="cw10-side-divider"></div>
+    <button type="button" class="cw10-nav-button ${cwSection==='deliveries'?'on':''}" onclick="setClientSection('deliveries')"><span>Deliver</span><span class="cw10-nav-note">${esc(deliveryNote)}</span></button><button type="button" class="cw10-nav-button ${cwSection==='costs'?'on':''}" onclick="setClientSection('costs')"><span>Finance</span><span>›</span></button><button type="button" class="cw10-nav-button ${cwSection==='activity'?'on':''}" onclick="setClientSection('activity')"><span>Activity</span><span class="cw10-nav-note">${activityCount||'›'}</span></button></nav>
     <div class="cw10-side-footer">Select an event on the left, then complete its planning details on the right.<button type="button" onclick="signOutLedger()">Sign out</button></div>
   </aside>`;
 }
 function cw10RenderEvent(state){
   cw10SelectDefaultEvent(state);
   const event=state.events.find(e=>e.eventId===cw10SelectedEventId);
-  if(!event)return `<div class="cw10-content">${cw10PageHead('Client workspace',state.entry.name,'No private-link event is available yet.',cw10ClientActions(state))}<div class="cw10-empty-state"><h3>Create the client event link</h3><p>Events in this workspace come only from that private link.</p><button type="button" class="cw10-primary" onclick="openClientSetupForSelected()">Create client link</button></div></div>`;
+  if(!event)return `<div class="cw10-content">${cw10PageHead('Wedding workspace',state.entry.name,'No private-link event is available yet.',cw10ClientActions(state))}<div class="cw10-empty-state"><h3>Create the client event link</h3><p>Events in this workspace come only from that private link.</p><button type="button" class="cw10-primary" onclick="openClientSetupForSelected()">Create client link</button></div></div>`;
   const details=cw10CurrentDetails(state,event),status=cw10EventStatus(state,event),dirty=cw11DirtyDrafts().length;
   const syncMeta=cwBusinessSyncMeta(state,event),canSend=status.key==='complete';
   const businessAction=canSend
     ?(syncMeta.synced
-      ?`<button type="button" class="cw10-soft" onclick="setView('businessOverview')">Sent to Business</button>`
-      :`<button type="button" class="cw10-primary" onclick="cwSendEventToBusiness('${event.eventId}')">Send to Business</button>`)
+      ?`<button type="button" class="cw10-soft" onclick="cwOpenBusiness('${syncMeta.prodId}')">Handed off</button>`
+      :`<button type="button" class="cw10-primary" onclick="cwSendEventToBusiness('${event.eventId}')">Confirm handoff</button>`)
     :'';
   const actions=`${cw10ReviewSummary(state,event.eventId)?'':`<span class="cw10-large-status"><i class="cw10-dot ${status.key}"></i>${esc(status.text)}</span>`}${businessAction}${dirty?`<button type="button" class="cw10-soft" onclick="cw11SaveAllPlans()">Save all · ${dirty}</button>`:''}`;
   return `<div class="cw10-content cw11-event-content">${cw10PageHead(`${ciDateLong(event.date)} · ${ciFmtTime(details.startTime)}`,event.name,details.venueName||'Venue awaiting confirmation',actions)}
