@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.2.6-role-order-extras-2026-07-29">
+<meta name="totw-build" content="v12.2.8-settings-shotlists-2026-07-30">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1542,33 +1542,49 @@ body.cw10-client-mode .vtabs{margin-top:14px}
       <span id="moodSecMeta">Hide ▾</span>
     </div>
     <div class="act-body">
-      <p class="hint" style="margin:10px 0 8px">Optional override for one exact couple, event and date. When saved, it appears above the common board in that event's checklist.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-        <select id="moodCouple" onchange="moodCoupleChanged()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:200px"></select>
-        <select id="moodDate" onchange="moodDateChanged()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:160px"><option value="">Event date…</option></select>
-        <input id="moodEvent" list="shotTypeOptions" placeholder="Exact event name" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:170px">
-        <input id="moodUrl" type="url" placeholder="https://pinterest.com/…" style="flex:1;min-width:220px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
-        <button class="btn-mini" onclick="saveMoodBoard()">Save board</button>
+      <p class="hint" style="margin:10px 0 8px">Pick the couple, then one exact event, then paste the Pinterest link. That board appears above the common board for that event only.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:12px">
+        <label style="display:grid;gap:5px;margin:0;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);min-width:180px;flex:1.1">Couple
+          <select id="moodCouple" onchange="moodCoupleChanged()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);width:100%"></select>
+        </label>
+        <label style="display:grid;gap:5px;margin:0;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);min-width:200px;flex:1.2">Exact event
+          <select id="moodEventChoice" onchange="moodEventChoiceChanged()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);width:100%"><option value="">Pick couple first…</option></select>
+        </label>
+        <label style="display:grid;gap:5px;margin:0;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);min-width:220px;flex:1.6">Pinterest link
+          <input id="moodUrl" type="url" placeholder="https://pinterest.com/…" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);width:100%">
+        </label>
+        <button class="btn-mini" onclick="saveMoodBoard()" style="height:38px">Save board</button>
       </div>
+      <div id="moodHint" class="hint" style="margin:0 0 10px;display:none"></div>
       <div id="moodList"></div>
     </div>
   </div>
 
-  <div class="closed-sec" id="shotEditSec" style="margin-top:26px">
+  <div class="closed-sec open" id="shotEditSec" style="margin-top:26px">
     <div class="act-head" onclick="toggleShotEdit()">
       <h2 style="font-size:20px">Edit shot lists</h2>
-      <span id="shotEditMeta">Show ▸</span>
+      <span id="shotEditMeta">Hide ▾</span>
     </div>
     <div class="act-body">
-      <p class="hint" style="margin:10px 0 8px">Choose a unique event name from Crew Planning and save one common list for it. The same list automatically applies to every couple and date with that event name.</p>
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <select id="shotEdType" onchange="loadShotEd()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:180px"><option value="">Choose event…</option></select>
-        <select id="shotEdTeam" onchange="loadShotEd()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)">
+      <p class="hint" style="margin:10px 0 8px">Start with the core studio events. Search only if you need a rarer name. One common list applies to every couple with that event name.</p>
+      <input id="shotEdType" type="hidden" value="">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <input id="shotEdSearch" type="search" placeholder="Search events…" oninput="renderShotEditPicker()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);min-width:200px;flex:1">
+        <div style="display:flex;gap:6px;padding:3px;border:1px solid var(--line);border-radius:8px;background:#fff">
+          <button type="button" class="btn-mini" id="shotEdTeamCandid" onclick="shotEdSetTeam('candid')" style="margin:0">Candid</button>
+          <button type="button" class="btn-mini" id="shotEdTeamTraditional" onclick="shotEdSetTeam('traditional')" style="margin:0;background:transparent;color:var(--ink-soft);border:0">Traditional</button>
+        </div>
+        <select id="shotEdTeam" onchange="loadShotEd()" style="display:none">
           <option value="candid">Candid</option><option value="traditional">Traditional</option>
         </select>
       </div>
+      <div id="shotEdPicker" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px"></div>
+      <div id="shotEdMeta" class="hint" style="margin:0 0 8px"></div>
       <textarea id="shotEdArea" rows="10" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:var(--body);font-size:14px;color:var(--ink);line-height:1.6;resize:vertical"></textarea>
-      <button class="btn-mini" style="margin-top:10px" onclick="saveShotEd()">Save this list</button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
+        <button class="btn-mini" onclick="saveShotEd()">Save this list</button>
+        <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="shotEdAddCustom()">+ Custom event</button>
+      </div>
     </div>
   </div>
  </div>
@@ -4396,99 +4412,99 @@ function refreshShotTypeOptions(){
   el.innerHTML=plannerEventTypes().map(name=>`<option value="${esc(name)}">`).join('');
   refreshShotEditTypeOptions();
 }
-
-function refreshShotEditTypeOptions(){
-  const el=document.getElementById('shotEdType');
-  if(!el)return;
-  const previous=el.value,names=plannerEventTypes();
-  el.innerHTML='<option value="">Choose event…</option>'+names.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join('');
-  if(names.includes(previous))el.value=previous;
-  else if(names.length)el.value=names[0];
-  loadShotEd();
-}
-
-function upcomingCouplesAdmin(){
-  const today=new Date(); today.setHours(0,0,0,0);
-  const p2=n=>String(n).padStart(2,'0');
-  const map={};
-  const add=(iso,name)=>{
-    if(!name)return;
-    const d=new Date(iso+'T00:00:00');
-    if(isNaN(d)||d<today)return;
-    const k=String(name).trim(); if(!k)return;
-    if(!map[k]||iso<map[k])map[k]=iso;
+const SHOT_CORE_EVENTS=['Bride Making','Groom Making','Haldi','Mehndi','Sangeet','Cocktail','Engagement','Wedding','Ceremony','Reception','Edurukollu','Baraat','Couple Portraits'];
+function shotListStatus(name){
+  const key=shotListKey(name),remote=shotLists&&shotLists[key]||{},def=SHOT_DEFAULTS[key]||{};
+  const count=tm=>{
+    const v=remote[tm];
+    const arr=Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);
+    if(arr.length)return {count:arr.length,source:'saved'};
+    const fallback=(def[tm]||[]);
+    return {count:fallback.length,source:fallback.length?'default':'empty'};
   };
-  BAKED.forEach(r=>add(`2026-${p2(r[0])}-${p2(r[1])}`,r[2]));
-  Object.values(teamBookings||{}).forEach(b=>{if(b&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c);});
-  Object.values(enquiries||{}).forEach(x=>{if(x&&x.status==='BOOKED')(x.dates||[]).forEach(iso=>add(iso,x.name));});
-  Object.values(plans||{}).forEach(p=>{if(p&&p.iso)add(p.iso,p.couple);});
-  return Object.entries(map).sort((a,b)=>a[1].localeCompare(b[1])||a[0].localeCompare(b[0]));
+  return {key,candid:count('candid'),traditional:count('traditional')};
 }
-
-function toggleMoodSec(){
-  const s=document.getElementById('moodSec');
-  s.classList.toggle('open');
-  document.getElementById('moodSecMeta').textContent=s.classList.contains('open')?'Hide ▾':'Show ▸';
+function shotEditCatalog(){
+  const byKey=new Map();
+  const add=(name,group)=>{
+    const clean=String(name||'').trim(); if(!clean)return;
+    const key=shotListKey(clean); if(!key)return;
+    const cur=byKey.get(key);
+    if(!cur){byKey.set(key,{name:clean,key,group});return;}
+    if(cur.group!=='core'&&group==='core'){cur.name=clean;cur.group='core';}
+  };
+  SHOT_CORE_EVENTS.forEach(name=>add(name,'core'));
+  Object.keys(SHOT_DEFAULTS||{}).forEach(key=>add(prettyShotType(key),'core'));
+  Object.keys(shotLists||{}).forEach(key=>add(prettyShotType(key),'saved'));
+  plannerEventTypes().forEach(name=>add(name,'other'));
+  return [...byKey.values()].sort((a,b)=>{
+    const rank={core:0,saved:1,other:2};
+    return (rank[a.group]-rank[b.group])||a.name.localeCompare(b.name);
+  });
 }
-
-function renderMoodSec(){
-  const sel=document.getElementById('moodCouple'); if(!sel)return;
-  const keep=sel.value;
-  const ups=upcomingCouplesAdmin();
-  sel.innerHTML='<option value="">Pick the couple…</option>'+ups.map(([n,iso])=>`<option value="${esc(n)}">${esc(n)} — from ${esc(fmt(iso))}</option>`).join('');
-  if(keep)sel.value=keep;
-  refreshShotTypeOptions();
-  const list=document.getElementById('moodList');
-  const entries=Object.entries(shotMoods||{}).filter(([k,v])=>v&&v.url);
-  if(!entries.length){list.innerHTML='<div class="empty" style="padding:10px 4px">No boards saved yet.</div>';return;}
-  list.innerHTML=entries.sort((a,b)=>String(a[1].eventDate||'').localeCompare(String(b[1].eventDate||''))).map(([k,v])=>
-    `<div class="cost-line"><span><b>${esc(v.couple||k)}</b> · ${esc(v.eventName||'Legacy general board')}${v.eventDate?' · '+esc(ciDateLong(v.eventDate)):''}<br><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url.length>52?v.url.slice(0,52)+'…':v.url)}</a>${!v.eventName||!v.eventDate?' <small style="color:var(--sindoor)">Not shown until saved against an exact event.</small>':''}</span><span><button class="btn-mini" onclick="removeMoodBoard('${esc(k)}')">Remove</button></span></div>`
-  ).join('');
+function refreshShotEditTypeOptions(){
+  renderShotEditPicker();
 }
-
-function moodCoupleChanged(){
-  const name=document.getElementById('moodCouple').value,dateSel=document.getElementById('moodDate'),map=calendarCoupleMap(),dates=((map[name]&&map[name].dates)||[]).filter(d=>d>=ciTodayIso()).sort();
-  dateSel.innerHTML='<option value="">Event date…</option>'+dates.map(d=>`<option value="${esc(d)}">${esc(ciDateLong(d))}</option>`).join('');
-  document.getElementById('moodEvent').value='';
-  if(dates.length===1){dateSel.value=dates[0];moodDateChanged();}
+function renderShotEditPicker(){
+  const box=document.getElementById('shotEdPicker'); if(!box)return;
+  const typeEl=document.getElementById('shotEdType');
+  let selected=typeEl?.value||'';
+  const q=String(document.getElementById('shotEdSearch')?.value||'').trim().toLowerCase();
+  const all=shotEditCatalog();
+  if(!selected){
+    const first=all.find(x=>x.group==='core')||all[0];
+    if(first&&typeEl){typeEl.value=first.name;selected=first.name;loadShotEd();}
+  }
+  let rows=all.filter(x=>!q||x.name.toLowerCase().includes(q)||x.key.includes(q));
+  if(!q)rows=rows.filter(x=>x.group==='core'||x.group==='saved'||shotListKey(x.name)===shotListKey(selected));
+  if(!rows.length){box.innerHTML='<div class="empty" style="padding:8px 2px">No events match that search.</div>';shotEdSyncTeamButtons();updateShotEdMeta();return;}
+  box.innerHTML=rows.map(x=>{
+    const st=shotListStatus(x.name),team=document.getElementById('shotEdTeam')?.value||'candid',side=st[team],on=shotListKey(selected)===x.key;
+    const badge=side.source==='saved'?`${side.count} saved`:side.source==='default'?`${side.count} default`:'empty';
+    return `<button type="button" class="btn-mini" onclick="shotEdSelectEvent(decodeURIComponent('${encodeURIComponent(x.name)}'))" style="margin:0;${on?'':'background:transparent;color:var(--ink);border:1px solid var(--line)'}" title="${esc(x.name)}">${esc(x.name)} <small style="opacity:.75">${esc(badge)}</small></button>`;
+  }).join('')+(q?'':`<button type="button" class="btn-mini" onclick="document.getElementById('shotEdSearch').focus()" style="margin:0;background:transparent;color:var(--ink-soft);border:1px dashed var(--line)">Search more events…</button>`);
+  shotEdSyncTeamButtons();
+  updateShotEdMeta();
 }
-function moodDateChanged(){
-  const couple=document.getElementById('moodCouple').value,date=document.getElementById('moodDate').value,row=ciPlannerRow(couple,date),map=calendarCoupleMap(),evs=(map[couple]&&map[couple].events&&map[couple].events[date])||[];
-  document.getElementById('moodEvent').value=(row&&row.event&&row.event!=='—'?row.event:'')||evs.join(' + ');
+function shotEdSelectEvent(name){
+  const el=document.getElementById('shotEdType'); if(!el)return;
+  el.value=name;renderShotEditPicker();loadShotEd();
 }
-
-function saveMoodBoard(){
-  if(!liveMode){toast('Needs live sync to save.');return;}
-  const name=document.getElementById('moodCouple').value;
-  const eventDate=document.getElementById('moodDate').value;
-  const eventName=document.getElementById('moodEvent').value.trim();
-  const url=(document.getElementById('moodUrl').value||'').trim();
-  if(!name){toast('Pick the couple first.');return;}
-  if(!eventDate){toast('Pick the event date.');return;}
-  if(!eventName){toast('Enter the exact event name.');return;}
-  if(!url){toast('Paste the board link.');return;}
-  db.ref('shotMoods/'+moodKey(name,eventName,eventDate)).set({url,couple:name,eventName,eventDate,by:editor,at:stamp()});
-  document.getElementById('moodUrl').value='';
-  log(`saved mood board for ${name} — ${eventName}`);
-  toast(`Board saved only for ${name} — ${eventName}.`);
+function shotEdSetTeam(team){
+  const el=document.getElementById('shotEdTeam'); if(!el)return;
+  el.value=team==='traditional'?'traditional':'candid';
+  shotEdSyncTeamButtons();renderShotEditPicker();loadShotEd();
 }
-
-function removeMoodBoard(k){
-  if(!liveMode)return;
-  db.ref('shotMoods/'+k).remove();
-  toast('Board removed.');
+function shotEdSyncTeamButtons(){
+  const team=document.getElementById('shotEdTeam')?.value||'candid';
+  const candid=document.getElementById('shotEdTeamCandid'),trad=document.getElementById('shotEdTeamTraditional');
+  if(candid){candid.style.background=team==='candid'?'':'transparent';candid.style.color=team==='candid'?'':'var(--ink-soft)';}
+  if(trad){trad.style.background=team==='traditional'?'':'transparent';trad.style.color=team==='traditional'?'':'var(--ink-soft)';}
 }
-
+function updateShotEdMeta(){
+  const meta=document.getElementById('shotEdMeta'); if(!meta)return;
+  const name=document.getElementById('shotEdType')?.value||'',team=document.getElementById('shotEdTeam')?.value||'candid';
+  if(!name){meta.textContent='Pick a core event above, or search for a rarer name.';return;}
+  const st=shotListStatus(name),side=st[team];
+  meta.textContent=`Editing ${name} · ${team} · ${side.source==='saved'?`${side.count} saved shots`:(side.source==='default'?`${side.count} default shots — save to customise`:'No shots yet')}`;
+}
+function shotEdAddCustom(){
+  const name=prompt('Custom event name for this common shot list:');
+  if(!name||!name.trim())return;
+  shotEdSelectEvent(name.trim());
+  toast(`Editing “${name.trim()}”. Add shots, then save.`);
+}
 function toggleShotEdit(){
   const s=document.getElementById('shotEditSec');
   s.classList.toggle('open');
   document.getElementById('shotEditMeta').textContent=s.classList.contains('open')?'Hide ▾':'Show ▸';
-  if(s.classList.contains('open'))loadShotEd();
+  if(s.classList.contains('open')){renderShotEditPicker();loadShotEd();}
 }
 function loadShotEd(){
   const area=document.getElementById('shotEdArea'); if(!area)return;
-  const name=document.getElementById('shotEdType').value.trim(),t=shotListKey(name), tm=document.getElementById('shotEdTeam').value;
-  if(!name){area.value='';area.placeholder='Add an event name in Crew Planning first.';return;}
+  const name=document.getElementById('shotEdType')?.value.trim()||'',t=shotListKey(name), tm=document.getElementById('shotEdTeam')?.value||'candid';
+  shotEdSyncTeamButtons();updateShotEdMeta();
+  if(!name){area.value='';area.placeholder='Pick an event above to edit its common shot list.';return;}
   area.placeholder='Add one shot per line';
   const remote=shotLists&&shotLists[t]&&shotLists[t][tm];
   const arr=(Array.isArray(remote)&&remote.length)?remote:(remote&&typeof remote==='object')?Object.values(remote):(SHOT_DEFAULTS[t]&&SHOT_DEFAULTS[t][tm])||[];
@@ -4496,13 +4512,147 @@ function loadShotEd(){
 }
 function saveShotEd(){
   if(!liveMode){toast('Needs live sync to save.');return;}
-  const name=document.getElementById('shotEdType').value.trim(),t=shotListKey(name), tm=document.getElementById('shotEdTeam').value;
+  const name=document.getElementById('shotEdType')?.value.trim()||'',t=shotListKey(name), tm=document.getElementById('shotEdTeam')?.value||'candid';
   const arr=document.getElementById('shotEdArea').value.split('\n').map(x=>x.trim()).filter(Boolean);
-  if(!name){toast('Choose an event from Crew Planning first.');return;}
+  if(!name){toast('Pick an event first.');return;}
   if(!arr.length){toast('The list is empty — add at least one shot.');return;}
-  db.ref('shotLists/'+t+'/'+tm).set(arr);
-  log('updated '+tm+' shot list for '+name+' ('+arr.length+' shots)');
-  toast(`Saved the common ${tm} list for “${name}”.`);
+  db.ref('shotLists/'+t+'/'+tm).set(arr).then(()=>{
+    log('updated '+tm+' shot list for '+name+' ('+arr.length+' shots)');
+    toast(`Saved the common ${tm} list for “${name}”.`);
+    renderShotEditPicker();updateShotEdMeta();
+  }).catch(()=>toast('Could not save the shot list. Please try again.'));
+}
+
+function upcomingCouplesAdmin(){
+  const today=ciTodayIso(),map={};
+  const add=(iso,name)=>{
+    const k=String(name||'').trim(); if(!k||!iso)return;
+    if(!map[k]||iso<map[k])map[k]=iso;
+  };
+  upcomingCouplesAdminLegacy(add);
+  Object.values(clientForms||{}).forEach(f=>{
+    if(!f||!f.couple)return;
+    Object.values(f.events||{}).forEach(e=>{if(e&&e.date)add(e.date,f.couple);});
+  });
+  Object.values(checkinEvents||{}).forEach(e=>{if(e&&e.couple&&e.date)add(e.date,e.couple);});
+  // Prefer upcoming first, but keep recent/past couples so boards can still be attached
+  return Object.entries(map).sort((a,b)=>{
+    const aUp=a[1]>=today?0:1,bUp=b[1]>=today?0:1;
+    return aUp-bUp||a[1].localeCompare(b[1])||a[0].localeCompare(b[0]);
+  });
+}
+function upcomingCouplesAdminLegacy(add){
+  const p2=n=>String(n).padStart(2,'0');
+  BAKED.forEach(r=>add(`2026-${p2(r[0])}-${p2(r[1])}`,r[2]));
+  Object.values(teamBookings||{}).forEach(b=>{if(b&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.c);});
+  Object.values(enquiries||{}).forEach(x=>{if(x&&x.status==='BOOKED')(x.dates||[]).forEach(iso=>add(iso,x.name));});
+  Object.values(plans||{}).forEach(p=>{if(p&&p.iso)add(p.iso,p.couple);});
+}
+function moodChoiceValue(date,name){return `${date}\t${name}`;}
+function moodParseChoice(value){
+  const raw=String(value||''),i=raw.indexOf('\t');
+  if(i<0)return null;
+  const date=raw.slice(0,i),name=raw.slice(i+1).trim();
+  return date&&name?{date,name}:null;
+}
+function moodEventsForCouple(couple){
+  const who=String(couple||'').trim(),found=new Map();
+  const add=(date,name)=>{
+    const eventName=String(name||'').trim(); if(!who||!date||!eventName)return;
+    eventTypeParts(eventName).forEach(part=>{
+      const key=`${date}|${shotListKey(part)}`;
+      if(!found.has(key))found.set(key,{date,name:part});
+    });
+  };
+  Object.values(clientForms||{}).forEach(f=>{
+    if(!f||cwKey(f.couple)!==cwKey(who))return;
+    Object.values(f.events||{}).forEach(e=>{if(e&&e.date)add(e.date,e.name);});
+  });
+  Object.values(checkinEvents||{}).forEach(e=>{
+    if(!e||cwKey(e.couple)!==cwKey(who)||!e.date)return;
+    ciEventNames(e).forEach(name=>add(e.date,name));
+  });
+  const map=calendarCoupleMap(),row=map[who]||Object.entries(map).find(([n])=>cwKey(n)===cwKey(who))?.[1];
+  if(row){
+    (row.dates||[]).forEach(date=>{(row.events&&row.events[date]||[]).forEach(name=>add(date,name));});
+  }
+  Object.values(plans||{}).forEach(p=>{
+    if(!p||!p.iso||cwKey(p.couple)!==cwKey(who))return;
+    add(p.iso,p.event);
+  });
+  return [...found.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name));
+}
+function toggleMoodSec(){
+  const s=document.getElementById('moodSec');
+  s.classList.toggle('open');
+  document.getElementById('moodSecMeta').textContent=s.classList.contains('open')?'Hide ▾':'Show ▸';
+}
+function renderMoodSec(){
+  const sel=document.getElementById('moodCouple'); if(!sel)return;
+  const keepCouple=sel.value,keepChoice=document.getElementById('moodEventChoice')?.value||'';
+  const ups=upcomingCouplesAdmin(),today=ciTodayIso();
+  sel.innerHTML='<option value="">Pick the couple…</option>'+ups.map(([n,iso])=>`<option value="${esc(n)}">${esc(n)} · ${iso>=today?`from ${esc(fmt(iso))}`:`last ${esc(fmt(iso))}`}</option>`).join('');
+  if(keepCouple)sel.value=keepCouple;
+  moodCoupleChanged(keepChoice);
+  const list=document.getElementById('moodList');
+  const entries=Object.entries(shotMoods||{}).filter(([k,v])=>v&&v.url);
+  if(!entries.length){list.innerHTML='<div class="empty" style="padding:10px 4px">No couple-specific boards saved yet.</div>';return;}
+  list.innerHTML=entries.sort((a,b)=>String(a[1].eventDate||'').localeCompare(String(b[1].eventDate||''))||String(a[1].couple||'').localeCompare(String(b[1].couple||''))).map(([k,v])=>{
+    const ready=!!(v.couple&&v.eventName&&v.eventDate&&!/[+]/.test(v.eventName));
+    return `<div class="cost-line"><span><b>${esc(v.couple||k)}</b> · ${esc(v.eventName||'Legacy board')}${v.eventDate?' · '+esc(ciDateLong(v.eventDate)):''}<br><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url.length>64?v.url.slice(0,64)+'…':v.url)}</a>${ready?'':' <small style="color:var(--sindoor)">Needs an exact single event name to show in checklists.</small>'}</span><span><button class="btn-mini" onclick="removeMoodBoard('${esc(k)}')">Remove</button></span></div>`;
+  }).join('');
+}
+function moodCoupleChanged(keepChoice=''){
+  const couple=document.getElementById('moodCouple')?.value||'',eventSel=document.getElementById('moodEventChoice'),hint=document.getElementById('moodHint');
+  if(!eventSel)return;
+  if(!couple){
+    eventSel.innerHTML='<option value="">Pick couple first…</option>';
+    if(hint){hint.style.display='none';hint.textContent='';}
+    return;
+  }
+  const events=moodEventsForCouple(couple);
+  eventSel.innerHTML=events.length
+    ?'<option value="">Pick exact event…</option>'+events.map(e=>`<option value="${esc(moodChoiceValue(e.date,e.name))}">${esc(e.name)} · ${esc(ciDateLong(e.date))}</option>`).join('')
+    :'<option value="">No exact events found for this couple</option>';
+  if(keepChoice&&[...eventSel.options].some(o=>o.value===keepChoice))eventSel.value=keepChoice;
+  else if(events.length===1)eventSel.value=moodChoiceValue(events[0].date,events[0].name);
+  if(hint){
+    hint.style.display='';
+    hint.textContent=events.length
+      ?`${events.length} exact event${events.length===1?'':'s'} ready — pick one event (not a combined day), then paste the link.`
+      :'No exact events found yet. Create the private client link or add the wedding in Dates / Planner first.';
+  }
+  moodEventChoiceChanged();
+}
+function moodEventChoiceChanged(){
+  const couple=document.getElementById('moodCouple')?.value||'',choice=moodParseChoice(document.getElementById('moodEventChoice')?.value||''),urlEl=document.getElementById('moodUrl');
+  if(!urlEl)return;
+  if(!couple||!choice){return;}
+  const existing=shotMoods[moodKey(couple,choice.name,choice.date)];
+  if(existing&&existing.url&&!urlEl.value.trim())urlEl.value=existing.url;
+}
+function saveMoodBoard(){
+  if(!liveMode){toast('Needs live sync to save.');return;}
+  const name=document.getElementById('moodCouple')?.value||'';
+  const choice=moodParseChoice(document.getElementById('moodEventChoice')?.value||'');
+  const url=(document.getElementById('moodUrl')?.value||'').trim();
+  if(!name){toast('Pick the couple first.');return;}
+  if(!choice){toast('Pick one exact event.');return;}
+  if(!url){toast('Paste the board link.');return;}
+  const eventName=choice.name,eventDate=choice.date;
+  if(/[+]/.test(eventName)||/\s+\+\s+/.test(eventName)){toast('Pick a single event name, not a combined day.');return;}
+  db.ref('shotMoods/'+moodKey(name,eventName,eventDate)).set({url,couple:name,eventName,eventDate,by:editor,at:stamp()})
+    .then(()=>{
+      document.getElementById('moodUrl').value='';
+      log(`saved mood board for ${name} — ${eventName} (${eventDate})`);
+      toast(`Board saved for ${name} · ${eventName}.`);
+      renderMoodSec();
+    })
+    .catch(()=>toast('Could not save the board. Please try again.'));
+}
+function removeMoodBoard(k){
+  if(!liveMode)return;
+  db.ref('shotMoods/'+k).remove().then(()=>{toast('Board removed.');renderMoodSec();}).catch(()=>toast('Could not remove the board.'));
 }
 
 /* ---------------- Crew check-ins (isolated from Crew Planner) ---------------- */
@@ -4758,7 +4908,9 @@ function cwOpenShoot(id){
   if(scope==='completed')ciCompletedOpen=true;ciCoupleGroupsOpen.add(groupId);ciEventCardsOpen.add(id);setView('shoots');renderCheckinEvents();setTimeout(()=>document.getElementById('ciEventCard_'+id)?.scrollIntoView({behavior:'smooth',block:'center'}),80);
 }
 function cwOpenSettings(eventName){
-  setView('settings');const sec=document.getElementById('shotEditSec');if(sec&&!sec.classList.contains('open'))toggleShotEdit();refreshShotEditTypeOptions();const select=document.getElementById('shotEdType');if(select&&[...select.options].some(o=>o.value===eventName)){select.value=eventName;loadShotEd();}setTimeout(()=>sec?.scrollIntoView({behavior:'smooth',block:'start'}),60);
+  setView('settings');const sec=document.getElementById('shotEditSec');if(sec&&!sec.classList.contains('open'))toggleShotEdit();
+  if(eventName)shotEdSelectEvent(eventName);else{renderShotEditPicker();loadShotEd();}
+  setTimeout(()=>sec?.scrollIntoView({behavior:'smooth',block:'start'}),60);
 }
 function cwOpenBusiness(id){openProdId=id;setView('business');renderProd();setTimeout(()=>document.getElementById('prodList')?.scrollIntoView({behavior:'smooth',block:'start'}),60);}
 function cwCreateProduction(source='deliveries'){
