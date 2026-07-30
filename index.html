@@ -4,28 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.2.12-go-live-fixes-2026-07-30">
+<meta name="totw-build" content="v12.3.0-ivory-shell-2026-07-30">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#0D0E10; --ink:#F1ECE3; --ink-soft:#AAA398; --line:#303235;
-  --sindoor:#A6434E; --sindoor-soft:#2A191D;
-  --teal:#648D86; --leaf:#82A987; --leaf-soft:#18241C;
-  --amber:#C5A26B; --amber-soft:#2A2318;
-  --cold:#8995B6; --cold-soft:#1D202A;
-  --card:#17191B; --surface:#131416; --surface-2:#1D1F21; --surface-3:#242629;
-  --ivory:#F1ECE3; --shadow:0 22px 70px rgba(0,0,0,.28);
+  --paper:#F7F3EC; --ink:#1C1916; --ink-soft:#7A7368; --line:#E4DDD2;
+  --sindoor:#8B2E3A; --sindoor-soft:#F6E9EB;
+  --teal:#4F6F6A; --leaf:#5A7A5C; --leaf-soft:#E8F0E9;
+  --amber:#A67C3D; --amber-soft:#F5EDDF;
+  --cold:#6B7594; --cold-soft:#EBEEF5;
+  --card:#FFFCF7; --surface:#FBFAF6; --surface-2:#FFFFFF; --surface-3:#F1EBE3;
+  --ivory:#FFFCF7; --wine:#6E1F2C; --champagne:#C4A46A;
+  --shadow:0 22px 60px rgba(48,36,28,.08);
+  --rail:240px;
   --display:'Cormorant Garamond', Georgia, serif;
-  --body:'Inter', -apple-system, sans-serif;
+  --body:'Manrope', -apple-system, sans-serif;
   --mono:'Spline Sans Mono', ui-monospace, monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding:0 0 80px;color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding:0;color-scheme:light}
 .wrap{max-width:1440px;margin:0 auto;padding:0 24px}
 
 header{padding:44px 0 26px;border-bottom:1px solid var(--ink)}
@@ -307,7 +309,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .vtabs button{flex:1;padding:11px 6px;background:none;border:none;border-radius:6px;color:#A39F95;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
 .vtabs button.on{background:var(--paper);color:var(--ink);font-weight:500}
 .prod-wrap{max-width:780px;margin:0 auto}
-.plan-wrap{width:100vw;margin-left:calc(50% - 50vw);padding:0 26px}
+.plan-wrap{width:100%;margin-left:0;padding:0 4px 0 0}
 .prod-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--ink);padding:16px 0 8px}
 .prod-head h2{font-family:var(--display);font-size:28px;font-weight:500}
 .btn-mini{background:var(--ink);color:var(--paper);border:none;border-radius:6px;padding:9px 14px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
@@ -597,11 +599,11 @@ h1 em{font-style:italic;color:var(--sindoor)}
 }
 .ci-profile-group,.ci-team-group{border:1px solid var(--line);border-radius:10px;overflow:hidden}.ci-profile-group-head,.ci-team-group-head{width:100%;border:0;background:#F4F0E8;color:var(--ink);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;text-align:left}.ci-profile-group-head b,.ci-team-group-head b{font:600 14px var(--body)}.ci-profile-group-head span,.ci-team-group-head span{font:500 8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}.ci-profile-group-body,.ci-team-group-body{display:grid;gap:8px;padding:8px}.ci-profile-group.closed .ci-profile-group-body,.ci-team-group.closed .ci-team-group-body{display:none}.ci-form .ci-team-group{border-color:#4a473f}.ci-form .ci-team-group-head{background:#2b2924;color:#fff}.ci-form .ci-team-group-head span{color:#aaa59b}
 
-/* ===================== DARK STUDIO SYSTEM =====================
-   Presentation only: data paths, public URLs and workflow contracts stay unchanged. */
-html{background:var(--paper);scrollbar-color:#4A4D50 var(--paper)}
-::selection{background:#6E3038;color:var(--ivory)}
-a{color:#D2B27E}
+/* ===================== LEGACY DARK TOKENS (superseded by IVORY LUXURY SHELL below) =====================
+   Kept as non-destructive base; ivory override wins for presentation. Data paths unchanged. */
+html{background:var(--paper);scrollbar-color:#C9C0B4 var(--paper)}
+::selection{background:rgba(139,46,58,.18);color:var(--ink)}
+a{color:var(--wine)}
 header{border-color:#3B3D40}
 .eyebrow{color:#938C81}
 h1 em{color:#C96A75}
@@ -840,7 +842,7 @@ header{padding:34px 0 22px}
 #tabClientForms{min-height:70vh}
 #cwRoot{min-height:620px}
 body.cw10-client-mode .wrap>header{display:none}
-body.cw10-client-mode .vtabs{margin-top:14px}
+body.cw10-client-mode .app-rail{/* keep rail visible in Clients */}
 .cw10-folder-page{max-width:1240px;margin:0 auto;padding:8px 0 42px}
 .cw10-folder-head{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:25px}
 .cw10-kicker{font:9px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#C6A36C;margin-bottom:8px}
@@ -1209,6 +1211,165 @@ body.cw10-client-mode .vtabs{margin-top:14px}
   .cw10-event-state{grid-column:2;align-self:start;margin-top:-9px;white-space:normal}
   .cw10-row-arrow{grid-column:3;grid-row:1/3;align-self:center}
 }
+
+/* ===================== IVORY LUXURY STUDIO SHELL =====================
+   Presentation only — Firebase paths, public URLs, IDs and handlers unchanged. */
+html{background:var(--paper);scrollbar-color:#C9C0B4 var(--paper)}
+::selection{background:rgba(139,46,58,.18);color:var(--ink)}
+a{color:var(--wine)}
+body{background:
+  radial-gradient(ellipse 80% 50% at 0% -10%,rgba(139,46,58,.06),transparent 55%),
+  radial-gradient(ellipse 60% 40% at 100% 0%,rgba(166,124,61,.07),transparent 50%),
+  var(--paper)!important;color:var(--ink)!important;color-scheme:light!important}
+
+.app-shell{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);min-height:100vh;align-items:stretch}
+.app-rail{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:22px 16px 18px;background:linear-gradient(180deg,#1C1916 0%,#2A2320 100%);color:#F7F3EC;border-right:1px solid rgba(255,255,255,.06);z-index:95}
+.rail-brand{display:flex;align-items:center;gap:12px;padding:4px 8px 22px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:18px}
+.rail-brand img{width:42px;height:42px;border-radius:8px;object-fit:cover;flex:none;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.rail-brand-copy{min-width:0}
+.rail-brand-copy .eyebrow{color:var(--champagne)!important;font-size:8px;letter-spacing:.18em;margin:0}
+.rail-brand-copy strong{display:block;font-family:var(--display);font-size:20px;font-weight:500;line-height:1.05;margin-top:3px;color:#FFFCF7}
+.rail-brand-copy span{display:block;font-size:10px;color:rgba(247,243,236,.55);margin-top:3px}
+.app-rail .vtabs{display:flex;flex-direction:column;gap:4px;background:transparent!important;border:0!important;padding:0!important;margin:0!important;box-shadow:none!important;position:static!important;backdrop-filter:none!important;flex:1;overflow:auto;scrollbar-width:thin}
+.app-rail .vtabs button{flex:none!important;width:100%;text-align:left;padding:12px 14px!important;min-height:0!important;border-radius:10px!important;color:rgba(247,243,236,.62)!important;font-size:10px!important;letter-spacing:.1em!important;background:transparent!important;border:0!important;transition:background .2s ease,color .2s ease,transform .15s ease}
+.app-rail .vtabs button:hover{background:rgba(255,255,255,.06)!important;color:#FFFCF7!important}
+.app-rail .vtabs button.on{background:rgba(196,164,106,.16)!important;color:#F3E6C8!important;box-shadow:inset 3px 0 0 var(--champagne)!important;font-weight:600}
+.rail-foot{padding-top:14px;border-top:1px solid rgba(255,255,255,.1);margin-top:12px}
+.rail-foot .signout-btn{width:100%;border-color:rgba(255,255,255,.18)!important;color:rgba(247,243,236,.7)!important;padding:10px;border-radius:9px}
+.rail-foot .signout-btn:hover{border-color:rgba(255,255,255,.35)!important;color:#FFFCF7!important;background:rgba(255,255,255,.05)}
+.app-main{min-width:0;padding:0 0 72px}
+.app-main>.wrap{max-width:1480px;margin:0 auto;padding:0 28px}
+.app-main>header,.app-main .wrap>header{padding:36px 0 22px;border-bottom:1px solid var(--line);animation:shellRise .45s ease both}
+.header-row h1{letter-spacing:-.02em}
+.header-row h1 em{color:var(--sindoor);font-style:italic}
+.legend .signout-btn{display:none} /* sign-out lives in the rail */
+
+.gate{background:
+  radial-gradient(ellipse 70% 55% at 50% -10%,rgba(139,46,58,.12),transparent 55%),
+  radial-gradient(ellipse 50% 40% at 90% 100%,rgba(166,124,61,.1),transparent 50%),
+  var(--paper)!important}
+.gate-card{background:var(--card)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:18px;padding:36px 32px;box-shadow:var(--shadow);animation:shellRise .55s ease both}
+.gate-card .eyebrow{color:var(--amber)!important;letter-spacing:.2em}
+.gate-card h2{font-family:var(--display);font-size:40px;font-weight:500;color:var(--ink)!important;margin:8px 0 10px}
+.gate-card button{background:var(--ink)!important;color:var(--ivory)!important;border-radius:10px;transition:transform .15s ease,background .2s ease}
+.gate-card button:hover{background:var(--wine)!important}
+.gate-card button:active{transform:scale(.985)}
+
+/* Soften dark-forced surfaces back to ivory paper */
+.month,.demand-box,.enq-edit,.cf-card,.p-card,.shot-card,.day-card,.role-row,.stage-row,
+.cw-main,.cw-sidebar,.cw-panel,.cw-card,.ci-couple-group,.ci-event,.ci-resource-admin,.ci-crew-admin,.ci-crew-overview,
+.ci-inline-team,.ci-inline-person,.ci-profile-group,.ci-team-group,.ci-assignment-event,.ci-assignment-sidebar,.ci-assignment-role,.ci-assignment-member,
+.cw-drawer-panel,.detail-card,.ci-modal-card,.panel-card,.ci-form{
+  background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important;box-shadow:0 10px 36px rgba(48,36,28,.05)
+}
+.panel-card,.ci-form,.cf-create{
+  background:linear-gradient(165deg,#1C1916 0%,#2F2724 100%)!important;color:#F7F3EC!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:16px;box-shadow:var(--shadow)
+}
+.panel-card h2,.cf-create h3,.ci-form h2{color:#FFFCF7!important}
+.panel-card .hint,.cf-create .hint,.ci-form .hint,.panel-card .field label,.cf-create label,.ci-form .field label{color:rgba(247,243,236,.55)!important}
+.panel-card .field input,.panel-card .field select,.cf-create input,.ci-form select,.ci-form input{
+  background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.14)!important;color:#FFFCF7!important;color-scheme:dark
+}
+.tabs{background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.08)!important}
+.tabs button{color:rgba(247,243,236,.55)!important}
+.tabs button.active{background:rgba(196,164,106,.2)!important;color:#F3E6C8!important}
+
+.strip,.enq-head,.act-head,.prod-head{border-color:var(--line)!important}
+.month{border-radius:14px;transition:transform .2s ease,box-shadow .2s ease}
+.month:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(48,36,28,.09)}
+.day.booked{background:var(--sindoor)!important;color:#FFF8F6!important}
+.day.team-booked{background:var(--teal)!important;color:#F3FAF8!important}
+.day.today{border-color:var(--ink)!important;box-shadow:inset 0 0 0 1px var(--ink)}
+.filters button{background:var(--card)!important;color:var(--ink-soft)!important;border-color:var(--line)!important}
+.filters button.on,.btn-mini,.close-btn,.upd-add button{background:var(--ink)!important;color:var(--ivory)!important;border-color:var(--ink)!important}
+.btn-main{background:var(--sindoor)!important;color:#FFF8F6!important;border-radius:10px}
+.btn-main:hover{background:var(--wine)!important}
+.btn-main.teal{background:var(--teal)!important}
+.sync-banner.live{background:var(--leaf-soft)!important;color:var(--leaf)!important;border-color:#C5D8C7!important}
+.sync-banner.local{background:var(--amber-soft)!important;color:#7A5A1E!important;border-color:#E4D2A8!important}
+.yr-tabs button{background:var(--card)!important;border-color:var(--line)!important;color:var(--ink-soft)!important}
+.yr-tabs button.on{background:var(--ink)!important;color:var(--ivory)!important;border-color:var(--ink)!important}
+.toast{background:var(--ink)!important;color:var(--ivory)!important;border-radius:12px;box-shadow:var(--shadow)}
+.signout-btn{color:var(--ink-soft)!important;border-color:var(--line)!important}
+
+/* Clients workspace → ivory */
+.cw-sidebar{background:var(--card)!important;border-color:var(--line)!important}
+.cw-sidebar-head,.cw-client-head,.cw-subnav,.cw-panel{border-color:var(--line)!important}
+.cw-new{background:var(--surface-3)!important;border-color:var(--line)!important;color:var(--ink)!important}
+.cw-search,.cw-inline-form input{background:var(--surface-2)!important;border-color:var(--line)!important;color:var(--ink)!important;color-scheme:light!important}
+.cw-client-item:hover{background:var(--surface-3)!important}
+.cw-client-item.on{background:var(--amber-soft)!important;border-color:#E0CFA8!important}
+.cw-main{background:var(--card)!important}
+.cw-drawer{background:rgba(28,25,22,.45)!important}
+.cw-drawer-panel{background:var(--card)!important;border-color:var(--line)!important}
+.cw-drawer-close{background:var(--surface-3)!important;border-color:var(--line)!important;color:var(--ink)!important}
+.cw-delivery,.cw-empty-state,.cw-breakdown{border-color:var(--line)!important;background:var(--surface)!important}
+.cw-progress{background:var(--surface-3)!important}
+.cw-progress i{background:var(--leaf)!important}
+.cw-couple-savebar .btn-mini,.ci-crew-actions .btn-mini.primary,.ci-couple-savebar .btn-mini{background:var(--ink)!important;color:var(--ivory)!important;border-color:var(--ink)!important}
+
+/* Shoot ops / assignment → ivory */
+.ci-assignment-modal{background:var(--paper)!important;color:var(--ink)!important}
+.ci-assignment-header{background:rgba(255,252,247,.94)!important;border-color:var(--line)!important}
+.ci-assignment-guide{background:var(--surface-3)!important;border-color:var(--line)!important;color:var(--ink-soft)!important}
+.ci-assignment-event-top,.ci-assignment-sidebar-head{background:var(--surface)!important;border-color:var(--line)!important}
+.ci-assignment-target,.ci-requirement button,.ci-assignment-arrival input,.ci-assignment-copy select,.ci-assignment-copy-row button,.ci-assignment-search,.ci-role-add select,.ci-assignment-extra select,.ci-assignment-member-time input,
+.ci-resource-field select,.ci-resource-field input,.ci-inline-person-fields select,.ci-inline-person-fields input,.ci-team-arrival input,
+.demand-select,.enq-edit input,.upd-add input,.prod-wrap input,.prod-wrap select,.cf-wrap input,.cf-wrap select,.cf-wrap textarea{
+  background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--line)!important;color-scheme:light!important
+}
+.ci-assignment-filters button{background:var(--card)!important;color:var(--ink-soft)!important;border-color:var(--line)!important}
+.ci-assignment-filters button.on,.ci-assignment-event-footer button.primary,.ci-assignment-save,.ci-assignment-footer button{background:var(--ink)!important;color:var(--ivory)!important;border-color:var(--ink)!important}
+.ci-assignment-footer{background:rgba(255,252,247,.96)!important;border-color:var(--line)!important}
+.ci-inline-team>header,.ci-profile-group-head,.ci-team-group-head{background:var(--surface-3)!important;color:var(--ink)!important}
+.ci-crew-overview-names span{background:var(--surface-3)!important;color:var(--ink)!important}
+.cf-preview-event,.cf-review-event,.cf-change,.ci-event-choice,.ci-person{background:var(--surface)!important;border-color:var(--line)!important}
+.cf-status.approved,.ci-badge.ok{background:var(--leaf-soft)!important;color:var(--leaf)!important}
+.cf-status.submitted{background:var(--amber-soft)!important;color:#7A5A1E!important}
+.cf-status.changes{background:var(--sindoor-soft)!important;color:var(--sindoor)!important}
+
+.plan-table th{background:var(--surface)!important;color:var(--ink-soft)!important;border-color:var(--line)!important}
+.plan-table td{border-color:var(--line)!important}
+.plan-table td.cpal0{background:#F3EBE6}.plan-table td.cpal1{background:#E8F0EA}
+.plan-table td.cpal2{background:#E7EFF1}.plan-table td.cpal3{background:#F5E8E9}
+.plan-table td.cpal4{background:#ECEAF3}.plan-table td.cpal5{background:#F3EDDF}
+.plan-table td.cpal6{background:#E8F0F3}.plan-table td.cpal7{background:#F3E9EE}
+
+/* Undo dark-mode white→surface hijack */
+[style*="background:#fff"],[style*="background: #fff"],[style*="background:white"],[style*="background: white"]{background:#fff!important}
+[style*="color:var(--paper)"]{color:var(--paper)!important}
+
+@keyframes shellRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes shellFade{from{opacity:0}to{opacity:1}}
+#tabLedger,#tabPlan,#tabProd,#tabShots,#tabCheckins,#tabClientForms,#tabDeliverables{animation:shellFade .35s ease both}
+
+@media(prefers-reduced-motion:reduce){
+  .month,.app-rail .vtabs button,.gate-card button{transition:none!important}
+  .month:hover{transform:none}
+  .app-main>header,.app-main .wrap>header,.gate-card,#tabLedger,#tabPlan,#tabProd,#tabShots,#tabCheckins,#tabClientForms,#tabDeliverables{animation:none!important}
+}
+
+@media(max-width:980px){
+  .app-shell{grid-template-columns:1fr}
+  .app-rail{position:sticky;top:0;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px;border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}
+  .rail-brand{border:0;margin:0;padding:0 8px 0 0;flex:none}
+  .rail-brand-copy span,.rail-brand-copy .eyebrow{display:none}
+  .rail-brand-copy strong{font-size:16px}
+  .app-rail .vtabs{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;flex:1;gap:3px;scrollbar-width:none}
+  .app-rail .vtabs button{width:auto!important;white-space:nowrap;padding:10px 12px!important;font-size:8.5px!important}
+  .app-rail .vtabs button.on{box-shadow:inset 0 -2px 0 var(--champagne)!important}
+  .rail-foot{border:0;margin:0;padding:0;flex:none}
+  .rail-foot .signout-btn{width:auto;padding:8px 10px;font-size:8px}
+  .app-main>.wrap{padding:0 16px}
+  .legend .signout-btn{display:none}
+}
+
+@media(max-width:720px){
+  .rail-brand img{width:34px;height:34px}
+  .app-rail .vtabs{width:100%;order:3;padding-top:4px}
+  .app-rail .vtabs button{flex:1 0 auto;min-width:92px;text-align:center;padding:9px 8px!important;font-size:7.5px!important;letter-spacing:.04em!important}
+}
+
 </style>
 </head>
 <body>
@@ -1216,6 +1377,7 @@ body.cw10-client-mode .vtabs{margin-top:14px}
 <!-- ===================== ACCESS GATE ===================== -->
 <div class="gate" id="gate" style="display:none">
   <div class="gate-card">
+    <img src="totw-logo-square.jpg?v=3" alt="" width="56" height="56" style="border-radius:10px;margin-bottom:14px;box-shadow:0 12px 32px rgba(48,36,28,.12)">
     <div class="eyebrow">Tale of Two Weddings</div>
     <h2>Studio Ledger</h2>
     <p class="auth-note">Private access for Sumenth and Mahima.</p>
@@ -1224,6 +1386,30 @@ body.cw10-client-mode .vtabs{margin-top:14px}
   </div>
 </div>
 
+<div class="app-shell">
+<aside class="app-rail" aria-label="Studio navigation">
+  <div class="rail-brand">
+    <img src="totw-logo-square.jpg?v=3" alt="Tale of Two">
+    <div class="rail-brand-copy">
+      <div class="eyebrow">Studio</div>
+      <strong>Tale of Two</strong>
+      <span>Weddings ledger</span>
+    </div>
+  </div>
+  <nav class="vtabs" aria-label="Primary">
+    <button id="vtEnq" class="on" onclick="setView('ledger')">Dates &amp; Enquiries</button>
+    <button id="vtClientForms" onclick="openClientsHome()">Clients</button>
+    <button id="vtPlan" onclick="setView('plan')">Crew Planner</button>
+    <button id="vtCheckins" onclick="setView('shoots')">Shoot Operations</button>
+    <button id="vtDeliveries" onclick="setView('deliverables')">Deliverables</button>
+    <button id="vtProd" onclick="setView('business')" style="display:none" aria-hidden="true">Business</button>
+    <button id="vtShots" onclick="setView('settings')">Settings</button>
+  </nav>
+  <div class="rail-foot">
+    <button class="signout-btn" onclick="signOutLedger()">Sign out</button>
+  </div>
+</aside>
+<div class="app-main">
 <div class="wrap">
 <header>
   <div class="header-row">
@@ -1241,16 +1427,6 @@ body.cw10-client-mode .vtabs{margin-top:14px}
   </div>
   <div class="sync-banner" id="syncBanner"></div>
 </header>
-
-<div class="vtabs">
-  <button id="vtEnq" class="on" onclick="setView('ledger')">Dates &amp; Enquiries</button>
-  <button id="vtClientForms" onclick="openClientsHome()">Clients</button>
-  <button id="vtPlan" onclick="setView('plan')">Crew Planner</button>
-  <button id="vtCheckins" onclick="setView('shoots')">Shoot Operations</button>
-  <button id="vtDeliveries" onclick="setView('deliverables')">Deliverables</button>
-  <button id="vtProd" onclick="setView('business')" style="display:none" aria-hidden="true">Business</button>
-  <button id="vtShots" onclick="setView('settings')">Settings</button>
-</div>
 
 <div id="tabLedger">
 <div class="strip" id="strip"></div>
@@ -1675,6 +1851,10 @@ body.cw10-client-mode .vtabs{margin-top:14px}
     </div>
   </div>
 </div>
+
+</div><!-- /.wrap -->
+</div><!-- /.app-main -->
+</div><!-- /.app-shell -->
 
 <div class="toast" id="toast"></div>
 
