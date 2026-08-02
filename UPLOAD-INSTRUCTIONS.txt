@@ -1,4 +1,4 @@
-TALE OF TWO WEDDINGS — FOCUSED CLIENT FOLDERS v10
+TALE OF TWO WEDDINGS — VERIFIED CREW PLANNER SYNC + DELIVERY OVERVIEW v12
 
 UPLOAD:
 1. Unzip this package.
@@ -14,32 +14,31 @@ IMPORTANT — THESE CONTRACTS ARE PRESERVED:
 - Crew Planner data and workflow are unchanged.
 - Existing private client links remain valid.
 - Existing crew links remain valid.
-- Existing Firebase paths and records remain unchanged.
+- Existing Firebase root paths remain unchanged; no data migration is required.
 - Existing events, registrations, assignments, attendance, lists and submissions remain intact.
 - Multiple events for one couple on the same date remain separate event records.
 
-WHAT IS NEW IN v10:
-- Each client now opens as one organised folder.
-- The inside sidebar contains Overview, individual event names, Deliveries, Costs and Activity.
-- Each event has one focused page with Event Details, Studio Plan and Shoot Record.
-- Lists, boards, team readiness, check-in, checkout and card handover are attached to the event instead of competing as separate client-level tabs.
-- The client Activity view keeps important milestones quiet and chronological.
-- On mobile, the inside sidebar becomes a compact horizontal event switcher.
-
-PRESERVED FROM v9:
-- The selected private client link is now the only source of event cards inside a client workspace.
-- Dates & Enquiries and Crew Planner can still supply the client directory, but they no longer create extra timeline, Lists & Boards, or client Shoot Operations cards.
-- Matching crew shoots attach to the correct private-link event using stable link identifiers first, with a safe legacy date/name fallback.
-- Spelling variants such as Mehndi, Mehendi and Mehandi reconcile without creating duplicate cards.
-- Combined legacy labels such as “Haldi & Mehendi” or “Haldi & Sangeet” no longer appear as additional planning events.
-- Legitimate same-day events saved in the client link remain separate.
-- The wedding-level team assignment workspace is now consistently dark: crew cards, filters, dropdowns, event footers and action states have proper contrast.
+WHAT IS NEW:
+- Clients are shown one wedding month at a time and sorted by their first event in that month.
+- Weddings spanning more than one month appear in every relevant month.
+- The global Deliverables tab shows every client grouped and ordered by the date of their final event.
+- Client-link details remain the source for events, dates, timings, venue, Maps and contacts.
+- Exact Crew Planner rows automatically supply registered team members and CP/CV/TP/TV roles.
+- Before publication, a Planner team change updates the internal draft automatically and asks you to save it.
+- After publication, a Planner team change is held for review and never replaces the live assignment silently.
+- Once any crew member checks in, that event's timings and assignments are locked.
+- Combined Planner rows require one explicit decision before applying their team to separate client events.
+- Unregistered or ambiguous Planner names are shown clearly and never silently omitted.
+- Manual team changes remain available as a collapsed event-only adjustment.
+- Pending client approval still allows internal planning; crew publishing remains locked until approval.
+- Client details, advanced team controls, lists and boards, and Shoot Record stay collapsed until needed.
 
 NOT CHANGED:
 - Dates & Enquiries logic
 - Crew Planner logic
 - Client or crew URLs
-- Firebase data structure
+- Firebase root structure
+- Existing private-link event IDs
 - Manual WhatsApp contact/share actions
 
 DELETE THESE OLD REMINDER FILES FROM GITHUB IF THEY ARE STILL PRESENT:

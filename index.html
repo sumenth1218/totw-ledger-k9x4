@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.4.4-edit-shoot-days-2026-07-31">
+<meta name="totw-build" content="v12.5.0-contrast-sweep-2026-08-01">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1609,6 +1609,10 @@ body{background:
 .ci-event-choice b{color:var(--ink)!important}
 .ci-event-choice small,.ci-event-empty{color:var(--ink-soft)!important}
 .ci-event-empty{border-color:var(--line)!important}
+#gpop{background:var(--card)!important;color:var(--ink)!important;border:1px solid var(--line)!important;box-shadow:0 16px 44px rgba(48,36,28,.18)!important}
+#gpop em{color:var(--sindoor)!important}
+#gpop b{color:var(--ink)!important}
+#gpop u{color:var(--ink-soft)!important}
 
 /* Undo dark-mode white→surface hijack */
 [style*="background:#fff"],[style*="background: #fff"],[style*="background:white"],[style*="background: white"]{background:#fff!important}
@@ -1672,6 +1676,94 @@ body{background:
 .ci-form .ci-person input:not([type=checkbox]):not([type=radio]){
   background:#fff!important;border:1px solid #D8D2C8!important;color:#1B1A17!important;-webkit-text-fill-color:#1B1A17!important;color-scheme:light!important
 }
+
+/* ============ CONTRAST SWEEP — remaining dark-on-dark / light-on-light ============ */
+/* Dates & enquiries */
+.mini-cal,.mini-cal.lite{background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.mini-cal .mc-g i,.mini-cal.lite .mc-g i{color:var(--ink)!important}
+.mini-cal.lite .mc-g i:hover,.mini-cal.dark .mc-g i:hover{background:var(--surface-3)!important;color:var(--ink)!important}
+.mini-cal.lite .mc-g i.sel,.mini-cal.dark .mc-g i.sel{background:var(--ink)!important;color:var(--ivory)!important}
+.dchip.lite{background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.dchip.lite.ok{color:var(--leaf)!important;border-color:#C5D8C7!important}
+.dchip.lite.bad{color:var(--sindoor)!important;border-color:#E2C4C8!important}
+.dtag.free{background:var(--leaf-soft)!important;color:var(--leaf)!important}
+.dtag.clash{background:var(--sindoor-soft)!important;color:var(--sindoor)!important}
+.tag-edit{background:var(--surface)!important;color:var(--ink)!important;border:1px solid var(--line)!important}
+.demand-item summary:hover{background:var(--surface-3)!important;color:var(--ink)!important}
+.enq input[type=checkbox]{background:var(--card)!important;border-color:#9A9287!important}
+.src-tag{background:#EDE4F0!important;color:#6B3F80!important}
+.remind{background:var(--amber-soft)!important;color:#7A5A1E!important;border-color:var(--amber)!important}
+.panel-card .sync-note,.ci-form .sync-note,.cf-create .sync-note{color:rgba(247,243,236,.62)!important}
+
+/* Settings — shot lists */
+.shot-sub{background:var(--surface)!important;color:var(--ink)!important;border:1px solid var(--line)!important}
+.shot-meta,.shot-delete{color:var(--ink-soft)!important}
+.shot-row.ok{background:var(--leaf-soft)!important;color:var(--leaf)!important}
+.shot-row.miss{background:var(--sindoor-soft)!important;color:var(--sindoor)!important}
+.shot-team-h.candid{background:var(--sindoor-soft)!important;color:var(--sindoor)!important}
+.shot-team-h.traditional{background:var(--cold-soft)!important;color:var(--cold)!important}
+
+/* Chips, badges, tickboxes */
+.cardc,.evc,.sdue,.ci-badge{background:var(--surface-2)!important;border-color:var(--line)!important;color:var(--ink-soft)!important}
+.evc.on{background:var(--ink)!important;color:var(--ivory)!important;border-color:var(--ink)!important}
+.cardc.okc,.sdue.ok,.ci-badge.ok,.ci-stat.ok{background:var(--leaf-soft)!important;color:var(--leaf)!important;border-color:#C5D8C7!important}
+.sdue.warn{background:var(--amber-soft)!important;color:#7A5A1E!important;border-color:#E4D2A8!important}
+.sdue.bad,.ci-badge.late,.ci-stat.late{background:var(--sindoor-soft)!important;color:var(--sindoor)!important;border-color:#E2C4C8!important}
+.tickbox{background:#fff!important;border-color:var(--line)!important;color:var(--ink-soft)!important}
+.tickbox.on{background:var(--leaf)!important;border-color:var(--leaf)!important;color:#fff!important}
+
+/* Data & custody */
+.stage-add-form{background:var(--surface)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.cost-pkg input{background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--line)!important;color-scheme:light!important}
+
+/* Shoot operations — grouped headers */
+.ci-couple-savebar{background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.ci-couple-savebar b{color:var(--ink)!important}
+.ci-couple-savebar small{color:var(--ink-soft)!important}
+.ci-modal-card .field input,.ci-modal-card .field select,
+.detail-card .field input,.detail-card .field select{
+  background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--line)!important;color-scheme:light!important
+}
+.ci-modal-card .field label,.detail-card .field label{color:var(--ink-soft)!important}
+.ci-inline-team>header,.ci-profile-group-head,.ci-team-group-head{background:var(--surface-3)!important;color:var(--ink)!important}
+.ci-profile-group-head span,.ci-team-group-head span{color:var(--ink-soft)!important}
+.ci-crew-overview-names span{background:var(--surface-3)!important;color:var(--ink)!important}
+.ci-start{background:var(--surface)!important;border:1px solid var(--line)!important;color:var(--ink)!important}
+.ci-start label{color:var(--ink)!important}
+.ci-start small{color:var(--ink-soft)!important}
+.ci-start input{background:var(--surface-2)!important;color:var(--ink)!important;border:1px solid var(--line)!important;color-scheme:light!important}
+
+/* Assign-team modal — gaps the earlier ivory pass left dark */
+.ci-assignment-back,.ci-assignment-title h2{color:var(--ink)!important}
+.ci-assignment-title small{color:var(--amber)!important}
+.ci-assignment-title p,.ci-assignment-date>h3,.ci-assignment-copy-help{color:var(--ink-soft)!important}
+.ci-assignment-guide b{color:var(--ink)!important}
+.ci-assignment-filters button:hover{background:var(--surface-3)!important;color:var(--ink)!important}
+.ci-assignment-filters button.on{background:var(--ink)!important;color:var(--ivory)!important;border-color:var(--ink)!important}
+.ci-assignment-crew{background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.ci-assignment-crew:hover{background:var(--surface-3)!important;border-color:#D4CBBE!important}
+.ci-assignment-crew b{color:var(--ink)!important}
+.ci-assignment-crew small{color:var(--ink-soft)!important}
+.ci-assignment-avatar{background:var(--surface-3)!important;color:var(--ink)!important}
+.ci-assignment-event-footer{background:var(--surface)!important;border-color:var(--line)!important;color:var(--ink-soft)!important}
+.ci-assignment-controls,.ci-assignment-role-head,.ci-assignment-member-time{border-color:var(--line)!important}
+.ci-assignment-member-actions button,.ci-assignment-event-footer button{background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.ci-assignment-member-actions button:hover,.ci-assignment-event-footer button:hover{background:var(--surface-3)!important;color:var(--ink)!important}
+.ci-assignment-member-actions button.on{background:var(--amber-soft)!important;color:#7A5A1E!important;border-color:#E0CFA8!important}
+.ci-assignment-event-footer button.primary,.ci-assignment-footer button,.ci-assignment-save{background:var(--ink)!important;color:var(--ivory)!important;border-color:var(--ink)!important}
+.ci-assignment-role.drag-over{background:var(--leaf-soft)!important;border-color:var(--leaf)!important}
+
+/* Weddings — month picker, summary, team pills */
+.cw12-month-picker{background:var(--surface-2)!important;border-color:var(--line)!important}
+.cw12-month-picker span{color:var(--ink-soft)!important}
+.cw12-month-picker select{background:var(--surface-2)!important;color:var(--ink)!important;color-scheme:light!important}
+.cw12-month-summary{color:var(--ink-soft)!important}
+.cw12-month-summary strong{color:var(--ink)!important}
+.cw12-team-summary{background:var(--surface)!important;border-color:var(--line)!important}
+.cw12-team-pill{background:var(--surface-2)!important;border-color:var(--line)!important;color:var(--ink)!important}
+.cw12-team-pill em,.cw12-team-empty,.cw12-team-count{color:var(--ink-soft)!important}
+.cw12-event-override{color:#7A5A1E!important}
+.cw12-event-override:before{background:var(--amber)!important}
 
 </style>
 </head>
@@ -6525,7 +6617,7 @@ function renderCheckinEvents(){
     const contact=e.clientContactName||e.clientContactPhone?`${e.clientContactName||'On-ground contact'}${e.clientContactPhone?' · '+e.clientContactPhone:''}`:'';
     const details=completedShoot?'':`<div class="ci-event-details"><div class="ci-detail wide"><label>Venue & location</label><div>${esc(e.venueName||'Venue to be updated')}${e.mapsUrl?` · <a href="${esc(e.mapsUrl)}" target="_blank" rel="noopener">Open Maps ↗</a>`:' · Maps link pending'}</div></div><div class="ci-detail"><label>Timings</label><div>${esc(timings)}</div></div>${contact?`<div class="ci-detail"><label>Contact</label><div>${esc(contact)}</div></div>`:''}${e.brideReadyLocation?`<div class="ci-detail"><label>Bride preparation</label><div>${esc(e.brideReadyLocation)}</div></div>`:''}${e.groomReadyLocation?`<div class="ci-detail"><label>Groom preparation</label><div>${esc(e.groomReadyLocation)}</div></div>`:''}${e.clientNotes?`<div class="ci-detail wide"><label>Important notes</label><div class="ci-detail-note">${esc(e.clientNotes)}</div></div>`:''}</div>`;
     const resourceEditor=completedShoot?'':ciResourceEditor(id,e,names),crewEditor=completedShoot?'':ciInlineCrewEditor(id,e);
-    const startPrompt=completedShoot&&!e.actualStartAt&&!ciActualStartSkipped.has(id)?`<div class="ci-start" style="background:#1C1F22;border:1px solid #3A3D40;border-radius:10px;padding:12px;margin-top:12px"><div><label>Optional · actual shoot start</label><input id="ciStart_${id}" type="time" value=""><small style="display:block;margin-top:4px;color:#8B857D">Saved for hours/pay. Skip anytime.</small></div><button class="btn-mini" onclick="saveActualStart('${id}')">Save</button><button class="btn-mini" onclick="skipActualStart('${id}')">Skip</button></div>`:'';
+    const startPrompt=completedShoot&&!e.actualStartAt&&!ciActualStartSkipped.has(id)?`<div class="ci-start" style="background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:12px"><div><label>Optional · actual shoot start</label><input id="ciStart_${id}" type="time" value=""><small style="display:block;margin-top:4px;color:var(--ink-soft)">Saved for hours/pay. Skip anytime.</small></div><button class="btn-mini" onclick="saveActualStart('${id}')">Save</button><button class="btn-mini" onclick="skipActualStart('${id}')">Skip</button></div>`:'';
     const startControl=completedShoot||e.planningOnly?'':`<div class="ci-start"><div><label>Actual shoot start <small>(optional)</small></label><input id="ciStart_${id}" type="time" value="${esc(ciTimeValue(e.actualStartAt))}"></div><button class="btn-mini" onclick="saveActualStart('${id}')">Save</button><button class="btn-mini" onclick="ciStartNow('${id}')">Start now</button></div>`;
     const teamBtnLabel=crew.length?'Edit team':'Assign team';
     const crewActions=e.planningOnly?`<button class="btn-mini" onclick="focusCiCrew('${id}')">Edit internal team</button><span class="ci-stat late">Client approval pending · crew link locked</span>`:`<button class="btn-mini" onclick="focusCiCrew('${id}')">${teamBtnLabel}</button><button class="btn-mini" onclick="shareCheckinEvent('${id}',true)">WhatsApp reminder</button><button class="btn-mini" onclick="copyCheckinLink('${id}')">Copy link</button>`;

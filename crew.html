@@ -32,9 +32,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#F7F3EC;--card:#FFFCF7;--ink:#1C1916;--soft:#8D857B;--line:#DED6CA;
-  --gold:#C4A46A;--gold-soft:#F3E7D2;--leaf:#6F8E73;--leaf-soft:#E6F0E7;
-  --red:#B55C67;--red-soft:#F4E5E8;--shadow:0 18px 50px rgba(48,36,28,.08);
+  --paper:#F7F3EC;--card:#FFFCF7;--ink:#1C1916;--soft:#6B645C;--line:#DED6CA;
+  --gold:#7A5B22;--gold-line:#C4A46A;--gold-soft:#F3E7D2;--leaf:#4A684E;--leaf-soft:#E6F0E7;
+  --red:#9A4550;--red-soft:#F4E5E8;--shadow:0 18px 50px rgba(48,36,28,.08);
   --display:'Cormorant Garamond',Georgia,serif;--body:'Inter',-apple-system,sans-serif;--mono:'Spline Sans Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -123,12 +123,24 @@ html,body{background:var(--paper);color-scheme:light}
 .completed-shoots summary:after,.team-details summary:after,.ico,.avatar{background:var(--gold-soft);color:var(--gold)}
 .client-events .shoot-card,.team-details .team-rows,.detail-row,.team-row,.detail-grid .detail-row{border-color:var(--line)}
 .client-events .shoot-card h3{font-family:var(--display);font-size:22px;font-weight:600;line-height:1.05}
-.success{background:linear-gradient(145deg,#7E9C80,#5F7A61)}.late-card{background:var(--red-soft);border-color:#E9CBD0;color:var(--red)}
+.success{background:linear-gradient(145deg,#4C6A4F,#3A553D)}.late-card{background:var(--red-soft);border-color:#E9CBD0;color:var(--red)}
 .resource .ricon{background:var(--leaf-soft);color:var(--leaf)}.locked .ricon{background:#EEE7DD;color:var(--soft)}
 .shot,.card-flow .choice label{background:#fff;border-color:var(--line);color:var(--ink)}.shot.on{background:var(--leaf-soft);border-color:#C9D8CB}.shot.on .box{background:var(--leaf)}
 .progress{background:#EAE2D6}.card-status{background:var(--gold-soft);border-color:#E4D2AF}.card-status span{color:#7A5B22}
 .toast{background:var(--ink);color:#FFFDF8;box-shadow:0 15px 45px rgba(48,36,28,.14)}
-input::placeholder{color:#9C9388}
+input::placeholder{color:var(--soft);opacity:1}
+
+/* Contrast sweep — readable in daylight on a phone */
+.status{background:#EEE7DD;color:var(--ink)}
+.primary:disabled,.secondary:disabled{opacity:1;cursor:default;background:#D9D2C6;color:#5C564E;border:1px solid var(--line)}
+.locked{opacity:1}
+.locked b{color:var(--ink)}
+.locked small,.locked em{color:var(--soft)}
+.locked .ricon{background:#EEE7DD;color:var(--soft)}
+.brand span{color:#5C564E}
+.field input:focus,.field select:focus{border-color:var(--gold-line);box-shadow:0 0 0 3px rgba(196,164,106,.16)}
+.card-flow .choice input,.shot input{accent-color:var(--gold)}
+.success p{color:rgba(255,255,255,.92)}
 </style>
 </head>
 <body>
