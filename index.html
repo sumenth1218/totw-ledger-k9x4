@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.5.0-contrast-sweep-2026-08-01">
+<meta name="totw-build" content="v12.6.0-wedding-operations-2026-08-04">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1764,6 +1764,63 @@ body{background:
 .cw12-team-pill em,.cw12-team-empty,.cw12-team-count{color:var(--ink-soft)!important}
 .cw12-event-override{color:#7A5A1E!important}
 .cw12-event-override:before{background:var(--amber)!important}
+
+/* ===================== WEDDING OPERATIONS ===================== */
+.cw-ops-page{max-width:1180px}
+.cw-ops-header-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 18px}
+.cw-ops-header-meta>div{padding:12px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.cw-ops-header-meta span{display:block;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.cw-ops-header-meta strong{display:block;margin-top:5px;font:500 14px/1.25 var(--body);color:var(--ink)}
+.cw-ops-list{display:grid;gap:12px}
+.cw-ops-event{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden;box-shadow:0 10px 28px rgba(48,36,28,.04)}
+.cw-ops-mobile-toggle{display:none;width:100%;border:0;background:transparent;text-align:left;padding:14px 15px;cursor:pointer;color:var(--ink)}
+.cw-ops-mobile-toggle span{display:grid;gap:3px;min-width:0}
+.cw-ops-mobile-toggle strong{font:500 18px/1.15 var(--display)}
+.cw-ops-mobile-toggle small{font-size:11px;color:var(--ink-soft)}
+.cw-ops-mobile-toggle em{font:500 8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--amber);font-style:normal}
+.cw-ops-event-body{padding:14px 16px 16px}
+.cw-ops-event-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.cw-ops-title{min-width:0;flex:1}
+.cw-ops-title strong{display:block;font:500 22px/1.1 var(--display);color:var(--ink)}
+.cw-ops-title span{display:block;margin-top:4px;font-size:12.5px;color:var(--ink-soft)}
+.cw-ops-maps{color:var(--sindoor);text-decoration:none;border-bottom:1px solid rgba(139,46,58,.28)}
+.cw-ops-arrival{display:grid;gap:4px;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.cw-ops-arrival input,.cw-ops-detail-grid input,.cw-ops-detail-grid select,.cw-ops-add-pop select,.cw-ops-detail-actions select{
+  height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:12.5px var(--body);color-scheme:light
+}
+.cw-ops-event-cost{font:500 13px var(--mono);color:var(--ink-soft)}
+.cw-ops-chip-row{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.cw-ops-chip{display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:9px;padding:8px 10px;cursor:pointer;font:inherit}
+.cw-ops-chip b{font-size:12.5px;font-weight:600}.cw-ops-chip small{font:7.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.cw-ops-chip.on{border-color:#D4CBBE;background:var(--amber-soft);box-shadow:inset 0 0 0 1px #E0CFA8}
+.cw-ops-chip.add,.cw-ops-chip.link{font:500 8.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.cw-ops-chip.ok{box-shadow:inset 0 -2px 0 var(--leaf)}.cw-ops-chip.warn{box-shadow:inset 0 -2px 0 var(--amber)}.cw-ops-chip.bad{box-shadow:inset 0 -2px 0 var(--sindoor)}
+.cw-ops-data-pill{margin-left:auto;font:7.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)}
+.cw-ops-add-pop{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-top:10px;padding:11px;border:1px dashed var(--line);border-radius:10px;background:var(--surface)}
+.cw-ops-add-pop label{display:grid;gap:4px;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.cw-ops-add-pop p{margin:0;font-size:12px;color:var(--ink-soft)}
+.cw-ops-detail{margin-top:12px;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.cw-ops-detail-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:11px}
+.cw-ops-detail-head strong{font:500 18px var(--display)}.cw-ops-detail-head span{font-size:11px;color:var(--ink-soft)}
+.cw-ops-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cw-ops-detail-grid label{display:grid;gap:4px;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.cw-ops-detail-grid label.wide{grid-column:1/-1}
+.cw-ops-readonly{min-height:36px;display:flex;align-items:center;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:12.5px var(--body);text-transform:none;letter-spacing:0}
+.cw-ops-link{border:0;background:none;color:var(--amber);font:7.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;justify-self:start;padding:2px 0}
+.cw-ops-detail-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.cw-ops-client-alert{width:100%;display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px;padding:10px 12px;border:1px solid #E8C4CA;border-radius:10px;background:var(--sindoor-soft);color:var(--ink);cursor:pointer;text-align:left}
+.cw-ops-client-alert strong{display:block;font-size:12.5px}.cw-ops-client-alert span{font:7.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#8A5A62}
+@media(max-width:900px){.cw-ops-header-meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){
+  .cw-ops-header-meta{grid-template-columns:1fr}
+  .cw-ops-mobile-toggle{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line)}
+  .cw-ops-event-body{display:none;padding:12px}
+  .cw-ops-event.open .cw-ops-event-body{display:block}
+  .cw-ops-event-head{align-items:stretch}
+  .cw-ops-title strong{font-size:19px}
+  .cw-ops-detail-grid{grid-template-columns:1fr}
+  .cw-ops-data-pill{margin-left:0;width:100%}
+}
 
 </style>
 </head>
@@ -6672,7 +6729,7 @@ let cw10SelectedEventId=localStorage.getItem('totw_client_event')||'';
 let cw10OpenPanels=new Set(['details']);
 let cw10ReviewOpen=false;
 let cw10ReviewEventId='';
-if(!['overview','event','deliveries','costs','activity'].includes(cwSection)){
+if(!['overview','event','operations','deliveries','costs','activity'].includes(cwSection)){
   cwSection=['details','resources','shoots'].includes(cwSection)?'event':'overview';
 }
 
@@ -6905,8 +6962,8 @@ function renderGlobalDeliverables(){
   root.innerHTML='';
 }
 function setClientSection(section){
-  const mapped={details:'event',resources:'event',shoots:'event'}[section]||section;
-  cwSection=['overview','event','deliveries','costs','activity'].includes(mapped)?mapped:'overview';
+  const mapped={details:'event',resources:'event',shoots:'event',ops:'operations'}[section]||section;
+  cwSection=['overview','event','operations','deliveries','costs','activity'].includes(mapped)?mapped:'overview';
   localStorage.setItem('totw_client_section',cwSection);
   renderClientsWorkspace();
 }
@@ -7083,7 +7140,7 @@ function cw10CloseReview(){cw10ReviewOpen=false;cw10ReviewEventId='';renderClien
 
 function cw10RenderWorkspace(entry){
   const state=cwState(entry);cw10SelectDefaultEvent(state);
-  const content=({overview:cw10RenderOverview,event:cw10RenderEvent,deliveries:cw10RenderDeliveries,costs:cw10RenderCosts,activity:cw10RenderActivity})[cwSection](state);
+  const content=({overview:cw10RenderOverview,event:cw10RenderEvent,operations:cw10RenderOperations,deliveries:cw10RenderDeliveries,costs:cw10RenderCosts,activity:cw10RenderActivity})[cwSection](state);
   return `<div class="cw10-workspace-shell"><button type="button" class="cw10-mobile-backdrop" aria-label="Close wedding navigation" onclick="cw10ToggleMobileNav(false)"></button>${cw10RenderSidebar(state)}<main class="cw10-main"><div class="cw10-mobile-bar"><button type="button" class="cw10-mobile-menu" aria-label="Open wedding navigation" onclick="cw10ToggleMobileNav(true)">☰</button><button type="button" class="cw10-mobile-client" onclick="setClientSection('overview')"><b>${esc(entry.name)}</b><small>${esc(state.stage)} · ${esc(cw10DateRange(cwWorkspaceDates(state)))}</small></button><button type="button" class="cw10-mobile-menu" aria-label="All weddings" onclick="showClientFolders()">←</button></div><div class="cw10-topline"><button type="button" onclick="showClientFolders()">Weddings <span>/</span> ${esc(entry.name)}</button><small>${entry.prodOnly?'Production delivery tracking':'One wedding · one event record'}</small></div>${content}</main></div>${cw10RenderReview(state)}`;
 }
 function renderClientsWorkspace(){
@@ -7103,6 +7160,10 @@ let cw11RecordOpen=false;
 let cw11ClientDetailsOpen=false;
 let cw11ResourcesOpen=false;
 let cw11Saving=false;
+let cwOpsOpenCrew='';
+let cwOpsAddFor='';
+let cwOpsMobileOpen=new Set();
+let cwOpsSaveNote='';
 const CW11_CANDID_ROLES=['Candid Photographer','Candid Cinematographer'];
 const CW11_TRADITIONAL_ROLES=['Traditional Photographer','Traditional Videographer'];
 function cw11EventStarted(draft){
@@ -7160,7 +7221,7 @@ function cw11GetPlanDraft(state,event){
   const crew={};
   Object.entries(shoot&&shoot.crew||{}).forEach(([uid,c])=>{
     const saved=c.arrivalTime||c.reportTime||teamArrival;
-    crew[uid]={...ciClone(c),arrivalTime:saved,reportTime:saved,arrivalOverride:c.arrivalTimeMode==='individual'||!!(saved&&teamArrival&&saved!==teamArrival)};
+    crew[uid]={...ciClone(c),arrivalTime:saved,reportTime:saved,arrivalOverride:c.arrivalTimeMode==='individual'||!!(saved&&teamArrival&&saved!==teamArrival),crewCost:c.crewCost!=null&&c.crewCost!==''?Number(c.crewCost):'',dataStatus:c.dataStatus||'',opsNotes:c.opsNotes||''};
   });
   const requirements=shoot?ciClone(ciRequirementsForEvent(shoot)):{};
   const hasSavedRequirements=!!(shoot&&shoot.crewRequirements&&typeof shoot.crewRequirements==='object');
@@ -7262,7 +7323,7 @@ function cw11AddCrewMember(eventId,role,uid){
   const draft=cw11GetPlanDraft(state,event),p=crewProfiles[uid];if(!draft||!p)return;
   if(cw11CrewLocked(draft,uid)){toast(`${p.name||'This crew member'} has already checked in, so the assignment is locked.`);return;}
   if(draft.crew[uid]){toast(`${p.name||'This crew member'} is already assigned.`);return;}
-  draft.crew[uid]={name:p.name||'',phone:p.phone||'',email:p.email||'',role,arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false,isLead:!Object.values(draft.crew).some(c=>c.isLead)};
+  draft.crew[uid]={name:p.name||'',phone:p.phone||'',email:p.email||'',role,arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false,isLead:!Object.values(draft.crew).some(c=>c.isLead),crewCost:'',dataStatus:'',opsNotes:''};
   if(!(Number(draft.requirements[role])>0))draft.requirements[role]=1;
   cw11MarkDraft(draft);renderClientsWorkspace();
 }
@@ -7316,7 +7377,11 @@ function cw11PlanPayload(state,event,draft){
   const base=ciClientShootRecord(event.formId,event.eventId,state.form,formEvent,state.submission,old.createdAt||Date.now()),published=cw11IsPublished(state,event),crew={};
   Object.entries(draft.crew||{}).forEach(([uid,c])=>{
     const p=crewProfiles[uid]||{},arrival=c.arrivalOverride?(c.arrivalTime||draft.teamArrival):draft.teamArrival;
-    crew[uid]={name:p.name||c.name||'',phone:p.phone||c.phone||'',email:p.email||c.email||'',role:c.role||p.role||'Other',arrivalTime:arrival,reportTime:arrival,arrivalTimeMode:c.arrivalOverride?'individual':'overall',isLead:!!c.isLead};
+    const row={name:p.name||c.name||'',phone:p.phone||c.phone||'',email:p.email||c.email||'',role:c.role||p.role||'Other',arrivalTime:arrival,reportTime:arrival,arrivalTimeMode:c.arrivalOverride?'individual':'overall',isLead:!!c.isLead};
+    if(c.crewCost!==''&&c.crewCost!=null&&!Number.isNaN(Number(c.crewCost)))row.crewCost=Number(c.crewCost);
+    if(c.dataStatus)row.dataStatus=c.dataStatus;
+    if(c.opsNotes)row.opsNotes=String(c.opsNotes);
+    crew[uid]=row;
   });
   const mapData=ciMapData(details.mapsUrl||old.mapsUrl||''),record={
     ...base,...old,couple:state.entry.name,eventName:event.name,eventNames:[event.name],date:event.date,dateOverride:false,checklistType:event.name,
@@ -7474,6 +7539,221 @@ function cw10EventStatus(state,event){
   }
   return {key:'ready',text:'Ready'};
 }
+/* ===================== WEDDING OPERATIONS (client-wise daily UI) ===================== */
+function cwOpsSortEvents(state){
+  return [...(state.events||[])].filter(e=>cw11EventApprovalState(state,e).approved).sort((a,b)=>{
+    const da=String(a.date||''),db=String(b.date||'');
+    if(da!==db)return da<db?-1:da>db?1:0;
+    const ta=String(cw10CurrentDetails(state,a).startTime||''),tb=String(cw10CurrentDetails(state,b).startTime||'');
+    if(ta!==tb)return ta<tb?-1:ta>tb?1:0;
+    return (Number(a.order)||0)-(Number(b.order)||0);
+  });
+}
+function cwOpsInr(n){
+  const v=Number(n);if(!v&&v!==0)return '—';
+  try{return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(v);}catch(e){return '₹'+Math.round(v);}
+}
+function cwOpsCrewCostTotal(state,events){
+  let sum=0;(events||[]).forEach(event=>{
+    const draft=cw11GetPlanDraft(state,event);
+    Object.values(draft.crew||{}).forEach(c=>{const n=Number(c.crewCost);if(!Number.isNaN(n))sum+=n;});
+  });
+  return sum;
+}
+function cwOpsCrewReadiness(state,events){
+  let assigned=0,eventsWithCrew=0;
+  (events||[]).forEach(event=>{
+    const n=Object.keys(cw11GetPlanDraft(state,event).crew||{}).length;
+    assigned+=n;if(n)eventsWithCrew++;
+  });
+  return {assigned,eventsWithCrew,events:events.length};
+}
+function cwOpsDataTone(draft,uid,c){
+  const att=draft.shootId&&checkinAttendance[draft.shootId]&&checkinAttendance[draft.shootId][uid];
+  const status=c.dataStatus||(att&&att.checkedOutAt?(att.cardCustody==='copying_with_me'||att.cardCustody==='taking_with_me'?'copied':att.cardCustody==='handed_over'||att.cardCustody==='handed_to_lead'?'received':'pending'):'');
+  if(status==='copied')return 'ok';
+  if(status==='received')return 'warn';
+  if(att&&att.checkedInAt&&!att.checkedOutAt)return 'warn';
+  if(status==='pending'&&att&&att.checkedOutAt)return 'bad';
+  return '';
+}
+function cwOpsResolvedDataStatus(draft,uid,c){
+  const att=draft.shootId&&checkinAttendance[draft.shootId]&&checkinAttendance[draft.shootId][uid];
+  if(c.dataStatus)return c.dataStatus;
+  if(!att||!att.checkedOutAt)return 'pending';
+  if(att.cardCustody==='copying_with_me'||att.cardCustody==='taking_with_me')return 'copied';
+  if(att.cardCustody==='handed_over'||att.cardCustody==='handed_to_lead')return 'received';
+  return 'pending';
+}
+function cwOpsEventDataSummary(draft){
+  const entries=Object.entries(draft.crew||{});
+  if(!entries.length)return 'No crew';
+  let pending=0,done=0;
+  entries.forEach(([uid,c])=>{
+    const s=cwOpsResolvedDataStatus(draft,uid,c);
+    if(s==='copied'||s==='received')done++;else pending++;
+  });
+  if(!pending)return 'Data complete';
+  if(!done)return 'Data pending';
+  return `${done}/${entries.length} data in`;
+}
+async function cwOpsPersistDraft(draft,okMsg){
+  if(!draft||cw11Saving)return;
+  await cw11SavePlans([draft],okMsg||'Operations saved.');
+  cwOpsSaveNote=okMsg||'Saved';
+}
+function cwOpsToggleCrew(eventId,uid){
+  const key=`${eventId}|${uid}`;
+  cwOpsOpenCrew=cwOpsOpenCrew===key?'':key;
+  cwOpsAddFor='';
+  renderClientsWorkspace();
+}
+function cwOpsToggleAdd(eventId){
+  cwOpsAddFor=cwOpsAddFor===eventId?'':eventId;
+  cwOpsOpenCrew='';
+  renderClientsWorkspace();
+}
+function cwOpsToggleMobile(eventId){
+  cwOpsMobileOpen.has(eventId)?cwOpsMobileOpen.delete(eventId):cwOpsMobileOpen.add(eventId);
+  renderClientsWorkspace();
+}
+function cwOpsAddCrew(eventId,uid,role){
+  if(!uid||!role)return;
+  cw11AddCrewMember(eventId,role,uid);
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event);
+  cwOpsAddFor='';
+  cwOpsPersistDraft(draft,`${crewProfiles[uid]?.name||'Crew'} added.`);
+}
+function cwOpsSetArrival(eventId,value){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event);
+  if(cw11EventStarted(draft)){toast('Arrival time is locked after check-in.');return;}
+  draft.teamArrival=value;draft.arrivalMode='manual';
+  Object.values(draft.crew||{}).forEach(c=>{if(!c.arrivalOverride){c.arrivalTime=value;c.reportTime=value;}});
+  cw11MarkDraft(draft);cwOpsPersistDraft(draft,'Arrival time saved.');
+}
+function cwOpsSetCrewField(eventId,uid,field,value){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event),c=draft&&draft.crew[uid];if(!c)return;
+  if(field==='arrivalOverride'){
+    if(cw11CrewLocked(draft,uid)){toast('This crew member is locked after check-in.');return;}
+    c.arrivalOverride=!!value;c.arrivalTime=value||draft.teamArrival;c.reportTime=c.arrivalTime;
+  }else if(field==='crewCost'){
+    c.crewCost=value===''?'':Number(value);
+  }else if(field==='dataStatus'){
+    c.dataStatus=value||'';
+  }else if(field==='opsNotes'){
+    c.opsNotes=value||'';
+  }else if(field==='role'){
+    if(cw11CrewLocked(draft,uid)){toast('This crew member is locked after check-in.');return;}
+    c.role=value;
+  }
+  cw11MarkDraft(draft);
+  cwOpsPersistDraft(draft,'Saved.');
+}
+function cwOpsClearOverride(eventId,uid){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event),c=draft&&draft.crew[uid];if(!c)return;
+  if(cw11CrewLocked(draft,uid)){toast('This crew member is locked after check-in.');return;}
+  c.arrivalOverride=false;c.arrivalTime=draft.teamArrival;c.reportTime=draft.teamArrival;
+  cw11MarkDraft(draft);cwOpsPersistDraft(draft,'Using overall arrival.');
+}
+function cwOpsRemoveCrew(eventId,uid){
+  cw11RemoveCrew(eventId,uid);
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  cwOpsOpenCrew='';
+  cwOpsPersistDraft(cw11GetPlanDraft(state,event),'Crew removed.');
+}
+function cwOpsOpenShotList(eventId){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!event)return;
+  cwOpenSettings(event.name);
+}
+function cwOpsOpenPinterest(eventId){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event),url=String(draft.pinterestUrl||'').trim();
+  if(!url){toast('No Pinterest board mapped for this event yet. Set one in the event planning page.');return;}
+  window.open(url,'_blank','noopener');
+}
+function cwOpsCrewDetailHtml(state,event,draft,uid,c){
+  const att=draft.shootId&&checkinAttendance[draft.shootId]&&checkinAttendance[draft.shootId][uid]||{};
+  const locked=cw11CrewLocked(draft,uid);
+  const dataStatus=cwOpsResolvedDataStatus(draft,uid,c);
+  const overrideVal=c.arrivalOverride?(c.arrivalTime||''):'';
+  return `<div class="cw-ops-detail">
+    <div class="cw-ops-detail-head"><strong>${esc(c.name||crewProfiles[uid]?.name||'Crew')}</strong><span>${esc(ciRoleCode(c.role))} · ${esc(c.role||'Other')}</span></div>
+    <div class="cw-ops-detail-grid">
+      <label>Event arrival<div class="cw-ops-readonly">${esc(ciFmtTime(draft.teamArrival))}</div></label>
+      <label>Individual exception<input type="time" value="${esc(overrideVal)}" ${locked?'disabled':''} onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','arrivalOverride',this.value)"><button type="button" class="cw-ops-link" ${locked||!c.arrivalOverride?'hidden':''} onclick="cwOpsClearOverride('${esc(event.eventId)}','${esc(uid)}')">Use overall</button></label>
+      <label>Check-in<div class="cw-ops-readonly">${esc(ciClock(att.checkedInAt))}</div></label>
+      <label>Checkout<div class="cw-ops-readonly">${esc(ciClock(att.checkedOutAt))}</div></label>
+      <label>Crew cost (₹)<input type="number" min="0" step="100" inputmode="numeric" value="${c.crewCost!==''&&c.crewCost!=null?esc(c.crewCost):''}" placeholder="Agreed cost" onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','crewCost',this.value)"></label>
+      <label>Data status<select onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','dataStatus',this.value)"><option value="pending"${dataStatus==='pending'?' selected':''}>Pending</option><option value="received"${dataStatus==='received'?' selected':''}>Received</option><option value="copied"${dataStatus==='copied'?' selected':''}>Copied</option></select></label>
+      <label>Cards used<div class="cw-ops-readonly">${att.cardsUsed!=null?esc(att.cardsUsed):'—'}</div></label>
+      <label>Handed over to<div class="cw-ops-readonly">${esc(att.handedToName||'—')}</div></label>
+      <label class="wide">Notes<input type="text" value="${esc(c.opsNotes||'')}" placeholder="Optional operational notes" onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','opsNotes',this.value)"></label>
+    </div>
+    <div class="cw-ops-detail-actions">
+      <select ${locked?'disabled':''} onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','role',this.value)">${CI_ROLES.map(r=>`<option${(c.role||'')===r?' selected':''}>${esc(r)}</option>`).join('')}</select>
+      <button type="button" class="cw10-soft" ${locked?'disabled':''} onclick="cwOpsRemoveCrew('${esc(event.eventId)}','${esc(uid)}')">Remove from event</button>
+    </div>
+  </div>`;
+}
+function cwOpsAddPopoverHtml(state,event,draft){
+  const options=Object.entries(crewProfiles||{}).filter(([uid])=>!(draft.crew||{})[uid]).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
+  if(!options.length)return `<div class="cw-ops-add-pop"><p>All registered crew are already on this event.</p></div>`;
+  return `<div class="cw-ops-add-pop"><label>Crew<select id="cwOpsAddUid_${esc(event.eventId)}">${options.map(([uid,p])=>`<option value="${esc(uid)}">${esc(p.name||'Crew')}</option>`).join('')}</select></label><label>Role<select id="cwOpsAddRole_${esc(event.eventId)}">${CI_ROLES.map(r=>`<option${r==='Candid Photographer'?' selected':''}>${esc(r)}</option>`).join('')}</select></label><button type="button" class="cw10-primary" onclick="cwOpsAddCrew('${esc(event.eventId)}',document.getElementById('cwOpsAddUid_${esc(event.eventId)}').value,document.getElementById('cwOpsAddRole_${esc(event.eventId)}').value)">Add</button></div>`;
+}
+function cwOpsEventRowHtml(state,event){
+  const details=cw10CurrentDetails(state,event),draft=cw11GetPlanDraft(state,event),crew=ciSortCrewEntries(Object.entries(draft.crew||{}));
+  const maps=details.mapsUrl?`<a class="cw-ops-maps" href="${esc(details.mapsUrl)}" target="_blank" rel="noopener">${esc(details.venueName||'Open map')} ↗</a>`:esc(details.venueName||'Venue pending');
+  const openKey=cwOpsOpenCrew,addOpen=cwOpsAddFor===event.eventId,mobileOpen=cwOpsMobileOpen.has(event.eventId);
+  const eventCost=Object.values(draft.crew||{}).reduce((s,c)=>{const n=Number(c.crewCost);return s+(Number.isNaN(n)?0:n);},0);
+  const review=cw10ReviewSummary(state,event.eventId);
+  const chips=crew.map(([uid,c])=>{
+    const tone=cwOpsDataTone(draft,uid,c),on=openKey===`${event.eventId}|${uid}`;
+    return `<button type="button" class="cw-ops-chip ${on?'on':''} ${tone}" onclick="cwOpsToggleCrew('${esc(event.eventId)}','${esc(uid)}')"><b>${esc(c.name||crewProfiles[uid]?.name||'Crew')}</b><small>${esc(ciRoleCode(c.role))}</small></button>`;
+  }).join('');
+  const openUid=openKey&&openKey.startsWith(event.eventId+'|')?openKey.slice(event.eventId.length+1):'';
+  const detail=openUid&&draft.crew[openUid]?cwOpsCrewDetailHtml(state,event,draft,openUid,draft.crew[openUid]):'';
+  return `<article class="cw-ops-event ${mobileOpen?'open':''}" data-event-id="${esc(event.eventId)}">
+    <button type="button" class="cw-ops-mobile-toggle" onclick="cwOpsToggleMobile('${esc(event.eventId)}')"><span><strong>${esc(cw10CompactDate(event.date))} · ${esc(event.name)}</strong><small>${esc(ciFmtTime(details.startTime))} · Arrival ${esc(ciFmtTime(draft.teamArrival))}</small><small>${esc(details.venueName||'Venue pending')} · ${crew.length} crew · ${esc(cwOpsEventDataSummary(draft))}</small></span><em>${mobileOpen?'Close':'Open event'}</em></button>
+    <div class="cw-ops-event-body">
+      ${review?`<button type="button" class="cw-ops-client-alert" onclick="cw10OpenReview('${esc(event.eventId)}')"><strong>Client updated this event</strong><span>Review old vs new values →</span></button>`:''}
+      <div class="cw-ops-event-head"><div class="cw-ops-title"><strong>${esc(cw10CompactDate(event.date))} · ${esc(event.name)}</strong><span>${esc(ciFmtTime(details.startTime))}${details.endTime?' – '+esc(ciFmtTime(details.endTime)):''} · ${maps}</span></div>
+        <label class="cw-ops-arrival">Arrival<input type="time" value="${esc(draft.teamArrival||'')}" onchange="cwOpsSetArrival('${esc(event.eventId)}',this.value)"></label>
+        <span class="cw-ops-event-cost">${eventCost?esc(cwOpsInr(eventCost)):''}</span>
+      </div>
+      <div class="cw-ops-chip-row">${chips}<button type="button" class="cw-ops-chip add" onclick="cwOpsToggleAdd('${esc(event.eventId)}')">+ Add crew</button><button type="button" class="cw-ops-chip link" onclick="cwOpsOpenShotList('${esc(event.eventId)}')">Shot list</button><button type="button" class="cw-ops-chip link" onclick="cwOpsOpenPinterest('${esc(event.eventId)}')">Pinterest</button><span class="cw-ops-data-pill">${esc(cwOpsEventDataSummary(draft))}</span></div>
+      ${addOpen?cwOpsAddPopoverHtml(state,event,draft):''}
+      ${detail}
+    </div>
+  </article>`;
+}
+function cw10RenderOperations(state){
+  const events=cwOpsSortEvents(state),ready=cwOpsCrewReadiness(state,events),totalCost=cwOpsCrewCostTotal(state,events);
+  const next=events.find(e=>e.date>=ciTodayIso())||events[0];
+  const nextLabel=next?`${cw10CompactDate(next.date)} · ${next.name} · ${ciFmtTime(cw10CurrentDetails(state,next).startTime)}`:'No approved events yet';
+  const clientStatus=state.formId?(state.form.locked?'Client details locked':state.approval&&state.approval.status==='approved'?'Client details approved':state.events.some(e=>cw11EventApprovalState(state,e).approved)?'Partially approved':'Awaiting approval'):'No client link';
+  const dirty=cw11DirtyDrafts().length;
+  const actions=`${state.events.length?`<button type="button" class="cw10-soft" onclick="exportClientCrewCrossCheckPDF()">Crew cross-check PDF</button>`:''}${dirty?`<button type="button" class="cw10-primary" onclick="cw11SaveAllPlans()">Save · ${dirty}</button>`:''}`;
+  if(!events.length){
+    return `<div class="cw10-content cw-ops-page">${cw10PageHead('Wedding Operations',state.entry.name,'Approved client events appear here once you approve the private-link submission.',cw10ClientActions(state))}
+      <div class="cw10-empty-state"><h3>No approved events yet</h3><p>Approve at least one event from the client link. Overview stays the default landing for this wedding.</p><button type="button" class="cw10-soft" onclick="setClientSection('overview')">Back to Overview</button></div></div>`;
+  }
+  return `<div class="cw10-content cw-ops-page">${cw10PageHead('Wedding Operations',state.entry.name,'Assign crew, arrival, crew cost and data status beside each approved event.',actions)}
+    ${cw10AttentionBanner(state)}
+    <div class="cw-ops-header-meta">
+      <div><span>Upcoming</span><strong>${esc(nextLabel)}</strong></div>
+      <div><span>Client details</span><strong>${esc(clientStatus)}</strong></div>
+      <div><span>Crew readiness</span><strong>${ready.eventsWithCrew}/${ready.events} events · ${ready.assigned} assigned</strong></div>
+      <div><span>Est. crew cost</span><strong>${esc(cwOpsInr(totalCost))}</strong></div>
+    </div>
+    <div class="cw-ops-list">${events.map(event=>cwOpsEventRowHtml(state,event)).join('')}</div>
+    <p class="cw10-event-footnote">Writes the same crewCheckins records used by Shoot Operations and the existing event planning page. Shoot Operations and Data &amp; custody stay available while you test this workspace.</p>
+  </div>`;
+}
+
 function cw10RenderSidebar(state){
   const dates=cwWorkspaceDates(state),events=state.events.map(event=>{
     const status=cw10EventStatus(state,event),details=cw10CurrentDetails(state,event),draft=cw11PlanDrafts.get(cw11DraftKey(event.formId,event.eventId));
@@ -7483,7 +7763,7 @@ function cw10RenderSidebar(state){
   return `<aside class="cw10-sidebar"><div class="cw10-side-brand"><span class="cw10-brand"><span class="cw10-brand-mark">II</span><span><b>Tale of Two</b><small>Studio Ledger</small></span></span><button type="button" class="cw10-nav-close" aria-label="Close wedding navigation" onclick="cw10ToggleMobileNav(false)">×</button></div>
     <button type="button" class="cw10-back" onclick="showClientFolders()">← All weddings</button>
     <div class="cw10-client-id"><span class="cw10-client-avatar">${esc(cw10Initials(state.entry.name).toUpperCase())}</span><span><h3>${esc(state.entry.name)}</h3><p>${esc(cw10DateRange(dates))} · ${state.events.length} events</p></span></div><span class="cw10-stage ${esc(state.stageClass)}">${esc(state.stage)}</span>
-    <nav class="cw10-side-nav" aria-label="Wedding workspace"><button type="button" class="cw10-nav-button ${cwSection==='overview'?'on':''}" onclick="setClientSection('overview')"><span>Overview</span><span>›</span></button><div class="cw10-nav-label">Events</div><div class="cw10-event-list">${events||'<div style="padding:9px 10px;color:#77716B;font-size:9px">No client events yet</div>'}</div><div class="cw10-side-divider"></div>
+    <nav class="cw10-side-nav" aria-label="Wedding workspace"><button type="button" class="cw10-nav-button ${cwSection==='overview'?'on':''}" onclick="setClientSection('overview')"><span>Overview</span><span>›</span></button><button type="button" class="cw10-nav-button ${cwSection==='operations'?'on':''}" onclick="setClientSection('operations')"><span>Operations</span><span>›</span></button><div class="cw10-nav-label">Events</div><div class="cw10-event-list">${events||'<div style="padding:9px 10px;color:#77716B;font-size:9px">No client events yet</div>'}</div><div class="cw10-side-divider"></div>
     <button type="button" class="cw10-nav-button ${cwSection==='deliveries'?'on':''}" onclick="setClientSection('deliveries')"><span>Deliver</span><span class="cw10-nav-note">${esc(deliveryNote)}</span></button><button type="button" class="cw10-nav-button ${cwSection==='costs'?'on':''}" onclick="setClientSection('costs')"><span>Finance</span><span>›</span></button><button type="button" class="cw10-nav-button ${cwSection==='activity'?'on':''}" onclick="setClientSection('activity')"><span>Activity</span><span class="cw10-nav-note">${activityCount||'›'}</span></button></nav>
     <div class="cw10-side-footer">Select an event on the left, then complete its planning details on the right.<button type="button" onclick="signOutLedger()">Sign out</button></div>
   </aside>`;
