@@ -4299,6 +4299,40 @@ function openPrint(title,inner,css=PDF_CSS){
   w.document.close();
   setTimeout(()=>{w.focus();w.print();},450);
 }
+function exportClientCrewCrossCheckPDF(clientKey=cwSelectedKey){
+  const entry=cwDirectory().find(x=>x.key===clientKey);if(!entry)return;
+  const state=cwState(entry),events=[...(state.events||[])];
+  if(!events.length){toast('No client events are available for this PDF.');return;}
+  if(cw11DirtyDrafts(clientKey).length){toast('Save the crew assignment changes before exporting the cross-check PDF.');return;}
+  const roles=[
+    ['Candid Photographer','CP'],['Candid Cinematographer','CV'],
+    ['Traditional Photographer','TP'],['Traditional Videographer','TV'],
+    ['Drone Operator','Drone'],['LED Assistant','LED'],['Other','Other']
+  ];
+  const standardRoles=new Set(roles.slice(0,-1).map(([role])=>role));
+  const rows=events.sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(cw10CurrentDetails(state,a).startTime||'99:99').localeCompare(String(cw10CurrentDetails(state,b).startTime||'99:99'))||(Number(a.order)||0)-(Number(b.order)||0)||String(a.name||'').localeCompare(String(b.name||''))).map(event=>{
+    const details=cw10CurrentDetails(state,event),draft=cw11GetPlanDraft(state,event),crew=Object.values(draft.crew||{});
+    const names=role=>crew.filter(c=>role==='Other'?!standardRoles.has(c.role||'Other'):(c.role||'Other')===role).map(c=>String(c.name||'Crew member').trim()).filter(Boolean);
+    const roleCells=roles.map(([role])=>{const assigned=names(role);return assigned.length?`<td>${assigned.map(esc).join('<br>')}</td>`:'<td class="missing">Not assigned</td>';}).join('');
+    const timing=details.startTime?`${ciFmtTime(details.startTime)}${details.endTime?' – '+ciFmtTime(details.endTime):''}`:'Not confirmed';
+    return `<tr><td class="date">${esc(ciDateLong(event.date)||'Date pending')}</td><td class="event">${esc(event.name||'Event')}</td><td>${esc(timing)}</td><td>${esc(ciFmtTime(draft.teamArrival))}</td>${roleCells}</tr>`;
+  }).join('');
+  const exported=new Date().toLocaleString('en-IN',{day:'numeric',month:'long',year:'numeric',hour:'numeric',minute:'2-digit'});
+  const CREW_PDF_CSS=`<style>
+    @page{size:A4 landscape;margin:12mm}
+    *{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#171717;margin:0;font-size:8.5px;line-height:1.35}
+    .brand{font-family:'Courier New',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#777;margin-bottom:12px}
+    h1{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:600;margin:0 0 2px}.sub{color:#666;margin-bottom:14px}
+    .meta{display:flex;gap:24px;border-top:1px solid #222;border-bottom:1px solid #D8D8D8;padding:8px 0;margin-bottom:12px}.meta span{display:block;color:#777;font-family:'Courier New',monospace;font-size:7px;letter-spacing:.08em;text-transform:uppercase}.meta b{display:block;color:#171717;font-size:9px;margin-top:2px}
+    table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}tr{page-break-inside:avoid}
+    th{background:#F0EEE9;color:#4E4A44;font-family:'Courier New',monospace;font-size:6.8px;letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:6px 5px;border:1px solid #CFCBC3}
+    td{vertical-align:top;padding:6px 5px;border:1px solid #DDD9D1;overflow-wrap:anywhere}td.date{width:10%}td.event{font-weight:700;width:10%}td.missing{color:#A09A91;font-style:italic}
+    th:nth-child(1){width:10%}th:nth-child(2){width:10%}th:nth-child(3){width:9%}th:nth-child(4){width:8%}
+    .foot{margin-top:10px;color:#777;font-size:7.5px}.foot b{color:#333}
+  </style>`;
+  const inner=`<div class="brand">Tale of Two Weddings · Studio Ledger</div><h1>${esc(entry.name)}</h1><div class="sub">Client-wise crew assignment cross-check</div><div class="meta"><div><span>Events</span><b>${events.length}</b></div><div><span>Date range</span><b>${esc(cw10DateRange(cwWorkspaceDates(state)))}</b></div><div><span>Exported on</span><b>${esc(exported)}</b></div></div><table><thead><tr><th>Date</th><th>Event</th><th>Event timing</th><th>Team arrival</th>${roles.map(([,label])=>`<th>${esc(label)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table><div class="foot"><b>Studio cross-check only.</b> Compare this saved Ledger snapshot with the master crew sheet. “Not assigned” means that role has no crew member in the Ledger for that event.</div>`;
+  openPrint(`Crew Cross-Check — ${entry.name}`,inner,CREW_PDF_CSS);
+}
 function fullDate(v){
   if(!v)return '—';
   const d=new Date(v);
@@ -6887,7 +6921,7 @@ function cw10ToggleMobileNav(open){
 function cw10ClientActions(state){
   if(!state.formId)return `<button type="button" class="cw10-primary" onclick="openClientSetupForSelected()">Create client link</button>`;
   const canConfirm=state.events.some(e=>cw11EventApprovalState(state,e).approved);
-  return `${state.form.open!==false&&!state.form.locked?`<button type="button" class="cw10-soft" onclick="shareClientForm('${state.formId}')">WhatsApp link</button>`:''}<button type="button" class="cw10-soft" onclick="copyText(clientPortalUrl('${state.formId}'),'Private client link copied.')">Copy client link</button>${canConfirm?`<button type="button" class="cw10-soft" onclick="exportClientConfirmationPDF('${state.formId}')">Confirmation PDF</button>`:''}<button type="button" class="cw10-soft" onclick="openClientSetupForSelected()">Edit setup</button>`;
+  return `${state.form.open!==false&&!state.form.locked?`<button type="button" class="cw10-soft" onclick="shareClientForm('${state.formId}')">WhatsApp link</button>`:''}<button type="button" class="cw10-soft" onclick="copyText(clientPortalUrl('${state.formId}'),'Private client link copied.')">Copy client link</button>${canConfirm?`<button type="button" class="cw10-soft" onclick="exportClientConfirmationPDF('${state.formId}')">Confirmation PDF</button>`:''}${state.events.length?`<button type="button" class="cw10-soft" onclick="exportClientCrewCrossCheckPDF()">Crew cross-check PDF</button>`:''}<button type="button" class="cw10-soft" onclick="openClientSetupForSelected()">Edit setup</button>`;
 }
 function cw10PageHead(kicker,title,description,actions=''){
   return `<div class="cw10-page-head"><div><div class="cw10-kicker">${esc(kicker)}</div><h2>${esc(title)}</h2><p>${esc(description)}</p></div>${actions?`<div class="cw10-page-actions">${actions}</div>`:''}</div>`;
