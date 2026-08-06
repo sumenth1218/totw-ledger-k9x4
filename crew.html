@@ -179,13 +179,13 @@ input::placeholder{color:var(--soft);opacity:1}
   </section>
 
   <section class="screen" id="dashboardScreen">
-    <div class="dashboard-head"><div class="eyebrow">Upcoming assignments</div><h1 id="helloTitle">Your shoots.</h1><p class="lead">Open a client to view your events, arrival time and venue.</p></div>
+    <div class="dashboard-head"><div class="eyebrow">Next shoot</div><h1 id="helloTitle">Your shoots.</h1><p class="lead">Only your next shoot day is shown here. Open it for arrival time, venue and check-in.</p></div>
     <div class="shoot-list" id="shootList"></div>
     <button class="signout" onclick="signOutCrew()">Sign out</button>
   </section>
 
   <section class="screen" id="eventScreen">
-    <div class="event-head"><button class="back" onclick="showDashboard()">‹ All assignments</button><div class="eyebrow" id="eventDate"></div><h1 id="eventCouple"></h1><div class="event-sub" id="eventName"></div></div>
+    <div class="event-head"><button class="back" onclick="showDashboard()">‹ Next shoot</button><div class="eyebrow" id="eventDate"></div><h1 id="eventCouple"></h1><div class="event-sub" id="eventName"></div></div>
     <div id="eventBody"></div>
   </section>
 </main>
@@ -224,8 +224,23 @@ function initials(name){return String(name||'?').split(/\s+/).filter(Boolean).sl
 function fmtDate(iso){if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);return `${MN[m-1]} ${d}, ${y}`}
 function fmtTime(t){if(!t)return '—';const[h,m]=t.split(':').map(Number),ap=h>=12?'PM':'AM';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`}
 function addHoursToTime(t,hours=7){if(!t)return '';const parts=String(t).trim().match(/^(\d{1,2}):(\d{2})(?:\s*([AP]M))?$/i);if(!parts)return '';let h=+parts[1],m=+parts[2];if(parts[3]){h%=12;if(parts[3].toUpperCase()==='PM')h+=12}return `${String((h+hours)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`}
-function eventTimingRange(t){const end=addHoursToTime(t,7);return end?`${fmtTime(t)} – ${fmtTime(end)}`:fmtTime(t)}
-function assignmentTime(e){const me=(e.crew||{})[user.uid]||{};return me.arrivalTime||me.reportTime||e.reportingTime||e.scheduledStart||e.functionStart||'23:59'}
+function eventTimingRange(e){
+  const start=e&&(e.functionStart||e.scheduledStart)||'';
+  const end=e&&e.functionEnd||addHoursToTime(start,7);
+  if(!start)return '—';
+  return end?`${fmtTime(start)} – ${fmtTime(end)}`:fmtTime(start);
+}
+function crewUsesOverallArrival(me){
+  if(!me)return true;
+  if(me.arrivalTimeMode==='individual')return false;
+  if(me.arrivalTimeMode==='overall')return true;
+  return !me.arrivalOverride;
+}
+function assignmentTime(e){
+  const me=(e.crew||{})[user.uid]||{};
+  if(crewUsesOverallArrival(me))return e.reportingTime||me.arrivalTime||me.reportTime||e.scheduledStart||e.functionStart||'23:59';
+  return me.arrivalTime||me.reportTime||e.reportingTime||e.scheduledStart||e.functionStart||'23:59';
+}
 function assignmentMinutes(e){const t=String(assignmentTime(e)).trim(),m=t.match(/^(\d{1,2}):(\d{2})(?:\s*([AP]M))?/i);if(!m)return 1439;let h=+m[1],min=+m[2];if(m[3]){h%=12;if(m[3].toUpperCase()==='PM')h+=12}return h*60+min}
 function eventTimeParts(date,time){
  const dm=String(date||'').match(/^(\d{4})-(\d{2})-(\d{2})$/),tm=String(time||'').trim().match(/^(\d{1,2}):(\d{2})(?:\s*([AP]M))?$/i);
@@ -310,6 +325,13 @@ async function loadDashboard(){
  renderDashboard();
  if(eventParam&&events[eventParam])openEvent(eventParam);else screen('dashboardScreen');
 }
+function nextShootDate(activeList){
+  const today=indiaDate();
+  const todayOpen=activeList.filter(([,e])=>e.date===today);
+  if(todayOpen.length)return today;
+  const upcoming=activeList.map(([,e])=>e.date).filter(d=>d&&d>=today).sort();
+  return upcoming[0]||'';
+}
 function renderDashboard(){
  const el=document.getElementById('shootList');
  const list=Object.entries(events).sort((a,b)=>(a[1].date||'9999-12-31').localeCompare(b[1].date||'9999-12-31')||assignmentMinutes(a[1])-assignmentMinutes(b[1])||String(a[1].eventName||'').localeCompare(String(b[1].eventName||'')));
@@ -319,11 +341,15 @@ function renderDashboard(){
    const dayState=eventDayState(e.date);let label=dayState==='today'?'Ready for check-in':'Upcoming',cl='';if(at.checkedOutAt){label='Completed';cl='ok'}else if(at.checkedInAt){label='In progress';cl='ok'}else if(dayState==='today'){label='Ready for check-in';cl='ok'}
    return `<article class="shoot-card" onclick="openEvent('${esc(id)}')"><div class="date">${esc(fmtDate(e.date))} · ${esc(fmtTime(assignmentTime(e)))}</div><h3>${esc(e.eventName||'Event')}</h3><p>${esc(e.venueName||'Venue')}</p><span class="status ${cl}">${label}</span></article>`;
  };
- const grouped=items=>{const groups=new Map();items.forEach(item=>{const couple=String(item[1].couple||'Unnamed client').trim()||'Unnamed client',key=couple.toLowerCase();if(!groups.has(key))groups.set(key,{couple,items:[]});groups.get(key).items.push(item);});return `<div class="client-groups">${[...groups.values()].map(group=>{const dates=[...new Set(group.items.map(([,e])=>e.date).filter(Boolean))].sort(),dateLabel=!dates.length?'Dates pending':dates.length===1?fmtDate(dates[0]):`${fmtDate(dates[0])} – ${fmtDate(dates[dates.length-1])}`,inProgress=group.items.filter(([id])=>(attendanceMap[id]||{}).checkedInAt&&!(attendanceMap[id]||{}).checkedOutAt).length,summary=[`${group.items.length} ${group.items.length===1?'event':'events'}`,inProgress?`${inProgress} in progress`:''].filter(Boolean).join(' · ');return `<details class="client-group"><summary><div class="client-group-title"><div class="date">${esc(dateLabel)}</div><h3>${esc(group.couple)}</h3><p>${esc(summary)}</p></div><span class="client-group-toggle">⌄</span></summary><div class="client-events">${group.items.map(card).join('')}</div></details>`;}).join('')}</div>`;};
+ const grouped=items=>{const groups=new Map();items.forEach(item=>{const couple=String(item[1].couple||'Unnamed client').trim()||'Unnamed client',key=couple.toLowerCase();if(!groups.has(key))groups.set(key,{couple,items:[]});groups.get(key).items.push(item);});return `<div class="client-groups">${[...groups.values()].map(group=>{const dates=[...new Set(group.items.map(([,e])=>e.date).filter(Boolean))].sort(),dateLabel=!dates.length?'Dates pending':dates.length===1?fmtDate(dates[0]):`${fmtDate(dates[0])} – ${fmtDate(dates[dates.length-1])}`,inProgress=group.items.filter(([id])=>(attendanceMap[id]||{}).checkedInAt&&!(attendanceMap[id]||{}).checkedOutAt).length,summary=[`${group.items.length} ${group.items.length===1?'event':'events'}`,inProgress?`${inProgress} in progress`:''].filter(Boolean).join(' · ');return `<details class="client-group" open><summary><div class="client-group-title"><div class="date">${esc(dateLabel)}</div><h3>${esc(group.couple)}</h3><p>${esc(summary)}</p></div><span class="client-group-toggle">⌄</span></summary><div class="client-events">${group.items.map(card).join('')}</div></details>`;}).join('')}</div>`;};
  const active=list.filter(([id])=>!(attendanceMap[id]||{}).checkedOutAt),completed=list.filter(([id])=>(attendanceMap[id]||{}).checkedOutAt).reverse();
- const activeHtml=active.length?grouped(active):'<div class="card empty">No active assignments.</div>';
+ const focusDate=nextShootDate(active);
+ const nextItems=focusDate?active.filter(([,e])=>e.date===focusDate):active.slice(0,1);
+ const laterItems=focusDate?active.filter(([,e])=>e.date!==focusDate):[];
+ const nextHtml=nextItems.length?grouped(nextItems):'<div class="card empty">No active assignments.</div>';
+ const laterHtml=laterItems.length?`<details class="completed-shoots"><summary>Later shoots <span>${laterItems.length} more</span></summary>${grouped(laterItems)}</details>`:'';
  const completedHtml=completed.length?`<details class="completed-shoots"><summary>Completed shoots <span>${completed.length} ${completed.length===1?'shoot':'shoots'}</span></summary>${grouped(completed)}</details>`:'';
- el.innerHTML=activeHtml+completedHtml;
+ el.innerHTML=nextHtml+laterHtml+completedHtml;
 }
 function showDashboard(){activeId='';activeEvent=null;checkoutReviewOpen=false;history.replaceState({},'',location.pathname);renderDashboard();screen('dashboardScreen')}
 async function openEvent(id){
@@ -333,12 +359,16 @@ async function openEvent(id){
  renderEvent();screen('eventScreen');if(!attendance.openedAt)persistAttendance({openedAt:Date.now()}).catch(()=>{});
 }
 function currentCrew(){return (activeEvent.crew||{})[user.uid]||{name:profile.name,phone:profile.phone,role:profile.role,arrivalTime:activeEvent.reportingTime,reportTime:activeEvent.reportingTime}}
+function crewArrivalDisplay(e,me){
+  if(crewUsesOverallArrival(me))return e.reportingTime||me.arrivalTime||me.reportTime||'';
+  return me.arrivalTime||me.reportTime||e.reportingTime||'';
+}
 function detailCard(){
  const me=currentCrew(),maps=activeEvent.mapsUrl||'#';
  return `<div class="card"><div class="detail-grid">
-  <div class="detail-row"><div class="ico">◷</div><div><small>Arrival time</small><b>${esc(fmtTime(me.arrivalTime||me.reportTime||activeEvent.reportingTime))}</b></div></div>
+  <div class="detail-row"><div class="ico">◷</div><div><small>Arrival time</small><b>${esc(fmtTime(crewArrivalDisplay(activeEvent,me)))}</b></div></div>
   <div class="detail-row"><div class="ico">⌁</div><div><small>Scheduled shoot start</small><b>${esc(fmtTime(activeEvent.functionStart||activeEvent.scheduledStart))}</b></div></div>
-  ${activeEvent.functionStart?`<div class="detail-row"><div class="ico">◇</div><div><small>Event timings</small><b>${esc(eventTimingRange(activeEvent.functionStart))}</b></div></div>`:''}
+  ${(activeEvent.functionStart||activeEvent.scheduledStart)?`<div class="detail-row"><div class="ico">◇</div><div><small>Event timings</small><b>${esc(eventTimingRange(activeEvent))}</b></div></div>`:''}
   <div class="detail-row"><div class="ico">⌖</div><div><small>Venue</small><b>${esc(activeEvent.venueName||'Venue to be updated')}</b></div>${activeEvent.mapsUrl?`<a class="link-button" href="${esc(maps)}" target="_blank" rel="noopener">Directions</a>`:'<span class="status late">Maps pending</span>'}</div>
   ${activeEvent.brideReadyLocation?`<div class="detail-row"><div class="ico">B</div><div><small>Bride getting ready</small><b>${esc(activeEvent.brideReadyLocation)}</b></div></div>`:''}
   ${activeEvent.groomReadyLocation?`<div class="detail-row"><div class="ico">G</div><div><small>Groom getting ready</small><b>${esc(activeEvent.groomReadyLocation)}</b></div></div>`:''}
