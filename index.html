@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.7.4-seed-shot-lists-2026-08-06">
+<meta name="totw-build" content="v12.7.5-add-studio-event-2026-08-08">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1838,6 +1838,20 @@ body{background:
 .cw-booked-handoff strong{display:block;font-size:14px;color:var(--ink)}
 .cw-booked-handoff p{margin:4px 0 10px;font-size:12.5px;color:var(--ink-soft)}
 .cw-booked-handoff .btn-row{display:flex;flex-wrap:wrap;gap:8px}
+.cw-add-event-modal{position:fixed;inset:0;z-index:1200;display:none;align-items:flex-end;justify-content:center;background:rgba(28,25,22,.28);padding:16px}
+.cw-add-event-modal.open{display:flex}
+.cw-add-event-card{width:min(440px,100%);background:var(--card);border:1px solid var(--line);border-radius:16px 16px 12px 12px;box-shadow:var(--shadow);padding:18px 18px 16px}
+.cw-add-event-card h3{font:500 24px/1.15 var(--display);margin:0 0 4px}
+.cw-add-event-card p{margin:0 0 14px;color:var(--ink-soft);font-size:13px}
+.cw-add-event-card .field{margin-bottom:10px}
+.cw-add-event-card label{display:block;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px}
+.cw-add-event-card input,.cw-add-event-card select{width:100%;min-height:40px;padding:0 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:14px var(--body)}
+.cw-add-event-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.cw-add-event-chips button{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:7px 10px;font:500 11px var(--body);color:var(--ink);cursor:pointer}
+.cw-add-event-chips button:hover{border-color:#D4CBBE;background:var(--amber-soft)}
+.cw-add-event-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.cw10-add-event-btn{display:flex;width:100%;align-items:center;justify-content:center;gap:6px;margin-top:6px;padding:9px 10px;border:1px dashed var(--line);border-radius:9px;background:transparent;color:var(--ink-soft);font:500 8px var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.cw10-add-event-btn:hover{border-color:#D4CBBE;color:var(--ink);background:var(--amber-soft)}
 @media(max-width:720px){.cw-ops-prep-grid{grid-template-columns:1fr}}
 
 </style>
@@ -2035,6 +2049,22 @@ body{background:
    </section>
   </div>
  </div>
+</div>
+
+<div class="cw-add-event-modal" id="cwAddEventModal" onclick="if(event.target===this)cwCloseAddEventModal()">
+  <div class="cw-add-event-card" role="dialog" aria-labelledby="cwAddEventTitle">
+    <h3 id="cwAddEventTitle">Add event</h3>
+    <p>Studio-only events like Pre-Wedding stay off the client link. Assign crew in Team &amp; prep after saving.</p>
+    <div class="cw-add-event-chips" id="cwAddEventChips"></div>
+    <div class="field"><label for="cwAddEventName">Event name</label><input id="cwAddEventName" list="cwAddEventSuggestions" placeholder="e.g. Pre-Wedding" autocomplete="off"></div>
+    <datalist id="cwAddEventSuggestions"></datalist>
+    <div class="field"><label for="cwAddEventDate">Date</label><input id="cwAddEventDate" type="date"></div>
+    <div class="field"><label for="cwAddEventStart">Start time <span style="text-transform:none;letter-spacing:0">(optional)</span></label><input id="cwAddEventStart" type="time"></div>
+    <div class="cw-add-event-actions">
+      <button type="button" class="btn-mini" onclick="cwCloseAddEventModal()">Cancel</button>
+      <button type="button" class="btn-mini" style="background:var(--teal);color:#fff;border-color:var(--teal)" onclick="cwSaveStudioEvent()">Add event</button>
+    </div>
+  </div>
 </div>
 
 <div id="tabDeliverables" style="display:none">
@@ -6172,7 +6202,8 @@ function cwUnifiedEvents(entry,formRow=cwPrimaryForm(entry),shoots=null){
       eventId,
       shootId:shootRow?shootRow[0]:'',
       details:(s.events||{})[eventId]||{},
-      order:Number(e.order)||0
+      order:Number(e.order)||0,
+      studioOnly:!!e.studioOnly
     };
   }).filter(e=>e.date).sort((a,b)=>a.date.localeCompare(b.date)||String(a.details&&a.details.startTime||'23:59').localeCompare(String(b.details&&b.details.startTime||'23:59'))||a.order-b.order||a.name.localeCompare(b.name));
 }
@@ -6532,7 +6563,8 @@ function ciClientEventIsLinked(formId,eventId,couple,date,eventName){
   });
 }
 async function approveClientForm(id){
-  const f=clientForms[id],s=clientSubmissions[id]||{};if(!f||!s.submittedAt)return;const missing=Object.entries(f.events||{}).filter(([k])=>!clientEventDone((s.events||{})[k]));if(missing.length){toast('Every event needs timings, venue and Maps link before approval.');return;}if(!confirm(`Approve ${f.couple}'s details and publish them to matching crew shoots?`))return;
+  const f=clientForms[id],s=clientSubmissions[id]||{};if(!f||!s.submittedAt)return;
+  const missing=Object.entries(f.events||{}).filter(([k,e])=>!(e&&e.studioOnly)&&!clientEventDone((s.events||{})[k]));if(missing.length){toast('Every event needs timings, venue and Maps link before approval.');return;}if(!confirm(`Approve ${f.couple}'s details and publish them to matching crew shoots?`))return;
   const updates={},approvedAt=Date.now();updates[`clientApprovals/${id}`]={status:'approved',approvedAt,approvedBy:editor,snapshot:{contact:s.contact||{},events:s.events||{}}};updates[`clientForms/${id}/locked`]=true;updates[`clientForms/${id}/updatedAt`]=approvedAt;
   const matched=new Set();
   Object.entries(checkinEvents||{}).forEach(([eventId,ci])=>{if(!ci||String(ci.couple||'').trim().toLowerCase()!==String(f.couple||'').trim().toLowerCase())return;const refs=Array.isArray(ci.linkedEvents)?ci.linkedEvents:Object.values(ci.linkedEvents||{}),linked=refs.filter(r=>r&&r.formId===id&&f.events&&f.events[r.eventId]);let selected=linked.map(r=>{const e=f.events[r.eventId],details=(s.events||{})[r.eventId]||{};return {formId:id,eventId:r.eventId,name:e.name,date:e.date,order:e.order||0,details};});if(!selected.length){const legacy=Object.entries(f.events||{}).find(([k,e])=>ci.clientFormId===id&&ci.clientEventId===k||ci.date===e.date&&shotListKey(ci.eventName)===shotListKey(e.name));if(legacy){const[k,e]=legacy;selected=[{formId:id,eventId:k,name:e.name,date:e.date,order:e.order||0,details:(s.events||{})[k]||{}}];}}if(!selected.length)return;selected.forEach(x=>matched.add(x.eventId));selected.sort((a,b)=>(a.details.startTime||'23:59').localeCompare(b.details.startTime||'23:59')||a.order-b.order);const timing=ciCombinedTiming(selected),names=selected.map(x=>x.name),first=selected[0].details||{},maps=[...new Set(selected.map(x=>x.details.mapsUrl).filter(Boolean))],venues=[...new Set(selected.map(x=>x.details.venueName).filter(Boolean))];updates[`crewCheckins/events/${eventId}/eventName`]=names.join(' + ');updates[`crewCheckins/events/${eventId}/eventNames`]=names;updates[`crewCheckins/events/${eventId}/checklistType`]=names[0];updates[`crewCheckins/events/${eventId}/linkedEvents`]=selected.map(x=>({formId:id,eventId:x.eventId,name:x.name,date:x.date,order:x.order}));updates[`crewCheckins/events/${eventId}/date`]=ci.dateOverride?ci.date:selected[0].date;updates[`crewCheckins/events/${eventId}/functionStart`]=timing.start||null;updates[`crewCheckins/events/${eventId}/functionEnd`]=timing.end||null;updates[`crewCheckins/events/${eventId}/scheduledStart`]=timing.start||ci.scheduledStart;updates[`crewCheckins/events/${eventId}/scheduledStartMode`]='auto';if(venues.length===1)updates[`crewCheckins/events/${eventId}/venueName`]=venues[0];if(maps.length===1){updates[`crewCheckins/events/${eventId}/mapsUrl`]=maps[0];const d=ciMapData(maps[0]);if(d){updates[`crewCheckins/events/${eventId}/venueLat`]=d.lat;updates[`crewCheckins/events/${eventId}/venueLng`]=d.lng;}}updates[`crewCheckins/events/${eventId}/clientContactName`]=first.contactName||null;updates[`crewCheckins/events/${eventId}/clientContactPhone`]=first.contactPhone||null;updates[`crewCheckins/events/${eventId}/brideReadyLocation`]=first.brideReadyLocation||null;updates[`crewCheckins/events/${eventId}/groomReadyLocation`]=first.groomReadyLocation||null;updates[`crewCheckins/events/${eventId}/clientNotes`]=first.notes||null;updates[`crewCheckins/events/${eventId}/clientFormId`]=id;updates[`crewCheckins/events/${eventId}/clientEventId`]=selected[0].eventId;});
@@ -8178,7 +8210,7 @@ function cw10RenderOperations(state){
   const nextLabel=next?`${cw10CompactDate(next.date)} · ${next.name} · ${ciFmtTime(cw10CurrentDetails(state,next).startTime||cw11GetPlanDraft(state,next).startTime)}`:'No events yet';
   const clientStatus=state.formId?(state.form.locked?'Client details locked':state.approval&&state.approval.status==='approved'?'Client details approved':state.events.some(e=>cw11EventApprovalState(state,e).approved)?'Partially approved':'Awaiting approval'):'No client link';
   const dirty=cw11DirtyDrafts().length;
-  const actions=`${state.events.length?`<button type="button" class="cw10-soft" onclick="exportClientCrewCrossCheckPDF()">Crew cross-check PDF</button>`:''}${dirty?`<button type="button" class="cw10-primary" onclick="cw11SaveAllPlans()">Save · ${dirty}</button>`:''}`;
+  const actions=`${state.events.length?`<button type="button" class="cw10-soft" onclick="exportClientCrewCrossCheckPDF()">Crew cross-check PDF</button>`:''}<button type="button" class="cw10-soft" onclick="cwOpenAddEventModal()">+ Add event</button>${dirty?`<button type="button" class="cw10-primary" onclick="cw11SaveAllPlans()">Save · ${dirty}</button>`:''}`;
   if(!events.length){
     return `<div class="cw10-content cw-ops-page">${cw10PageHead('Team & prep',state.entry.name,'Client events appear here from the private link — draft crew even before approval.',cw10ClientActions(state))}
       <div class="cw10-empty-state"><h3>No client events yet</h3><p>Create or open the client link, then return here to assign crew, timings, lists and costs.</p><button type="button" class="cw10-soft" onclick="setClientSection('overview')">Back to Overview</button></div></div>`;
@@ -8199,16 +8231,72 @@ function cw10RenderOperations(state){
 function cw10RenderSidebar(state){
   const dates=cwWorkspaceDates(state),events=state.events.map(event=>{
     const status=cw10EventStatus(state,event),details=cw10CurrentDetails(state,event),draft=cw11PlanDrafts.get(cw11DraftKey(event.formId,event.eventId));
-    return `<button type="button" class="cw10-event-nav ${cwSection==='event'&&cw10SelectedEventId===event.eventId?'on':''}" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw11-nav-event"><span class="cw10-event-name"><i class="cw10-dot ${status.key}"></i>${esc(event.name)}${draft&&draft.dirty?'<i class="cw11-dirty-dot"></i>':''}</span><small>${esc(cw10CompactDate(event.date))} · ${esc(ciFmtTime(details.startTime))}</small></span><span class="cw10-nav-note">${esc(status.text)}</span></button>`;
+    return `<button type="button" class="cw10-event-nav ${cwSection==='event'&&cw10SelectedEventId===event.eventId?'on':''}" data-event-id="${esc(event.eventId)}" onclick="cw10SelectEvent(this.dataset.eventId)"><span class="cw11-nav-event"><span class="cw10-event-name"><i class="cw10-dot ${status.key}"></i>${esc(event.name)}${event.studioOnly?' · studio':''}${draft&&draft.dirty?'<i class="cw11-dirty-dot"></i>':''}</span><small>${esc(cw10CompactDate(event.date))} · ${esc(ciFmtTime(details.startTime))}</small></span><span class="cw10-nav-note">${esc(status.text)}</span></button>`;
   }).join('');
   const due=state.prod?state.stages.filter(s=>!(state.prod.stages||{})[s.k]?.done).length:0,activityCount=cw10ActivityRows(state).length,deliveryNote=!state.deliveriesUnlocked?'After shoots':due?due+' pending':'›';
   return `<aside class="cw10-sidebar"><div class="cw10-side-brand"><span class="cw10-brand"><span class="cw10-brand-mark">II</span><span><b>Tale of Two</b><small>Studio Ledger</small></span></span><button type="button" class="cw10-nav-close" aria-label="Close wedding navigation" onclick="cw10ToggleMobileNav(false)">×</button></div>
     <button type="button" class="cw10-back" onclick="showClientFolders()">← All weddings</button>
     <div class="cw10-client-id"><span class="cw10-client-avatar">${esc(cw10Initials(state.entry.name).toUpperCase())}</span><span><h3>${esc(state.entry.name)}</h3><p>${esc(cw10DateRange(dates))} · ${state.events.length} events</p></span></div><span class="cw10-stage ${esc(state.stageClass)}">${esc(state.stage)}</span>
-    <nav class="cw10-side-nav" aria-label="Wedding workspace"><button type="button" class="cw10-nav-button ${cwSection==='overview'?'on':''}" onclick="setClientSection('overview')"><span>Overview</span><span>›</span></button><button type="button" class="cw10-nav-button ${cwSection==='operations'?'on':''}" onclick="setClientSection('operations')"><span>Team &amp; prep</span><span>›</span></button><div class="cw10-nav-label">Events</div><div class="cw10-event-list">${events||'<div style="padding:9px 10px;color:#77716B;font-size:9px">No client events yet</div>'}</div><div class="cw10-side-divider"></div>
+    <nav class="cw10-side-nav" aria-label="Wedding workspace"><button type="button" class="cw10-nav-button ${cwSection==='overview'?'on':''}" onclick="setClientSection('overview')"><span>Overview</span><span>›</span></button><button type="button" class="cw10-nav-button ${cwSection==='operations'?'on':''}" onclick="setClientSection('operations')"><span>Team &amp; prep</span><span>›</span></button><div class="cw10-nav-label">Events</div><div class="cw10-event-list">${events||'<div style="padding:9px 10px;color:#77716B;font-size:9px">No client events yet</div>'}<button type="button" class="cw10-add-event-btn" onclick="cwOpenAddEventModal()">+ Add event</button></div><div class="cw10-side-divider"></div>
     <button type="button" class="cw10-nav-button ${cwSection==='deliveries'?'on':''}" onclick="setClientSection('deliveries')"><span>Deliver</span><span class="cw10-nav-note">${esc(deliveryNote)}</span></button><button type="button" class="cw10-nav-button ${cwSection==='costs'?'on':''}" onclick="setClientSection('costs')"><span>Package &amp; spend</span><span>›</span></button><button type="button" class="cw10-nav-button ${cwSection==='activity'?'on':''}" onclick="setClientSection('activity')"><span>Activity</span><span class="cw10-nav-note">${activityCount||'›'}</span></button></nav>
     <div class="cw10-side-footer">Use Team &amp; prep for crew and day setup. Event pages keep client details and handoff.<button type="button" onclick="signOutLedger()">Sign out</button></div>
   </aside>`;
+}
+const CW_STUDIO_EVENT_PRESETS=['Pre-Wedding','Engagement','Cocktail Party','Reception','After Party','Pooja','Other'];
+function cwOpenAddEventModal(){
+  const entry=cwEntry();if(!entry){toast('Open a wedding folder first.');return;}
+  if(!cwPrimaryForm(entry)){toast('Create the client link first, then add studio events.');openClientSetupForSelected();return;}
+  const state=cwState(entry),dates=cwWorkspaceDates(state),defaultDate=dates[0]||ciTodayIso();
+  const chips=document.getElementById('cwAddEventChips'),dl=document.getElementById('cwAddEventSuggestions');
+  if(chips)chips.innerHTML=CW_STUDIO_EVENT_PRESETS.map(n=>`<button type="button" onclick="document.getElementById('cwAddEventName').value='${esc(n)}'">${esc(n)}</button>`).join('');
+  if(dl)dl.innerHTML=[...new Set([...CW_STUDIO_EVENT_PRESETS,...SHOT_CORE_EVENTS])].map(n=>`<option value="${esc(n)}">`).join('');
+  document.getElementById('cwAddEventName').value='Pre-Wedding';
+  document.getElementById('cwAddEventDate').value=defaultDate;
+  document.getElementById('cwAddEventStart').value='';
+  document.getElementById('cwAddEventModal').classList.add('open');
+  setTimeout(()=>document.getElementById('cwAddEventName')?.focus(),40);
+}
+function cwCloseAddEventModal(){document.getElementById('cwAddEventModal')?.classList.remove('open');}
+async function cwSaveStudioEvent(){
+  const entry=cwEntry(),formRow=entry&&cwPrimaryForm(entry);if(!entry||!formRow){toast('Create the client link first.');return;}
+  const [formId,form]=formRow;
+  const name=String(document.getElementById('cwAddEventName')?.value||'').trim();
+  const date=String(document.getElementById('cwAddEventDate')?.value||'').trim();
+  const startTime=String(document.getElementById('cwAddEventStart')?.value||'').trim();
+  if(!name){toast('Enter an event name.');return;}
+  if(!date){toast('Pick an event date.');return;}
+  const existing=Object.values(form.events||{});
+  const dup=existing.find(e=>e&&e.date===date&&shotListKey(e.name)===shotListKey(name));
+  if(dup){toast(`${name} already exists on ${ciDateLong(date)}.`);return;}
+  let next=1,eventId=`s${next}`;
+  while((form.events||{})[eventId]){next++;eventId=`s${next}`;}
+  const order=existing.reduce((m,e)=>Math.max(m,Number(e&&e.order)||0),0)+1;
+  const endTime=startTime?cw11ShiftTime(startTime,420):'';
+  const details={startTime:startTime||'',endTime:endTime||'',venueName:'',mapsUrl:'',contactName:'',contactPhone:'',brideReadyLocation:'',groomReadyLocation:'',notes:'Studio-added event'};
+  const eventRec={name,date,order,studioOnly:true,questions:{contact:false,brideReady:false,groomReady:false,notes:false},createdAt:Date.now(),createdBy:editor};
+  const a=clientApprovals[formId]||{},s=clientSubmissions[formId]||{},now=Date.now();
+  const eventApprovals={...(a.events||{}),[eventId]:{status:'approved',approvedAt:now,approvedBy:editor,snapshot:ciClone(details),studioOnly:true}};
+  const snapshotEvents={...((a.snapshot&&a.snapshot.events)||{}),[eventId]:ciClone(details)};
+  const approvalRecord={...a,status:a.status==='approved'?'approved':(a.status||'partially_approved'),events:eventApprovals,snapshot:{contact:ciClone(s.contact||{}),events:snapshotEvents},lastApprovedEventId:eventId,lastApprovedAt:now,lastApprovedBy:editor};
+  const updates={};
+  updates[`clientForms/${formId}/events/${eventId}`]=eventRec;
+  updates[`clientForms/${formId}/updatedAt`]=now;
+  updates[`clientSubmissions/${formId}/events/${eventId}`]=details;
+  updates[`clientApprovals/${formId}`]=approvalRecord;
+  updates[`crewCheckins/events/client_${formId}_${eventId}`]=ciClientShootRecord(formId,eventId,{...form,couple:form.couple},eventRec,{events:{[eventId]:details}},now);
+  try{
+    await db.ref().update(updates);
+    clientForms[formId]={...form,events:{...(form.events||{}),[eventId]:eventRec},updatedAt:now};
+    clientSubmissions[formId]={...s,events:{...(s.events||{}),[eventId]:details}};
+    clientApprovals[formId]=approvalRecord;
+    checkinEvents[`client_${formId}_${eventId}`]=updates[`crewCheckins/events/client_${formId}_${eventId}`];
+    cwCloseAddEventModal();
+    cw10SelectedEventId=eventId;cwSection='operations';
+    localStorage.setItem('totw_client_event',eventId);localStorage.setItem('totw_client_section','operations');
+    toast(`${name} added. Assign crew in Team & prep.`);
+    log(`added studio event: ${form.couple} — ${name} (${date})`);
+    renderCheckinEvents();renderClientsWorkspace();
+  }catch(err){toast('Could not add the event. Please try again.');}
 }
 function cw10RenderEvent(state){
   cw10SelectDefaultEvent(state);
@@ -8236,6 +8324,8 @@ const CW11_APPROVAL_FIELDS=[
   ['groomReadyLocation','Groom preparation'],['notes','Notes']
 ];
 function cw11RawEventApproved(formId,eventId){
+  const f=clientForms[formId],formEvent=f&&f.events&&f.events[eventId];
+  if(formEvent&&formEvent.studioOnly)return true;
   const a=clientApprovals[formId]||{},eventApproval=a.events&&a.events[eventId],snapshot=a.snapshot&&a.snapshot.events&&a.snapshot.events[eventId];
   return !!(a.status==='approved'||eventApproval&&eventApproval.status==='approved'||['changes_pending','partially_approved'].includes(a.status)&&snapshot);
 }
@@ -8348,6 +8438,8 @@ async function cw11ApproveClientEvent(formId,eventId){
   const eventApprovals={...(a.events||{}),[eventId]:{status:'approved',approvedAt:now,approvedBy:editor,snapshot:ciClone(details)}};
   const snapshotEvents={...((a.snapshot&&a.snapshot.events)||{}),[eventId]:ciClone(details)};
   const allApproved=Object.keys(f.events||{}).every(id=>{
+    const formEvent=f.events[id];
+    if(formEvent&&formEvent.studioOnly)return true;
     if(id===eventId)return true;
     const eventApproval=eventApprovals[id],snapshot=eventApproval&&eventApproval.snapshot||a.snapshot&&a.snapshot.events&&a.snapshot.events[id],current=(s.events||{})[id]||{};
     const wasApproved=eventApproval&&eventApproval.status==='approved'||a.status==='approved'||['changes_pending','partially_approved'].includes(a.status)&&snapshot;
