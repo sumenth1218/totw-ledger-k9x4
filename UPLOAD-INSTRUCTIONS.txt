@@ -1,4 +1,4 @@
-TALE OF TWO WEDDINGS — BOOKING FOLDER + LIVE CREW ASSIGNMENT SYNC v12.7.6
+TALE OF TWO WEDDINGS — EXPLICIT EVENT TEAM COVERAGE v12.7.7
 
 UPLOAD:
 1. Unzip this package.
@@ -21,6 +21,9 @@ IMPORTANT — THESE CONTRACTS ARE PRESERVED:
 - Multiple events for one couple on the same date remain separate event records.
 
 WHAT IS NEW:
+- Each event now has explicit Candid and Traditional coverage controls in Weddings → Team & prep.
+- Marking a team Not required clears false CP/CV or TP/TV shortages without removing assigned crew.
+- New events no longer assume CP, CV, TP and TV are all required before you choose or assign the team.
 - A confirmed booking appears immediately as a Weddings folder, even before its private client link exists.
 - Opening that new folder prefills the client-link setup from the booked dates and event names.
 - Creating/updating the client link refreshes the folder immediately.

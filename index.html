@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.7.6-booking-folder-crew-sync-2026-08-08">
+<meta name="totw-build" content="v12.7.7-explicit-team-coverage-2026-08-08">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1825,6 +1825,10 @@ body{background:
 }
 
 .cw-ops-prep{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);display:grid;gap:10px}
+.cw-ops-coverage{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.cw-ops-coverage-label{margin-right:2px;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.cw-ops-coverage .cw-ops-chip{font:500 8.5px var(--mono);letter-spacing:.05em;text-transform:uppercase}
+.cw-ops-coverage .cw-ops-chip.not-required{color:var(--ink-soft);background:var(--surface-2)}
 .cw-ops-prep-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .cw-ops-prep-grid label{display:grid;gap:4px;font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
 .cw-ops-prep-grid input,.cw-ops-prep-grid select{min-height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:12.5px var(--body)}
@@ -7650,16 +7654,14 @@ function cw11GetPlanDraft(state,event){
     const saved=c.arrivalTime||c.reportTime||teamArrival;
     crew[uid]={...ciClone(c),arrivalTime:saved,reportTime:saved,arrivalOverride:c.arrivalTimeMode==='individual'||!!(saved&&teamArrival&&saved!==teamArrival),crewCost:c.crewCost!=null&&c.crewCost!==''?Number(c.crewCost):'',dataStatus:c.dataStatus||'',opsNotes:c.opsNotes||''};
   });
-  const requirements=shoot?ciClone(ciRequirementsForEvent(shoot)):{};
   const hasSavedRequirements=!!(shoot&&shoot.crewRequirements&&typeof shoot.crewRequirements==='object');
+  // Requirements are an explicit coverage decision. A new event must not silently
+  // assume CP/CV/TP/TV are all needed; assigned roles establish their own minimum.
+  const requirements=hasSavedRequirements?ciClone(ciRequirementsForEvent(shoot)):{};
   CW11_CANDID_ROLES.concat(CW11_TRADITIONAL_ROLES).forEach(role=>{
     const count=Object.values(crew).filter(c=>(c.role||'Other')===role).length;
     if(!(Number(requirements[role])>0)&&count)requirements[role]=count;
-    if(!hasSavedRequirements&&!(Number(requirements[role])>0))requirements[role]=1;
   });
-  if(!Object.keys(crew).length&&!Object.values(requirements).some(n=>Number(n)>0)){
-    CW11_CANDID_ROLES.concat(CW11_TRADITIONAL_ROLES).forEach(role=>{requirements[role]=1;});
-  }
   const assignment=shoot?ciResourceAssignment(shoot,event.name):{};
   const guessed=shotListGuessKey(event.name);
   const draft={
@@ -8135,6 +8137,22 @@ function cwOpsSetPinterest(eventId,value){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
   cwOpsPersistDraft(cw11GetPlanDraft(state,event),'Pinterest saved.');
 }
+function cwOpsTeamIsRequired(draft,team){
+  const roles=team==='candid'?CW11_CANDID_ROLES:CW11_TRADITIONAL_ROLES;
+  return roles.some(role=>(Number(draft.requirements&&draft.requirements[role])||0)>0);
+}
+function cwOpsSetTeamCoverage(eventId,team,required){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event);
+  if(cw11EventStarted(draft)){toast('Coverage requirements are locked after check-in.');return;}
+  const roles=team==='candid'?CW11_CANDID_ROLES:CW11_TRADITIONAL_ROLES;
+  roles.forEach(role=>{
+    const assigned=Object.values(draft.crew||{}).filter(c=>(c.role||'Other')===role).length;
+    draft.requirements[role]=required?Math.max(1,assigned):0;
+  });
+  cw11MarkDraft(draft);
+  cwOpsPersistDraft(draft,`${team==='candid'?'Candid':'Traditional'} team marked ${required?'required':'not required'}.`);
+}
 function cwOpsCopyCrewLink(eventId){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
   const draft=cw11GetPlanDraft(state,event);
@@ -8154,9 +8172,14 @@ function cwOpsOpenLiveDay(eventId){
 }
 function cwOpsPrepHtml(state,event,draft){
   const started=cw11EventStarted(draft);
+  const candidRequired=cwOpsTeamIsRequired(draft,'candid'),traditionalRequired=cwOpsTeamIsRequired(draft,'traditional');
   const candidList=cwListItems(event.name,'candid',draft.candidListKey||''),tradList=cwListItems(event.name,'traditional',draft.traditionalListKey||'');
   const checkPeek=(()=>{if(!draft.shootId)return 'Not on Live day yet';const all=checkinAttendance[draft.shootId]||{},crew=Object.keys(draft.crew||{});if(!crew.length)return 'No crew';const inN=crew.filter(uid=>all[uid]&&all[uid].checkedInAt).length,outN=crew.filter(uid=>all[uid]&&all[uid].checkedOutAt).length;return `${inN}/${crew.length} checked in · ${outN} out`;})();
   return `<div class="cw-ops-prep">
+    <div class="cw-ops-coverage"><span class="cw-ops-coverage-label">Coverage required</span>
+      <button type="button" class="cw-ops-chip ${candidRequired?'on':'not-required'}" ${started?'disabled':''} onclick="cwOpsSetTeamCoverage('${esc(event.eventId)}','candid',${candidRequired?'false':'true'})">Candid · ${candidRequired?'Required':'Not required'}</button>
+      <button type="button" class="cw-ops-chip ${traditionalRequired?'on':'not-required'}" ${started?'disabled':''} onclick="cwOpsSetTeamCoverage('${esc(event.eventId)}','traditional',${traditionalRequired?'false':'true'})">Traditional · ${traditionalRequired?'Required':'Not required'}</button>
+    </div>
     <div class="cw-ops-prep-grid">
       <label>Event start<input type="time" value="${esc(draft.startTime||'')}" ${started?'disabled':''} onchange="cwOpsSetPlanTime('${esc(event.eventId)}','startTime',this.value)"></label>
       <label>Expected end<input type="time" value="${esc(draft.endTime||'')}" ${started?'disabled':''} onchange="cwOpsSetPlanTime('${esc(event.eventId)}','endTime',this.value)"></label>
