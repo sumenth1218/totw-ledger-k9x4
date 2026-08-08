@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.7.11-traditional-manual-cost-in-team-prep-2026-08-09">
+<meta name="totw-build" content="v12.7.12-day-wise-crew-cost-2026-08-09">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -3641,6 +3641,7 @@ function regPerson(name,style){
 function personRateSet(key,v,nm){
   if(!people[key])people[key]={name:nm||key,style:''};
   people[key].rate=Math.max(0,+v||0);
+  people[key].unit='day';
   writePeople();
   renderPlanTeam();
 }
@@ -4921,8 +4922,8 @@ function renderPlanTeam(month){
   const calc=o=>{
     const rec=people[o.key]||{};
     const rate=+rec.rate||0;
-    const unit=rec.unit==='event'?'event':'day';
-    const qty=unit==='event'?o.assigned.length:o.dates.size;
+    const unit='day';
+    const qty=o.dates.size;
     return {rate,unit,qty,est:rate?qty*rate:0};
   };
   let totalEst=uRate?uDays*uRate:0, noRate=0;
@@ -4943,7 +4944,7 @@ function renderPlanTeam(month){
       const tag=a.removed?'<span class="diff-tag rem">REMOVED</span>':(a.isNew?'<span class="diff-tag add">ADDED</span>':'');
       return `<div class="cost-line${a.removed?' rem-line':''}"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span> ${tag}</span></div>`;
     }).join(''):'<div class="cost-line" style="color:var(--ink-soft)">Not assigned anything this month</div>';
-    const rateLine=`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft)"><span>Rate</span><input type="number" min="0" placeholder="₹" value="${rate||''}" onclick="event.stopPropagation()" onchange="personRateSet('${o.key}',this.value,'${esc(o.name)}')" style="width:88px;padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;background:#fff;color:var(--ink)"><select onclick="event.stopPropagation()" onchange="personUnitSet('${o.key}',this.value,'${esc(o.name)}')" style="padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-size:12px;background:#fff;color:var(--ink)"><option value="day"${unit==='day'?' selected':''}>per day</option><option value="event"${unit==='event'?' selected':''}>per event</option></select>${est?`<span style="font-family:var(--mono);font-size:11px">→ ${qty} ${unit}${qty!==1?'s':''} ≈ ₹${est.toLocaleString('en-IN')}</span>`:'<span style="font-size:11.5px">set a rate to project this month</span>'}</div>`;
+    const rateLine=`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft)"><span>Day rate</span><input type="number" min="0" placeholder="₹" value="${rate||''}" onclick="event.stopPropagation()" onchange="personRateSet('${o.key}',this.value,'${esc(o.name)}')" style="width:88px;padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;background:#fff;color:var(--ink)"><span style="padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-size:12px;background:#fff;color:var(--ink)">per day</span>${est?`<span style="font-family:var(--mono);font-size:11px">→ ${qty} day${qty!==1?'s':''} ≈ ₹${est.toLocaleString('en-IN')}</span>`:'<span style="font-size:11.5px">set a day rate to project this month</span>'}</div>`;
     return main+`<tr class="person-detail"><td colspan="3"><div class="pd-wrap">
       <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:6px">${monthLabel} · ${sentLine}</div>
       ${shooting}
@@ -6327,28 +6328,45 @@ function cwOpsCostFromRecord(record,shootId,crewUid,c){
   return c.crewCost!==''&&c.crewCost!=null&&!Number.isNaN(n)?n:null;
 }
 function cwBuildOpsFinanceSync(results){
-  const staged=new Map(),clientProdIds=new Map(),updates={};
+  const staged=new Map(),clientProdIds=new Map(),updates={},groups=new Map();
+  // Finance is day-wise: rebuild each affected client/date from every event on
+  // that date, then keep only one cost row per crew member.
   (results||[]).forEach(result=>{
-    const state=result.state,event=result.event,record=result.record,shootId=result.id||event&&event.shootId||'';
-    if(!state||!event||!record)return;
-    const rows=Object.entries(record.crew||{}).map(([crewUid,c])=>({crewUid,c,pay:cwOpsCostFromRecord(record,shootId,crewUid,c)})).filter(x=>x.pay!=null&&Number(x.pay)>0);
-    const clientKey=state.entry&&state.entry.key||String(state.entry&&state.entry.name||'').toLowerCase();
+    const state=result.state,event=result.event;
+    if(!state||!event||!result.record)return;
+    const clientKey=state.entry&&state.entry.key||String(state.entry&&state.entry.name||'').toLowerCase(),key=`${clientKey}|${event.date}`;
+    if(!groups.has(key))groups.set(key,{state,date:event.date,overrides:new Map()});
+    groups.get(key).overrides.set(event.eventId,result);
+  });
+  groups.forEach(group=>{
+    const state=group.state,date=group.date,clientKey=state.entry&&state.entry.key||String(state.entry&&state.entry.name||'').toLowerCase();
+    const people=new Map();
+    const dayEvents=(state.events||[]).filter(event=>event.date===date);
+    dayEvents.forEach(event=>{
+      const override=group.overrides.get(event.eventId),shootId=override&&override.id||event.shootId||'',record=override&&override.record||shootId&&checkinEvents[shootId];
+      if(!record)return;
+      Object.entries(record.crew||{}).forEach(([crewUid,c])=>{
+        const person=String(c.name||crewProfiles[crewUid]?.name||'Crew member').trim(),role=String(c.role||'Other'),personKey=crewUid||`${person.toLowerCase()}|${role}`;
+        const pay=cwOpsCostFromRecord(record,shootId,crewUid,c),prev=people.get(personKey);
+        if(!prev)people.set(personKey,{crewUid,c,person,role,pay});
+        else if(pay!=null&&(prev.pay==null||Number(pay)>Number(prev.pay)))prev.pay=pay;
+      });
+    });
+    const rows=[...people.values()].filter(x=>x.pay!=null&&Number(x.pay)>0),replacementKeys=new Set(rows.map(x=>`${x.person.toLowerCase()}|${x.role}`));
     let prodId=clientProdIds.get(clientKey)||state.prodId||'',prod=prodId&&(staged.get(prodId)||ciClone(prods[prodId]));
     if(!prod&&rows.length){prodId=uid('p');prod=cwBusinessProdSeed(state);clientProdIds.set(clientKey,prodId);}
     if(!prod)return;
     prod.days=Array.isArray(prod.days)?prod.days:[];
-    let day=prod.days.find(d=>d.date===event.date);
-    if(!day){day={date:event.date,events:[event.name],gb:0,roles:[],fmt:false};prod.days.push(day);}
-    day.events=Array.isArray(day.events)?day.events:[];
-    if(!day.events.includes(event.name))day.events.push(event.name);
-    day.roles=(Array.isArray(day.roles)?day.roles:[]).filter(r=>!(r&&r.opsSource==='teamPrep'&&r.opsEventId===event.eventId));
-    rows.forEach(({crewUid,c,pay})=>{
-      const person=String(c.name||crewProfiles[crewUid]?.name||'Crew member').trim(),role=String(c.role||'Other');
-      // Adopt one matching legacy Finance row instead of double-counting it.
-      const legacy=day.roles.findIndex(r=>r&&!r.opsSource&&String(r.person||'').trim().toLowerCase()===person.toLowerCase()&&String(r.role||'')===role);
-      if(legacy>-1)day.roles.splice(legacy,1);
-      day.roles.push({person,role,pay:Number(pay),opsSource:'teamPrep',opsEventId:event.eventId,opsUid:crewUid});
+    let day=prod.days.find(d=>d.date===date);
+    if(!day){day={date,events:dayEvents.map(e=>e.name),gb:0,roles:[],fmt:false};prod.days.push(day);}
+    day.events=[...new Set([...(Array.isArray(day.events)?day.events:[]),...dayEvents.map(e=>e.name)])];
+    // Remove older event-wise sync rows and their unmarked legacy equivalents.
+    day.roles=(Array.isArray(day.roles)?day.roles:[]).filter(r=>{
+      if(r&&r.opsSource==='teamPrep')return false;
+      const key=`${String(r&&r.person||'').trim().toLowerCase()}|${String(r&&r.role||'Other')}`;
+      return !replacementKeys.has(key);
     });
+    rows.forEach(({crewUid,person,role,pay})=>day.roles.push({person,role,pay:Number(pay),opsSource:'teamPrep',opsDay:date,opsUid:crewUid}));
     prod.days.sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
     staged.set(prodId,prod);
   });
@@ -6415,23 +6433,14 @@ async function cwSendEventToBusiness(eventId){
     status:'Completed',
     summary:cwBusinessSummary(state,event)
   };
-  // Promote direct-managed crewCost into the wedding file. Traditional crew
-  // stays manual in Finance; Team & prep supplies worked hours only.
+  // Keep the shoot-day shell current. Crew cost rows are owned by the
+  // day-wise Team & prep → Finance sync and must not be added per event here.
   prod.days=prod.days||[];
   let day=prod.days.find(d=>d.date===event.date);
   if(!day){day={date:event.date,events:[event.name],gb:0,roles:[],fmt:false};prod.days.push(day);}
   if(!Array.isArray(day.events))day.events=[];
   if(!day.events.includes(event.name))day.events.push(event.name);
   day.roles=Array.isArray(day.roles)?day.roles:[];
-  Object.values(shoot.crew||{}).forEach(c=>{
-    if(cwOpsIsTraditional(c.role))return;
-    const pay=c.crewCost!=null&&c.crewCost!==''?Number(c.crewCost):0;
-    if(!pay||Number.isNaN(pay))return;
-    const name=String(c.name||'').trim(),role=String(c.role||'Other');
-    const existing=day.roles.find(r=>String(r.person||'').trim().toLowerCase()===name.toLowerCase()&&String(r.role||'')===role);
-    if(existing){if(!(Number(existing.pay)>0))existing.pay=pay;}
-    else day.roles.push({person:name,role,pay});
-  });
   try{
     if(liveMode&&db)await db.ref('prod/'+prodId).set(prod);
     else localStorage.setItem('totw_prod',JSON.stringify(prods));
@@ -7590,7 +7599,7 @@ function cw10RenderCosts(state){
   const days=(state.prod.days||[]).map(d=>{const cost=(d.roles||[]).reduce((n,r)=>n+(Number(r.pay)||0),0);return `<div class="cw10-cost-row"><span><span>${esc((d.events||[]).join(' + ')||'Shoot day')}</span><small>${esc(ciDateLong(d.date))} · ${(d.roles||[]).length} assignments</small></span><strong>${inrP(cost)}</strong></div>`;}).join('');
   return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Package & spend','Package value, crew cost and estimated margin for this wedding.',`<button type="button" class="cw10-soft" onclick="exportCouplePDF('${state.prodId}')">Package PDF</button><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Open wedding file</button>`)}
     <div class="cw10-metrics"><div class="cw10-metric"><span>Package value</span><strong>${pkg?inrP(pkg):'—'}</strong><small>${pkg?'Confirmed booking value':'Add the package value below'}</small></div><div class="cw10-metric"><span>Recorded crew cost</span><strong>${inrP(total)}</strong><small>${pct===null?'Ratio available after package value':pct+'% of package'}</small></div><div class="cw10-metric ${pkg&&margin>=0?'good':''}"><span>Estimated margin</span><strong>${pkg?inrP(margin):'—'}</strong><small>Before travel and overheads</small></div></div>
-    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Cost by shoot day</h3><p>All manually entered crew costs sync from Team &amp; prep. TP/TV worked hours remain visible there for reference.</p></div><input type="number" value="${pkg||''}" placeholder="₹ Package value" onchange="pkgSet('${state.prodId}',this.value)" style="width:150px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)"></div>${days||'<div class="cw10-folder-empty">Shoot-day costs have not been logged.</div>'}</section>
+    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Cost by shoot day</h3><p>One cost per crew member per date, even when that person covers several events. TP/TV hours remain a reference only.</p></div><input type="number" value="${pkg||''}" placeholder="₹ Package value" onchange="pkgSet('${state.prodId}',this.value)" style="width:150px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)"></div>${days||'<div class="cw10-folder-empty">Shoot-day costs have not been logged.</div>'}</section>
   </div>`;
 }
 function cw10ActivityRows(state){
@@ -8073,22 +8082,33 @@ function cwOpsEndTimestamp(draft){
   const ms=new Date(`${draft.date}T${draft.actualClientEndTime}:00`).getTime();
   return Number.isFinite(ms)?ms:null;
 }
-function cwOpsTraditionalDuration(draft,uid){
-  const c=draft&&draft.crew&&draft.crew[uid];if(!c||!cwOpsIsTraditional(c.role))return null;
-  const att=draft.shootId&&checkinAttendance[draft.shootId]&&checkinAttendance[draft.shootId][uid]||{};
-  const start=Number(att.checkedInAt)||0;let end=cwOpsEndTimestamp(draft);
-  if(!start||!end)return null;
-  while(end<=start)end+=86400000;
-  const minutes=Math.max(1,Math.ceil((end-start)/60000));
-  return {minutes,start,end};
+function cwOpsDayCrewRows(state,date,uid){
+  return (state&&state.events||[]).filter(event=>event.date===date).map(event=>{
+    const draft=cw11GetPlanDraft(state,event),c=draft&&draft.crew&&draft.crew[uid];
+    return c?{event,draft,c}:null;
+  }).filter(Boolean);
+}
+function cwOpsCrewDayCost(state,date,uid){
+  const values=cwOpsDayCrewRows(state,date,uid).map(row=>row.c.crewCost).filter(v=>v!==''&&v!=null&&!Number.isNaN(Number(v))).map(Number);
+  return values.length?Math.max(...values):null;
+}
+function cwOpsTraditionalDayDuration(state,date,uid){
+  const rows=cwOpsDayCrewRows(state,date,uid).filter(row=>cwOpsIsTraditional(row.c.role)),starts=[],rawEnds=[];
+  rows.forEach(({draft})=>{
+    const att=draft.shootId&&checkinAttendance[draft.shootId]&&checkinAttendance[draft.shootId][uid]||{},start=Number(att.checkedInAt)||0,end=cwOpsEndTimestamp(draft);
+    if(start)starts.push(start);if(end)rawEnds.push(end);
+  });
+  if(!starts.length||!rawEnds.length)return null;
+  const start=Math.min(...starts),ends=rawEnds.map(end=>{while(end<=start)end+=86400000;return end;}),end=Math.max(...ends);
+  return {minutes:Math.max(1,Math.ceil((end-start)/60000)),start,end};
 }
 function cwOpsCrewCost(draft,uid,c){
   const n=Number(c&&c.crewCost);return c&&c.crewCost!==''&&!Number.isNaN(n)?n:null;
 }
 function cwOpsCrewCostTotal(state,events){
-  let sum=0,pending=0;(events||[]).forEach(event=>{
+  let sum=0,pending=0;const seen=new Set();(events||[]).forEach(event=>{
     const draft=cw11GetPlanDraft(state,event);
-    Object.entries(draft.crew||{}).forEach(([uid,c])=>{const n=cwOpsCrewCost(draft,uid,c);if(n==null)pending++;else sum+=n;});
+    Object.keys(draft.crew||{}).forEach(uid=>{const key=`${event.date}|${uid}`;if(seen.has(key))return;seen.add(key);const n=cwOpsCrewDayCost(state,event.date,uid);if(n==null)pending++;else sum+=n;});
   });
   return {sum,pending};
 }
@@ -8214,7 +8234,10 @@ function cwOpsSetCrewField(eventId,uid,field,value){
     if(cw11CrewLocked(draft,uid)){toast('This crew member is locked after check-in.');return;}
     c.arrivalOverride=!!value;c.arrivalTime=value||draft.teamArrival;c.reportTime=c.arrivalTime;
   }else if(field==='crewCost'){
-    c.crewCost=value===''?'':Number(value);
+    const dayValue=value===''?'':Number(value),rows=cwOpsDayCrewRows(state,event.date,uid);
+    rows.forEach(row=>{row.c.crewCost=dayValue;cw11MarkDraft(row.draft);});
+    clearTimeout(cwOpsPersistTimer);cwOpsPersistPending=null;
+    renderClientsWorkspace();cw11SavePlans(cw11DirtyDrafts(),`Day cost saved for ${c.name||crewProfiles[uid]?.name||'crew member'}.`);return;
   }else if(field==='dataStatus'){
     c.dataStatus=value||'';
   }else if(field==='opsNotes'){
@@ -8229,12 +8252,12 @@ function cwOpsSetCrewField(eventId,uid,field,value){
 function cwOpsApplyRateToClient(eventId,uid){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
   const source=cw11GetPlanDraft(state,event),person=source.crew&&source.crew[uid];if(!person)return;
-  const rate=person.crewCost;if(rate===''||rate==null||Number.isNaN(Number(rate))){toast('Enter the rate first.');return;}
-  let changed=0;
-  state.events.forEach(other=>{const draft=cw11GetPlanDraft(state,other),c=draft.crew&&draft.crew[uid];if(!c)return;c.crewCost=Number(rate);cw11MarkDraft(draft);changed++;});
-  if(!changed){toast('No other shoots for this crew member in this client.');return;}
+  const rate=cwOpsCrewDayCost(state,event.date,uid);if(rate==null){toast('Enter the day cost first.');return;}
+  const dates=new Set();let changed=0;
+  state.events.forEach(other=>{const draft=cw11GetPlanDraft(state,other),c=draft.crew&&draft.crew[uid];if(!c)return;c.crewCost=Number(rate);cw11MarkDraft(draft);dates.add(other.date);changed++;});
+  if(!changed){toast('No working days found for this crew member.');return;}
   clearTimeout(cwOpsPersistTimer);cwOpsPersistPending=null;
-  renderClientsWorkspace();cw11SavePlans(cw11DirtyDrafts(),`Rate applied to ${changed} shoot${changed===1?'':'s'} for this client.`);
+  renderClientsWorkspace();cw11SavePlans(cw11DirtyDrafts(),`Day rate applied to ${dates.size} working day${dates.size===1?'':'s'} for this client.`);
 }
 function cwOpsClearOverride(eventId,uid){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
@@ -8324,9 +8347,9 @@ function cwOpsCrewDetailHtml(state,event,draft,uid,c){
   const locked=cw11CrewLocked(draft,uid);
   const dataStatus=cwOpsResolvedDataStatus(draft,uid,c);
   const overrideVal=c.arrivalOverride?(c.arrivalTime||''):'';
-  const traditional=cwOpsIsTraditional(c.role),duration=traditional?cwOpsTraditionalDuration(draft,uid):null;
-  const hoursField=traditional?`<label class="wide">Worked hours<div class="cw-ops-readonly"><strong>${duration?`${Math.floor(duration.minutes/60)}h ${duration.minutes%60}m`:'Pending timing'}</strong><small>${duration?'Actual check-in → actual client end time':'Needs actual check-in and actual client end time'}</small></div></label>`:'';
-  const costField=`<label class="wide">${traditional?'Traditional cost':'Crew rate'} for this shoot<div class="cw-ops-rate-row"><input type="number" min="0" step="100" inputmode="numeric" value="${c.crewCost!==''&&c.crewCost!=null?esc(c.crewCost):''}" placeholder="Enter final cost manually" onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','crewCost',this.value)"><button type="button" class="cw10-soft" onclick="cwOpsApplyRateToClient('${esc(event.eventId)}','${esc(uid)}')">Apply to all this crew member’s shoots for this client</button></div><small>${traditional?'Manual amount only · worked hours are shown above · no automatic slab calculation.':'Each event can still be edited separately afterwards.'}</small></label>`;
+  const traditional=cwOpsIsTraditional(c.role),duration=traditional?cwOpsTraditionalDayDuration(state,event.date,uid):null,dayCost=cwOpsCrewDayCost(state,event.date,uid);
+  const hoursField=traditional?`<label class="wide">Day worked hours<div class="cw-ops-readonly"><strong>${duration?`${Math.floor(duration.minutes/60)}h ${duration.minutes%60}m`:'Pending timing'}</strong><small>${duration?'Earliest actual check-in → latest actual client end time on this date':'Needs an actual check-in and actual client end time for this date'}</small></div></label>`:'';
+  const costField=`<label class="wide">Crew cost for ${esc(cw10CompactDate(event.date))}<div class="cw-ops-rate-row"><input type="number" min="0" step="100" inputmode="numeric" value="${dayCost!=null?esc(dayCost):''}" placeholder="Enter one day cost" onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','crewCost',this.value)"><button type="button" class="cw10-soft" onclick="cwOpsApplyRateToClient('${esc(event.eventId)}','${esc(uid)}')">Apply this day rate to all working days for this client</button></div><small>One amount for this person on this date, shared across every event. ${traditional?'Enter it manually; hours never calculate the price.':''}</small></label>`;
   return `<div class="cw-ops-detail">
     <div class="cw-ops-detail-head"><strong>${esc(c.name||crewProfiles[uid]?.name||'Crew')}</strong><span>${esc(ciRoleCode(c.role))} · ${esc(c.role||'Other')}</span></div>
     <div class="cw-ops-detail-grid">
@@ -8360,7 +8383,9 @@ function cwOpsEventRowHtml(state,event,opts={}){
   const approved=opts.approved!==false,details=cw10CurrentDetails(state,event),draft=cw11GetPlanDraft(state,event),crew=ciSortCrewEntries(Object.entries(draft.crew||{}));
   const maps=details.mapsUrl?`<a class="cw-ops-maps" href="${esc(details.mapsUrl)}" target="_blank" rel="noopener">${esc(details.venueName||'Open map')} ↗</a>`:esc(details.venueName||'Venue pending');
   const openKey=cwOpsOpenCrew,addOpen=cwOpsAddFor===event.eventId,mobileOpen=cwOpsMobileOpen.has(event.eventId);
-  let eventCost=0,costPending=0;Object.entries(draft.crew||{}).forEach(([uid,c])=>{if(cwOpsIsTraditional(c&&c.role))return;const n=cwOpsCrewCost(draft,uid,c);if(n==null)costPending++;else eventCost+=n;});
+  const dayCrew=new Set(),dayDrafts=(state.events||[]).filter(other=>other.date===event.date).map(other=>cw11GetPlanDraft(state,other));
+  dayDrafts.forEach(row=>Object.keys(row.crew||{}).forEach(uid=>dayCrew.add(uid)));
+  let eventCost=0,costPending=0;dayCrew.forEach(uid=>{const n=cwOpsCrewDayCost(state,event.date,uid);if(n==null)costPending++;else eventCost+=n;});
   const review=cw10ReviewSummary(state,event.eventId);
   const chips=crew.map(([uid,c])=>{
     const tone=cwOpsDataTone(draft,uid,c),on=openKey===`${event.eventId}|${uid}`;
@@ -8376,7 +8401,7 @@ function cwOpsEventRowHtml(state,event,opts={}){
       ${pendingNote}
       ${review?`<button type="button" class="cw-ops-client-alert" onclick="cw10OpenReview('${esc(event.eventId)}')"><strong>Client updated this event</strong><span>Review old vs new values →</span></button>`:''}
       <div class="cw-ops-event-head"><div class="cw-ops-title"><strong>${esc(cw10CompactDate(event.date))} · ${esc(event.name)}</strong><span>${esc(ciFmtTime(details.startTime||draft.startTime))}${(details.endTime||draft.endTime)?' – '+esc(ciFmtTime(details.endTime||draft.endTime)):''} · ${maps}</span></div>
-        <span class="cw-ops-event-cost">${eventCost?esc(cwOpsInr(eventCost)):''}${costPending?`<small>${costPending} cost pending</small>`:''}</span>
+        <span class="cw-ops-event-cost">${eventCost?esc(cwOpsInr(eventCost)):''}<small>${eventCost?'Day total':''}${costPending?`${eventCost?' · ':''}${costPending} day cost pending`:''}</small></span>
       </div>
       <div class="cw-ops-chip-row">${chips}${emptySlots}<button type="button" class="cw-ops-chip add" onclick="cwOpsToggleAdd('${esc(event.eventId)}')">+ Add crew</button><span class="cw-ops-data-pill">${esc(cwOpsEventDataSummary(draft))}</span></div>
       ${addOpen?cwOpsAddPopoverHtml(state,event,draft):''}

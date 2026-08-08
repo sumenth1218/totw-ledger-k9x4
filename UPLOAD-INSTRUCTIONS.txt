@@ -1,4 +1,4 @@
-TALE OF TWO WEDDINGS — TRADITIONAL MANUAL COST IN TEAM & PREP v12.7.11
+TALE OF TWO WEDDINGS — DAY-WISE CREW COST v12.7.12
 
 UPLOAD:
 1. Unzip this package.
@@ -25,17 +25,20 @@ IMPORTANT — THESE CONTRACTS ARE PRESERVED:
 WHAT IS NEW:
 - Team & prep crew rates now sync immediately into Weddings → Package & spend / Finance.
 - Previously saved Team & prep rates are backfilled automatically after the new build loads.
-- Same-day separate events remain separate cost assignments and are not merged or double-counted.
+- One crew member has one cost per client date, even when assigned to multiple events that day.
+- Entering the day cost from any event updates that person's other event cards on the same date.
+- Finance receives one row per person per date and never adds the same person's same-day events together.
 - Removing or changing a Team & prep rate updates the matching Finance row.
 - TP/TV cards now include a manual Traditional cost field in Team & prep.
-- The amount entered is never calculated from hours; it syncs exactly as entered to the matching Finance event row.
+- The amount entered is never calculated from hours; it syncs exactly as entered to the matching Finance day row.
 - Refresh no longer attempts an automatic shot-list write or shows the false push error.
 - The Crew App offline cache is isolated from the Ledger, preventing an old Ledger screen from being served by the Crew service worker.
 - Team & prep shows assigned crew directly. There are no Candid/Traditional Required controls.
 - + Add crew is role-first, shows only people registered for that role, supports multi-select and adds everyone once.
 - No CP/CV/TP/TV shortage is invented. A warning appears only when you deliberately reserve an empty role slot.
-- Any crew rate, including TP/TV, can be applied to every shoot that person has for this client, then overridden on one event if needed.
-- Traditional worked hours use that crew member's actual check-in and the event's manually entered Actual client end time.
+- Any crew day rate, including TP/TV, can be applied to every separate working date that person has for this client.
+- Traditional day hours use the earliest actual check-in and latest actual client end time across that date.
+- The Crew Planner cost estimate is day-wise only; the older per-event rate option is removed.
 - Until both values exist, traditional worked hours display Pending timing.
 - TP/TV worked hours remain informational. Their manually entered cost is included in Team & prep and Finance totals.
 - Auto-generated TP/TV Finance rows from v12.7.9 are removed without touching manual Finance rows.

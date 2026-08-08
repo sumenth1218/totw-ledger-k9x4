@@ -1,6 +1,6 @@
 # Tale of Two Weddings — Full Studio Handoff
 
-**Build to upload:** full folder · `v12.7.11-traditional-manual-cost-in-team-prep-2026-08-09`  
+**Build to upload:** full folder · `v12.7.12-day-wise-crew-cost-2026-08-09`  
 **Live links:** client + crew URLs unchanged · data paths unchanged  
 
 ---
@@ -129,7 +129,7 @@ Migration was **navigation + copy + hub**, not a data rewrite.
 1. Upload  
    `index.html` from this project folder  
 2. Hard refresh (Cmd+Shift+R)  
-3. Confirm build tag in page source: `v12.7.11-traditional-manual-cost-in-team-prep-2026-08-09`  
+3. Confirm build tag in page source: `v12.7.12-day-wise-crew-cost-2026-08-09`  
 4. Smoke: Weddings rail · Confirm handoff on a completed event · client link · crew link · Sync shoot days · Edit date & events  
 
 ---
