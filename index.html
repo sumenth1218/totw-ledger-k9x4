@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.7.10-traditional-hours-manual-cost-2026-08-09">
+<meta name="totw-build" content="v12.7.11-traditional-manual-cost-in-team-prep-2026-08-09">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -6321,9 +6321,8 @@ function cwBusinessProdSeed(state){
 }
 function cwOpsCostFromRecord(record,shootId,crewUid,c){
   if(!record||!c)return null;
-  // Traditional crew costs are entered manually in Finance. Team & prep only
-  // shows their worked duration and must never create a Finance amount.
-  if(cwOpsIsTraditional(c.role))return null;
+  // Every amount here is manually entered in Team & prep. Traditional roles
+  // show worked duration as context, but their cost is never auto-calculated.
   const n=Number(c.crewCost);
   return c.crewCost!==''&&c.crewCost!=null&&!Number.isNaN(n)?n:null;
 }
@@ -7591,7 +7590,7 @@ function cw10RenderCosts(state){
   const days=(state.prod.days||[]).map(d=>{const cost=(d.roles||[]).reduce((n,r)=>n+(Number(r.pay)||0),0);return `<div class="cw10-cost-row"><span><span>${esc((d.events||[]).join(' + ')||'Shoot day')}</span><small>${esc(ciDateLong(d.date))} · ${(d.roles||[]).length} assignments</small></span><strong>${inrP(cost)}</strong></div>`;}).join('');
   return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Package & spend','Package value, crew cost and estimated margin for this wedding.',`<button type="button" class="cw10-soft" onclick="exportCouplePDF('${state.prodId}')">Package PDF</button><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Open wedding file</button>`)}
     <div class="cw10-metrics"><div class="cw10-metric"><span>Package value</span><strong>${pkg?inrP(pkg):'—'}</strong><small>${pkg?'Confirmed booking value':'Add the package value below'}</small></div><div class="cw10-metric"><span>Recorded crew cost</span><strong>${inrP(total)}</strong><small>${pct===null?'Ratio available after package value':pct+'% of package'}</small></div><div class="cw10-metric ${pkg&&margin>=0?'good':''}"><span>Estimated margin</span><strong>${pkg?inrP(margin):'—'}</strong><small>Before travel and overheads</small></div></div>
-    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Cost by shoot day</h3><p>Candid crew rates sync from Team &amp; prep. Enter TP/TV costs manually here; their worked hours are shown in Team &amp; prep.</p></div><input type="number" value="${pkg||''}" placeholder="₹ Package value" onchange="pkgSet('${state.prodId}',this.value)" style="width:150px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)"></div>${days||'<div class="cw10-folder-empty">Shoot-day costs have not been logged.</div>'}</section>
+    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Cost by shoot day</h3><p>All manually entered crew costs sync from Team &amp; prep. TP/TV worked hours remain visible there for reference.</p></div><input type="number" value="${pkg||''}" placeholder="₹ Package value" onchange="pkgSet('${state.prodId}',this.value)" style="width:150px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)"></div>${days||'<div class="cw10-folder-empty">Shoot-day costs have not been logged.</div>'}</section>
   </div>`;
 }
 function cw10ActivityRows(state){
@@ -8084,13 +8083,12 @@ function cwOpsTraditionalDuration(draft,uid){
   return {minutes,start,end};
 }
 function cwOpsCrewCost(draft,uid,c){
-  if(cwOpsIsTraditional(c&&c.role))return null;
   const n=Number(c&&c.crewCost);return c&&c.crewCost!==''&&!Number.isNaN(n)?n:null;
 }
 function cwOpsCrewCostTotal(state,events){
   let sum=0,pending=0;(events||[]).forEach(event=>{
     const draft=cw11GetPlanDraft(state,event);
-    Object.entries(draft.crew||{}).forEach(([uid,c])=>{if(cwOpsIsTraditional(c&&c.role))return;const n=cwOpsCrewCost(draft,uid,c);if(n==null)pending++;else sum+=n;});
+    Object.entries(draft.crew||{}).forEach(([uid,c])=>{const n=cwOpsCrewCost(draft,uid,c);if(n==null)pending++;else sum+=n;});
   });
   return {sum,pending};
 }
@@ -8233,7 +8231,7 @@ function cwOpsApplyRateToClient(eventId,uid){
   const source=cw11GetPlanDraft(state,event),person=source.crew&&source.crew[uid];if(!person)return;
   const rate=person.crewCost;if(rate===''||rate==null||Number.isNaN(Number(rate))){toast('Enter the rate first.');return;}
   let changed=0;
-  state.events.forEach(other=>{const draft=cw11GetPlanDraft(state,other),c=draft.crew&&draft.crew[uid];if(!c||cwOpsIsTraditional(c.role))return;c.crewCost=Number(rate);cw11MarkDraft(draft);changed++;});
+  state.events.forEach(other=>{const draft=cw11GetPlanDraft(state,other),c=draft.crew&&draft.crew[uid];if(!c)return;c.crewCost=Number(rate);cw11MarkDraft(draft);changed++;});
   if(!changed){toast('No other shoots for this crew member in this client.');return;}
   clearTimeout(cwOpsPersistTimer);cwOpsPersistPending=null;
   renderClientsWorkspace();cw11SavePlans(cw11DirtyDrafts(),`Rate applied to ${changed} shoot${changed===1?'':'s'} for this client.`);
@@ -8327,9 +8325,8 @@ function cwOpsCrewDetailHtml(state,event,draft,uid,c){
   const dataStatus=cwOpsResolvedDataStatus(draft,uid,c);
   const overrideVal=c.arrivalOverride?(c.arrivalTime||''):'';
   const traditional=cwOpsIsTraditional(c.role),duration=traditional?cwOpsTraditionalDuration(draft,uid):null;
-  const costField=traditional
-    ?`<label class="wide">Worked hours<div class="cw-ops-readonly"><strong>${duration?`${Math.floor(duration.minutes/60)}h ${duration.minutes%60}m`:'Pending timing'}</strong><small>${duration?'Actual check-in → actual client end time':'Needs actual check-in and actual client end time · Enter TP/TV cost manually in Finance'}</small></div></label>`
-    :`<label class="wide">Crew rate for this shoot<div class="cw-ops-rate-row"><input type="number" min="0" step="100" inputmode="numeric" value="${c.crewCost!==''&&c.crewCost!=null?esc(c.crewCost):''}" placeholder="Agreed cost" onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','crewCost',this.value)"><button type="button" class="cw10-soft" onclick="cwOpsApplyRateToClient('${esc(event.eventId)}','${esc(uid)}')">Apply to all this crew member’s shoots for this client</button></div><small>Each event can still be edited separately afterwards.</small></label>`;
+  const hoursField=traditional?`<label class="wide">Worked hours<div class="cw-ops-readonly"><strong>${duration?`${Math.floor(duration.minutes/60)}h ${duration.minutes%60}m`:'Pending timing'}</strong><small>${duration?'Actual check-in → actual client end time':'Needs actual check-in and actual client end time'}</small></div></label>`:'';
+  const costField=`<label class="wide">${traditional?'Traditional cost':'Crew rate'} for this shoot<div class="cw-ops-rate-row"><input type="number" min="0" step="100" inputmode="numeric" value="${c.crewCost!==''&&c.crewCost!=null?esc(c.crewCost):''}" placeholder="Enter final cost manually" onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','crewCost',this.value)"><button type="button" class="cw10-soft" onclick="cwOpsApplyRateToClient('${esc(event.eventId)}','${esc(uid)}')">Apply to all this crew member’s shoots for this client</button></div><small>${traditional?'Manual amount only · worked hours are shown above · no automatic slab calculation.':'Each event can still be edited separately afterwards.'}</small></label>`;
   return `<div class="cw-ops-detail">
     <div class="cw-ops-detail-head"><strong>${esc(c.name||crewProfiles[uid]?.name||'Crew')}</strong><span>${esc(ciRoleCode(c.role))} · ${esc(c.role||'Other')}</span></div>
     <div class="cw-ops-detail-grid">
@@ -8337,6 +8334,7 @@ function cwOpsCrewDetailHtml(state,event,draft,uid,c){
       <label>Individual exception<input type="time" value="${esc(overrideVal)}" ${locked?'disabled':''} onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','arrivalOverride',this.value)"><button type="button" class="cw-ops-link" ${locked||!c.arrivalOverride?'hidden':''} onclick="cwOpsClearOverride('${esc(event.eventId)}','${esc(uid)}')">Use overall</button></label>
       <label>Check-in<div class="cw-ops-readonly">${esc(ciClock(att.checkedInAt))}</div></label>
       <label>Checkout<div class="cw-ops-readonly">${esc(ciClock(att.checkedOutAt))}</div></label>
+      ${hoursField}
       ${costField}
       <label>Data status<select onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','dataStatus',this.value)"><option value="pending"${dataStatus==='pending'?' selected':''}>Pending</option><option value="received"${dataStatus==='received'?' selected':''}>Received</option><option value="copied"${dataStatus==='copied'?' selected':''}>Copied</option></select></label>
       <label>Cards used<div class="cw-ops-readonly">${att.cardsUsed!=null?esc(att.cardsUsed):'—'}</div></label>
