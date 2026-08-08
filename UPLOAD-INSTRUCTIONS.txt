@@ -1,4 +1,4 @@
-TALE OF TWO WEDDINGS — FINANCE SYNC & REFRESH FIX v12.7.9
+TALE OF TWO WEDDINGS — TRADITIONAL HOURS / MANUAL COST v12.7.10
 
 UPLOAD:
 1. Unzip this package.
@@ -27,17 +27,17 @@ WHAT IS NEW:
 - Previously saved Team & prep rates are backfilled automatically after the new build loads.
 - Same-day separate events remain separate cost assignments and are not merged or double-counted.
 - Removing or changing a Team & prep rate updates the matching Finance row.
-- TP/TV slab costs sync after actual check-in and Actual client end time are available.
+- TP/TV costs do not sync from Team & prep and remain manual in Finance.
 - Refresh no longer attempts an automatic shot-list write or shows the false push error.
 - The Crew App offline cache is isolated from the Ledger, preventing an old Ledger screen from being served by the Crew service worker.
 - Team & prep shows assigned crew directly. There are no Candid/Traditional Required controls.
 - + Add crew is role-first, shows only people registered for that role, supports multi-select and adds everyone once.
 - No CP/CV/TP/TV shortage is invented. A warning appears only when you deliberately reserve an empty role slot.
 - A non-traditional crew rate can be applied to every shoot that person has for this client, then overridden on one event if needed.
-- TP and TV cost is calculated automatically at ₹4,000 per person per 7-hour slab.
-- Traditional duration uses that crew member's actual check-in and the event's manually entered Actual client end time.
-- Until both values exist, traditional cost displays Pending calculation.
-- Event totals and the complete client crew-cost total use the same calculation.
+- Traditional worked hours use that crew member's actual check-in and the event's manually entered Actual client end time.
+- Until both values exist, traditional worked hours display Pending timing.
+- TP/TV are excluded from Team & prep cost totals; add their costs manually in Finance.
+- Auto-generated TP/TV Finance rows from v12.7.9 are removed without touching manual Finance rows.
 - A confirmed booking appears immediately as a Weddings folder, even before its private client link exists.
 - Opening that new folder prefills the client-link setup from the booked dates and event names.
 - Creating/updating the client link refreshes the folder immediately.
