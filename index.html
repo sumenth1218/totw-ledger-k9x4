@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.7.5-add-studio-event-2026-08-08">
+<meta name="totw-build" content="v12.7.6-booking-folder-crew-sync-2026-08-08">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -3309,7 +3309,8 @@ function cwOpenBookedWeddingFolder(){
   const pending=window.cwPendingBookedHandoff;if(!pending)return;
   const entry=cwDirectory().find(x=>cwKey(x.name)===cwKey(pending.name));
   if(!entry){cwCreateBookedWeddingFolder();return;}
-  cwDismissBookedHandoff();selectClientWorkspace(entry.key);setClientSection('operations');
+  const needsLink=!cwPrimaryForm(entry);cwDismissBookedHandoff();selectClientWorkspace(entry.key);setClientSection('operations');
+  if(needsLink)setTimeout(()=>openClientSetupForSelected(),80);
 }
 function cwCreateBookedWeddingFolder(){
   const pending=window.cwPendingBookedHandoff;if(!pending)return;
@@ -6068,15 +6069,26 @@ function cwEventPartKeys(value){
 }
 function cwDirectory(){
   const map=new Map(),addDate=(row,date)=>{if(row&&/^\d{4}-\d{2}-\d{2}$/.test(date||''))row.dates.add(date);};
+  const ensureName=clean=>{
+    clean=String(clean||'').trim();if(!clean)return null;
+    const key=cwKey(clean);
+    if(!map.has(key))map.set(key,{key,name:clean,dates:new Set(),formIds:[],prodIds:[],shootIds:[],submissionIds:[],bookingOnly:true});
+    return map.get(key);
+  };
   const ensureForm=(formId,f)=>{
     const clean=String(f.couple||'').trim();if(!clean)return null;
-    const key=cwKey(clean);
-    if(!map.has(key))map.set(key,{key,name:clean,dates:new Set(),formIds:[],prodIds:[],shootIds:[],submissionIds:[]});
-    const row=map.get(key);
+    const row=ensureName(clean);
+    row.bookingOnly=false;
     if(!row.formIds.includes(formId))row.formIds.push(formId);
     Object.values(f.events||{}).forEach(e=>addDate(row,e&&e.date));
     return row;
   };
+  // A confirmed booking is already a wedding, even before its private client
+  // link is created. Keep a lightweight folder visible so the owner can open
+  // it, create/prefill the client link and continue straight into Team & prep.
+  BAKED.forEach(r=>{const row=ensureName(r&&r[2]);if(row)addDate(row,`2026-${p2(r[0])}-${p2(r[1])}`);});
+  Object.values(teamBookings||{}).forEach(b=>{const row=b&&ensureName(b.c);if(row&&b.m&&b.d)addDate(row,`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`);});
+  Object.values(enquiries||{}).forEach(x=>{if(!x||x.status!=='BOOKED')return;const row=ensureName(x.name);(x.dates||[]).forEach(date=>addDate(row,date));});
   Object.entries(clientForms||{}).forEach(([id,f])=>{if(f)ensureForm(id,f);});
   const attachShoot=(shootId,e)=>{
     if(!e)return;
@@ -6097,11 +6109,11 @@ function cwDirectory(){
   Object.entries(prods||{}).forEach(([id,p])=>{
     if(!p)return;
     let row=map.get(cwKey(p.couple));
-    if(!row||!row.formIds.length){
+    if(!row){
       const legacy=cwFormByCoupleName(p.couple);
       if(legacy)row=ensureForm(legacy[0],legacy[1]);
     }
-    if(!row||!row.formIds.length){
+    if(!row){
       const prodDates=(p.days||[]).map(d=>d&&d.date).filter(Boolean);
       Object.entries(clientForms||{}).some(([formId,f])=>{
         if(!f)return false;
@@ -6111,21 +6123,21 @@ function cwDirectory(){
         return true;
       });
     }
-    if(!row||!row.formIds.length)return;
+    if(!row)return;
     if(!row.prodIds.includes(id))row.prodIds.push(id);
     (p.days||[]).forEach(d=>addDate(row,d&&d.date));
   });
   Object.entries(shotSubs||{}).forEach(([id,s])=>{
     if(!s)return;
     let row=map.get(cwKey(s.client));
-    if(!row||!row.formIds.length){
+    if(!row){
       const legacy=cwFormByCoupleName(s.client);
       if(legacy)row=ensureForm(legacy[0],legacy[1]);
     }
-    if(!row||!row.formIds.length)return;
+    if(!row)return;
     row.submissionIds.push(id);addDate(row,s.eventDate);
   });
-  return [...map.values()].filter(row=>row.formIds.length).map(row=>({...row,dates:[...row.dates].sort()})).sort((a,b)=>{
+  return [...map.values()].map(row=>({...row,dates:[...row.dates].sort()})).sort((a,b)=>{
     const today=ciTodayIso(),an=a.dates.find(d=>d>=today)||'9999-12-31',bn=b.dates.find(d=>d>=today)||'9999-12-31';
     if(an!==bn)return an.localeCompare(bn);
     const al=a.dates.at(-1)||'',bl=b.dates.at(-1)||'';if(an==='9999-12-31'&&al!==bl)return bl.localeCompare(al);
@@ -6456,18 +6468,40 @@ function clientPlannerEvents(couple){
   });
   return [...found.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name));
 }
+function clientBookedEvents(couple){
+  const who=cwKey(couple),found=new Map(),fallbackByDate=new Map();
+  const add=(date,raw,fallback='Wedding')=>{
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date||''))return;
+    const parts=eventTypeParts(raw).filter(name=>!['booking','—'].includes(String(name||'').trim().toLowerCase()));
+    if(!parts.length){if(!fallbackByDate.has(date))fallbackByDate.set(date,String(fallback||'Wedding').trim()||'Wedding');return;}
+    parts.forEach(name=>{const k=`${date}|${shotListKey(name)}`;if(!found.has(k))found.set(k,{date,name});});
+  };
+  BAKED.forEach(r=>{if(cwKey(r&&r[2])===who)add(`2026-${p2(r[0])}-${p2(r[1])}`,r[3]);});
+  Object.values(teamBookings||{}).forEach(b=>{if(b&&cwKey(b.c)===who&&b.m&&b.d)add(`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`,b.e);});
+  Object.values(enquiries||{}).forEach(x=>{if(!x||x.status!=='BOOKED'||cwKey(x.name)!==who)return;(x.dates||[]).forEach(date=>add(date,((x.dateEvents||{})[date]||[]).join(' + '),x.type||'Wedding'));});
+  fallbackByDate.forEach((name,date)=>{if(![...found.values()].some(row=>row.date===date))found.set(`${date}|${shotListKey(name)}`,{date,name});});
+  return [...found.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name));
+}
+function clientSetupEvents(couple){
+  const found=new Map();
+  [...clientBookedEvents(couple),...clientPlannerEvents(couple)].forEach(row=>{const key=`${row.date}|${shotListKey(row.name)}`;if(!found.has(key))found.set(key,row);});
+  return [...found.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name));
+}
 function clientPortalUrl(id){return location.origin+location.pathname.replace(/[^/]*$/,'')+'event-details.html?f='+encodeURIComponent(id);}
 function newClientToken(){const b=new Uint8Array(18);crypto.getRandomValues(b);return btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function clientCouples(){
-  const today=ciTodayIso(),map=new Map();
-  Object.values(plans||{}).forEach(p=>{if(!p||!p.iso||p.iso<today||!p.couple)return;const k=String(p.couple).trim().toLowerCase(),old=map.get(k);if(!old||p.iso<old.next)map.set(k,{name:String(p.couple).trim(),next:p.iso});});
+  const today=ciTodayIso(),map=new Map(),add=(name,date)=>{const clean=String(name||'').trim(),key=cwKey(clean);if(!clean||!date)return;const old=map.get(key);if(!old||date<old.next)map.set(key,{name:clean,next:date});};
+  Object.values(plans||{}).forEach(p=>{if(p&&p.iso&&p.iso>=today&&p.couple)add(p.couple,p.iso);});
+  BAKED.forEach(r=>add(r&&r[2],`2026-${p2(r[0])}-${p2(r[1])}`));
+  Object.values(teamBookings||{}).forEach(b=>{if(b&&b.m&&b.d)add(b.c,`${b.y||2026}-${p2(b.m)}-${p2(b.d)}`);});
+  Object.values(enquiries||{}).forEach(x=>{if(x&&x.status==='BOOKED')(x.dates||[]).forEach(date=>add(x.name,date));});
   return [...map.values()].sort((a,b)=>a.next.localeCompare(b.next)||a.name.localeCompare(b.name));
 }
 function refreshClientCoupleOptions(){const dl=document.getElementById('cfCouples');if(dl)dl.innerHTML=clientCouples().map(x=>`<option value="${esc(x.name)}" label="${esc(ciDateLong(x.next))}">`).join('');}
 function previewClientFormEvents(){
   refreshClientCoupleOptions();if(clientFormEditId)return;
   const el=document.getElementById('cfEventPreview');if(!el)return;const couple=document.getElementById('cfCouple')?.value.trim()||'';
-  clientFormDraft=clientPlannerEvents(couple).map(x=>({...x,questions:{contact:false,brideReady:false,groomReady:false,notes:false}}));renderClientFormDraft();
+  clientFormDraft=clientSetupEvents(couple).map(x=>({...x,questions:{contact:false,brideReady:false,groomReady:false,notes:false}}));renderClientFormDraft();
 }
 function renderClientFormDraft(){
   const el=document.getElementById('cfEventPreview');if(!el)return;
@@ -6494,7 +6528,7 @@ async function createClientForm(){
   rows.forEach((x,i)=>{let eventId=x._id&&!used.has(x._id)?x._id:'';while(!eventId||used.has(eventId)||(!x._id&&reserved.has(eventId))){eventId='e'+next++;}used.add(eventId);events[eventId]={name:x.name,date:x.date,order:i+1,questions:x.questions};});
   const editing=!!clientFormEditId,form={couple,events,open:true,locked:false,createdAt:old.createdAt||Date.now(),createdBy:old.createdBy||'Tale of Two',updatedAt:Date.now()},updates={};updates[`clientForms/${id}`]=form;
   if(editing){const a=clientApprovals[id]||{};updates[`clientApprovals/${id}`]=a.status==='approved'?{...a,status:'changes_pending',reopenedAt:Date.now()}:a.status==='changes_pending'?a:null;updates[`clientSubmissions/${id}/submittedAt`]=null;Object.keys((clientSubmissions[id]&&clientSubmissions[id].events)||{}).forEach(eventId=>{if(!events[eventId])updates[`clientSubmissions/${id}/events/${eventId}`]=null;});}
-  try{await db.ref().update(updates);const url=clientPortalUrl(id);cwSelectedKey=cwKey(couple);localStorage.setItem('totw_client_workspace',cwSelectedKey);resetClientFormEditor();closeClientSetup();copyText(url,editing?'Updated private link copied.':'Private client link copied.');toast(editing?'Client setup updated. The private URL is unchanged.':'Private client link created and copied.');log(`${editing?'updated':'created'} customised client event-details link: ${couple}`);renderClientsWorkspace();}catch(e){result.className='check-result show clash';result.innerHTML=`<b>Could not ${editing?'update':'create'} link</b>${esc(e.message||'Please try again.')}`;}
+  try{await db.ref().update(updates);clientForms[id]=form;const url=clientPortalUrl(id);cwSelectedKey=cwKey(couple);localStorage.setItem('totw_client_workspace',cwSelectedKey);resetClientFormEditor();closeClientSetup();copyText(url,editing?'Updated private link copied.':'Private client link copied.');toast(editing?'Client setup updated. The private URL is unchanged.':'Private client link created and copied.');log(`${editing?'updated':'created'} customised client event-details link: ${couple}`);renderClientsWorkspace();}catch(e){result.className='check-result show clash';result.innerHTML=`<b>Could not ${editing?'update':'create'} link</b>${esc(e.message||'Please try again.')}`;}
 }
 function clientEventDone(x){return !!(x&&x.startTime&&x.endTime&&x.venueName&&x.mapsUrl);}
 function clientSubmissionStatus(id){const f=clientForms[id]||{},s=clientSubmissions[id]||{},a=clientApprovals[id]||{};if(a.status==='approved')return ['Confirmed','approved'];if(a.status==='changes_pending')return ['Changes awaiting review','changes'];if(f.open===false)return ['Closed',''];if(s.submittedAt)return ['Submitted','submitted'];if(s.contact||Object.keys(s.events||{}).length)return ['In progress',''];return ['Not started',''];}

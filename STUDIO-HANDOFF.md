@@ -1,6 +1,6 @@
 # Tale of Two Weddings — Full Studio Handoff
 
-**Build to upload:** `index.html` · `v12.4.4-edit-shoot-days-2026-07-31`  
+**Build to upload:** full folder · `v12.7.6-booking-folder-crew-sync-2026-08-08`  
 **Live links:** client + crew URLs unchanged · data paths unchanged  
 
 ---
@@ -39,7 +39,7 @@ Enquiry → Booked → Weddings folder + client link
 ### A. Before the week
 
 1. **Dates & Enquiries** — book the couple  
-2. **Weddings** → create / open couple → private **client link**  
+2. The couple appears immediately in **Weddings**; open the folder and confirm the prefilled private **client link** setup  
 3. Couple fills timings, venue, maps (`event-details.html` — URL never changes)  
 4. Approve in Weddings (review panel if they update)  
 5. **Crew Planner** — fill month grid if you want studio-wide roster  
@@ -56,6 +56,7 @@ For Haldi / Wedding / etc.:
 ### C. Shoot day (Shoot Operations)
 
 - Crew link / WhatsApp  
+- Newly published assignments appear in an already-open Crew App without a manual reload  
 - Check-in / out, late, cards, handover  
 - **No Confirm handoff button here** — by design  
 

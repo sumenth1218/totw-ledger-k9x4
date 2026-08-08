@@ -1,4 +1,4 @@
-TALE OF TWO WEDDINGS — VERIFIED CREW PLANNER SYNC + DELIVERY OVERVIEW v12
+TALE OF TWO WEDDINGS — BOOKING FOLDER + LIVE CREW ASSIGNMENT SYNC v12.7.6
 
 UPLOAD:
 1. Unzip this package.
@@ -6,8 +6,10 @@ UPLOAD:
 3. Replace the current files when GitHub asks.
 4. Do not upload the ZIP itself.
 
-The only file changed by this update is:
+Files changed by this update:
 - index.html
+- crew.html
+- crew-sw.js
 
 IMPORTANT — THESE CONTRACTS ARE PRESERVED:
 - Dates & Enquiries data and workflow are unchanged.
@@ -19,6 +21,11 @@ IMPORTANT — THESE CONTRACTS ARE PRESERVED:
 - Multiple events for one couple on the same date remain separate event records.
 
 WHAT IS NEW:
+- A confirmed booking appears immediately as a Weddings folder, even before its private client link exists.
+- Opening that new folder prefills the client-link setup from the booked dates and event names.
+- Creating/updating the client link refreshes the folder immediately.
+- Saving a published crew assignment writes to the existing Crew App assignment path and appears in an already-open Crew App without a manual reload.
+- The existing Copy crew link and WhatsApp crew actions remain available after the client event is approved/published.
 - Clients are shown one wedding month at a time and sorted by their first event in that month.
 - Weddings spanning more than one month appear in every relevant month.
 - The global Deliverables tab shows every client grouped and ordered by the date of their final event.

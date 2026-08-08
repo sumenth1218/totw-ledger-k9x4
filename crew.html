@@ -214,7 +214,7 @@ const DEFAULT_SHOTS={
 const MN=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const eventParam=new URLSearchParams(location.search).get('event')||'';
-let auth=null,db=null,user=null,profile=null,assignments={},events={},attendanceMap={},activeId='',activeEvent=null,attendance={},shotLists={},shotMoods={},shotEventMoods={},items=[],checklistSections={},attendanceWrite=Promise.resolve(),checkoutReviewOpen=false;
+let auth=null,db=null,user=null,profile=null,assignments={},events={},attendanceMap={},activeId='',activeEvent=null,attendance={},shotLists={},shotMoods={},shotEventMoods={},items=[],checklistSections={},attendanceWrite=Promise.resolve(),checkoutReviewOpen=false,assignmentLiveRef=null,assignmentLiveCallback=null,eventLiveRefs={};
 
 function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id===id));window.scrollTo(0,0)}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.remove('on'),2800)}
@@ -323,7 +323,42 @@ async function loadDashboard(){
  await Promise.all(ids.map(async id=>{try{const [s,a]=await Promise.all([db.ref('crewCheckins/events/'+id).once('value'),db.ref(`crewCheckins/attendance/${id}/${user.uid}`).once('value')]);if(s.exists())events[id]=s.val();attendanceMap[id]=a.val()||{};}catch(e){}}));
  document.getElementById('helloTitle').textContent=`Hello, ${(profile.name||'').split(' ')[0]||'there'}.`;
  renderDashboard();
+ startAssignmentSync();
  if(eventParam&&events[eventParam])openEvent(eventParam);else screen('dashboardScreen');
+}
+function stopAssignmentSync(){
+ if(assignmentLiveRef&&assignmentLiveCallback)assignmentLiveRef.off('value',assignmentLiveCallback);
+ assignmentLiveRef=null;assignmentLiveCallback=null;
+ Object.values(eventLiveRefs).forEach(x=>x.ref.off('value',x.callback));eventLiveRefs={};
+}
+function syncAssignedEventListeners(ids){
+ const wanted=new Set(ids);
+ Object.entries(eventLiveRefs).forEach(([id,x])=>{if(!wanted.has(id)){x.ref.off('value',x.callback);delete eventLiveRefs[id];}});
+ ids.forEach(id=>{
+  if(eventLiveRefs[id])return;
+  const ref=db.ref('crewCheckins/events/'+id),callback=s=>{
+   if(s.exists())events[id]=s.val();else delete events[id];
+   if(activeId===id){if(events[id]){activeEvent=events[id];renderEvent();}else showDashboard();}
+   else if(!activeId)renderDashboard();
+  };
+  eventLiveRefs[id]={ref,callback};ref.on('value',callback);
+ });
+}
+function startAssignmentSync(){
+ stopAssignmentSync();if(!db||!user)return;
+ assignmentLiveRef=db.ref('crewCheckins/assignments/'+user.uid);
+ let first=true;
+ assignmentLiveCallback=async s=>{
+  const next=s.val()||{},ids=Object.keys(next).filter(id=>next[id]===true),previous=new Set(Object.keys(assignments).filter(id=>assignments[id]===true));
+  assignments=next;
+  await Promise.all(ids.filter(id=>!events[id]).map(async id=>{try{const snap=await db.ref('crewCheckins/events/'+id).once('value');if(snap.exists())events[id]=snap.val();}catch(e){}}));
+  Object.keys(events).forEach(id=>{if(!ids.includes(id))delete events[id];});
+  syncAssignedEventListeners(ids);
+  if(activeId&&!events[activeId])showDashboard();else if(!activeId)renderDashboard();
+  if(!first&&ids.some(id=>!previous.has(id)))toast('A new shoot assignment has been added.');
+  first=false;
+ };
+ assignmentLiveRef.on('value',assignmentLiveCallback);
 }
 function nextShootDate(activeList){
   const today=indiaDate();
@@ -499,7 +534,7 @@ document.getElementById('eventScreen').addEventListener('touchend',e=>{
  if(dx>=75&&dy<=Math.max(55,dx*.65)&&elapsed<=900)showDashboard();
 },{passive:true});
 document.getElementById('eventScreen').addEventListener('touchcancel',()=>{swipeStartX=null;swipeStartY=0;swipeStartedAt=0},{passive:true});
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js?v=14').catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js?v=15').catch(()=>{}));
 </script>
 </body>
 </html>
