@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.7.7-explicit-team-coverage-2026-08-08">
+<meta name="totw-build" content="v12.7.8-simple-crew-and-client-rates-2026-08-08">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1798,6 +1798,15 @@ body{background:
 .cw-ops-data-pill{margin-left:auto;font:7.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)}
 .cw-ops-add-pop{margin-top:10px;padding:11px;border:1px dashed var(--line);border-radius:10px;background:var(--surface)}
 .cw-ops-add-pop p{margin:0;font-size:12px;color:var(--ink-soft)}
+.cw-ops-person-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:7px}
+.cw-ops-person-pick{display:flex!important;align-items:center;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;text-transform:none!important;letter-spacing:0!important}
+.cw-ops-person-pick:has(input:checked){border-color:#B79D78;background:var(--amber-soft)}
+.cw-ops-person-pick input{width:auto!important;min-height:0!important;margin:0;accent-color:#7E6748}
+.cw-ops-person-pick span{display:grid;gap:2px}.cw-ops-person-pick b{font:600 12px var(--body);color:var(--ink)}.cw-ops-person-pick small{font:10.5px var(--body);color:var(--ink-soft)}
+.cw-ops-add-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.cw-ops-add-help{display:block;margin-top:8px;color:var(--ink-soft);font-size:10.5px}
+.cw-ops-empty-slot{display:inline-flex;align-items:center;gap:5px;padding:7px 9px;border:1px dashed #BD7A69;border-radius:999px;color:#9A4E3D;background:#FFF6F2;font:10px var(--body)}
+.cw-ops-empty-slot button{border:0;background:transparent;color:inherit;padding:0 1px;cursor:pointer;font-size:15px;line-height:1}
+.cw-ops-rate-row{display:flex;gap:8px;align-items:center}.cw-ops-rate-row input{flex:0 0 130px}.cw-ops-rate-row button{min-height:36px}
 .cw-ops-add-label{font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
 .cw-ops-chip.role.on,.cw-ops-chip.pick:active{border-color:#D4CBBE;background:var(--amber-soft)}
 .cw-ops-chip.pick b{pointer-events:none}.cw-ops-chip.pick small{pointer-events:none}
@@ -1857,6 +1866,7 @@ body{background:
 .cw10-add-event-btn{display:flex;width:100%;align-items:center;justify-content:center;gap:6px;margin-top:6px;padding:9px 10px;border:1px dashed var(--line);border-radius:9px;background:transparent;color:var(--ink-soft);font:500 8px var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .cw10-add-event-btn:hover{border-color:#D4CBBE;color:var(--ink);background:var(--amber-soft)}
 @media(max-width:720px){.cw-ops-prep-grid{grid-template-columns:1fr}}
+@media(max-width:720px){.cw-ops-person-grid{grid-template-columns:1fr}.cw-ops-rate-row{align-items:stretch;flex-direction:column}.cw-ops-rate-row input{flex:auto}}
 
 </style>
 </head>
@@ -6920,14 +6930,9 @@ let ciAssignmentState=null,ciAssignmentCrewFilter='all',ciAssignmentSearch='',ci
 const ciClone=value=>JSON.parse(JSON.stringify(value||{}));
 function ciRequirementsForEvent(e){
   const out={};CI_ROLES.forEach(role=>out[role]=0);
-  if(e&&e.crewRequirements&&typeof e.crewRequirements==='object'){
-    CI_ROLES.forEach(role=>out[role]=Math.max(0,Number(e.crewRequirements[role])||0));
-    Object.entries(e.crewRequirements).forEach(([role,count])=>{if(!Object.prototype.hasOwnProperty.call(out,role))out[role]=Math.max(0,Number(count)||0);});
-    return out;
-  }
   const assigned=Object.values(e&&e.crew||{});
-  if(assigned.length){assigned.forEach(c=>{const role=c.role||'Other';out[role]=(out[role]||0)+1;});}
-  else CI_CORE_ROLES.forEach(role=>out[role]=1);
+  assigned.forEach(c=>{const role=c.role||'Other';out[role]=(out[role]||0)+1;});
+  Object.entries(e&&e.crewOpenSlots||{}).forEach(([role,count])=>{out[role]=(out[role]||0)+Math.max(0,Number(count)||0);});
   return out;
 }
 function ciRequirementSummary(crew,requirements){
@@ -7590,6 +7595,7 @@ let cw11Saving=false;
 let cwOpsOpenCrew='';
 let cwOpsAddFor='';
 let cwOpsAddRole='Candid Photographer';
+let cwOpsAddSelected=new Set();
 let cwOpsMobileOpen=new Set();
 let cwOpsSaveNote='';
 const CW11_CANDID_ROLES=['Candid Photographer','Candid Cinematographer'];
@@ -7654,19 +7660,20 @@ function cw11GetPlanDraft(state,event){
     const saved=c.arrivalTime||c.reportTime||teamArrival;
     crew[uid]={...ciClone(c),arrivalTime:saved,reportTime:saved,arrivalOverride:c.arrivalTimeMode==='individual'||!!(saved&&teamArrival&&saved!==teamArrival),crewCost:c.crewCost!=null&&c.crewCost!==''?Number(c.crewCost):'',dataStatus:c.dataStatus||'',opsNotes:c.opsNotes||''};
   });
-  const hasSavedRequirements=!!(shoot&&shoot.crewRequirements&&typeof shoot.crewRequirements==='object');
-  // Requirements are an explicit coverage decision. A new event must not silently
-  // assume CP/CV/TP/TV are all needed; assigned roles establish their own minimum.
-  const requirements=hasSavedRequirements?ciClone(ciRequirementsForEvent(shoot)):{};
-  CW11_CANDID_ROLES.concat(CW11_TRADITIONAL_ROLES).forEach(role=>{
-    const count=Object.values(crew).filter(c=>(c.role||'Other')===role).length;
-    if(!(Number(requirements[role])>0)&&count)requirements[role]=count;
+  // v12.7.8: old crewRequirements often came from automatic CP/CV/TP/TV defaults.
+  // Only explicit empty slots create a shortage now; assigned people define coverage.
+  const openSlots=shoot&&shoot.crewOpenSlots&&typeof shoot.crewOpenSlots==='object'?ciClone(shoot.crewOpenSlots):{};
+  const requirements={};
+  CI_ROLES.forEach(role=>{
+    const assigned=Object.values(crew).filter(c=>(c.role||'Other')===role).length;
+    const empty=Math.max(0,Number(openSlots[role])||0);
+    if(assigned||empty)requirements[role]=assigned+empty;
   });
   const assignment=shoot?ciResourceAssignment(shoot,event.name):{};
   const guessed=shotListGuessKey(event.name);
   const draft={
     key,clientKey:state.entry.key,formId:event.formId,eventId:event.eventId,shootId:shootId||'',dirty:false,
-    date:event.date,eventName:event.name,startTime,endTime,teamArrival,crew,requirements,
+    date:event.date,eventName:event.name,startTime,endTime,actualClientEndTime:shoot&&shoot.actualClientEndTime||'',teamArrival,crew,requirements,openSlots,
     extras:ciExtrasText(shoot&&(shoot.eventExtras||shoot.extras)),
     candidListKey:assignment.candidListKey||guessed||'',
     traditionalListKey:assignment.traditionalListKey||guessed||'',
@@ -7753,7 +7760,7 @@ function cw11AddCrewMember(eventId,role,uid){
   if(cw11CrewLocked(draft,uid)){toast(`${p.name||'This crew member'} has already checked in, so the assignment is locked.`);return;}
   if(draft.crew[uid]){toast(`${p.name||'This crew member'} is already assigned.`);return;}
   draft.crew[uid]={name:p.name||'',phone:p.phone||'',email:p.email||'',role,arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false,isLead:!Object.values(draft.crew).some(c=>c.isLead),crewCost:'',dataStatus:'',opsNotes:''};
-  if(!(Number(draft.requirements[role])>0))draft.requirements[role]=1;
+  cwOpsSyncRequirements(draft);
   cw11MarkDraft(draft);renderClientsWorkspace();
 }
 function cw11AddCrew(eventId){
@@ -7763,12 +7770,12 @@ function cw11AddCrew(eventId){
 function cw11SetCrewRole(eventId,uid,role){
   const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft||!draft.crew[uid])return;
   if(cw11CrewLocked(draft,uid)){toast('This event team is locked after check-in.');return;}
-  draft.crew[uid].role=role;cw11MarkDraft(draft);renderClientsWorkspace();
+  draft.crew[uid].role=role;cwOpsSyncRequirements(draft);cw11MarkDraft(draft);renderClientsWorkspace();
 }
 function cw11RemoveCrew(eventId,uid){
   const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft||!draft.crew[uid])return;
   if(cw11CrewLocked(draft,uid)){toast('Checked-in crew cannot be removed from this event.');return;}
-  delete draft.crew[uid];cw11CrewTimeOpen.delete(`${draft.key}|${uid}`);cw11MarkDraft(draft);renderClientsWorkspace();
+  delete draft.crew[uid];cwOpsSyncRequirements(draft);cw11CrewTimeOpen.delete(`${draft.key}|${uid}`);cw11MarkDraft(draft);renderClientsWorkspace();
 }
 function cw11ToggleLead(eventId,uid){
   const {state,event}=cw11CurrentStateEvent(eventId),draft=state&&event&&cw11GetPlanDraft(state,event);if(!draft||!draft.crew[uid]||cw11CrewLocked(draft,uid))return;
@@ -7794,7 +7801,7 @@ function cw11CopyTeam(eventId,sourceEventId){
   const draft=cw11GetPlanDraft(state,event),from=cw11GetPlanDraft(state,source);if(!Object.keys(from.crew||{}).length){toast('That event does not have a team yet.');return;}
   if(cw11EventStarted(draft)){toast('This event team is locked because a crew member has checked in.');return;}
   draft.crew={};Object.entries(from.crew).forEach(([uid,c])=>{draft.crew[uid]={...ciClone(c),arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false};});
-  draft.requirements=ciClone(from.requirements);draft.extras=ciExtrasText(from.extras);
+  draft.openSlots=ciClone(from.openSlots||{});cwOpsSyncRequirements(draft);draft.extras=ciExtrasText(from.extras);
   draft.candidListKey=from.candidListKey||'';draft.traditionalListKey=from.traditionalListKey||'';
   cw11MarkDraft(draft);renderClientsWorkspace();toast(`Team copied from ${source.name}.`);
 }
@@ -7818,11 +7825,11 @@ function cw11PlanPayload(state,event,draft){
     mapsUrl:details.mapsUrl||old.mapsUrl||'',venueName:details.venueName||old.venueName||(mapData&&mapData.name)||'Venue to be updated',
     venueLat:mapData?mapData.lat:(old.venueLat??null),venueLng:mapData?mapData.lng:(old.venueLng??null),radiusM:500,
     reportingTime:draft.teamArrival,reportingTimeMode:draft.arrivalMode,scheduledStart:draft.startTime,scheduledStartMode:draft.timingOverride?'manual':'auto',
-    functionStart:draft.startTime,functionEnd:draft.endTime,functionEndMode:draft.endMode,studioTimingOverride:!!draft.timingOverride,
+    functionStart:draft.startTime,functionEnd:draft.endTime,functionEndMode:draft.endMode,actualClientEndTime:draft.actualClientEndTime||null,studioTimingOverride:!!draft.timingOverride,
     clientContactName:details.contactName||old.clientContactName||null,clientContactPhone:details.contactPhone||old.clientContactPhone||null,
     brideReadyLocation:details.brideReadyLocation||old.brideReadyLocation||null,groomReadyLocation:details.groomReadyLocation||old.groomReadyLocation||null,
     clientNotes:details.notes||old.clientNotes||null,clientFormId:event.formId,clientEventId:event.eventId,crew,
-    crewRequirements:ciClone(draft.requirements||old.crewRequirements||{}),eventExtras:ciExtrasText(draft.extras)||null,resourceAssignments:(()=>{
+    crewRequirements:ciClone(draft.requirements||{}),crewOpenSlots:ciClone(draft.openSlots||{}),eventExtras:ciExtrasText(draft.extras)||null,resourceAssignments:(()=>{
       const key=shotListKey(event.name),prev=old.resourceAssignments&&typeof old.resourceAssignments==='object'?ciClone(old.resourceAssignments):{},cur=prev[key]||{};
       prev[key]={...cur,eventName:event.name,pinterestUrl:draft.pinterestUrl||null,candidListKey:draft.candidListKey||null,traditionalListKey:draft.traditionalListKey||null,portraitMoodUrl:cur.portraitMoodUrl||null,otherMoodUrl:cur.otherMoodUrl||null};
       return prev;
@@ -7986,12 +7993,42 @@ function cwOpsInr(n){
   const v=Number(n);if(!v&&v!==0)return '—';
   try{return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(v);}catch(e){return '₹'+Math.round(v);}
 }
-function cwOpsCrewCostTotal(state,events){
-  let sum=0;(events||[]).forEach(event=>{
-    const draft=cw11GetPlanDraft(state,event);
-    Object.values(draft.crew||{}).forEach(c=>{const n=Number(c.crewCost);if(!Number.isNaN(n))sum+=n;});
+function cwOpsSyncRequirements(draft){
+  if(!draft)return;
+  const requirements={},slots=draft.openSlots||{};
+  CI_ROLES.forEach(role=>{
+    const assigned=Object.values(draft.crew||{}).filter(c=>(c.role||'Other')===role).length;
+    const empty=Math.max(0,Number(slots[role])||0);
+    if(assigned||empty)requirements[role]=assigned+empty;
   });
-  return sum;
+  draft.requirements=requirements;
+}
+function cwOpsIsTraditional(role){return CW11_TRADITIONAL_ROLES.includes(role||'');}
+function cwOpsEndTimestamp(draft){
+  if(!draft||!draft.date||!/^\d{2}:\d{2}$/.test(draft.actualClientEndTime||''))return null;
+  const ms=new Date(`${draft.date}T${draft.actualClientEndTime}:00`).getTime();
+  return Number.isFinite(ms)?ms:null;
+}
+function cwOpsTraditionalCost(draft,uid){
+  const c=draft&&draft.crew&&draft.crew[uid];if(!c||!cwOpsIsTraditional(c.role))return null;
+  const att=draft.shootId&&checkinAttendance[draft.shootId]&&checkinAttendance[draft.shootId][uid]||{};
+  const start=Number(att.checkedInAt)||0;let end=cwOpsEndTimestamp(draft);
+  if(!start||!end)return null;
+  while(end<=start)end+=86400000;
+  const mins=Math.max(1,Math.ceil((end-start)/60000)),slabs=Math.max(1,Math.ceil(mins/420));
+  return {amount:slabs*4000,minutes:mins,slabs,start,end};
+}
+function cwOpsCrewCost(draft,uid,c){
+  const auto=cwOpsTraditionalCost(draft,uid);if(auto)return auto.amount;
+  if(cwOpsIsTraditional(c&&c.role))return null;
+  const n=Number(c&&c.crewCost);return c&&c.crewCost!==''&&!Number.isNaN(n)?n:null;
+}
+function cwOpsCrewCostTotal(state,events){
+  let sum=0,pending=0;(events||[]).forEach(event=>{
+    const draft=cw11GetPlanDraft(state,event);
+    Object.entries(draft.crew||{}).forEach(([uid,c])=>{const n=cwOpsCrewCost(draft,uid,c);if(n==null)pending++;else sum+=n;});
+  });
+  return {sum,pending};
 }
 function cwOpsCrewReadiness(state,events){
   let assigned=0,eventsWithCrew=0;
@@ -8054,12 +8091,40 @@ function cwOpsToggleCrew(eventId,uid){
 function cwOpsToggleAdd(eventId){
   cwOpsAddFor=cwOpsAddFor===eventId?'':eventId;
   cwOpsOpenCrew='';
+  cwOpsAddSelected=new Set();
   if(cwOpsAddFor&&!CI_ROLES.includes(cwOpsAddRole))cwOpsAddRole='Candid Photographer';
   renderClientsWorkspace();
 }
 function cwOpsPickRole(role){
   cwOpsAddRole=role;
+  cwOpsAddSelected=new Set();
   renderClientsWorkspace();
+}
+function cwOpsToggleAddSelection(eventId,uid,checked){
+  if(cwOpsAddFor!==eventId)return;
+  checked?cwOpsAddSelected.add(uid):cwOpsAddSelected.delete(uid);
+  const button=document.getElementById(`cwOpsAddSelected_${eventId}`);
+  if(button){button.disabled=!cwOpsAddSelected.size;button.textContent=cwOpsAddSelected.size?`Add ${cwOpsAddSelected.size} selected`:'Add selected crew';}
+}
+function cwOpsAddSelectedCrew(eventId){
+  const ids=[...cwOpsAddSelected];if(!ids.length)return;
+  ids.forEach(uid=>cw11AddCrewMember(eventId,cwOpsAddRole,uid));
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  cwOpsAddSelected=new Set();cwOpsAddFor='';
+  cwOpsPersistDraft(cw11GetPlanDraft(state,event),`${ids.length} crew added as ${ciRoleCode(cwOpsAddRole)}.`);
+}
+function cwOpsReserveSlot(eventId){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event);draft.openSlots=draft.openSlots||{};
+  draft.openSlots[cwOpsAddRole]=(Number(draft.openSlots[cwOpsAddRole])||0)+1;
+  cwOpsSyncRequirements(draft);cw11MarkDraft(draft);cwOpsAddFor='';cwOpsAddSelected=new Set();renderClientsWorkspace();
+  cwOpsPersistDraft(draft,`${ciRoleCode(cwOpsAddRole)} empty slot reserved.`);
+}
+function cwOpsRemoveSlot(eventId,role){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event);draft.openSlots=draft.openSlots||{};
+  draft.openSlots[role]=Math.max(0,(Number(draft.openSlots[role])||0)-1);
+  cwOpsSyncRequirements(draft);cw11MarkDraft(draft);renderClientsWorkspace();cwOpsPersistDraft(draft,'Empty slot removed.');
 }
 function cwOpsToggleMobile(eventId){
   cwOpsMobileOpen.has(eventId)?cwOpsMobileOpen.delete(eventId):cwOpsMobileOpen.add(eventId);
@@ -8094,10 +8159,20 @@ function cwOpsSetCrewField(eventId,uid,field,value){
     c.opsNotes=value||'';
   }else if(field==='role'){
     if(cw11CrewLocked(draft,uid)){toast('This crew member is locked after check-in.');return;}
-    c.role=value;
+    c.role=value;cwOpsSyncRequirements(draft);
   }
   cw11MarkDraft(draft);
   cwOpsPersistDraft(draft,'Saved.');
+}
+function cwOpsApplyRateToClient(eventId,uid){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const source=cw11GetPlanDraft(state,event),person=source.crew&&source.crew[uid];if(!person)return;
+  const rate=person.crewCost;if(rate===''||rate==null||Number.isNaN(Number(rate))){toast('Enter the rate first.');return;}
+  let changed=0;
+  state.events.forEach(other=>{const draft=cw11GetPlanDraft(state,other),c=draft.crew&&draft.crew[uid];if(!c||cwOpsIsTraditional(c.role))return;c.crewCost=Number(rate);cw11MarkDraft(draft);changed++;});
+  if(!changed){toast('No other shoots for this crew member in this client.');return;}
+  clearTimeout(cwOpsPersistTimer);cwOpsPersistPending=null;
+  renderClientsWorkspace();cw11SavePlans(cw11DirtyDrafts(),`Rate applied to ${changed} shoot${changed===1?'':'s'} for this client.`);
 }
 function cwOpsClearOverride(eventId,uid){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
@@ -8127,6 +8202,11 @@ function cwOpsSetPlanTime(eventId,field,value){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
   cwOpsPersistDraft(cw11GetPlanDraft(state,event),'Timing saved.');
 }
+function cwOpsSetActualClientEnd(eventId,value){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event);draft.actualClientEndTime=value||'';cw11MarkDraft(draft);renderClientsWorkspace();
+  cwOpsPersistDraft(draft,value?'Actual client end time saved. Traditional costs updated.':'Actual client end time cleared.');
+}
 function cwOpsSetShotList(eventId,team,value){
   cw11SetShotList(eventId,team,value);
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
@@ -8136,22 +8216,6 @@ function cwOpsSetPinterest(eventId,value){
   cw11SetPinterest(eventId,value);
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
   cwOpsPersistDraft(cw11GetPlanDraft(state,event),'Pinterest saved.');
-}
-function cwOpsTeamIsRequired(draft,team){
-  const roles=team==='candid'?CW11_CANDID_ROLES:CW11_TRADITIONAL_ROLES;
-  return roles.some(role=>(Number(draft.requirements&&draft.requirements[role])||0)>0);
-}
-function cwOpsSetTeamCoverage(eventId,team,required){
-  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
-  const draft=cw11GetPlanDraft(state,event);
-  if(cw11EventStarted(draft)){toast('Coverage requirements are locked after check-in.');return;}
-  const roles=team==='candid'?CW11_CANDID_ROLES:CW11_TRADITIONAL_ROLES;
-  roles.forEach(role=>{
-    const assigned=Object.values(draft.crew||{}).filter(c=>(c.role||'Other')===role).length;
-    draft.requirements[role]=required?Math.max(1,assigned):0;
-  });
-  cw11MarkDraft(draft);
-  cwOpsPersistDraft(draft,`${team==='candid'?'Candid':'Traditional'} team marked ${required?'required':'not required'}.`);
 }
 function cwOpsCopyCrewLink(eventId){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
@@ -8172,18 +8236,14 @@ function cwOpsOpenLiveDay(eventId){
 }
 function cwOpsPrepHtml(state,event,draft){
   const started=cw11EventStarted(draft);
-  const candidRequired=cwOpsTeamIsRequired(draft,'candid'),traditionalRequired=cwOpsTeamIsRequired(draft,'traditional');
   const candidList=cwListItems(event.name,'candid',draft.candidListKey||''),tradList=cwListItems(event.name,'traditional',draft.traditionalListKey||'');
   const checkPeek=(()=>{if(!draft.shootId)return 'Not on Live day yet';const all=checkinAttendance[draft.shootId]||{},crew=Object.keys(draft.crew||{});if(!crew.length)return 'No crew';const inN=crew.filter(uid=>all[uid]&&all[uid].checkedInAt).length,outN=crew.filter(uid=>all[uid]&&all[uid].checkedOutAt).length;return `${inN}/${crew.length} checked in · ${outN} out`;})();
   return `<div class="cw-ops-prep">
-    <div class="cw-ops-coverage"><span class="cw-ops-coverage-label">Coverage required</span>
-      <button type="button" class="cw-ops-chip ${candidRequired?'on':'not-required'}" ${started?'disabled':''} onclick="cwOpsSetTeamCoverage('${esc(event.eventId)}','candid',${candidRequired?'false':'true'})">Candid · ${candidRequired?'Required':'Not required'}</button>
-      <button type="button" class="cw-ops-chip ${traditionalRequired?'on':'not-required'}" ${started?'disabled':''} onclick="cwOpsSetTeamCoverage('${esc(event.eventId)}','traditional',${traditionalRequired?'false':'true'})">Traditional · ${traditionalRequired?'Required':'Not required'}</button>
-    </div>
     <div class="cw-ops-prep-grid">
       <label>Event start<input type="time" value="${esc(draft.startTime||'')}" ${started?'disabled':''} onchange="cwOpsSetPlanTime('${esc(event.eventId)}','startTime',this.value)"></label>
       <label>Expected end<input type="time" value="${esc(draft.endTime||'')}" ${started?'disabled':''} onchange="cwOpsSetPlanTime('${esc(event.eventId)}','endTime',this.value)"></label>
       <label>Team arrival<input type="time" value="${esc(draft.teamArrival||'')}" ${started?'disabled':''} onchange="cwOpsSetArrival('${esc(event.eventId)}',this.value)"></label>
+      <label>Actual client end time<input type="time" value="${esc(draft.actualClientEndTime||'')}" onchange="cwOpsSetActualClientEnd('${esc(event.eventId)}',this.value)"><small style="text-transform:none;letter-spacing:0;font:11px var(--body)">Used with each TP/TV actual check-in for payment</small></label>
       <label>Candid shot list<select onchange="cwOpsSetShotList('${esc(event.eventId)}','candid',this.value)">${shotCoreSelectOptions(draft.candidListKey)}</select><small style="text-transform:none;letter-spacing:0;font:11px var(--body)">${candidList.items.length?candidList.items.length+' shots':'Edit lists in Settings'}</small></label>
       <label>Traditional shot list<select onchange="cwOpsSetShotList('${esc(event.eventId)}','traditional',this.value)">${shotCoreSelectOptions(draft.traditionalListKey)}</select><small style="text-transform:none;letter-spacing:0;font:11px var(--body)">${tradList.items.length?tradList.items.length+' shots':'Edit lists in Settings'}</small></label>
       <label>Pinterest<input type="url" value="${esc(draft.pinterestUrl||'')}" placeholder="https://pinterest.com/…" onchange="cwOpsSetPinterest('${esc(event.eventId)}',this.value)"></label>
@@ -8202,6 +8262,10 @@ function cwOpsCrewDetailHtml(state,event,draft,uid,c){
   const locked=cw11CrewLocked(draft,uid);
   const dataStatus=cwOpsResolvedDataStatus(draft,uid,c);
   const overrideVal=c.arrivalOverride?(c.arrivalTime||''):'';
+  const traditional=cwOpsIsTraditional(c.role),autoCost=traditional?cwOpsTraditionalCost(draft,uid):null;
+  const costField=traditional
+    ?`<label class="wide">Traditional crew cost<div class="cw-ops-readonly"><strong>${autoCost?esc(cwOpsInr(autoCost.amount)):'Pending calculation'}</strong><small>${autoCost?`${Math.floor(autoCost.minutes/60)}h ${autoCost.minutes%60}m · ${autoCost.slabs} × 7-hour slab${autoCost.slabs===1?'':'s'}`:'Needs actual check-in and actual client end time · ₹4,000 per 7-hour slab'}</small></div></label>`
+    :`<label class="wide">Crew rate for this shoot<div class="cw-ops-rate-row"><input type="number" min="0" step="100" inputmode="numeric" value="${c.crewCost!==''&&c.crewCost!=null?esc(c.crewCost):''}" placeholder="Agreed cost" onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','crewCost',this.value)"><button type="button" class="cw10-soft" onclick="cwOpsApplyRateToClient('${esc(event.eventId)}','${esc(uid)}')">Apply to all this crew member’s shoots for this client</button></div><small>Each event can still be edited separately afterwards.</small></label>`;
   return `<div class="cw-ops-detail">
     <div class="cw-ops-detail-head"><strong>${esc(c.name||crewProfiles[uid]?.name||'Crew')}</strong><span>${esc(ciRoleCode(c.role))} · ${esc(c.role||'Other')}</span></div>
     <div class="cw-ops-detail-grid">
@@ -8209,7 +8273,7 @@ function cwOpsCrewDetailHtml(state,event,draft,uid,c){
       <label>Individual exception<input type="time" value="${esc(overrideVal)}" ${locked?'disabled':''} onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','arrivalOverride',this.value)"><button type="button" class="cw-ops-link" ${locked||!c.arrivalOverride?'hidden':''} onclick="cwOpsClearOverride('${esc(event.eventId)}','${esc(uid)}')">Use overall</button></label>
       <label>Check-in<div class="cw-ops-readonly">${esc(ciClock(att.checkedInAt))}</div></label>
       <label>Checkout<div class="cw-ops-readonly">${esc(ciClock(att.checkedOutAt))}</div></label>
-      <label>Crew cost (₹)<input type="number" min="0" step="100" inputmode="numeric" value="${c.crewCost!==''&&c.crewCost!=null?esc(c.crewCost):''}" placeholder="Agreed cost" onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','crewCost',this.value)"></label>
+      ${costField}
       <label>Data status<select onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','dataStatus',this.value)"><option value="pending"${dataStatus==='pending'?' selected':''}>Pending</option><option value="received"${dataStatus==='received'?' selected':''}>Received</option><option value="copied"${dataStatus==='copied'?' selected':''}>Copied</option></select></label>
       <label>Cards used<div class="cw-ops-readonly">${att.cardsUsed!=null?esc(att.cardsUsed):'—'}</div></label>
       <label>Handed over to<div class="cw-ops-readonly">${esc(att.handedToName||'—')}</div></label>
@@ -8223,23 +8287,24 @@ function cwOpsCrewDetailHtml(state,event,draft,uid,c){
 }
 function cwOpsAddPopoverHtml(state,event,draft){
   const role=CI_ROLES.includes(cwOpsAddRole)?cwOpsAddRole:'Candid Photographer';
-  const options=Object.entries(crewProfiles||{}).filter(([uid])=>!(draft.crew||{})[uid]).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
+  const options=Object.entries(crewProfiles||{}).filter(([uid,p])=>!(draft.crew||{})[uid]&&(p.role||'Other')===role).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
   const roleChips=CI_OPS_ROLE_CHIPS.map(([full,label])=>`<button type="button" class="cw-ops-chip role ${role===full?'on':''}" onclick="cwOpsPickRole('${esc(full)}')">${esc(label)}</button>`).join('');
   const people=options.length
-    ?options.map(([uid,p])=>`<button type="button" class="cw-ops-chip pick" onclick="cwOpsAddCrew('${esc(event.eventId)}','${esc(uid)}','${esc(role)}')"><b>${esc(p.name||'Crew')}</b><small>${esc(ciRoleCode(p.role||role))}</small></button>`).join('')
-    :'<p>All registered crew are already on this event.</p>';
-  return `<div class="cw-ops-add-pop"><div class="cw-ops-add-label">Role</div><div class="cw-ops-chip-row">${roleChips}</div><div class="cw-ops-add-label" style="margin-top:10px">Tap a person to add as ${esc(ciRoleCode(role))}</div><div class="cw-ops-chip-row">${people}</div></div>`;
+    ?options.map(([uid,p])=>`<label class="cw-ops-person-pick"><input type="checkbox" ${cwOpsAddSelected.has(uid)?'checked':''} onchange="cwOpsToggleAddSelection('${esc(event.eventId)}','${esc(uid)}',this.checked)"><span><b>${esc(p.name||'Crew')}</b><small>${esc(role)}</small></span></label>`).join('')
+    :`<p>No unassigned crew registered as ${esc(role)}.</p>`;
+  return `<div class="cw-ops-add-pop"><div class="cw-ops-add-label">1 · Select role</div><div class="cw-ops-chip-row">${roleChips}</div><div class="cw-ops-add-label" style="margin-top:12px">2 · Select one or more ${esc(ciRoleCode(role))}</div><div class="cw-ops-person-grid">${people}</div><div class="cw-ops-add-actions"><button type="button" id="cwOpsAddSelected_${esc(event.eventId)}" class="cw10-primary" ${cwOpsAddSelected.size?'':'disabled'} onclick="cwOpsAddSelectedCrew('${esc(event.eventId)}')">${cwOpsAddSelected.size?`Add ${cwOpsAddSelected.size} selected`:'Add selected crew'}</button><button type="button" class="cw10-soft" onclick="cwOpsReserveSlot('${esc(event.eventId)}')">Reserve empty ${esc(ciRoleCode(role))} slot</button></div><small class="cw-ops-add-help">Reserve a slot only when this role is required but you have not chosen the person. Only reserved empty slots create a warning.</small></div>`;
 }
 function cwOpsEventRowHtml(state,event,opts={}){
   const approved=opts.approved!==false,details=cw10CurrentDetails(state,event),draft=cw11GetPlanDraft(state,event),crew=ciSortCrewEntries(Object.entries(draft.crew||{}));
   const maps=details.mapsUrl?`<a class="cw-ops-maps" href="${esc(details.mapsUrl)}" target="_blank" rel="noopener">${esc(details.venueName||'Open map')} ↗</a>`:esc(details.venueName||'Venue pending');
   const openKey=cwOpsOpenCrew,addOpen=cwOpsAddFor===event.eventId,mobileOpen=cwOpsMobileOpen.has(event.eventId);
-  const eventCost=Object.values(draft.crew||{}).reduce((s,c)=>{const n=Number(c.crewCost);return s+(Number.isNaN(n)?0:n);},0);
+  let eventCost=0,costPending=0;Object.entries(draft.crew||{}).forEach(([uid,c])=>{const n=cwOpsCrewCost(draft,uid,c);if(n==null)costPending++;else eventCost+=n;});
   const review=cw10ReviewSummary(state,event.eventId);
   const chips=crew.map(([uid,c])=>{
     const tone=cwOpsDataTone(draft,uid,c),on=openKey===`${event.eventId}|${uid}`;
     return `<button type="button" class="cw-ops-chip ${on?'on':''} ${tone}" onclick="cwOpsToggleCrew('${esc(event.eventId)}','${esc(uid)}')"><b>${esc(c.name||crewProfiles[uid]?.name||'Crew')}</b><small>${esc(ciRoleCode(c.role))}</small></button>`;
   }).join('');
+  const emptySlots=Object.entries(draft.openSlots||{}).flatMap(([role,count])=>Array.from({length:Math.max(0,Number(count)||0)},()=>`<span class="cw-ops-empty-slot"><b>${esc(ciRoleCode(role))}</b> · Unassigned <button type="button" aria-label="Remove empty ${esc(ciRoleCode(role))} slot" onclick="cwOpsRemoveSlot('${esc(event.eventId)}','${esc(role)}')">×</button></span>`)).join('');
   const openUid=openKey&&openKey.startsWith(event.eventId+'|')?openKey.slice(event.eventId.length+1):'';
   const detail=openUid&&draft.crew[openUid]?cwOpsCrewDetailHtml(state,event,draft,openUid,draft.crew[openUid]):'';
   const pendingNote=!approved?`<div class="cw11-plan-note" style="margin-bottom:10px"><i>i</i><div><strong>Approval pending.</strong>You can still draft crew and timings. Publish happens when the client event is approved.</div></div>`:'';
@@ -8249,9 +8314,9 @@ function cwOpsEventRowHtml(state,event,opts={}){
       ${pendingNote}
       ${review?`<button type="button" class="cw-ops-client-alert" onclick="cw10OpenReview('${esc(event.eventId)}')"><strong>Client updated this event</strong><span>Review old vs new values →</span></button>`:''}
       <div class="cw-ops-event-head"><div class="cw-ops-title"><strong>${esc(cw10CompactDate(event.date))} · ${esc(event.name)}</strong><span>${esc(ciFmtTime(details.startTime||draft.startTime))}${(details.endTime||draft.endTime)?' – '+esc(ciFmtTime(details.endTime||draft.endTime)):''} · ${maps}</span></div>
-        <span class="cw-ops-event-cost">${eventCost?esc(cwOpsInr(eventCost)):''}</span>
+        <span class="cw-ops-event-cost">${eventCost?esc(cwOpsInr(eventCost)):''}${costPending?`<small>${costPending} cost pending</small>`:''}</span>
       </div>
-      <div class="cw-ops-chip-row">${chips}<button type="button" class="cw-ops-chip add" onclick="cwOpsToggleAdd('${esc(event.eventId)}')">+ Add crew</button><span class="cw-ops-data-pill">${esc(cwOpsEventDataSummary(draft))}</span></div>
+      <div class="cw-ops-chip-row">${chips}${emptySlots}<button type="button" class="cw-ops-chip add" onclick="cwOpsToggleAdd('${esc(event.eventId)}')">+ Add crew</button><span class="cw-ops-data-pill">${esc(cwOpsEventDataSummary(draft))}</span></div>
       ${addOpen?cwOpsAddPopoverHtml(state,event,draft):''}
       ${detail}
       ${cwOpsPrepHtml(state,event,draft)}
@@ -8278,7 +8343,7 @@ function cw10RenderOperations(state){
       <div><span>Upcoming</span><strong>${esc(nextLabel)}</strong></div>
       <div><span>Client details</span><strong>${esc(clientStatus)}</strong></div>
       <div><span>Crew readiness</span><strong>${ready.eventsWithCrew}/${ready.events||events.length} events · ${ready.assigned} assigned</strong></div>
-      <div><span>Est. crew cost</span><strong>${esc(cwOpsInr(totalCost))}</strong></div>
+      <div><span>Est. crew cost</span><strong>${esc(cwOpsInr(totalCost.sum))}</strong><small>${totalCost.pending?`${totalCost.pending} pending calculation${totalCost.pending===1?'':'s'}`:'All assigned costs calculated'}</small></div>
     </div>
     <div class="cw-ops-list">${approved.map(event=>cwOpsEventRowHtml(state,event,{approved:true})).join('')}${pending.length?`<div class="cw10-nav-label" style="margin:8px 0 4px">Draft · awaiting approval</div>${pending.map(event=>cwOpsEventRowHtml(state,event,{approved:false})).join('')}`:''}</div>
     <p class="cw10-event-footnote">Writes the same crewCheckins records used by Live day. Client and crew links are unchanged.</p>

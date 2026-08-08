@@ -1,4 +1,4 @@
-TALE OF TWO WEDDINGS — EXPLICIT EVENT TEAM COVERAGE v12.7.7
+TALE OF TWO WEDDINGS — SIMPLE CREW & CLIENT-WIDE RATES v12.7.8
 
 UPLOAD:
 1. Unzip this package.
@@ -8,8 +8,8 @@ UPLOAD:
 
 Files changed by this update:
 - index.html
-- crew.html
-- crew-sw.js
+- UPLOAD-INSTRUCTIONS.txt
+- STUDIO-HANDOFF.md
 
 IMPORTANT — THESE CONTRACTS ARE PRESERVED:
 - Dates & Enquiries data and workflow are unchanged.
@@ -21,9 +21,14 @@ IMPORTANT — THESE CONTRACTS ARE PRESERVED:
 - Multiple events for one couple on the same date remain separate event records.
 
 WHAT IS NEW:
-- Each event now has explicit Candid and Traditional coverage controls in Weddings → Team & prep.
-- Marking a team Not required clears false CP/CV or TP/TV shortages without removing assigned crew.
-- New events no longer assume CP, CV, TP and TV are all required before you choose or assign the team.
+- Team & prep shows assigned crew directly. There are no Candid/Traditional Required controls.
+- + Add crew is role-first, shows only people registered for that role, supports multi-select and adds everyone once.
+- No CP/CV/TP/TV shortage is invented. A warning appears only when you deliberately reserve an empty role slot.
+- A non-traditional crew rate can be applied to every shoot that person has for this client, then overridden on one event if needed.
+- TP and TV cost is calculated automatically at ₹4,000 per person per 7-hour slab.
+- Traditional duration uses that crew member's actual check-in and the event's manually entered Actual client end time.
+- Until both values exist, traditional cost displays Pending calculation.
+- Event totals and the complete client crew-cost total use the same calculation.
 - A confirmed booking appears immediately as a Weddings folder, even before its private client link exists.
 - Opening that new folder prefills the client-link setup from the booked dates and event names.
 - Creating/updating the client link refreshes the folder immediately.
