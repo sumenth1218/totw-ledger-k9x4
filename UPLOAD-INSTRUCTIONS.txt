@@ -1,4 +1,4 @@
-TALE OF TWO WEDDINGS — SIMPLE CREW & CLIENT-WIDE RATES v12.7.8
+TALE OF TWO WEDDINGS — FINANCE SYNC & REFRESH FIX v12.7.9
 
 UPLOAD:
 1. Unzip this package.
@@ -8,6 +8,8 @@ UPLOAD:
 
 Files changed by this update:
 - index.html
+- crew.html
+- crew-sw.js
 - UPLOAD-INSTRUCTIONS.txt
 - STUDIO-HANDOFF.md
 
@@ -21,6 +23,13 @@ IMPORTANT — THESE CONTRACTS ARE PRESERVED:
 - Multiple events for one couple on the same date remain separate event records.
 
 WHAT IS NEW:
+- Team & prep crew rates now sync immediately into Weddings → Package & spend / Finance.
+- Previously saved Team & prep rates are backfilled automatically after the new build loads.
+- Same-day separate events remain separate cost assignments and are not merged or double-counted.
+- Removing or changing a Team & prep rate updates the matching Finance row.
+- TP/TV slab costs sync after actual check-in and Actual client end time are available.
+- Refresh no longer attempts an automatic shot-list write or shows the false push error.
+- The Crew App offline cache is isolated from the Ledger, preventing an old Ledger screen from being served by the Crew service worker.
 - Team & prep shows assigned crew directly. There are no Candid/Traditional Required controls.
 - + Add crew is role-first, shows only people registered for that role, supports multi-select and adds everyone once.
 - No CP/CV/TP/TV shortage is invented. A warning appears only when you deliberately reserve an empty role slot.

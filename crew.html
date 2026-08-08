@@ -534,7 +534,7 @@ document.getElementById('eventScreen').addEventListener('touchend',e=>{
  if(dx>=75&&dy<=Math.max(55,dx*.65)&&elapsed<=900)showDashboard();
 },{passive:true});
 document.getElementById('eventScreen').addEventListener('touchcancel',()=>{swipeStartX=null;swipeStartY=0;swipeStartedAt=0},{passive:true});
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js?v=15').catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js?v=16').catch(()=>{}));
 </script>
 </body>
 </html>

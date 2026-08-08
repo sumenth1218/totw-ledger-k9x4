@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.7.8-simple-crew-and-client-rates-2026-08-08">
+<meta name="totw-build" content="v12.7.9-finance-sync-and-refresh-fix-2026-08-09">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -2425,6 +2425,7 @@ let calYear = 2026;      // year shown on the Dates & Enquiries calendar
 let editState = null;    // in-place edit state {id,name,type,dates}
 let bookedDateEdit = null; // booked closed enquiry date editor {id,rows:[{old,date}]}
 let prods = {};          // production records
+let prodsLoaded=false;
 let people = {};         // crew registry name->style
 let plans = {};          // crew planner rows: rowKey -> {iso,couple,event,loc,cells:{},need:{}}
 let planHidden = {};     // rowKey -> true; deleted planner rows (survives sheet sync)
@@ -2541,7 +2542,7 @@ function start(){
   db.ref('bookings').on('value',s=>{teamBookings=s.val()||{};bookingsLoaded=true;refresh();publishCrewEvents();renderClientsWorkspace();});
   db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};enquiriesLoaded=true;refresh();publishCrewEvents();renderClientsWorkspace();});
   db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
-  db.ref('prod').on('value',s=>{prods=s.val()||{};renderProdAll();renderClientsWorkspace();});
+  db.ref('prod').on('value',s=>{prods=s.val()||{};prodsLoaded=true;renderProdAll();renderClientsWorkspace();cwScheduleOpsFinanceRefresh();});
   db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
   db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();renderCheckinFormOptions();renderMoodSec();previewClientFormEvents();publishCrewEvents();renderClientsWorkspace();});
   db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();renderClientsWorkspace();});
@@ -2552,8 +2553,8 @@ function start(){
   db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();renderClientsWorkspace();});
   db.ref('shotEventMoods').on('value',s=>{shotEventMoods=s.val()||{};renderEventBoards();renderClientsWorkspace();});
   db.ref('crewProfiles').on('value',s=>{crewProfiles=s.val()||{};renderCheckinTeam();renderCrewProfiles();renderClientsWorkspace();});
-  db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};checkinEventsLoaded=true;cw11InvalidateCleanDrafts();renderCheckinEvents();ensureApprovedClientShoots();renderClientsWorkspace();});
-  db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};ciBackfillVenuePins();renderCheckinEvents();renderClientsWorkspace();});
+  db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};checkinEventsLoaded=true;cw11InvalidateCleanDrafts();renderCheckinEvents();ensureApprovedClientShoots();renderClientsWorkspace();cwScheduleOpsFinanceRefresh();});
+  db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};ciBackfillVenuePins();renderCheckinEvents();renderClientsWorkspace();cwScheduleOpsFinanceRefresh();});
   db.ref('clientForms').on('value',s=>{clientForms=s.val()||{};clientFormsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();renderMoodSec();});
   db.ref('clientSubmissions').on('value',s=>{clientSubmissions=s.val()||{};clientSubmissionsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();});
   db.ref('clientApprovals').on('value',s=>{clientApprovals=s.val()||{};clientApprovalsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();});
@@ -5893,8 +5894,9 @@ async function seedStudioShotLists(force=false){
   }finally{shotListsSeedBusy=false;}
 }
 function ensureStudioShotListsSeeded(){
-  if(shotListsSeedChecked||shotListsSeedBusy||!liveMode||!db)return;
-  seedStudioShotLists(false);
+  // Never write studio defaults during page refresh. Firebase writes are explicit
+  // from Settings so a slow auth/rules response cannot show a false error toast.
+  shotListsSeedChecked=true;
 }
 
 function upcomingCouplesAdmin(){
@@ -6316,6 +6318,72 @@ function cwBusinessProdSeed(state){
     at:stamp(),
     t:Date.now()
   };
+}
+function cwOpsCostFromRecord(record,shootId,crewUid,c){
+  if(!record||!c)return null;
+  if(!cwOpsIsTraditional(c.role)){
+    const n=Number(c.crewCost);
+    return c.crewCost!==''&&c.crewCost!=null&&!Number.isNaN(n)?n:null;
+  }
+  if(!record.date||!/^\d{2}:\d{2}$/.test(record.actualClientEndTime||''))return null;
+  const attendance=checkinAttendance[shootId]&&checkinAttendance[shootId][crewUid]||{};
+  const start=Number(attendance.checkedInAt)||0;
+  let end=new Date(`${record.date}T${record.actualClientEndTime}:00`).getTime();
+  if(!start||!Number.isFinite(end))return null;
+  while(end<=start)end+=86400000;
+  const minutes=Math.max(1,Math.ceil((end-start)/60000));
+  return Math.max(1,Math.ceil(minutes/420))*4000;
+}
+function cwBuildOpsFinanceSync(results){
+  const staged=new Map(),clientProdIds=new Map(),updates={};
+  (results||[]).forEach(result=>{
+    const state=result.state,event=result.event,record=result.record,shootId=result.id||event&&event.shootId||'';
+    if(!state||!event||!record)return;
+    const rows=Object.entries(record.crew||{}).map(([crewUid,c])=>({crewUid,c,pay:cwOpsCostFromRecord(record,shootId,crewUid,c)})).filter(x=>x.pay!=null&&Number(x.pay)>0);
+    const clientKey=state.entry&&state.entry.key||String(state.entry&&state.entry.name||'').toLowerCase();
+    let prodId=clientProdIds.get(clientKey)||state.prodId||'',prod=prodId&&(staged.get(prodId)||ciClone(prods[prodId]));
+    if(!prod&&rows.length){prodId=uid('p');prod=cwBusinessProdSeed(state);clientProdIds.set(clientKey,prodId);}
+    if(!prod)return;
+    prod.days=Array.isArray(prod.days)?prod.days:[];
+    let day=prod.days.find(d=>d.date===event.date);
+    if(!day){day={date:event.date,events:[event.name],gb:0,roles:[],fmt:false};prod.days.push(day);}
+    day.events=Array.isArray(day.events)?day.events:[];
+    if(!day.events.includes(event.name))day.events.push(event.name);
+    day.roles=(Array.isArray(day.roles)?day.roles:[]).filter(r=>!(r&&r.opsSource==='teamPrep'&&r.opsEventId===event.eventId));
+    rows.forEach(({crewUid,c,pay})=>{
+      const person=String(c.name||crewProfiles[crewUid]?.name||'Crew member').trim(),role=String(c.role||'Other');
+      // Adopt one matching legacy Finance row instead of double-counting it.
+      const legacy=day.roles.findIndex(r=>r&&!r.opsSource&&String(r.person||'').trim().toLowerCase()===person.toLowerCase()&&String(r.role||'')===role);
+      if(legacy>-1)day.roles.splice(legacy,1);
+      day.roles.push({person,role,pay:Number(pay),opsSource:'teamPrep',opsEventId:event.eventId,opsUid:crewUid});
+    });
+    prod.days.sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+    staged.set(prodId,prod);
+  });
+  staged.forEach((prod,id)=>{if(JSON.stringify(prods[id]||null)!==JSON.stringify(prod))updates[`prod/${id}`]=prod;});
+  return {staged,updates};
+}
+let cwOpsFinanceRefreshTimer=null,cwOpsFinanceRefreshBusy=false;
+function cwScheduleOpsFinanceRefresh(){
+  clearTimeout(cwOpsFinanceRefreshTimer);
+  cwOpsFinanceRefreshTimer=setTimeout(cwRefreshAllOpsFinance,650);
+}
+async function cwRefreshAllOpsFinance(){
+  if(cwOpsFinanceRefreshBusy||!liveMode||!db||!prodsLoaded||!checkinEventsLoaded)return;
+  const results=[];
+  cwDirectory().forEach(entry=>{
+    const state=cwState(entry);
+    state.events.forEach(event=>{
+      const id=event.shootId||'',record=id&&checkinEvents[id];
+      if(record)results.push({state,event,id,record});
+    });
+  });
+  const finance=cwBuildOpsFinanceSync(results);
+  if(!Object.keys(finance.updates).length)return;
+  cwOpsFinanceRefreshBusy=true;
+  try{await db.ref().update(finance.updates);finance.staged.forEach((prod,id)=>{prods[id]=prod;});}
+  catch(err){console.warn('Crew cost finance refresh failed',err);}
+  finally{cwOpsFinanceRefreshBusy=false;}
 }
 function cwBusinessSummary(state,event){
   const details=cw10CurrentDetails(state,event),staff=cw10TeamStaffing(state,event);
@@ -7528,7 +7596,7 @@ function cw10RenderCosts(state){
   const days=(state.prod.days||[]).map(d=>{const cost=(d.roles||[]).reduce((n,r)=>n+(Number(r.pay)||0),0);return `<div class="cw10-cost-row"><span><span>${esc((d.events||[]).join(' + ')||'Shoot day')}</span><small>${esc(ciDateLong(d.date))} · ${(d.roles||[]).length} assignments</small></span><strong>${inrP(cost)}</strong></div>`;}).join('');
   return `<div class="cw10-content">${cw10PageHead(state.entry.name,'Package & spend','Package value, crew cost and estimated margin for this wedding.',`<button type="button" class="cw10-soft" onclick="exportCouplePDF('${state.prodId}')">Package PDF</button><button type="button" class="cw10-soft" onclick="cwOpenBusiness('${state.prodId}')">Open wedding file</button>`)}
     <div class="cw10-metrics"><div class="cw10-metric"><span>Package value</span><strong>${pkg?inrP(pkg):'—'}</strong><small>${pkg?'Confirmed booking value':'Add the package value below'}</small></div><div class="cw10-metric"><span>Recorded crew cost</span><strong>${inrP(total)}</strong><small>${pct===null?'Ratio available after package value':pct+'% of package'}</small></div><div class="cw10-metric ${pkg&&margin>=0?'good':''}"><span>Estimated margin</span><strong>${pkg?inrP(margin):'—'}</strong><small>Before travel and overheads</small></div></div>
-    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Cost by shoot day</h3><p>Summary of ₹ pay entered on production shoot days. Open wedding file to pull Weddings team and type pay.</p></div><input type="number" value="${pkg||''}" placeholder="₹ Package value" onchange="pkgSet('${state.prodId}',this.value)" style="width:150px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)"></div>${days||'<div class="cw10-folder-empty">Shoot-day costs have not been logged.</div>'}</section>
+    <section class="cw10-data-card"><div class="cw10-data-head"><div><h3>Cost by shoot day</h3><p>Crew rates sync automatically from Team &amp; prep. TP/TV costs appear after actual check-in and actual client end time are available.</p></div><input type="number" value="${pkg||''}" placeholder="₹ Package value" onchange="pkgSet('${state.prodId}',this.value)" style="width:150px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)"></div>${days||'<div class="cw10-folder-empty">Shoot-day costs have not been logged.</div>'}</section>
   </div>`;
 }
 function cw10ActivityRows(state){
@@ -7856,13 +7924,15 @@ async function cw11SavePlans(drafts,label){
     result._saveGen=draft._saveGen;results.push(result);
   }
   if(!results.length){toast('All planning changes are already saved.');return {};}
-  const updates={};results.forEach(result=>cw11AppendPlanUpdates(updates,result));cw11Saving=true;cw11RefreshSaveState();
+  const updates={};results.forEach(result=>cw11AppendPlanUpdates(updates,result));
+  const finance=cwBuildOpsFinanceSync(results);Object.assign(updates,finance.updates);cw11Saving=true;cw11RefreshSaveState();
   try{
     await db.ref().update(updates);
     results.forEach(result=>{
       checkinEvents[result.id]=result.record;result.draft.shootId=result.id;
       if(result.draft._saveGen===result._saveGen)result.draft.dirty=false;
     });
+    finance.staged.forEach((prod,id)=>{prods[id]=prod;});
     const internal=results.some(r=>!r.published);toast(internal?'Planning saved internally. The crew will receive it only after approval.':label);
     log(`saved client planning for ${results.length} event${results.length===1?'':'s'}: ${results[0].state.entry.name}`);
     renderCheckinEvents();renderClientsWorkspace();
@@ -8600,6 +8670,8 @@ async function cw10KeepCurrent(formId){
   try{await db.ref().update(updates);clientSubmissions[formId]=restored;cw10ReviewOpen=false;cw10ReviewEventId='';toast('Current studio details kept.');log(`kept current client details after review: ${f.couple}`);renderClientsWorkspace();}
   catch(err){toast('Could not keep the current details. Please try again.');}
 }
+
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js?v=16').catch(()=>{}));
 
 restoreView();
 

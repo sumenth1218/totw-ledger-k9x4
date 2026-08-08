@@ -1,6 +1,6 @@
 # Tale of Two Weddings — Full Studio Handoff
 
-**Build to upload:** full folder · `v12.7.8-simple-crew-and-client-rates-2026-08-08`  
+**Build to upload:** full folder · `v12.7.9-finance-sync-and-refresh-fix-2026-08-09`  
 **Live links:** client + crew URLs unchanged · data paths unchanged  
 
 ---
