@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.7.16-edit-attendance-2026-08-09">
+<meta name="totw-build" content="v12.7.17-attendance-modal-2026-08-09">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -499,6 +499,7 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .ci-start{display:flex;align-items:flex-end;gap:7px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:11px;margin-top:12px}.ci-start label{font-family:var(--mono);font-size:8px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:4px}.ci-start input{width:112px;padding:7px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
 .ci-hours{font-family:var(--mono);font-size:9px;color:var(--ink-soft)}
 .ci-note{padding:12px 14px;border-radius:8px;background:var(--amber-soft);color:#76551E;font-size:12px;line-height:1.55;margin-bottom:14px}
+.ci-att-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ci-att-custody{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.ci-att-custody label{display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:12px 10px;cursor:pointer;font-size:12px;text-align:center;background:var(--card)}.ci-att-custody input{accent-color:var(--sindoor)}.ci-att-custody label:has(input:checked){border-color:var(--sindoor);background:rgba(143,52,64,.12)}.ci-att-actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}.ci-att-actions .btn-main{flex:1;min-width:140px}@media(max-width:560px){.ci-att-grid{grid-template-columns:1fr}}
 .ci-modal{position:fixed;inset:0;background:rgba(27,26,23,.48);display:none;align-items:flex-end;justify-content:center;z-index:90;padding:14px}.ci-modal.open{display:flex}.ci-modal-card{background:var(--card);border-radius:12px;width:min(100%,520px);padding:22px;max-height:86vh;overflow:auto}.ci-modal-card h3{font-family:var(--display);font-size:27px}.ci-profile-list{display:grid;gap:8px;margin-top:12px}.ci-profile{border:1px solid var(--line);border-radius:8px;padding:11px;display:flex;align-items:center;justify-content:space-between;gap:12px}.ci-profile.editing{display:block}.ci-profile-main{min-width:0}.ci-profile b{font-size:13px}.ci-profile small{display:block;font-size:11px;color:var(--ink-soft);margin-top:2px;overflow-wrap:anywhere}.ci-profile-actions{display:flex;gap:6px;flex:none}.ci-profile-edit,.ci-profile-delete{flex:none;border-radius:6px;padding:7px 9px;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.ci-profile-edit{border:1px solid var(--line);background:#F4F0E8;color:var(--ink)}.ci-profile-delete{border:1px solid #D9B8B1;background:var(--sindoor-soft);color:var(--sindoor)}.ci-profile-form{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:2px}.ci-profile-form .field{margin:0}.ci-profile-form .wide{grid-column:1/-1}.ci-profile-form label{font-size:8px}.ci-profile-form input,.ci-profile-form select{width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font:12px var(--body)}.ci-profile-form-actions{grid-column:1/-1;display:flex;gap:7px;justify-content:flex-end;margin-top:2px}@media(max-width:560px){.ci-profile{align-items:flex-start}.ci-profile-actions{flex-direction:column}.ci-profile-form{grid-template-columns:1fr}.ci-profile-form .wide,.ci-profile-form-actions{grid-column:1}}
 .cf-wrap{max-width:1180px;margin:0 auto;padding:28px 20px 70px}.cf-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:22px}.cf-head h2{font-family:var(--display);font-size:34px}.cf-head p{color:var(--ink-soft);font-size:13px;margin-top:5px}.cf-grid{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}.cf-create{background:#25231F;color:var(--paper);border-radius:12px;padding:22px;position:sticky;top:16px}.cf-create h3{font-family:var(--display);font-size:27px}.cf-create .hint{color:#A8A398}.cf-create label{color:#BFB9AD}.cf-create>.field input,.cf-create .field input{background:#302E29!important;border-color:#49463F!important;color:#fff!important}.cf-events-preview{display:grid;gap:6px;margin:10px 0 14px}.cf-preview-row{display:flex;justify-content:space-between;gap:12px;padding:9px 10px;border:1px solid #454139;border-radius:7px;font-size:11px;color:#D6D0C5}.cf-list{display:grid;gap:12px}.cf-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 5px 18px rgba(35,29,22,.04)}.cf-card-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.cf-card h3{font-family:var(--display);font-size:25px}.cf-meta{font-size:11px;color:var(--ink-soft);margin-top:3px}.cf-status{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;border-radius:99px;padding:6px 9px;background:#EEEAE2;color:var(--ink-soft);white-space:nowrap}.cf-status.submitted{background:var(--amber-soft);color:#76551E}.cf-status.approved{background:var(--leaf-soft);color:var(--leaf)}.cf-status.changes{background:#f5e5dd;color:#8a402f}.cf-card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:13px}.cf-review{border-top:1px solid var(--line);margin-top:15px;padding-top:12px}.cf-review-event{border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:8px}.cf-review-event b{font-size:13px}.cf-review-event small{display:block;color:var(--ink-soft);line-height:1.55;margin-top:4px}.cf-empty{background:var(--card);border:1px dashed var(--line);padding:28px;border-radius:12px;text-align:center;color:var(--ink-soft);font-size:13px}.cf-contributors{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.cf-person{border-radius:99px;background:#f2ede5;padding:5px 8px;font-size:9px;color:var(--ink-soft)}.cf-change{margin-top:7px;border-left:2px solid #9b604e;background:#fbf2ed;padding:8px 9px;border-radius:0 7px 7px 0}.cf-change strong{display:block;font-size:9px;color:#874332;text-transform:uppercase;letter-spacing:.06em}.cf-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:5px}.cf-compare span{font-size:10px;line-height:1.4}.cf-compare em{display:block;color:var(--ink-soft);font-style:normal;font-size:8px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
 .cf-events-preview{gap:8px}.cf-preview-event{border:1px solid #454139;border-radius:8px;padding:8px;background:#2B2925}.cf-preview-row{display:grid;grid-template-columns:1fr 126px 28px;gap:7px;align-items:center}.cf-preview-row input{min-width:0;padding:9px 8px!important;font-size:11px!important}.cf-remove{border:0;background:transparent;color:#D6D0C5;font-size:18px;cursor:pointer;line-height:1}.cf-add{width:100%;border:1px dashed #5C574E;background:transparent;color:#D6D0C5;border-radius:7px;padding:9px;font:500 9px var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.cf-event-options{border-top:1px solid #454139;margin-top:8px;padding:9px 2px 2px}.cf-event-options>span{display:block;font:500 8px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#D7BE91;margin-bottom:4px}.cf-event-options>small{display:block;color:#9F998E;font-size:9px;line-height:1.45;margin-bottom:8px}.cf-options-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.cf-option{display:flex!important;align-items:center;gap:7px;color:var(--ink)!important;font-size:10px!important;letter-spacing:0!important;text-transform:none!important}.cf-option input{width:auto!important;accent-color:var(--teal)}
@@ -2334,6 +2335,38 @@ body{background:
   </div>
  </div>
 </div>
+</div>
+
+
+<div class="ci-modal" id="ciAttendanceModal" onclick="if(event.target===this)closeCiAttendanceModal()">
+ <div class="ci-modal-card" role="dialog" aria-modal="true" aria-labelledby="ciAttTitle">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:start">
+   <div>
+    <h3 id="ciAttTitle">Edit attendance</h3>
+    <p class="hint" id="ciAttSubtitle" style="margin-top:4px"></p>
+   </div>
+   <button type="button" class="btn-mini" onclick="closeCiAttendanceModal()">Close</button>
+  </div>
+  <input type="hidden" id="ciAttEventId">
+  <input type="hidden" id="ciAttUid">
+  <input type="hidden" id="ciAttMode">
+  <div class="ci-att-grid" style="margin-top:14px">
+   <div class="field"><label for="ciAttIn">Check-in</label><input id="ciAttIn" type="time"></div>
+   <div class="field"><label for="ciAttOut">Check-out</label><input id="ciAttOut" type="time"></div>
+  </div>
+  <div class="field"><label for="ciAttCards">Cards used</label><input id="ciAttCards" type="number" min="0" max="100" step="1" inputmode="numeric"></div>
+  <div class="field" style="margin-bottom:0"><label>Card handover</label>
+   <div class="ci-att-custody">
+    <label><input type="radio" name="ciAttCustody" value="handed" onchange="ciAttCustodyChanged()" checked> Handed over</label>
+    <label><input type="radio" name="ciAttCustody" value="copying" onchange="ciAttCustodyChanged()"> Copying with crew</label>
+   </div>
+  </div>
+  <div class="field" id="ciAttHandedWrap" style="margin-top:12px"><label for="ciAttHandedTo">Handed to</label><input id="ciAttHandedTo" type="text" placeholder="e.g. Sumenth" autocomplete="name"></div>
+  <div class="ci-att-actions">
+   <button type="button" class="btn-main teal" id="ciAttSaveBtn" onclick="ciSaveAttendanceModal()">Save attendance</button>
+   <button type="button" class="btn-main" style="background:#35332D;color:#C5C0B5" onclick="closeCiAttendanceModal()">Cancel</button>
+  </div>
+ </div>
 </div>
 
 <div class="ci-modal" id="ciProfilesModal">
@@ -6728,7 +6761,7 @@ function copyCrewRegistrationLink(){copyText(ciCrewUrl(),'Crew registration link
 function openCrewProfiles(){renderCrewProfiles();document.getElementById('ciProfilesModal').classList.add('open');}
 function closeCrewProfiles(){crewProfileEditUid='';document.getElementById('ciProfilesModal').classList.remove('open');}
 document.getElementById('ciProfilesModal').addEventListener('click',e=>{if(e.target.id==='ciProfilesModal')closeCrewProfiles();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('ciProfilesModal').classList.contains('open'))closeCrewProfiles();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('ciProfilesModal').classList.contains('open'))closeCrewProfiles();if(e.key==='Escape'&&document.getElementById('ciAttendanceModal')&&document.getElementById('ciAttendanceModal').classList.contains('open'))closeCiAttendanceModal();});
 let crewProfileEditUid='',crewProfileGroupsOpen=new Set();
 function crewProfileGroup(p){return String(p&&p.role||'').toLowerCase().includes('traditional')?'traditional':'candid';}
 function toggleCrewProfileGroup(key){crewProfileGroupsOpen.has(key)?crewProfileGroupsOpen.delete(key):crewProfileGroupsOpen.add(key);renderCrewProfiles();}
@@ -6950,70 +6983,67 @@ async function ciStudioMarkCheckIn(eventId,uid){
     renderCheckinEvents();renderClientsWorkspace();
   }catch(err){toast('Could not save studio check-in. Try again.');}
 }
-async function ciStudioCompleteCheckout(eventId,uid){
-  const e=checkinEvents[eventId],c=e&&e.crew&&e.crew[uid];if(!e||!c){toast('Crew member not found on this shoot.');return;}
-  const existing=(checkinAttendance[eventId]&&checkinAttendance[eventId][uid])||{};
-  if(existing.checkedOutAt){toast(`${c.name||'Crew'} is already checked out.`);return;}
-  const cardsRaw=prompt(`Cards used by ${c.name||'crew'}?`,'1');if(cardsRaw===null)return;
-  const cardsUsed=Number(String(cardsRaw).trim());
-  if(!Number.isInteger(cardsUsed)||cardsUsed<0||cardsUsed>100){toast('Enter a valid cards used number (0–100).');return;}
-  const custodyChoice=prompt(`Handover for ${c.name||'crew'}:\nType H for handed over, or C if copying with them.`,'H');
-  if(custodyChoice===null)return;
-  const handed=/^h/i.test(String(custodyChoice).trim());
-  let handedToName='';
-  if(handed){
-    handedToName=String(prompt('Handed over to (name)?','Sumenth')||'').trim();
-    if(!handedToName){toast('Enter who received the cards.');return;}
-  }
-  if(!confirm(`Record studio checkout for ${c.name||'crew'}?\n${cardsUsed} card${cardsUsed===1?'':'s'} · ${handed?('Handed to '+handedToName):'Copying with crew'}`))return;
-  const now=Date.now(),inAt=existing.checkedInAt||now,updates={};
-  updates[`crewCheckins/attendance/${eventId}/${uid}/checkedInAt`]=inAt;
-  updates[`crewCheckins/attendance/${eventId}/${uid}/confirmedAt`]=existing.confirmedAt||inAt;
-  updates[`crewCheckins/attendance/${eventId}/${uid}/checkedOutAt`]=now;
-  updates[`crewCheckins/attendance/${eventId}/${uid}/cardsUsed`]=cardsUsed;
-  updates[`crewCheckins/attendance/${eventId}/${uid}/cardCustody`]=handed?'handed_over':'copying_with_me';
-  updates[`crewCheckins/attendance/${eventId}/${uid}/updatedAt`]=now;
-  updates[`crewCheckins/attendance/${eventId}/${uid}/studioCheckout`]=true;
-  updates[`crewCheckins/attendance/${eventId}/${uid}/studioCheckoutBy`]=editor||'Owner';
-  updates[`crewCheckins/attendance/${eventId}/${uid}/studioCheckoutNote`]='Recorded by studio after crew-app checkout failed';
-  if(handed){updates[`crewCheckins/attendance/${eventId}/${uid}/handedToName`]=handedToName;updates[`crewCheckins/attendance/${eventId}/${uid}/handoverAt`]=now;}
-  if(!e.actualStartAt)updates[`crewCheckins/events/${eventId}/actualStartAt`]=inAt;
-  try{
-    await db.ref().update(updates);
-    checkinAttendance[eventId]=checkinAttendance[eventId]||{};
-    checkinAttendance[eventId][uid]={...existing,checkedInAt:inAt,confirmedAt:existing.confirmedAt||inAt,checkedOutAt:now,cardsUsed,cardCustody:handed?'handed_over':'copying_with_me',updatedAt:now,studioCheckout:true,studioCheckoutBy:editor||'Owner',...(handed?{handedToName,handoverAt:now}:{})};
-    if(!e.actualStartAt){e.actualStartAt=inAt;checkinEvents[eventId]=e;}
-    toast(`Studio checkout saved for ${c.name||'crew'}.`);log(`studio checkout: ${e.couple} — ${e.eventName} — ${c.name} · ${cardsUsed} cards`);
-    renderCheckinEvents();renderClientsWorkspace();
-  }catch(err){console.error(err);toast('Could not save studio checkout. Try again.');}
+function ciNowTimeValue(){
+  const d=new Date();return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
-async function ciStudioEditAttendance(eventId,uid){
+function ciAttCustodyChanged(){
+  const handed=!!document.querySelector('input[name="ciAttCustody"][value="handed"]:checked');
+  const wrap=document.getElementById('ciAttHandedWrap');
+  if(wrap)wrap.style.display=handed?'':'none';
+}
+function closeCiAttendanceModal(){
+  const modal=document.getElementById('ciAttendanceModal');
+  if(modal)modal.classList.remove('open');
+}
+function openCiAttendanceModal(eventId,uid,mode){
   const e=checkinEvents[eventId],c=e&&e.crew&&e.crew[uid];if(!e||!c){toast('Crew member not found on this shoot.');return;}
   if(!e.date){toast('This shoot needs a date before times can be edited.');return;}
   const existing=(checkinAttendance[eventId]&&checkinAttendance[eventId][uid])||{};
+  const editing=mode!=='checkout';
+  if(!editing&&existing.checkedOutAt){toast(`${c.name||'Crew'} is already checked out.`);return;}
   const inDef=existing.checkedInAt?ciTimeValue(existing.checkedInAt):(e.reportingTime||'09:00');
-  const outDef=existing.checkedOutAt?ciTimeValue(existing.checkedOutAt):(e.functionEnd||'17:00');
-  const inTime=prompt(`Check-in time for ${c.name||'crew'} (24h HH:MM)`,inDef);if(inTime===null)return;
-  if(!/^\d{2}:\d{2}$/.test(String(inTime).trim())){toast('Use check-in time as HH:MM (e.g. 08:30).');return;}
-  const outTime=prompt(`Check-out time for ${c.name||'crew'} (24h HH:MM)`,outDef);if(outTime===null)return;
-  if(!/^\d{2}:\d{2}$/.test(String(outTime).trim())){toast('Use check-out time as HH:MM (e.g. 16:00).');return;}
-  const cardsRaw=prompt(`Cards used by ${c.name||'crew'}?`,existing.cardsUsed!=null?String(existing.cardsUsed):'1');if(cardsRaw===null)return;
-  const cardsUsed=Number(String(cardsRaw).trim());
+  const outDef=existing.checkedOutAt?ciTimeValue(existing.checkedOutAt):(editing?(e.functionEnd||'17:00'):ciNowTimeValue());
+  const copying=existing.cardCustody==='copying_with_me'||existing.cardCustody==='taking_with_me';
+  document.getElementById('ciAttEventId').value=eventId;
+  document.getElementById('ciAttUid').value=uid;
+  document.getElementById('ciAttMode').value=editing?'edit':'checkout';
+  document.getElementById('ciAttTitle').textContent=editing?'Edit attendance':'Studio checkout';
+  document.getElementById('ciAttSubtitle').textContent=`${c.name||'Crew'} · ${ciRoleCode(c.role)} · ${e.eventName||'Shoot'}${e.couple?` · ${e.couple}`:''}`;
+  document.getElementById('ciAttIn').value=inDef;
+  document.getElementById('ciAttOut').value=outDef;
+  document.getElementById('ciAttCards').value=existing.cardsUsed!=null?String(existing.cardsUsed):'1';
+  document.getElementById('ciAttHandedTo').value=existing.handedToName||'Sumenth';
+  document.querySelector(`input[name="ciAttCustody"][value="${copying?'copying':'handed'}"]`).checked=true;
+  document.getElementById('ciAttSaveBtn').textContent=editing?'Save attendance':'Complete checkout';
+  ciAttCustodyChanged();
+  document.getElementById('ciAttendanceModal').classList.add('open');
+  setTimeout(()=>document.getElementById(editing?'ciAttOut':'ciAttCards').focus(),40);
+}
+async function ciStudioCompleteCheckout(eventId,uid){openCiAttendanceModal(eventId,uid,'checkout');}
+async function ciStudioEditAttendance(eventId,uid){openCiAttendanceModal(eventId,uid,'edit');}
+async function ciSaveAttendanceModal(){
+  const eventId=document.getElementById('ciAttEventId').value;
+  const uid=document.getElementById('ciAttUid').value;
+  const mode=document.getElementById('ciAttMode').value||'edit';
+  const e=checkinEvents[eventId],c=e&&e.crew&&e.crew[uid];if(!e||!c){toast('Crew member not found on this shoot.');return;}
+  const existing=(checkinAttendance[eventId]&&checkinAttendance[eventId][uid])||{};
+  const inTime=String(document.getElementById('ciAttIn').value||'').trim();
+  const outTime=String(document.getElementById('ciAttOut').value||'').trim();
+  if(!/^\d{2}:\d{2}$/.test(inTime)){toast('Choose a check-in time.');return;}
+  if(!/^\d{2}:\d{2}$/.test(outTime)){toast('Choose a check-out time.');return;}
+  const cardsUsed=Number(String(document.getElementById('ciAttCards').value||'').trim());
   if(!Number.isInteger(cardsUsed)||cardsUsed<0||cardsUsed>100){toast('Enter a valid cards used number (0–100).');return;}
-  const custodyChoice=prompt(`Handover for ${c.name||'crew'}:\nType H for handed over, or C if copying with them.`,(existing.cardCustody==='copying_with_me'||existing.cardCustody==='taking_with_me')?'C':'H');
-  if(custodyChoice===null)return;
-  const handed=/^h/i.test(String(custodyChoice).trim());
+  const handed=!!document.querySelector('input[name="ciAttCustody"][value="handed"]:checked');
   let handedToName='';
   if(handed){
-    handedToName=String(prompt('Handed over to (name)?',existing.handedToName||'Sumenth')||'').trim();
-    if(!handedToName){toast('Enter who received the cards.');return;}
+    handedToName=String(document.getElementById('ciAttHandedTo').value||'').trim();
+    if(!handedToName){toast('Enter who received the cards.');document.getElementById('ciAttHandedTo').focus();return;}
   }
-  let inAt=new Date(`${e.date}T${String(inTime).trim()}`).getTime();
-  let outAt=new Date(`${e.date}T${String(outTime).trim()}`).getTime();
+  let inAt=new Date(`${e.date}T${inTime}`).getTime();
+  let outAt=new Date(`${e.date}T${outTime}`).getTime();
   if(!Number.isFinite(inAt)||!Number.isFinite(outAt)){toast('Could not read those times.');return;}
   if(outAt<=inAt)outAt+=86400000;
-  if(!confirm(`Save attendance for ${c.name||'crew'}?\nIn ${String(inTime).trim()} · Out ${String(outTime).trim()}\n${cardsUsed} card${cardsUsed===1?'':'s'} · ${handed?('Handed to '+handedToName):'Copying with crew'}`))return;
-  const now=Date.now(),updates={};
+  const now=Date.now(),updates={},note=mode==='checkout'?'Recorded by studio after crew-app checkout failed':'Attendance times edited by studio';
   updates[`crewCheckins/attendance/${eventId}/${uid}/checkedInAt`]=inAt;
   updates[`crewCheckins/attendance/${eventId}/${uid}/confirmedAt`]=existing.confirmedAt||inAt;
   updates[`crewCheckins/attendance/${eventId}/${uid}/checkedOutAt`]=outAt;
@@ -7022,7 +7052,7 @@ async function ciStudioEditAttendance(eventId,uid){
   updates[`crewCheckins/attendance/${eventId}/${uid}/updatedAt`]=now;
   updates[`crewCheckins/attendance/${eventId}/${uid}/studioCheckout`]=true;
   updates[`crewCheckins/attendance/${eventId}/${uid}/studioCheckoutBy`]=editor||'Owner';
-  updates[`crewCheckins/attendance/${eventId}/${uid}/studioCheckoutNote`]='Attendance times edited by studio';
+  updates[`crewCheckins/attendance/${eventId}/${uid}/studioCheckoutNote`]=note;
   if(handed){
     updates[`crewCheckins/attendance/${eventId}/${uid}/handedToName`]=handedToName;
     updates[`crewCheckins/attendance/${eventId}/${uid}/handoverAt`]=existing.handoverAt||outAt;
@@ -7031,16 +7061,26 @@ async function ciStudioEditAttendance(eventId,uid){
     updates[`crewCheckins/attendance/${eventId}/${uid}/handoverAt`]=null;
   }
   if(!e.actualStartAt||e.actualStartAt>inAt)updates[`crewCheckins/events/${eventId}/actualStartAt`]=inAt;
+  const saveBtn=document.getElementById('ciAttSaveBtn');
+  const prevLabel=saveBtn?saveBtn.textContent:'';
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving…';}
   try{
     await db.ref().update(updates);
     checkinAttendance[eventId]=checkinAttendance[eventId]||{};
-    const next={...existing,checkedInAt:inAt,confirmedAt:existing.confirmedAt||inAt,checkedOutAt:outAt,cardsUsed,cardCustody:handed?'handed_over':'copying_with_me',updatedAt:now,studioCheckout:true,studioCheckoutBy:editor||'Owner',studioCheckoutNote:'Attendance times edited by studio'};
+    const next={...existing,checkedInAt:inAt,confirmedAt:existing.confirmedAt||inAt,checkedOutAt:outAt,cardsUsed,cardCustody:handed?'handed_over':'copying_with_me',updatedAt:now,studioCheckout:true,studioCheckoutBy:editor||'Owner',studioCheckoutNote:note};
     if(handed){next.handedToName=handedToName;next.handoverAt=existing.handoverAt||outAt;}else{delete next.handedToName;delete next.handoverAt;}
     checkinAttendance[eventId][uid]=next;
     if(!e.actualStartAt||e.actualStartAt>inAt){e.actualStartAt=inAt;checkinEvents[eventId]=e;}
-    toast(`Updated attendance for ${c.name||'crew'}.`);log(`studio edit attendance: ${e.couple} — ${e.eventName} — ${c.name} · in ${String(inTime).trim()} out ${String(outTime).trim()}`);
+    closeCiAttendanceModal();
+    toast(mode==='checkout'?`Studio checkout saved for ${c.name||'crew'}.`:`Updated attendance for ${c.name||'crew'}.`);
+    log(`${mode==='checkout'?'studio checkout':'studio edit attendance'}: ${e.couple} — ${e.eventName} — ${c.name} · in ${inTime} out ${outTime}`);
     renderCheckinEvents();renderClientsWorkspace();
-  }catch(err){console.error(err);toast(`Could not save attendance: ${err&&err.message?err.message:'try again'}`);}
+  }catch(err){
+    console.error(err);
+    toast(`Could not save attendance: ${err&&err.message?err.message:'try again'}`);
+  }finally{
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent=prevLabel||'Save attendance';}
+  }
 }
 function ciGroupShootStatus([id,e]){const crew=Object.keys(e.crew||{}),all=checkinAttendance[id]||{},checked=crew.filter(uid=>all[uid]&&all[uid].checkedInAt).length,checkedOut=crew.filter(uid=>all[uid]&&all[uid].checkedOutAt).length;if(!crew.length)return 'crew';if(checkedOut&&checkedOut<crew.length)return 'partial';if(checked)return 'progress';if(e.date===ciTodayIso())return 'ready';return 'upcoming';}
 function ciAdminCardSummary(crew,all){
