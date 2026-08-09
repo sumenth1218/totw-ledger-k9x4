@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.7.15-studio-checkout-2026-08-09">
+<meta name="totw-build" content="v12.7.16-edit-attendance-2026-08-09">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -6987,6 +6987,61 @@ async function ciStudioCompleteCheckout(eventId,uid){
     renderCheckinEvents();renderClientsWorkspace();
   }catch(err){console.error(err);toast('Could not save studio checkout. Try again.');}
 }
+async function ciStudioEditAttendance(eventId,uid){
+  const e=checkinEvents[eventId],c=e&&e.crew&&e.crew[uid];if(!e||!c){toast('Crew member not found on this shoot.');return;}
+  if(!e.date){toast('This shoot needs a date before times can be edited.');return;}
+  const existing=(checkinAttendance[eventId]&&checkinAttendance[eventId][uid])||{};
+  const inDef=existing.checkedInAt?ciTimeValue(existing.checkedInAt):(e.reportingTime||'09:00');
+  const outDef=existing.checkedOutAt?ciTimeValue(existing.checkedOutAt):(e.functionEnd||'17:00');
+  const inTime=prompt(`Check-in time for ${c.name||'crew'} (24h HH:MM)`,inDef);if(inTime===null)return;
+  if(!/^\d{2}:\d{2}$/.test(String(inTime).trim())){toast('Use check-in time as HH:MM (e.g. 08:30).');return;}
+  const outTime=prompt(`Check-out time for ${c.name||'crew'} (24h HH:MM)`,outDef);if(outTime===null)return;
+  if(!/^\d{2}:\d{2}$/.test(String(outTime).trim())){toast('Use check-out time as HH:MM (e.g. 16:00).');return;}
+  const cardsRaw=prompt(`Cards used by ${c.name||'crew'}?`,existing.cardsUsed!=null?String(existing.cardsUsed):'1');if(cardsRaw===null)return;
+  const cardsUsed=Number(String(cardsRaw).trim());
+  if(!Number.isInteger(cardsUsed)||cardsUsed<0||cardsUsed>100){toast('Enter a valid cards used number (0–100).');return;}
+  const custodyChoice=prompt(`Handover for ${c.name||'crew'}:\nType H for handed over, or C if copying with them.`,(existing.cardCustody==='copying_with_me'||existing.cardCustody==='taking_with_me')?'C':'H');
+  if(custodyChoice===null)return;
+  const handed=/^h/i.test(String(custodyChoice).trim());
+  let handedToName='';
+  if(handed){
+    handedToName=String(prompt('Handed over to (name)?',existing.handedToName||'Sumenth')||'').trim();
+    if(!handedToName){toast('Enter who received the cards.');return;}
+  }
+  let inAt=new Date(`${e.date}T${String(inTime).trim()}`).getTime();
+  let outAt=new Date(`${e.date}T${String(outTime).trim()}`).getTime();
+  if(!Number.isFinite(inAt)||!Number.isFinite(outAt)){toast('Could not read those times.');return;}
+  if(outAt<=inAt)outAt+=86400000;
+  if(!confirm(`Save attendance for ${c.name||'crew'}?\nIn ${String(inTime).trim()} · Out ${String(outTime).trim()}\n${cardsUsed} card${cardsUsed===1?'':'s'} · ${handed?('Handed to '+handedToName):'Copying with crew'}`))return;
+  const now=Date.now(),updates={};
+  updates[`crewCheckins/attendance/${eventId}/${uid}/checkedInAt`]=inAt;
+  updates[`crewCheckins/attendance/${eventId}/${uid}/confirmedAt`]=existing.confirmedAt||inAt;
+  updates[`crewCheckins/attendance/${eventId}/${uid}/checkedOutAt`]=outAt;
+  updates[`crewCheckins/attendance/${eventId}/${uid}/cardsUsed`]=cardsUsed;
+  updates[`crewCheckins/attendance/${eventId}/${uid}/cardCustody`]=handed?'handed_over':'copying_with_me';
+  updates[`crewCheckins/attendance/${eventId}/${uid}/updatedAt`]=now;
+  updates[`crewCheckins/attendance/${eventId}/${uid}/studioCheckout`]=true;
+  updates[`crewCheckins/attendance/${eventId}/${uid}/studioCheckoutBy`]=editor||'Owner';
+  updates[`crewCheckins/attendance/${eventId}/${uid}/studioCheckoutNote`]='Attendance times edited by studio';
+  if(handed){
+    updates[`crewCheckins/attendance/${eventId}/${uid}/handedToName`]=handedToName;
+    updates[`crewCheckins/attendance/${eventId}/${uid}/handoverAt`]=existing.handoverAt||outAt;
+  }else{
+    updates[`crewCheckins/attendance/${eventId}/${uid}/handedToName`]=null;
+    updates[`crewCheckins/attendance/${eventId}/${uid}/handoverAt`]=null;
+  }
+  if(!e.actualStartAt||e.actualStartAt>inAt)updates[`crewCheckins/events/${eventId}/actualStartAt`]=inAt;
+  try{
+    await db.ref().update(updates);
+    checkinAttendance[eventId]=checkinAttendance[eventId]||{};
+    const next={...existing,checkedInAt:inAt,confirmedAt:existing.confirmedAt||inAt,checkedOutAt:outAt,cardsUsed,cardCustody:handed?'handed_over':'copying_with_me',updatedAt:now,studioCheckout:true,studioCheckoutBy:editor||'Owner',studioCheckoutNote:'Attendance times edited by studio'};
+    if(handed){next.handedToName=handedToName;next.handoverAt=existing.handoverAt||outAt;}else{delete next.handedToName;delete next.handoverAt;}
+    checkinAttendance[eventId][uid]=next;
+    if(!e.actualStartAt||e.actualStartAt>inAt){e.actualStartAt=inAt;checkinEvents[eventId]=e;}
+    toast(`Updated attendance for ${c.name||'crew'}.`);log(`studio edit attendance: ${e.couple} — ${e.eventName} — ${c.name} · in ${String(inTime).trim()} out ${String(outTime).trim()}`);
+    renderCheckinEvents();renderClientsWorkspace();
+  }catch(err){console.error(err);toast(`Could not save attendance: ${err&&err.message?err.message:'try again'}`);}
+}
 function ciGroupShootStatus([id,e]){const crew=Object.keys(e.crew||{}),all=checkinAttendance[id]||{},checked=crew.filter(uid=>all[uid]&&all[uid].checkedInAt).length,checkedOut=crew.filter(uid=>all[uid]&&all[uid].checkedOutAt).length;if(!crew.length)return 'crew';if(checkedOut&&checkedOut<crew.length)return 'partial';if(checked)return 'progress';if(e.date===ciTodayIso())return 'ready';return 'upcoming';}
 function ciAdminCardSummary(crew,all){
   let total=0,recorded=0;const handed=[],withCrew=[];
@@ -7270,7 +7325,7 @@ function renderCheckinEvents(){
   const eventCard=([id,e],completedShoot=false,insideGroup=false)=>{
     const all=checkinAttendance[id]||{},crew=ciSortCrewEntries(Object.entries(e.crew||{})),checked=crew.filter(([uid])=>all[uid]&&all[uid].checkedInAt).length,checkedOut=crew.filter(([uid])=>all[uid]&&all[uid].checkedOutAt).length,late=crew.filter(([uid])=>all[uid]&&all[uid].late).length;
     const staffing=ciRequirementSummary(e.crew||{},ciRequirementsForEvent(e));
-    const rows=crew.map(([uid,c])=>{const a=all[uid]||{};let lab='Upcoming',cl='';if(a.checkedOutAt){lab='Completed';cl='ok'}else if(a.checkedInAt){lab='In progress';cl='ok'}const time=a.checkedInAt?`In ${ciClock(a.checkedInAt)}${a.checkedOutAt?' · Out '+ciClock(a.checkedOutAt):''}`:`Arrival ${ciFmtTime(c.arrivalTime||c.reportTime||e.reportingTime)}`;if(completedShoot){const used=a.cardsUsed==null?'—':Number(a.cardsUsed)||0,custody=(a.cardCustody==='handed_over'||a.cardCustody==='handed_to_lead')?`Handed to ${a.handedToName||'named person'}`:(a.cardCustody==='copying_with_me'||a.cardCustody==='taking_with_me')?'With crew member for copying':'Handover not recorded',nextEvent=a.continuingToNextShoot&&a.nextShootEventId&&checkinEvents[a.nextShootEventId],continuing=nextEvent?` · Continuing to ${nextEvent.eventName||'next shoot'}`:'';return `<div class="ci-row"><div><b>${esc(c.name)} — ${esc(ciRoleCode(c.role))} · ${esc(used)} card${used===1?'':'s'}</b><small>${esc(custody+continuing)}</small></div><div class="ci-row-time">${esc(time)}<div class="ci-hours">${esc(ciDuration(e.actualStartAt||a.checkedInAt,a.checkedOutAt))}</div></div><span class="ci-badge ok">Completed</span></div>`;}const studioActs=!a.checkedOutAt?`<div class="ci-row-actions" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${!a.checkedInAt?`<button type="button" class="btn-mini" onclick="ciStudioMarkCheckIn('${esc(id)}','${esc(uid)}')">Studio check-in</button>`:''}<button type="button" class="btn-mini" onclick="ciStudioCompleteCheckout('${esc(id)}','${esc(uid)}')">Studio checkout</button></div>`:'';return `<div class="ci-row"><div><b>${esc(c.name)}${c.isLead?' · Lead':''}</b><small>${esc(c.role)} · ${esc(c.phone||'')}</small>${studioActs}</div><div class="ci-row-time">${esc(time)}</div><span class="ci-badge ${cl}">${esc(lab)}</span></div>`;}).join('');
+    const rows=crew.map(([uid,c])=>{const a=all[uid]||{};let lab='Upcoming',cl='';if(a.checkedOutAt){lab='Completed';cl='ok'}else if(a.checkedInAt){lab='In progress';cl='ok'}const time=a.checkedInAt?`In ${ciClock(a.checkedInAt)}${a.checkedOutAt?' · Out '+ciClock(a.checkedOutAt):''}`:`Arrival ${ciFmtTime(c.arrivalTime||c.reportTime||e.reportingTime)}`;if(completedShoot){const used=a.cardsUsed==null?'—':Number(a.cardsUsed)||0,custody=(a.cardCustody==='handed_over'||a.cardCustody==='handed_to_lead')?`Handed to ${a.handedToName||'named person'}`:(a.cardCustody==='copying_with_me'||a.cardCustody==='taking_with_me')?'With crew member for copying':'Handover not recorded',nextEvent=a.continuingToNextShoot&&a.nextShootEventId&&checkinEvents[a.nextShootEventId],continuing=nextEvent?` · Continuing to ${nextEvent.eventName||'next shoot'}`:'';return `<div class="ci-row"><div><b>${esc(c.name)} — ${esc(ciRoleCode(c.role))} · ${esc(used)} card${used===1?'':'s'}</b><small>${esc(custody+continuing)}</small><div class="ci-row-actions" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button type="button" class="btn-mini" onclick="ciStudioEditAttendance('${esc(id)}','${esc(uid)}')">Edit times / cards</button></div></div><div class="ci-row-time">${esc(time)}<div class="ci-hours">${esc(ciDuration(e.actualStartAt||a.checkedInAt,a.checkedOutAt))}</div></div><span class="ci-badge ok">Completed</span></div>`;}const studioActs=`<div class="ci-row-actions" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${!a.checkedInAt?`<button type="button" class="btn-mini" onclick="ciStudioMarkCheckIn('${esc(id)}','${esc(uid)}')">Studio check-in</button>`:''}${!a.checkedOutAt?`<button type="button" class="btn-mini" onclick="ciStudioCompleteCheckout('${esc(id)}','${esc(uid)}')">Studio checkout</button>`:''}<button type="button" class="btn-mini" onclick="ciStudioEditAttendance('${esc(id)}','${esc(uid)}')">Edit times / cards</button></div>`;return `<div class="ci-row"><div><b>${esc(c.name)}${c.isLead?' · Lead':''}</b><small>${esc(c.role)} · ${esc(c.phone||'')}</small>${studioActs}</div><div class="ci-row-time">${esc(time)}</div><span class="ci-badge ${cl}">${esc(lab)}</span></div>`;}).join('');
     const names=ciEventNames(e),neededTeams=[...new Set(crew.map(([,c])=>ciTeamType(c.role)).filter(Boolean))],listReady={candid:true,traditional:true};neededTeams.forEach(team=>{listReady[team]=names.every(name=>ciListExists(name,team)||!!(ciResourceAssignment(e,name)[team+'ListKey']&&((Array.isArray(shotLists?.[ciResourceAssignment(e,name)[team+'ListKey']]?.[team])?shotLists[ciResourceAssignment(e,name)[team+'ListKey']][team]:Object.values(shotLists?.[ciResourceAssignment(e,name)[team+'ListKey']]?.[team]||[])).length)));});
     const missingLists=[neededTeams.includes('candid')&&!listReady.candid?'Candid list':'',neededTeams.includes('traditional')&&!listReady.traditional?'Traditional list':''].filter(Boolean);
     const extras=ciExtrasText(e.eventExtras||e.extras),teamLabel=crew.length||extras?[...crew.map(([,c])=>`${ciRoleCode(c.role)} ${c.name}`),extras?`Extras · ${extras}`:''].filter(Boolean).join(' · '):'No team yet';
