@@ -281,6 +281,9 @@ function eventNamesFor(e){const a=Array.isArray(e&&e.eventNames)?e.eventNames:Ob
 function phoneDigits(v){return String(v||'').replace(/\D/g,'')}
 function waPhone(v){const n=phoneDigits(v);return n.length===10?'91'+n:n}
 function distanceM(a,b,c,d){const R=6371000,p=x=>x*Math.PI/180,dp=p(c-a),dl=p(d-b),q=Math.sin(dp/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
+function checkInRadiusM(e){const r=Number(e&&e.radiusM);return Number.isFinite(r)&&r>0?Math.max(r,800):1500;}
+function fmtDistance(d){return !Number.isFinite(d)?'unknown':d>1000?(d/1000).toFixed(1)+' km':Math.round(d)+' m';}
+let pendingVenueCheckIn=null;
 function durationText(start,end){if(!start||!end)return 'Working duration will appear once the actual shoot start is confirmed.';let m=Math.max(0,Math.round((end-start)/60000)),h=Math.floor(m/60);m%=60;return `Total shoot duration: ${h?`${h} hr${h===1?'':'s'} `:''}${m} min`;}
 async function boot(){
  try{firebase.initializeApp(FIREBASE);auth=firebase.auth();db=firebase.database()}catch(e){screen('loginScreen');showError('loginError','Could not connect. Reload and try again.');return}
@@ -428,7 +431,7 @@ function renderEvent(){
  if(!attendance.checkedInAt){
    html=detailCard()+assignmentCards();const hasLocation=!!activeEvent.mapsUrl;
    const dayState=eventDayState(activeEvent.date);
-   if(dayState==='today')html+=`<div class="action-stack"><button class="primary" id="checkBtn" ${hasLocation?'onclick="checkIn()"':'disabled'}>${hasLocation?'Check In':'Maps link pending'}</button></div>${hasLocation?'':'<p class="confirm-note">Tale of Two will update the venue link before check-in.</p>'}`;
+   if(dayState==='today')html+=`<div class="action-stack"><button class="primary" id="checkBtn" ${hasLocation?'onclick="checkIn()"':'disabled'}>${hasLocation?'Check In':'Maps link pending'}</button></div><div id="geoOverrideBox"></div>${hasLocation?'':'<p class="confirm-note">Tale of Two will update the venue link before check-in.</p>'}`;
    else if(dayState==='upcoming')html+=`<div class="action-stack"><button class="primary" disabled>Check In available on ${esc(fmtDate(activeEvent.date))}</button></div><p class="confirm-note">Your assignment is ready. Check in on the shoot day.</p>`;
    else html+=`<div class="action-stack"><button class="primary" disabled>Event date has passed</button></div>`;
    html+=lockedResources();
@@ -458,15 +461,55 @@ function resources(){
 }
 function updateProgress(){Object.entries(checklistSections||{}).forEach(([key,section])=>{const list=section.items||[],b=document.getElementById('progressBar_'+key),l=document.getElementById('progressLabel_'+key);if(!b||!l)return;const n=list.filter(x=>x.done).length;b.style.width=`${list.length?n/list.length*100:0}%`;l.textContent=`${n} of ${list.length} ticked`;});}
 function persistAttendance(next){attendance={...attendance,...next,updatedAt:Date.now()};attendanceMap[activeId]=attendance;const snapshot=JSON.parse(JSON.stringify(attendance));attendanceWrite=attendanceWrite.catch(()=>{}).then(()=>db.ref(`crewCheckins/attendance/${activeId}/${user.uid}`).set(snapshot));return attendanceWrite;}
+function showGeoOverride(d,limit,accuracy){
+ const box=document.getElementById('geoOverrideBox');if(!box)return;
+ box.innerHTML=`<div class="card" style="margin-top:10px"><strong style="display:block;font-size:14px">Phone GPS is ${esc(fmtDistance(d))} from the saved pin</strong><span style="display:block;font-size:12px;color:var(--soft);margin-top:6px;line-height:1.45">Allowed radius is about ${esc(fmtDistance(limit))} (includes GPS accuracy ${accuracy?accuracy+' m':'n/a'}). If you are at the shoot, confirm below — Studio will see it was a manual confirm.</span><div class="action-stack" style="margin-top:12px"><button class="secondary" onclick="confirmVenueCheckIn()">I am at the venue — check in</button><button class="quiet" onclick="checkIn()">Try GPS again</button></div></div>`;
+}
+async function finishCheckIn(lat,lng,accuracy,distance,bypassed){
+ const now=Date.now(),me=currentCrew(),arrival=eventTimeParts(activeEvent.date,me.arrivalTime||me.reportTime||activeEvent.reportingTime),deadline=arrival?new Date(arrival.year,arrival.month-1,arrival.day,arrival.hour,arrival.minute).getTime():null,late=Number.isFinite(deadline)&&now>deadline,lateMinutes=late?Math.max(1,Math.ceil((now-deadline)/60000)):0;
+ let d=Number(distance)||0,hasPin=Number.isFinite(+activeEvent.venueLat)&&Number.isFinite(+activeEvent.venueLng);
+ try{
+  if(!hasPin){
+   try{
+    const eventRef=db.ref(`crewCheckins/events/${activeId}`),pin=await eventRef.child('venueGps').transaction(value=>value||{lat,lng,setAt:now,setBy:user.uid}),fixed=pin.snapshot&&pin.snapshot.val();
+    if(fixed){activeEvent.venueLat=+fixed.lat;activeEvent.venueLng=+fixed.lng;events[activeId]=activeEvent;await eventRef.update({venueLat:+fixed.lat,venueLng:+fixed.lng});d=distanceM(lat,lng,+fixed.lat,+fixed.lng);}
+   }catch(pinError){d=0;}
+  }
+  const payload={confirmedAt:attendance.confirmedAt||now,checkedInAt:now,checkinLat:lat,checkinLng:lng,gpsAccuracy:Math.round(accuracy||0),distanceM:Math.round(d),late,lateMinutes};
+  if(bypassed){payload.geofenceBypass=true;payload.geofenceNote='Crew confirmed on-site after GPS radius mismatch';}
+  await persistAttendance(payload);
+  pendingVenueCheckIn=null;
+  toast(bypassed?(late?'Checked in late · location confirmed manually':'Checked in · location confirmed manually'):(late?'Checked in late':'Checked in — on time'));
+  items=[];renderEvent();
+ }catch(e){
+  console.error('Check-in failed',e);
+  toast(e&&e.code==='PERMISSION_DENIED'?'Check-in is blocked by access settings. Please contact Tale of Two.':'Could not save check-in. Please try again.');
+  const b=document.getElementById('checkBtn');if(b){b.disabled=false;b.textContent='Check In';}
+ }
+}
+function confirmVenueCheckIn(){
+ if(!pendingVenueCheckIn){toast('Get GPS once more, then confirm.');checkIn();return;}
+ const b=document.getElementById('checkBtn');if(b){b.disabled=true;b.textContent='Checking in…';}
+ const p=pendingVenueCheckIn;finishCheckIn(p.lat,p.lng,p.accuracy,p.distance,true);
+}
 function checkIn(){
  if(eventDayState(activeEvent&&activeEvent.date)!=='today'){toast('Check-in is available only on the event day.');renderEvent();return}
  const b=document.getElementById('checkBtn');b.disabled=true;b.textContent='Checking location…';
+ const box=document.getElementById('geoOverrideBox');if(box)box.innerHTML='';
  if(!navigator.geolocation){toast('Location is not available on this phone.');b.disabled=false;b.textContent='Check In';return}
  navigator.geolocation.getCurrentPosition(async pos=>{
-   const lat=pos.coords.latitude,lng=pos.coords.longitude,hasPin=Number.isFinite(+activeEvent.venueLat)&&Number.isFinite(+activeEvent.venueLng);let d=hasPin?distanceM(lat,lng,+activeEvent.venueLat,+activeEvent.venueLng):0;
-   if(!isFinite(d)||d>500){toast(`You are ${d>1000?(d/1000).toFixed(1)+' km':Math.round(d)+' m'} from the venue. Check-in is available within 500 m.`);b.disabled=false;b.textContent='Check In';return}
-   const now=Date.now(),me=currentCrew(),arrival=eventTimeParts(activeEvent.date,me.arrivalTime||me.reportTime||activeEvent.reportingTime),deadline=arrival?new Date(arrival.year,arrival.month-1,arrival.day,arrival.hour,arrival.minute).getTime():null,late=Number.isFinite(deadline)&&now>deadline,lateMinutes=late?Math.max(1,Math.ceil((now-deadline)/60000)):0;
-   try{if(!hasPin){try{const eventRef=db.ref(`crewCheckins/events/${activeId}`),pin=await eventRef.child('venueGps').transaction(value=>value||{lat,lng,setAt:now,setBy:user.uid}),fixed=pin.snapshot&&pin.snapshot.val();if(fixed){activeEvent.venueLat=+fixed.lat;activeEvent.venueLng=+fixed.lng;events[activeId]=activeEvent;await eventRef.update({venueLat:+fixed.lat,venueLng:+fixed.lng});d=distanceM(lat,lng,+fixed.lat,+fixed.lng);}}catch(pinError){d=0;}}await persistAttendance({confirmedAt:attendance.confirmedAt||now,checkedInAt:now,checkinLat:lat,checkinLng:lng,gpsAccuracy:Math.round(pos.coords.accuracy||0),distanceM:Math.round(d),late,lateMinutes});toast(late?'Checked in late':'Checked in — on time');items=[];renderEvent()}catch(e){toast('Could not save check-in. Please try again.');b.disabled=false;b.textContent='Check In'}
+   const lat=pos.coords.latitude,lng=pos.coords.longitude,accuracy=Math.round(pos.coords.accuracy||0),hasPin=Number.isFinite(+activeEvent.venueLat)&&Number.isFinite(+activeEvent.venueLng);
+   let d=hasPin?distanceM(lat,lng,+activeEvent.venueLat,+activeEvent.venueLng):0;
+   const radius=checkInRadiusM(activeEvent),limit=radius+Math.min(Math.max(accuracy,50),500);
+   if(hasPin&&(!Number.isFinite(d)||d>limit)){
+    pendingVenueCheckIn={lat,lng,accuracy,distance:d,limit,radius};
+    toast(`GPS shows ${fmtDistance(d)} from pin. If you are at venue, confirm below.`);
+    b.disabled=false;b.textContent='Check In';
+    showGeoOverride(d,limit,accuracy);
+    return;
+   }
+   pendingVenueCheckIn=null;
+   await finishCheckIn(lat,lng,accuracy,d,false);
  },err=>{const msg=err.code===1?'Please allow location access to check in.':'Could not confirm your location. Please try again.';toast(msg);b.disabled=false;b.textContent='Check In'},{enableHighAccuracy:true,timeout:18000,maximumAge:0});
 }
 function toggleShot(key,i){if(attendance.checkedOutAt||!checklistSections[key]||!checklistSections[key].items[i])return;checklistSections[key].items[i].done=!checklistSections[key].items[i].done;items=Object.values(checklistSections).flatMap(x=>x.items||[]);persistAttendance({checklistSections,checklistItems:null}).catch(()=>{});renderEvent()}
@@ -495,14 +538,15 @@ async function completeCheckOut(){
    const eventRef=db.ref(`crewCheckins/events/${activeId}`),latest=await eventRef.once('value');if(latest.exists()){activeEvent=latest.val();events[activeId]=activeEvent;}
    let workStartAt=activeEvent.actualStartAt||attendance.checkedInAt||now;
    if(!activeEvent.actualStartAt){try{const result=await eventRef.child('actualStartAt').transaction(value=>value||workStartAt);if(result.committed&&result.snapshot.val()){workStartAt=result.snapshot.val();activeEvent.actualStartAt=workStartAt;events[activeId]=activeEvent;}}catch(startError){}}
-   const continuingToNextShoot=!!(next&&nextShootChoice==='continuing'),checkout={checkedOutAt:now,cardsUsed,cardCustody,continuingToNextShoot,nextShootEventId:continuingToNextShoot?next[0]:null,updatedAt:now};
-   if(cardCustody==='handed_over')Object.assign(checkout,{handedToName:handoverName,handoverAt:now});
-   else Object.assign(checkout,{handedToName:null,handoverAt:null});
+   const continuingToNextShoot=!!(next&&nextShootChoice==='continuing'),checkout={checkedOutAt:now,cardsUsed,cardCustody,continuingToNextShoot,updatedAt:now};
+   if(continuingToNextShoot&&next)checkout.nextShootEventId=next[0];
+   if(cardCustody==='handed_over'){checkout.handedToName=handoverName;checkout.handoverAt=now;}
    await db.ref(`crewCheckins/attendance/${activeId}/${user.uid}`).update(checkout);
    attendance={...attendance,...checkout,checklistSections:cleanSections};attendanceMap[activeId]=attendance;
-   await Promise.allSettled([db.ref(`crewCheckins/attendance/${activeId}/${user.uid}/checklistSections`).set(cleanSections),submitLegacyChecklist(now,workStartAt)]);
+   try{await db.ref(`crewCheckins/attendance/${activeId}/${user.uid}/checklistSections`).set(cleanSections);}catch(listErr){console.warn('Checklist save skipped',listErr);}
+   submitLegacyChecklist(now,workStartAt).catch(()=>{});
    checkoutReviewOpen=false;toast(continuingToNextShoot?'Checked out · Next shoot is ready':cardCustody==='handed_over'?'Checked out · Handover recorded':'Checked out · Cards with you');renderEvent();
- }catch(e){console.error('Checkout failed',e);toast(e&&e.code==='PERMISSION_DENIED'?'Checkout is blocked by access settings. Please contact Tale of Two.':'Checkout could not be saved. Check your connection and try again.');if(button){button.disabled=false;button.textContent='Confirm & Check Out';}}
+ }catch(e){console.error('Checkout failed',e);const code=String(e&&(e.code||e.message)||'');toast(/PERMISSION_DENIED/i.test(code)?'Checkout is blocked by access settings. Please contact Tale of Two.':(e&&e.message?`Checkout failed: ${e.message}`:'Checkout could not be saved. Check your connection and try again.'));if(button){button.disabled=false;button.textContent='Save Details & Complete Checkout';}}
 }
 function completedCards(){
  const used=attendance.cardsUsed==null?'—':attendance.cardsUsed;
@@ -534,7 +578,7 @@ document.getElementById('eventScreen').addEventListener('touchend',e=>{
  if(dx>=75&&dy<=Math.max(55,dx*.65)&&elapsed<=900)showDashboard();
 },{passive:true});
 document.getElementById('eventScreen').addEventListener('touchcancel',()=>{swipeStartX=null;swipeStartY=0;swipeStartedAt=0},{passive:true});
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js?v=16').catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js?v=17').catch(()=>{}));
 </script>
 </body>
 </html>
