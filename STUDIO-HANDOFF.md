@@ -1,6 +1,6 @@
 # Tale of Two Weddings — Studio Handoff
 
-**Build:** `v13.0.0-owner-command-center-2026-08-09`  
+**Build:** `v13.0.1-owner-command-center-rules-fix-2026-08-10`  
 **Client and crew URLs:** unchanged
 
 ## The simple operating rule
@@ -47,8 +47,8 @@ You can create a pending Team profile with only a name and role for planning. Ad
 ## Release checks
 
 - Back up Firebase data first.
-- Verify the deployed Realtime Database rules separately; they are not present in this archive.
+- Deploy and verify the included database.rules.json. It preserves the supplied access model and adds the v13 owner-only day-cost/planning paths and Team profile fields.
 - Confirm owner, client-token and assigned-crew access with separate test identities.
 - Test two events on one date: one person must appear twice operationally but only once in that day’s Finance cost.
 - Test partial client approval, crew registration, profile edit, check-in/out, cards and hard refresh on desktop and mobile.
-- Confirm page-source build tag: `v13.0.0-owner-command-center-2026-08-09`.
+- Confirm page-source build tag: `v13.0.1-owner-command-center-rules-fix-2026-08-10`.

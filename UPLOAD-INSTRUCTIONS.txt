@@ -1,12 +1,13 @@
-TALE OF TWO WEDDINGS — OWNER COMMAND CENTER v13.0.0
+TALE OF TWO WEDDINGS — OWNER COMMAND CENTER v13.0.1
 
 UPLOAD
 1. Back up/export the current Firebase Realtime Database before rollout.
 2. Upload the contents of this folder to the existing GitHub repository, replacing matching website files.
 3. Keep the existing custom domain/CNAME and Firebase project unchanged.
 4. Do not upload the ZIP itself.
-5. Hard refresh after deployment and confirm the page-source build tag:
-   v13.0.0-owner-command-center-2026-08-09
+5. Publish database.rules.json to the tot-ledger Realtime Database before testing Team, Team & prep or day-wise costs. The included firebase.json points to this file.
+6. Hard refresh after deployment and confirm the page-source build tag:
+   v13.0.1-owner-command-center-rules-fix-2026-08-10
 
 PRESERVED
 - Dates & Enquiries UI, logic and data paths.
@@ -24,6 +25,6 @@ NEW OPERATING MODEL
 - Legacy standalone checklist URLs now send crew into the authenticated Crew App.
 
 IMPORTANT RELEASE CHECK
-- Firebase Realtime Database rules are not included in this archive. Confirm the live rules still enforce owner-only studio/finance access, exact token-scoped client access, and assigned-crew-only event/attendance access before production rollout.
+- Firebase Realtime Database rules are included as database.rules.json. They preserve the supplied owner/client/crew restrictions and add owner-only access for crewDayCosts and plannedAssignments plus the v13 Team profile fields.
 - The functions folder is included as source reference. Do not deploy, delete or replace live Functions unless you intentionally manage the reminder/WhatsApp backend.
 - Test one real wedding with two same-day events, one existing crew member, one new crew member, a day-rate edit, partial client approval and full check-in/out before broad use.
