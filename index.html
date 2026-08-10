@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v12.7.17-attendance-modal-2026-08-09">
+<meta name="totw-build" content="v13.0.0-owner-command-center-2026-08-09">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1869,6 +1869,50 @@ body{background:
 @media(max-width:720px){.cw-ops-prep-grid{grid-template-columns:1fr}}
 @media(max-width:720px){.cw-ops-person-grid{grid-template-columns:1fr}.cw-ops-rate-row{align-items:stretch;flex-direction:column}.cw-ops-rate-row input{flex:auto}}
 
+/* ===================== OWNER HOME + MASTER TEAM DIRECTORY ===================== */
+#tabHome,#tabTeam{min-height:72vh}
+.studio-page{max-width:1240px;margin:0 auto;padding:28px 28px 72px}
+.studio-page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:18px}
+.studio-page-head h2{font:500 38px/1 var(--display);color:var(--ink)}
+.studio-page-head p{max-width:680px;margin-top:7px;color:var(--ink-soft);font-size:11px;line-height:1.55}
+.studio-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.studio-action{min-height:37px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:500 9px var(--mono);letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
+.studio-action.primary{background:var(--ink);border-color:var(--ink);color:var(--ivory)}
+.studio-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:18px}
+.studio-metric{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.studio-metric span,.studio-metric strong,.studio-metric small{display:block}
+.studio-metric span{color:var(--ink-soft);font:7.5px var(--mono);letter-spacing:.09em;text-transform:uppercase}
+.studio-metric strong{margin-top:7px;font:500 27px/1 var(--display);color:var(--ink)}
+.studio-metric small{margin-top:6px;color:var(--ink-soft);font-size:8.5px;line-height:1.35}
+.studio-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);gap:14px;align-items:start}
+.studio-stack{display:grid;gap:14px}
+.studio-card{border:1px solid var(--line);border-radius:13px;background:var(--card);overflow:hidden;box-shadow:0 10px 28px rgba(48,36,28,.04)}
+.studio-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+.studio-card-head h3{font:500 20px var(--display);color:var(--ink)}
+.studio-card-head span{color:var(--ink-soft);font:7.5px var(--mono);letter-spacing:.07em;text-transform:uppercase}
+.studio-row{width:100%;display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 15px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);text-align:left;cursor:pointer}
+.studio-row:last-child{border-bottom:0}.studio-row:hover{background:var(--surface-3)}
+.studio-date{display:grid;place-content:center;min-height:43px;border-radius:9px;background:var(--surface-2);color:var(--ink);font:600 9px/1.25 var(--mono);text-align:center;text-transform:uppercase}
+.studio-row-main b,.studio-row-main small{display:block}.studio-row-main b{font-size:12px}.studio-row-main small{margin-top:4px;color:var(--ink-soft);font-size:9.5px;line-height:1.4}
+.studio-status{justify-self:end;padding:6px 8px;border-radius:8px;background:var(--surface-3);color:var(--ink-soft);font:7.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.studio-status.bad{background:var(--sindoor-soft);color:var(--sindoor)}.studio-status.warn{background:var(--amber-soft);color:#7A5A1E}.studio-status.good{background:var(--leaf-soft);color:var(--leaf)}
+.studio-empty{padding:28px 18px;color:var(--ink-soft);font-size:10.5px;text-align:center}
+.team-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.team-search{flex:1;min-width:230px;height:39px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:12px}
+.team-add-card{display:none;margin-bottom:14px;padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.team-add-card.open{display:block}.team-add-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr 1.2fr .8fr;gap:8px}
+.team-add-grid input,.team-add-grid select{min-width:0;height:39px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:11px}
+.team-add-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:10px}
+.team-directory{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.team-person{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:11px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:11px;background:var(--card)}
+.team-avatar{width:44px;height:44px;display:grid;place-content:center;border-radius:11px;background:var(--surface-3);color:var(--ink);font:600 10px var(--mono)}
+.team-person b,.team-person small{display:block}.team-person b{font-size:12.5px}.team-person small{margin-top:3px;color:var(--ink-soft);font-size:9px;line-height:1.4}
+.team-rate{margin-top:7px;color:var(--amber);font:8px var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.team-person-actions{display:flex;gap:6px;flex-direction:column}.team-person-actions button{min-width:58px}.team-warning{color:var(--sindoor)!important}
+:where(button,a,input,select,textarea,summary,[tabindex]):focus-visible{outline:3px solid var(--sindoor);outline-offset:2px}
+@media(max-width:1050px){.studio-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.studio-grid{grid-template-columns:1fr}.team-add-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.studio-page{padding:20px 12px 48px}.studio-page-head{align-items:flex-start;flex-direction:column}.studio-page-head h2{font-size:32px}.studio-actions{justify-content:flex-start}.studio-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.studio-metric strong{font-size:24px}.studio-row{grid-template-columns:49px minmax(0,1fr)}.studio-status{grid-column:2;justify-self:start}.team-directory{grid-template-columns:1fr}.team-add-grid{grid-template-columns:1fr}.team-add-grid input,.team-add-grid select,.team-search{font-size:16px;min-height:44px}.studio-action{min-height:44px}.team-toolbar .studio-action{flex:1}.team-person{grid-template-columns:40px minmax(0,1fr)}.team-person-actions{grid-column:2;flex-direction:row}}
+
 </style>
 </head>
 <body>
@@ -1896,13 +1940,15 @@ body{background:
     </div>
   </div>
   <nav class="vtabs" aria-label="Primary">
+    <button id="vtHome" onclick="setView('home')">Today</button>
     <button id="vtEnq" class="on" onclick="setView('ledger')">Dates &amp; Enquiries</button>
     <button id="vtClientForms" onclick="openClientsHome()">Weddings</button>
     <button id="vtPlan" onclick="setView('plan')">Crew Planner</button>
-    <button id="vtCheckins" onclick="setView('shoots')">Live day</button>
+    <button id="vtCheckins" onclick="setView('shoots')">Day-of</button>
+    <button id="vtTeam" onclick="setView('team')">Team</button>
     <button id="vtDeliveries" class="rail-hidden" onclick="setView('deliverables')">Deliverables</button>
     <button id="vtBiz" class="rail-hidden" onclick="setView('businessOverview')">Business Overview</button>
-    <button id="vtProd" onclick="setView('business')">Wedding file</button>
+    <button id="vtProd" onclick="setView('business')">Finance &amp; Reports</button>
     <button id="vtShots" onclick="setView('settings')">Settings</button>
   </nav>
   <div class="rail-foot">
@@ -1927,6 +1973,10 @@ body{background:
   </div>
   <div class="sync-banner" id="syncBanner"></div>
 </header>
+
+<div id="tabHome" style="display:none"><div id="studioHomeRoot"></div></div>
+
+<div id="tabTeam" style="display:none"><div id="studioTeamRoot"></div></div>
 
 <div id="tabLedger">
 <div class="strip" id="strip"></div>
@@ -2301,8 +2351,8 @@ body{background:
 <div id="tabCheckins" style="display:none">
  <div class="ci-wrap">
   <div class="ci-head">
-    <div><h2>Live day</h2><p>Day-of check-in, WhatsApp, and card handover. Assign crew and costs in Weddings → Team &amp; prep.</p></div>
-    <div class="ci-actions"><button class="btn-mini" onclick="copyCrewRegistrationLink()">Copy crew registration link</button><button class="btn-mini" onclick="openCrewProfiles()">Registered crew</button><button class="btn-mini" onclick="toggleCheckinForm(true)">+ New shoot</button></div>
+    <div><h2>Day-of operations</h2><p>Check-in, WhatsApp reminders, cards and handover only. Assign crew and costs once in Weddings → Team &amp; prep.</p></div>
+    <div class="ci-actions"><button class="btn-mini" onclick="copyCrewRegistrationLink()">Copy crew registration link</button><button class="btn-mini" onclick="setView('team')">Manage team</button><button class="btn-mini" title="For rare unplanned events only" onclick="toggleCheckinForm(true)">Recovery · manual shoot</button></div>
   </div>
   <div class="ci-note" id="ciTomorrowNote" style="display:none"></div>
   <div class="ci-grid" id="ciGrid">
@@ -2470,6 +2520,7 @@ let shotListExtras = {}; // shotListExtras: key -> {name} — future custom shot
 let shotMoods = {};      // shotMoods: groupKey -> {url} — mood board link per event
 let shotEventMoods = {}; // shotEventMoods: category -> {name,url,active} — common reusable event boards
 let crewProfiles = {};   // crewProfiles: Firebase uid -> one-time crew profile
+let crewDayCosts = {};   // one manual cost per wedding/date/crew UID
 let checkinEvents = {};  // crewCheckins/events: event setup and team snapshot
 let checkinAttendance = {}; // crewCheckins/attendance: per-event, per-person status
 let clientForms = {};     // private client links and their pre-filled Planner events
@@ -2574,9 +2625,9 @@ function start(){
   db.ref('calendarNotes').on('value',s=>{TBD=s.val()||{};renderCalendar();});
   db.ref('rosterSeed').on('value',s=>{const v=s.val()||[];ROSTER_SEED=Array.isArray(v)?v:Object.values(v);});
   db.ref('bookings').on('value',s=>{teamBookings=s.val()||{};bookingsLoaded=true;refresh();publishCrewEvents();renderClientsWorkspace();});
-  db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};enquiriesLoaded=true;refresh();publishCrewEvents();renderClientsWorkspace();});
+  db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};enquiriesLoaded=true;refresh();publishCrewEvents();renderClientsWorkspace();renderStudioHome();});
   db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
-  db.ref('prod').on('value',s=>{prods=s.val()||{};prodsLoaded=true;renderProdAll();renderClientsWorkspace();cwScheduleOpsFinanceRefresh();});
+  db.ref('prod').on('value',s=>{prods=s.val()||{};prodsLoaded=true;renderProdAll();renderClientsWorkspace();renderStudioHome();cwScheduleOpsFinanceRefresh();});
   db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
   db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();renderCheckinFormOptions();renderMoodSec();previewClientFormEvents();publishCrewEvents();renderClientsWorkspace();});
   db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();renderClientsWorkspace();});
@@ -2586,12 +2637,13 @@ function start(){
   db.ref('shotListExtras').on('value',s=>{shotListExtras=s.val()||{};refreshShotEditTypeOptions();renderClientsWorkspace();});
   db.ref('shotMoods').on('value',s=>{shotMoods=s.val()||{};renderShots();renderMoodSec();renderClientsWorkspace();});
   db.ref('shotEventMoods').on('value',s=>{shotEventMoods=s.val()||{};renderEventBoards();renderClientsWorkspace();});
-  db.ref('crewProfiles').on('value',s=>{crewProfiles=s.val()||{};renderCheckinTeam();renderCrewProfiles();renderClientsWorkspace();});
-  db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};checkinEventsLoaded=true;cw11InvalidateCleanDrafts();renderCheckinEvents();ensureApprovedClientShoots();renderClientsWorkspace();cwScheduleOpsFinanceRefresh();});
-  db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};ciBackfillVenuePins();renderCheckinEvents();renderClientsWorkspace();cwScheduleOpsFinanceRefresh();});
-  db.ref('clientForms').on('value',s=>{clientForms=s.val()||{};clientFormsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();renderMoodSec();});
-  db.ref('clientSubmissions').on('value',s=>{clientSubmissions=s.val()||{};clientSubmissionsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();});
-  db.ref('clientApprovals').on('value',s=>{clientApprovals=s.val()||{};clientApprovalsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();});
+  db.ref('crewProfiles').on('value',s=>{crewProfiles=s.val()||{};renderCheckinTeam();renderCrewProfiles();renderClientsWorkspace();renderTeamDirectory();renderStudioHome();});
+  db.ref('crewDayCosts').on('value',s=>{crewDayCosts=s.val()||{};renderClientsWorkspace();renderStudioHome();cwScheduleOpsFinanceRefresh();});
+  db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};checkinEventsLoaded=true;cw11InvalidateCleanDrafts();renderCheckinEvents();ensureApprovedClientShoots();renderClientsWorkspace();renderTeamDirectory();renderStudioHome();cwScheduleOpsFinanceRefresh();});
+  db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};ciBackfillVenuePins();renderCheckinEvents();renderClientsWorkspace();renderStudioHome();cwScheduleOpsFinanceRefresh();});
+  db.ref('clientForms').on('value',s=>{clientForms=s.val()||{};clientFormsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();renderMoodSec();renderStudioHome();});
+  db.ref('clientSubmissions').on('value',s=>{clientSubmissions=s.val()||{};clientSubmissionsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();renderStudioHome();});
+  db.ref('clientApprovals').on('value',s=>{clientApprovals=s.val()||{};clientApprovalsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();renderStudioHome();});
   document.getElementById('footNote').textContent='Private shared ledger. Signed in as '+editor+'.';
 }
 function publishCrewEvents(){
@@ -3778,19 +3830,101 @@ function calendarCoupleMap(){
   return map;
 }
 
+/* ---------------- owner home + master crew directory ---------------- */
+let studioTeamQuery='',studioCrewAddOpen=false;
+function studioMoney(value){
+  const n=Number(value)||0;
+  return '₹'+new Intl.NumberFormat('en-IN',{maximumFractionDigits:0}).format(n);
+}
+function studioInitials(name){return String(name||'').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'—';}
+function studioDateBadge(iso){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(iso||''))return 'TBD';
+  const d=new Date(iso+'T00:00:00');return `${MN[d.getMonth()].slice(0,3)}<br>${d.getDate()}`;
+}
+function studioDayDiff(iso){const a=new Date(ciTodayIso()+'T00:00:00'),b=new Date(iso+'T00:00:00');return Math.round((b-a)/86400000);}
+function studioOpenWedding(key,section='operations',eventId=''){
+  cwSelectedKey=String(key||'');cwSection=section;cw10SelectedEventId=String(eventId||'');
+  localStorage.setItem('totw_client_workspace',cwSelectedKey);localStorage.setItem('totw_client_section',cwSection);
+  if(cw10SelectedEventId)localStorage.setItem('totw_client_event',cw10SelectedEventId);else localStorage.removeItem('totw_client_event');
+  setView('clients');renderClientsWorkspace();
+}
+function studioPayload(value){return btoa(unescape(encodeURIComponent(JSON.stringify(value))));}
+function studioOpenWeddingEncoded(payload){try{const [key,section,eventId]=JSON.parse(decodeURIComponent(escape(atob(payload))));studioOpenWedding(key,section,eventId);}catch(e){toast('Could not open this wedding.');}}
+function studioHomeRow(item){
+  const payload=studioPayload([item.key||'',item.section||'operations',item.eventId||'']),click=item.key?`onclick="studioOpenWeddingEncoded('${payload}')"`:item.onclick||'';
+  return `<button type="button" class="studio-row" ${click}><span class="studio-date">${studioDateBadge(item.date)}</span><span class="studio-row-main"><b>${esc(item.title)}</b><small>${esc(item.detail||'')}</small></span><span class="studio-status ${esc(item.tone||'')}">${esc(item.status||'Open')}</span></button>`;
+}
+function renderStudioHome(){
+  const root=document.getElementById('studioHomeRoot');if(!root)return;
+  let states=[];try{states=cwDirectory().map(entry=>({entry,state:cwState(entry)}));}catch(err){states=[];}
+  const today=ciTodayIso(),futureLimit=new Date(today+'T00:00:00');futureLimit.setDate(futureLimit.getDate()+14);const limitIso=futureLimit.toISOString().slice(0,10);
+  const upcoming=[],attention=[],deliveries=[];
+  Object.values(enquiries||{}).forEach(enquiry=>{if(enquiry&&!enquiry.done&&!enquiry.status&&typeof isDue==='function'&&isDue(enquiry))attention.push({date:'',title:enquiry.name||'Enquiry',detail:'Enquiry follow-up is due',status:'Follow up',tone:'bad',onclick:"setView('ledger');setTimeout(()=>document.getElementById('enqItems')?.scrollIntoView({behavior:'smooth',block:'start'}),50)"});});
+  states.forEach(({entry,state})=>{
+    if(entry.bookingOnly&&!state.form){const next=(entry.dates||[]).find(d=>d>=today);if(next&&next<=limitIso)attention.push({key:entry.key,date:next,title:entry.name,detail:'Confirmed booking · client link not created',status:'Create link',tone:'warn',section:'overview'});}
+    (state.events||[]).forEach(event=>{
+      if((event.date<today||event.date>limitIso)&&cw10ReviewSummary(state,event.eventId)){attention.push({key:entry.key,eventId:event.eventId,date:event.date,title:`${entry.name} · ${event.name}`,detail:'Client update waiting for approval',status:'Review',tone:'bad',section:'event'});}
+      if(event.date<today||event.date>limitIso)return;
+      const details=cw10CurrentDetails(state,event),status=cw10EventStatus(state,event),crewCount=Object.keys(cw11GetPlanDraft(state,event).crew||{}).length;
+      const row={key:entry.key,eventId:event.eventId,date:event.date,title:`${entry.name} · ${event.name}`,detail:`${details.venueName||'Venue pending'} · ${details.startTime?ciFmtTime(details.startTime):'Time pending'} · ${crewCount} crew`,status:status.text,tone:status.key==='ready'?'good':status.key==='live'?'good':status.key==='attention'?'bad':'warn'};
+      upcoming.push(row);if(!['ready','complete'].includes(status.key))attention.push(row);
+    });
+    if(state.deliveriesUnlocked&&!state.deliveriesOk)deliveries.push({key:entry.key,date:(entry.dates||[]).at(-1)||'',title:entry.name,detail:`${state.stageDone}/${state.stages.length||0} deliverables complete`,status:'In delivery',tone:'warn',section:'deliveries'});
+  });
+  upcoming.sort((a,b)=>a.date.localeCompare(b.date));attention.sort((a,b)=>a.date.localeCompare(b.date));deliveries.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const todayEvents=upcoming.filter(x=>x.date===today),nextEvents=upcoming.filter(x=>x.date>today).slice(0,8);
+  const prodList=Object.values(prods||{}),packageValue=prodList.reduce((sum,p)=>sum+(Number(p&&p.pkg)||0),0),crewSpend=prodList.reduce((sum,p)=>sum+(p?crewCost(p).total:0),0);
+  const openLeads=Object.values(enquiries||{}).filter(x=>x&&!x.done&&!x.status).length,hotLeads=Object.values(enquiries||{}).filter(x=>x&&!x.done&&!x.status&&x.cat==='HOT').length;
+  const futureWeddings=states.filter(({entry})=>(entry.dates||[]).some(d=>d>=today)).length;
+  root.innerHTML=`<main class="studio-page"><div class="studio-page-head"><div><h2>Your studio, today</h2><p>Only the work that needs a decision now. Crew, client details, day-of status and finance all open into the same wedding record.</p></div><div class="studio-actions"><button class="studio-action" onclick="setView('ledger');setTimeout(()=>document.getElementById('enqName')?.focus(),50)">+ Enquiry</button><button class="studio-action" onclick="openClientsHome()">Open weddings</button><button class="studio-action primary" onclick="setView('team')">Manage team</button></div></div>
+    <section class="studio-metrics"><div class="studio-metric"><span>Needs action</span><strong>${attention.length}</strong><small>Across the next 14 days</small></div><div class="studio-metric"><span>Today</span><strong>${todayEvents.length}</strong><small>Events on the floor</small></div><div class="studio-metric"><span>Upcoming weddings</span><strong>${futureWeddings}</strong><small>Confirmed folders</small></div><div class="studio-metric"><span>Open enquiries</span><strong>${openLeads}</strong><small>${hotLeads} hot lead${hotLeads===1?'':'s'}</small></div><div class="studio-metric"><span>Est. gross margin</span><strong>${packageValue?studioMoney(packageValue-crewSpend):'—'}</strong><small>${studioMoney(packageValue)} packages · crew only</small></div></section>
+    <div class="studio-grid"><div class="studio-stack"><section class="studio-card"><header class="studio-card-head"><h3>Needs your attention</h3><span>${attention.length} item${attention.length===1?'':'s'}</span></header>${attention.length?attention.slice(0,10).map(studioHomeRow).join(''):'<div class="studio-empty">Nothing urgent. Your upcoming weddings are ready.</div>'}</section><section class="studio-card"><header class="studio-card-head"><h3>Next 14 days</h3><span>${nextEvents.length} event${nextEvents.length===1?'':'s'}</span></header>${nextEvents.length?nextEvents.map(studioHomeRow).join(''):'<div class="studio-empty">No upcoming events in the next 14 days.</div>'}</section></div><div class="studio-stack"><section class="studio-card"><header class="studio-card-head"><h3>Today</h3><span>Live operations</span></header>${todayEvents.length?todayEvents.map(studioHomeRow).join(''):'<div class="studio-empty">No shoots today.</div>'}</section><section class="studio-card"><header class="studio-card-head"><h3>In delivery</h3><span>${deliveries.length} wedding${deliveries.length===1?'':'s'}</span></header>${deliveries.length?deliveries.slice(0,6).map(studioHomeRow).join(''):'<div class="studio-empty">No active delivery queues.</div>'}</section></div></div></main>`;
+}
+function crewDefaultDayRate(uid,p=crewProfiles[uid]||{}){
+  if(p.defaultDayRate!==''&&p.defaultDayRate!=null&&Number.isFinite(Number(p.defaultDayRate)))return Number(p.defaultDayRate);
+  const legacy=people[crewLegacyPeopleKey(p.name)]||{};return Number(legacy.rate)||0;
+}
+function crewLegacyPeopleKey(name){return String(name||'').trim().toLowerCase().replace(/[.#$\[\]/]/g,'_');}
+function studioCrewSchedule(uid){
+  const today=ciTodayIso(),rows=[];Object.entries(checkinEvents||{}).forEach(([eventId,e])=>{if(e&&e.date>=today&&e.crew&&e.crew[uid])rows.push({eventId,date:e.date,couple:e.couple,eventName:e.eventName||'Event'});});
+  return rows.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function studioSetTeamQuery(value){studioTeamQuery=String(value||'').toLowerCase();renderTeamDirectory();setTimeout(()=>{const input=document.querySelector('.team-search');if(input){input.focus();input.setSelectionRange(input.value.length,input.value.length);}},0);}
+function studioToggleCrewAdd(force){studioCrewAddOpen=typeof force==='boolean'?force:!studioCrewAddOpen;renderTeamDirectory();if(studioCrewAddOpen)setTimeout(()=>document.getElementById('studioCrewName')?.focus(),0);}
+function studioEditCrew(uid){openCrewProfiles();crewProfileGroupsOpen.add(crewProfileGroup(crewProfiles[uid]||{}));editCrewProfile(uid);}
+async function studioSaveCrew(){
+  const name=document.getElementById('studioCrewName')?.value.trim()||'',role=document.getElementById('studioCrewRole')?.value||'',phone=ciPhone(document.getElementById('studioCrewPhone')?.value||''),email=(document.getElementById('studioCrewEmail')?.value||'').trim().toLowerCase(),dayRate=Math.max(0,Number(document.getElementById('studioCrewRate')?.value)||0);
+  if(!name){toast('Enter the crew member’s name.');return;}if(!role){toast('Choose a default role.');return;}if(phone&&(phone.length<10||phone.length>16)){toast('Enter a valid mobile number, or leave it blank.');return;}if(email&&!email.includes('@')){toast('Enter a valid email address, or leave it blank.');return;}
+  const duplicate=Object.values(crewProfiles||{}).find(p=>(phone&&ciPhone(p.phone||'')===phone)||(email&&String(p.email||'').trim().toLowerCase()===email)||(!phone&&!email&&String(p.name||'').trim().toLowerCase()===name.toLowerCase()));if(duplicate){toast('This crew member already exists. Open their profile instead.');return;}
+  const id='manual_'+uid('crew'),now=Date.now(),profile={name,role,phone,email,defaultDayRate:dayRate,manual:true,createdAt:now,updatedAt:now,createdBy:editor},personKey=crewLegacyPeopleKey(name),personRec={...(people[personKey]||{}),name,style:role,rate:dayRate,unit:'day'};
+  try{await db.ref().update({[`crewProfiles/${id}`]:profile,[`people/${personKey}`]:personRec});crewProfiles[id]=profile;people[personKey]=personRec;studioCrewAddOpen=false;renderTeamDirectory();renderCrewProfiles();toast(`${name} added once — ready for assignment.`);log(`added crew directory profile: ${name}`);}catch(err){toast('Could not add this crew member. Please try again.');}
+}
+function renderTeamDirectory(){
+  const root=document.getElementById('studioTeamRoot');if(!root)return;const all=Object.entries(crewProfiles||{}).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||''))),list=all.filter(([,p])=>!studioTeamQuery||`${p.name||''} ${p.role||''} ${p.phone||''} ${p.email||''}`.toLowerCase().includes(studioTeamQuery));
+  const missingContact=all.filter(([,p])=>!p.phone&&!p.email).length,missingRate=all.filter(([uid,p])=>!crewDefaultDayRate(uid,p)).length,assigned=all.filter(([uid])=>studioCrewSchedule(uid).length).length;
+  const cards=list.map(([uid,p])=>{const schedule=studioCrewSchedule(uid),rate=crewDefaultDayRate(uid,p),contact=[p.phone,p.email].filter(Boolean).join(' · '),connection=p.manual?(p.email?'Pending crew sign-in':'Not connected · add email before sharing crew link'):'Crew App connected';return `<article class="team-person"><span class="team-avatar">${esc(studioInitials(p.name))}</span><span><b>${esc(p.name||'Unnamed')}</b><small>${esc(p.role||'Role not set')} · ${esc(connection)}</small><small class="${contact?'':'team-warning'}">${esc(contact||'Contact not added yet')}</small><span class="team-rate">${rate?studioMoney(rate)+' / day':'Day rate not set'} · ${schedule.length?schedule.length+' upcoming':'Available'}</span>${schedule[0]?`<small>Next: ${esc(ciDateLong(schedule[0].date))} · ${esc(schedule[0].couple)}</small>`:''}</span><span class="team-person-actions"><button class="studio-action" onclick="studioEditCrew('${esc(uid)}')">Edit</button></span></article>`;}).join('');
+  root.innerHTML=`<main class="studio-page"><div class="studio-page-head"><div><h2>One team directory</h2><p>Add a person once. Their identity, contact, default role and day rate are then reused in Weddings, the crew link, Day-of and Finance.</p></div><div class="studio-actions"><button class="studio-action" onclick="copyCrewRegistrationLink()">Copy registration link</button><button class="studio-action primary" onclick="studioToggleCrewAdd()">+ Add crew</button></div></div><section class="studio-metrics"><div class="studio-metric"><span>Crew profiles</span><strong>${all.length}</strong><small>One shared directory</small></div><div class="studio-metric"><span>Upcoming</span><strong>${assigned}</strong><small>With a future assignment</small></div><div class="studio-metric"><span>Missing contact</span><strong>${missingContact}</strong><small>Can still be planned now</small></div><div class="studio-metric"><span>Missing rate</span><strong>${missingRate}</strong><small>Default for new shoot days</small></div><div class="studio-metric"><span>Source of truth</span><strong>1</strong><small>Weddings → Team & prep</small></div></section><div class="team-toolbar"><input class="team-search" aria-label="Search team directory" value="${esc(studioTeamQuery)}" placeholder="Search name, role or phone…" oninput="studioSetTeamQuery(this.value)"><button class="studio-action" onclick="setView('shoots')">Open Day-of</button></div><section class="team-add-card ${studioCrewAddOpen?'open':''}"><div class="team-add-grid"><input id="studioCrewName" aria-label="Crew member name" placeholder="Full name"><select id="studioCrewRole" aria-label="Default crew role"><option value="">Default role</option>${CI_ROLES.map(r=>`<option>${esc(r)}</option>`).join('')}</select><input id="studioCrewPhone" aria-label="Crew member phone" inputmode="tel" placeholder="Phone (optional)"><input id="studioCrewEmail" aria-label="Crew member Google account email" type="email" placeholder="Google email (for Crew App)"><input id="studioCrewRate" aria-label="Default day rate for new shoot days" type="number" min="0" step="100" inputmode="numeric" placeholder="Default ₹ / new day"></div><div class="team-add-actions"><button class="studio-action" onclick="studioToggleCrewAdd(false)">Cancel</button><button class="studio-action primary" onclick="studioSaveCrew()">Save crew member</button></div></section><section class="team-directory">${cards||'<div class="studio-empty">No matching crew members.</div>'}</section></main>`;
+}
+
 /* ---- view tabs ---- */
 function setView(v){
+  if(v==='deliverables'){cwSection='deliveries';localStorage.setItem('totw_client_section','deliveries');}
+  if(v==='businessOverview'){cwSection='overview';localStorage.setItem('totw_client_section','overview');}
   v=({clientforms:'clients',prod:'business',shots:'settings',checkins:'shoots',businessOverview:'clients',deliverables:'clients'})[v]||v;
-  const led=document.getElementById('tabLedger'),bo=document.getElementById('tabBusinessOverview'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots'),ci=document.getElementById('tabCheckins'),cf=document.getElementById('tabClientForms'),dl=document.getElementById('tabDeliverables');
-  if(!led||!bo||!pr||!pl||!sh||!ci||!cf||!dl)return;
+  const home=document.getElementById('tabHome'),team=document.getElementById('tabTeam'),led=document.getElementById('tabLedger'),bo=document.getElementById('tabBusinessOverview'),pr=document.getElementById('tabProd'),pl=document.getElementById('tabPlan'),sh=document.getElementById('tabShots'),ci=document.getElementById('tabCheckins'),cf=document.getElementById('tabClientForms'),dl=document.getElementById('tabDeliverables');
+  if(!home||!team||!led||!bo||!pr||!pl||!sh||!ci||!cf||!dl)return;
+  document.getElementById('vtHome').classList.toggle('on',v==='home');
   document.getElementById('vtEnq').classList.toggle('on',v==='ledger');
   document.getElementById('vtPlan').classList.toggle('on',v==='plan');
   document.getElementById('vtBiz').classList.toggle('on',false);
   document.getElementById('vtProd').classList.toggle('on',v==='business');
   document.getElementById('vtShots').classList.toggle('on',v==='settings');
   document.getElementById('vtCheckins').classList.toggle('on',v==='shoots');
+  document.getElementById('vtTeam').classList.toggle('on',v==='team');
   document.getElementById('vtClientForms').classList.toggle('on',v==='clients');
   document.getElementById('vtDeliveries').classList.toggle('on',false);
+  home.style.display=v==='home'?'':'none';
+  team.style.display=v==='team'?'':'none';
   led.style.display=v==='ledger'?'':'none';
   bo.style.display='none';
   pl.style.display=v==='plan'?'':'none';
@@ -3799,7 +3933,7 @@ function setView(v){
   ci.style.display=v==='shoots'?'':'none';
   cf.style.display=v==='clients'?'':'none';
   dl.style.display='none';
-  const titles={ledger:'Dates <em>&amp;</em> Enquiries',clients:'Weddings',plan:'Crew <em>Planner</em>',settings:'Studio <em>Settings</em>',shoots:'Live <em>day</em>',business:'Wedding <em>file</em>'};
+  const titles={home:'Today <em>&amp;</em> Next',ledger:'Dates <em>&amp;</em> Enquiries',clients:'Weddings',plan:'Crew <em>Planner</em>',settings:'Studio <em>Settings</em>',shoots:'Day-of <em>Operations</em>',team:'Team <em>Directory</em>',business:'Finance <em>&amp;</em> Reports'};
   const pageTitle=document.getElementById('pageTitle'),calendarYearTabs=document.getElementById('calendarYearTabs'),calendarLegend=document.getElementById('calendarLegend');
   if(pageTitle)pageTitle.innerHTML=titles[v]||titles.ledger;
   document.body.classList.toggle('cw10-client-mode',v==='clients');
@@ -3807,6 +3941,8 @@ function setView(v){
   if(calendarLegend)calendarLegend.style.display=v==='ledger'?'':'none';
   localStorage.setItem('totw_view',v);
   hidePop();
+  if(v==='home')renderStudioHome();
+  if(v==='team')renderTeamDirectory();
   if(v==='business')renderProdAll();
   if(v==='plan')renderPlan();
   if(v==='settings'){renderShots();renderEventBoards();renderMoodSec();loadShotEd();}
@@ -3814,7 +3950,8 @@ function setView(v){
   if(v==='clients'){renderClientForms();}
 }
 function restoreView(){
-  let v=localStorage.getItem('totw_view')||'ledger';
+  let v=localStorage.getItem('totw_view')||'home';
+  if(!localStorage.getItem('totw_owner_home_v1')){v='home';localStorage.setItem('totw_owner_home_v1','1');}
   if(v==='businessOverview'||v==='deliverables')v='clients';
   setView(v);
 }
@@ -6362,8 +6499,9 @@ function cwBusinessProdSeed(state){
     t:Date.now()
   };
 }
-function cwOpsCostFromRecord(record,shootId,crewUid,c){
+function cwOpsCostFromRecord(record,shootId,crewUid,c,state=null,date=''){
   if(!record||!c)return null;
+  const canonical=state&&date?cwOpsCanonicalDayCost(state,date,crewUid):null;if(canonical!=null)return canonical;
   // Every amount here is manually entered in Team & prep. Traditional roles
   // show worked duration as context, but their cost is never auto-calculated.
   const n=Number(c.crewCost);
@@ -6389,12 +6527,12 @@ function cwBuildOpsFinanceSync(results){
       if(!record)return;
       Object.entries(record.crew||{}).forEach(([crewUid,c])=>{
         const person=String(c.name||crewProfiles[crewUid]?.name||'Crew member').trim(),role=String(c.role||'Other'),personKey=crewUid||`${person.toLowerCase()}|${role}`;
-        const pay=cwOpsCostFromRecord(record,shootId,crewUid,c),prev=people.get(personKey);
+        const pay=cwOpsCostFromRecord(record,shootId,crewUid,c,state,date),prev=people.get(personKey);
         if(!prev)people.set(personKey,{crewUid,c,person,role,pay});
         else if(pay!=null&&(prev.pay==null||Number(pay)>Number(prev.pay)))prev.pay=pay;
       });
     });
-    const rows=[...people.values()].filter(x=>x.pay!=null&&Number(x.pay)>0),replacementKeys=new Set(rows.map(x=>`${x.person.toLowerCase()}|${x.role}`));
+    const rows=[...people.values()].filter(x=>x.pay!=null&&Number(x.pay)>=0);
     let prodId=clientProdIds.get(clientKey)||state.prodId||'',prod=prodId&&(staged.get(prodId)||ciClone(prods[prodId]));
     if(!prod&&rows.length){prodId=uid('p');prod=cwBusinessProdSeed(state);clientProdIds.set(clientKey,prodId);}
     if(!prod)return;
@@ -6402,11 +6540,10 @@ function cwBuildOpsFinanceSync(results){
     let day=prod.days.find(d=>d.date===date);
     if(!day){day={date,events:dayEvents.map(e=>e.name),gb:0,roles:[],fmt:false};prod.days.push(day);}
     day.events=[...new Set([...(Array.isArray(day.events)?day.events:[]),...dayEvents.map(e=>e.name)])];
-    // Remove older event-wise sync rows and their unmarked legacy equivalents.
+    // Replace only our own projection rows. Manual/legacy prices are preserved.
     day.roles=(Array.isArray(day.roles)?day.roles:[]).filter(r=>{
       if(r&&r.opsSource==='teamPrep')return false;
-      const key=`${String(r&&r.person||'').trim().toLowerCase()}|${String(r&&r.role||'Other')}`;
-      return !replacementKeys.has(key);
+      return true;
     });
     rows.forEach(({crewUid,person,role,pay})=>day.roles.push({person,role,pay:Number(pay),opsSource:'teamPrep',opsDay:date,opsUid:crewUid}));
     prod.days.sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
@@ -6649,13 +6786,13 @@ async function createClientForm(){
   const result=document.getElementById('cfCreateResult'),couple=document.getElementById('cfCouple').value.trim(),rows=clientFormDraft.map(x=>({_id:x._id||'',name:String(x.name||'').trim(),date:String(x.date||''),studioOnly:!!x.studioOnly,questions:{contact:!!x.questions?.contact,brideReady:!!x.questions?.brideReady,groomReady:!!x.questions?.groomReady,notes:!!x.questions?.notes}})).filter(x=>x.name&&x.date).sort((a,b)=>a.date.localeCompare(b.date));
   if(!couple||!rows.length){result.className='check-result show clash';result.innerHTML='<b>Complete the setup</b>Add at least one event with its name and date.';return;}
   if(rows.length!==clientFormDraft.length){result.className='check-result show clash';result.innerHTML='<b>One event is incomplete</b>Every event needs a name and date, or remove that row.';return;}
-  const existing=Object.entries(clientForms||{}).find(([fid,f])=>fid!==clientFormEditId&&f&&f.open!==false&&String(f.couple||'').trim().toLowerCase()===couple.toLowerCase());
+  const existing=Object.entries(clientForms||{}).find(([fid,f])=>fid!==clientFormEditId&&f&&f.open!==false&&cwKey(f.couple)===cwKey(couple));
   if(existing){copyText(clientPortalUrl(existing[0]),'Existing client link copied.');result.className='check-result show ok';result.innerHTML='<b>Existing link copied</b>This couple already has an open form.';return;}
-  const id=clientFormEditId||newClientToken(),old=clientForms[id]||{},events={},used=new Set(),reserved=new Set(rows.map(x=>x._id).filter(Boolean));let next=1;
-  rows.forEach((x,i)=>{let eventId=x._id&&!used.has(x._id)?x._id:'';while(!eventId||used.has(eventId)||(!x._id&&reserved.has(eventId))){eventId='e'+next++;}used.add(eventId);const rec={name:x.name,date:x.date,order:i+1,questions:x.questions};const prev=(old.events||{})[eventId];if(x.studioOnly||(prev&&prev.studioOnly)){rec.studioOnly=true;rec.createdAt=(prev&&prev.createdAt)||Date.now();rec.createdBy=(prev&&prev.createdBy)||editor;}events[eventId]=rec;});
+  const id=clientFormEditId||newClientToken(),old=clientForms[id]||{},events={},used=new Set();
+  rows.forEach((x,i)=>{let eventId=x._id&&!used.has(x._id)?x._id:uid('ev_');while(used.has(eventId))eventId=uid('ev_');used.add(eventId);const rec={name:x.name,date:x.date,order:i+1,questions:x.questions};const prev=(old.events||{})[eventId];if(x.studioOnly||(prev&&prev.studioOnly)){rec.studioOnly=true;rec.createdAt=(prev&&prev.createdAt)||Date.now();rec.createdBy=(prev&&prev.createdBy)||editor;}events[eventId]=rec;});
   Object.entries(old.events||{}).forEach(([eventId,e])=>{if(e&&e.studioOnly&&!events[eventId])events[eventId]={...e};});
   const editing=!!clientFormEditId,form={couple,events,open:true,locked:false,createdAt:old.createdAt||Date.now(),createdBy:old.createdBy||'Tale of Two',updatedAt:Date.now()},updates={};updates[`clientForms/${id}`]=form;
-  if(editing){const a=clientApprovals[id]||{};updates[`clientApprovals/${id}`]=a.status==='approved'?{...a,status:'changes_pending',reopenedAt:Date.now()}:a.status==='changes_pending'?a:null;updates[`clientSubmissions/${id}/submittedAt`]=null;Object.keys((clientSubmissions[id]&&clientSubmissions[id].events)||{}).forEach(eventId=>{if(!events[eventId])updates[`clientSubmissions/${id}/events/${eventId}`]=null;});}
+  if(editing){const a=clientApprovals[id]||{},now=Date.now(),hasApprovedEvents=Object.values(a.events||{}).some(event=>event&&event.status==='approved');updates[`clientApprovals/${id}`]=a.status==='approved'?{...a,status:'changes_pending',reopenedAt:now}:['changes_pending','partially_approved'].includes(a.status)||hasApprovedEvents?{...a,reopenedAt:now}:null;updates[`clientSubmissions/${id}/submittedAt`]=null;Object.keys((clientSubmissions[id]&&clientSubmissions[id].events)||{}).forEach(eventId=>{if(!events[eventId])updates[`clientSubmissions/${id}/events/${eventId}`]=null;});}
   try{await db.ref().update(updates);clientForms[id]=form;const url=clientPortalUrl(id);cwSelectedKey=cwKey(couple);localStorage.setItem('totw_client_workspace',cwSelectedKey);resetClientFormEditor();closeClientSetup();copyText(url,editing?'Updated private link copied.':'Private client link copied.');toast(editing?'Client setup updated. The private URL is unchanged.':'Private client link created and copied.');log(`${editing?'updated':'created'} customised client event-details link: ${couple}`);renderClientsWorkspace();}catch(e){result.className='check-result show clash';result.innerHTML=`<b>Could not ${editing?'update':'create'} link</b>${esc(e.message||'Please try again.')}`;}
 }
 function clientEventDone(x){return !!(x&&x.startTime&&x.endTime&&x.venueName&&x.mapsUrl);}
@@ -6670,6 +6807,7 @@ function clientEventSortValue(entry,sub){const[k,e]=entry,x=(sub.events||{})[k]|
 function renderClientForms(){
   refreshClientCoupleOptions();renderClientsWorkspace();
 }
+function ciDefaultReportChanged(){const report=document.getElementById('ciReport');if(report)report.dataset.mode='manual';}
 function ciScheduledEdited(){const scheduled=document.getElementById('ciScheduled'),eventStart=document.getElementById('ciFunctionStart');scheduled.dataset.mode='manual';eventStart.value=scheduled.value||'';}
 function ciFunctionTimeChanged(){const scheduled=document.getElementById('ciScheduled');if(scheduled.dataset.mode!=='manual'){scheduled.value=document.getElementById('ciFunctionStart').value||'';scheduled.dataset.mode='auto';}}
 function ciEventRefKey(x){return x&&x.formId&&x.eventId?`${x.formId}|${x.eventId}`:`manual|${shotListKey(x&&x.name||'')}`;}
@@ -6763,7 +6901,7 @@ function closeCrewProfiles(){crewProfileEditUid='';document.getElementById('ciPr
 document.getElementById('ciProfilesModal').addEventListener('click',e=>{if(e.target.id==='ciProfilesModal')closeCrewProfiles();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('ciProfilesModal').classList.contains('open'))closeCrewProfiles();if(e.key==='Escape'&&document.getElementById('ciAttendanceModal')&&document.getElementById('ciAttendanceModal').classList.contains('open'))closeCiAttendanceModal();});
 let crewProfileEditUid='',crewProfileGroupsOpen=new Set();
-function crewProfileGroup(p){return String(p&&p.role||'').toLowerCase().includes('traditional')?'traditional':'candid';}
+function crewProfileGroup(p){const role=String(p&&p.role||'').toLowerCase();return role.includes('traditional')?'traditional':role.includes('candid')?'candid':'operations';}
 function toggleCrewProfileGroup(key){crewProfileGroupsOpen.has(key)?crewProfileGroupsOpen.delete(key):crewProfileGroupsOpen.add(key);renderCrewProfiles();}
 function renderCrewProfiles(){
   const el=document.getElementById('ciProfileList');if(!el)return;
@@ -6773,22 +6911,25 @@ function renderCrewProfiles(){
     <div class="field"><label for="ciEditPhone">Mobile number</label><input id="ciEditPhone" value="${esc(p.phone||'')}" inputmode="tel" autocomplete="tel"></div>
     <div class="field wide"><label for="ciEditEmail">Email address</label><input id="ciEditEmail" type="email" value="${esc(p.email||'')}" autocomplete="email"></div>
     <div class="field wide"><label for="ciEditRole">Role</label><select id="ciEditRole">${CI_ROLES.map(r=>`<option${r===(p.role||'')?' selected':''}>${esc(r)}</option>`).join('')}</select></div>
+    <div class="field wide"><label for="ciEditRate">Default day rate (optional)</label><input id="ciEditRate" type="number" min="0" step="100" inputmode="numeric" value="${esc(crewDefaultDayRate(id,p)||'')}" placeholder="₹"></div>
     <div class="ci-profile-form-actions"><button class="ci-profile-edit" onclick="cancelCrewProfileEdit()">Cancel</button><button class="btn-mini" onclick="saveCrewProfile('${esc(id)}')">Save changes</button></div>
    </div></div>`:`<div class="ci-profile"><div class="ci-profile-main"><b>${esc(p.name||'Unnamed')}</b><small>${esc(p.role||'Role not set')} · ${esc(p.phone||'No phone')}</small><small>${esc(p.email||'')}</small></div><div class="ci-profile-actions"><button class="ci-profile-edit" onclick="editCrewProfile('${esc(id)}')">Edit</button><button class="ci-profile-delete" onclick="deleteCrewProfile('${esc(id)}')">Delete</button></div></div>`;
   if(!list.length){el.innerHTML='<div class="empty">No crew members registered yet.</div>';return;}
-  el.innerHTML=[['candid','Candid Team'],['traditional','Traditional Team']].map(([key,label])=>{const members=list.filter(([,p])=>crewProfileGroup(p)===key),open=crewProfileGroupsOpen.has(key);return `<section class="ci-profile-group ${open?'':'closed'}"><button class="ci-profile-group-head" onclick="toggleCrewProfileGroup('${key}')"><b>${label}</b><span>${members.length} member${members.length===1?'':'s'} · ${open?'Hide ▴':'Show ▾'}</span></button><div class="ci-profile-group-body">${members.length?members.map(card).join(''):'<div class="empty">No registered crew in this team.</div>'}</div></section>`;}).join('');
+  el.innerHTML=[['candid','Candid Team'],['traditional','Traditional Team'],['operations','Specialists & Operations']].map(([key,label])=>{const members=list.filter(([,p])=>crewProfileGroup(p)===key),open=crewProfileGroupsOpen.has(key);return `<section class="ci-profile-group ${open?'':'closed'}"><button class="ci-profile-group-head" onclick="toggleCrewProfileGroup('${key}')"><b>${label}</b><span>${members.length} member${members.length===1?'':'s'} · ${open?'Hide ▴':'Show ▾'}</span></button><div class="ci-profile-group-body">${members.length?members.map(card).join(''):'<div class="empty">No registered crew in this group.</div>'}</div></section>`;}).join('');
 }
 function editCrewProfile(uid){if(!crewProfiles[uid])return;crewProfileEditUid=uid;crewProfileGroupsOpen.add(crewProfileGroup(crewProfiles[uid]));renderCrewProfiles();setTimeout(()=>document.getElementById('ciEditName')?.focus(),0);}
 function cancelCrewProfileEdit(){crewProfileEditUid='';renderCrewProfiles();}
 async function saveCrewProfile(uid){
   const old=crewProfiles[uid];if(!old)return;
-  const name=document.getElementById('ciEditName').value.trim(),phone=ciPhone(document.getElementById('ciEditPhone').value),email=document.getElementById('ciEditEmail').value.trim().toLowerCase(),role=document.getElementById('ciEditRole').value;
+  const name=document.getElementById('ciEditName').value.trim(),phone=ciPhone(document.getElementById('ciEditPhone').value),email=document.getElementById('ciEditEmail').value.trim().toLowerCase(),role=document.getElementById('ciEditRole').value,dayRate=Math.max(0,Number(document.getElementById('ciEditRate')?.value)||0);
   if(!name){toast('Enter the crew member’s name.');return;}
-  if(phone.length<10||phone.length>16){toast('Enter a valid mobile number.');return;}
-  if(!email||!email.includes('@')){toast('Enter a valid email address.');return;}
+  if(phone&&(phone.length<10||phone.length>16)){toast('Enter a valid mobile number, or leave it blank.');return;}
+  if(email&&!email.includes('@')){toast('Enter a valid email address, or leave it blank.');return;}
   if(!role){toast('Choose their role.');return;}
-  const updated={...old,name,phone,email,role,updatedAt:Date.now()};
-  try{await db.ref(`crewProfiles/${uid}`).set(updated);crewProfiles[uid]=updated;crewProfileEditUid='';renderCrewProfiles();renderCheckinTeam();toast(`${name} updated.`);log(`updated registered crew profile: ${name}`);}catch(err){toast('Could not update this crew profile. Please try again.');}
+  const updated={...old,name,phone,email,role,defaultDayRate:dayRate,updatedAt:Date.now()},personKey=crewLegacyPeopleKey(name),oldPersonKey=crewLegacyPeopleKey(old.name),personRec={...(people[personKey]||{}),name,style:role,rate:dayRate,unit:'day'},updates={},oldKeyShared=Object.entries(crewProfiles||{}).some(([otherUid,p])=>otherUid!==uid&&crewLegacyPeopleKey(p&&p.name)===oldPersonKey);
+  updates[`crewProfiles/${uid}`]=updated;updates[`people/${personKey}`]=personRec;if(oldPersonKey&&oldPersonKey!==personKey&&!oldKeyShared&&String(people[oldPersonKey]?.name||'').trim().toLowerCase()===String(old.name||'').trim().toLowerCase())updates[`people/${oldPersonKey}`]=null;
+  Object.entries(checkinEvents||{}).forEach(([eventId,event])=>{if(!event||!event.crew||!event.crew[uid]||cwShootComplete(eventId,event))return;updates[`crewCheckins/events/${eventId}/crew/${uid}/name`]=name;updates[`crewCheckins/events/${eventId}/crew/${uid}/phone`]=phone;updates[`crewCheckins/events/${eventId}/crew/${uid}/email`]=email;});
+  try{await db.ref().update(updates);crewProfiles[uid]=updated;people[personKey]=personRec;if(updates[`people/${oldPersonKey}`]===null)delete people[oldPersonKey];crewProfileEditUid='';renderCrewProfiles();renderCheckinTeam();renderTeamDirectory();renderStudioHome();toast(`${name} updated everywhere.`);log(`updated registered crew profile: ${name}`);}catch(err){toast('Could not update this crew profile. Please try again.');}
 }
 async function deleteCrewProfile(uid){
   const p=crewProfiles[uid];if(!p)return;
@@ -7896,7 +8037,8 @@ function cw11GetPlanDraft(state,event){
   const crew={};
   Object.entries(shoot&&shoot.crew||{}).forEach(([uid,c])=>{
     const saved=c.arrivalTime||c.reportTime||teamArrival;
-    crew[uid]={...ciClone(c),arrivalTime:saved,reportTime:saved,arrivalOverride:c.arrivalTimeMode==='individual'||!!(saved&&teamArrival&&saved!==teamArrival),crewCost:c.crewCost!=null&&c.crewCost!==''?Number(c.crewCost):'',dataStatus:c.dataStatus||'',opsNotes:c.opsNotes||''};
+    const canonicalCost=cwOpsCanonicalDayCost(state,event.date,uid);
+    crew[uid]={...ciClone(c),arrivalTime:saved,reportTime:saved,arrivalOverride:c.arrivalTimeMode==='individual'||!!(saved&&teamArrival&&saved!==teamArrival),crewCost:canonicalCost!=null?canonicalCost:(c.crewCost!=null&&c.crewCost!==''?Number(c.crewCost):''),dataStatus:c.dataStatus||'',opsNotes:c.opsNotes||''};
   });
   // v12.7.8: old crewRequirements often came from automatic CP/CV/TP/TV defaults.
   // Only explicit empty slots create a shortage now; assigned people define coverage.
@@ -7997,7 +8139,8 @@ function cw11AddCrewMember(eventId,role,uid){
   const draft=cw11GetPlanDraft(state,event),p=crewProfiles[uid];if(!draft||!p)return;
   if(cw11CrewLocked(draft,uid)){toast(`${p.name||'This crew member'} has already checked in, so the assignment is locked.`);return;}
   if(draft.crew[uid]){toast(`${p.name||'This crew member'} is already assigned.`);return;}
-  draft.crew[uid]={name:p.name||'',phone:p.phone||'',email:p.email||'',role,arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false,isLead:!Object.values(draft.crew).some(c=>c.isLead),crewCost:'',dataStatus:'',opsNotes:''};
+  const defaultCost=crewDefaultDayRate(uid,p);
+  draft.crew[uid]={name:p.name||'',phone:p.phone||'',email:p.email||'',role,arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false,isLead:!Object.values(draft.crew).some(c=>c.isLead),crewCost:defaultCost||'',dataStatus:'',opsNotes:''};
   cwOpsSyncRequirements(draft);
   cw11MarkDraft(draft);renderClientsWorkspace();
 }
@@ -8081,7 +8224,7 @@ function cw11PlanPayload(state,event,draft){
 function cw11AppendPlanUpdates(updates,result){
   const {id,old,record,published}=result;updates[`crewCheckins/events/${id}`]=record;
   const allUids=new Set([...Object.keys(old.crew||{}),...Object.keys(record.crew||{})]);
-  allUids.forEach(uid=>{updates[`crewCheckins/assignments/${uid}/${id}`]=published&&record.crew[uid]?true:null;});
+  allUids.forEach(uid=>{updates[`crewCheckins/assignments/${uid}/${id}`]=published&&record.crew[uid]?true:null;updates[`crewCheckins/plannedAssignments/${uid}/${id}`]=record.crew[uid]?true:null;});
 }
 async function cw11SavePlans(drafts,label){
   if(cw11Saving)return {skipped:true};
@@ -8094,7 +8237,7 @@ async function cw11SavePlans(drafts,label){
     result._saveGen=draft._saveGen;results.push(result);
   }
   if(!results.length){toast('All planning changes are already saved.');return {};}
-  const updates={};results.forEach(result=>cw11AppendPlanUpdates(updates,result));
+  const updates={},costWrites=[];results.forEach(result=>{cw11AppendPlanUpdates(updates,result);const costKey=cwOpsWeddingCostKey(result.state);Object.entries(result.draft.crew||{}).forEach(([crewUid,c])=>{if(!costKey)return;const amount=c.crewCost!==''&&c.crewCost!=null&&!Number.isNaN(Number(c.crewCost))?Number(c.crewCost):null,path=`crewDayCosts/${costKey}/${result.event.date}/${crewUid}`,record=amount==null?null:{amount,currency:'INR',crewUid,nameSnapshot:c.name||crewProfiles[crewUid]?.name||'',roleSnapshot:c.role||crewProfiles[crewUid]?.role||'Other',updatedAt:Date.now(),updatedBy:editor,source:'teamPrep'};updates[path]=record;costWrites.push({costKey,date:result.event.date,crewUid,record});});});
   const finance=cwBuildOpsFinanceSync(results);Object.assign(updates,finance.updates);cw11Saving=true;cw11RefreshSaveState();
   try{
     await db.ref().update(updates);
@@ -8102,6 +8245,7 @@ async function cw11SavePlans(drafts,label){
       checkinEvents[result.id]=result.record;result.draft.shootId=result.id;
       if(result.draft._saveGen===result._saveGen)result.draft.dirty=false;
     });
+    costWrites.forEach(({costKey,date,crewUid,record})=>{crewDayCosts[costKey]=crewDayCosts[costKey]||{};crewDayCosts[costKey][date]=crewDayCosts[costKey][date]||{};if(record)crewDayCosts[costKey][date][crewUid]=record;else delete crewDayCosts[costKey][date][crewUid];});
     finance.staged.forEach((prod,id)=>{prods[id]=prod;});
     const internal=results.some(r=>!r.published);toast(internal?'Planning saved internally. The crew will receive it only after approval.':label);
     log(`saved client planning for ${results.length} event${results.length===1?'':'s'}: ${results[0].state.entry.name}`);
@@ -8255,7 +8399,13 @@ function cwOpsDayCrewRows(state,date,uid){
     return c?{event,draft,c}:null;
   }).filter(Boolean);
 }
+function cwOpsWeddingCostKey(state){return String(state&&state.formId||state&&state.prodId||'').replace(/[.#$\[\]/]/g,'_');}
+function cwOpsCanonicalDayCost(state,date,uid){
+  const key=cwOpsWeddingCostKey(state),record=key&&crewDayCosts[key]&&crewDayCosts[key][date]&&crewDayCosts[key][date][uid];
+  return record&&record.amount!==''&&record.amount!=null&&!Number.isNaN(Number(record.amount))?Number(record.amount):null;
+}
 function cwOpsCrewDayCost(state,date,uid){
+  const canonical=cwOpsCanonicalDayCost(state,date,uid);if(canonical!=null)return canonical;
   const values=cwOpsDayCrewRows(state,date,uid).map(row=>row.c.crewCost).filter(v=>v!==''&&v!=null&&!Number.isNaN(Number(v))).map(Number);
   return values.length?Math.max(...values):null;
 }
@@ -8647,8 +8797,7 @@ async function cwSaveStudioEvent(){
   const existing=Object.values(form.events||{});
   const dup=existing.find(e=>e&&e.date===date&&shotListKey(e.name)===shotListKey(name));
   if(dup){toast(`${name} already exists on ${ciDateLong(date)}.`);return;}
-  let next=1,eventId=`s${next}`;
-  while((form.events||{})[eventId]){next++;eventId=`s${next}`;}
+  let eventId=uid('sev_');while((form.events||{})[eventId])eventId=uid('sev_');
   const order=existing.reduce((m,e)=>Math.max(m,Number(e&&e.order)||0),0)+1;
   const endTime=startTime?cw11ShiftTime(startTime,420):'';
   const details=JSON.parse(JSON.stringify({startTime:startTime||'',endTime:endTime||'',venueName:venueName||'',mapsUrl:'',contactName:'',contactPhone:'',brideReadyLocation:'',groomReadyLocation:'',notes:'Studio-added event'}));
@@ -8774,8 +8923,12 @@ function cw10OpenReview(eventId=''){
   if(!summary){toast('There is no client update waiting for review.');return;}
   cw10ReviewEventId=scopedId;cw10ReviewOpen=true;renderClientsWorkspace();
 }
+function ciApprovedEventDetails(formId,eventId){
+  const approval=clientApprovals[formId]||{},eventApproval=approval.events&&approval.events[eventId];
+  return eventApproval&&eventApproval.snapshot||approval.snapshot&&approval.snapshot.events&&approval.snapshot.events[eventId]||null;
+}
 function ciClientShootRecord(formId,eventId,f,e,s,now=Date.now()){
-  const details=((s.events||{})[eventId])||{},mapData=ciMapData(details.mapsUrl||''),start=details.startTime||'',arrival=cw11ShiftTime(start,-60);
+  const details=ciApprovedEventDetails(formId,eventId)||((s.events||{})[eventId])||{},mapData=ciMapData(details.mapsUrl||''),start=details.startTime||'',arrival=cw11ShiftTime(start,-60);
   return {couple:String(f.couple||'').trim(),eventName:e.name||'Event',eventNames:[e.name||'Event'],date:e.date||'',dateOverride:false,checklistType:e.name||'Event',linkedEvents:[{formId,eventId,name:e.name||'Event',date:e.date||'',order:Number(e.order)||0}],mapsUrl:details.mapsUrl||'',venueName:details.venueName||(mapData&&mapData.name)||'Venue to be updated',venueLat:mapData?mapData.lat:null,venueLng:mapData?mapData.lng:null,radiusM:1500,reportingTime:arrival,reportingTimeMode:'auto',scheduledStart:start,scheduledStartMode:'auto',functionStart:start,functionEnd:details.endTime||cw11ShiftTime(start,420),functionEndMode:details.endTime?'client':'auto',studioTimingOverride:false,clientContactName:details.contactName||null,clientContactPhone:details.contactPhone||null,brideReadyLocation:details.brideReadyLocation||null,groomReadyLocation:details.groomReadyLocation||null,clientNotes:details.notes||null,clientFormId:formId,clientEventId:eventId,crew:{},resourceAssignments:null,actualStartAt:null,planningOnly:false,publicationStatus:'published',createdAt:now,createdBy:editor,updatedAt:now,updatedBy:editor,setupStatus:'crew_pending'};
 }
 function approvedClientCheckinRows(couple=''){
@@ -8784,7 +8937,7 @@ function approvedClientCheckinRows(couple=''){
     if(!f||who&&String(f.couple||'').trim().toLowerCase()!==who)return;
     Object.entries(f.events||{}).forEach(([eventId,e])=>{
       if(!e||!e.date||e.date<today||!cw11RawEventApproved(id,eventId))return;
-      rows.push({formId:id,eventId,couple:String(f.couple||'').trim(),date:e.date,name:e.name||'',order:Number(e.order)||0,details:((clientSubmissions[id]&&clientSubmissions[id].events)||{})[eventId]||{}});
+      rows.push({formId:id,eventId,couple:String(f.couple||'').trim(),date:e.date,name:e.name||'',order:Number(e.order)||0,details:ciApprovedEventDetails(id,eventId)||{}});
     });
   });
   return rows.sort((a,b)=>a.date.localeCompare(b.date)||(a.details.startTime||'23:59').localeCompare(b.details.startTime||'23:59')||a.order-b.order||a.name.localeCompare(b.name));
@@ -8794,7 +8947,7 @@ function approvedClientEvent(couple,date,eventName){
   for(const [id,f] of Object.entries(clientForms||{})){
     if(!f||String(f.couple||'').trim().toLowerCase()!==who)continue;
     for(const [k,e] of Object.entries(f.events||{})){
-      if(e.date===date&&shotListKey(e.name)===ek&&cw11RawEventApproved(id,k))return {...((clientSubmissions[id]&&clientSubmissions[id].events||{})[k]||{}),formId:id,eventId:k,eventName:e.name,eventDate:e.date};
+      if(e.date===date&&shotListKey(e.name)===ek&&cw11RawEventApproved(id,k))return {...(ciApprovedEventDetails(id,k)||{}),formId:id,eventId:k,eventName:e.name,eventDate:e.date};
     }
   }
   return null;
@@ -8818,7 +8971,7 @@ async function ensureApprovedClientShoots(){
 function cw11PublishedPlanResult(state,event,now){
   const draft=cw11GetPlanDraft(state,event),result=cw11PlanPayload(state,event,draft);
   if(result.error)return result;
-  const details=event.details||{},record=result.record,finalStart=record.studioTimingOverride?record.functionStart:details.startTime||record.functionStart;
+  const details=cw10CurrentDetails(state,event)||{},record=result.record,finalStart=record.studioTimingOverride?record.functionStart:details.startTime||record.functionStart;
   record.planningOnly=false;record.publicationStatus='published';record.setupStatus=Object.keys(record.crew||{}).length?'prepared':'crew_pending';
   if(!record.studioTimingOverride){record.functionStart=finalStart;record.scheduledStart=finalStart;record.functionEnd=details.endTime||record.functionEnd||cw11ShiftTime(finalStart,420);record.scheduledStartMode='auto';}
   if(record.reportingTimeMode==='auto'||!record.reportingTime){

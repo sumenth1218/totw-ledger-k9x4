@@ -1,79 +1,29 @@
-TALE OF TWO WEDDINGS — DAY-WISE CREW COST v12.7.13
+TALE OF TWO WEDDINGS — OWNER COMMAND CENTER v13.0.0
 
-UPLOAD:
-1. Unzip this package.
-2. Upload the contents inside the extracted folder to the existing GitHub repository.
-3. Replace the current files when GitHub asks.
+UPLOAD
+1. Back up/export the current Firebase Realtime Database before rollout.
+2. Upload the contents of this folder to the existing GitHub repository, replacing matching website files.
+3. Keep the existing custom domain/CNAME and Firebase project unchanged.
 4. Do not upload the ZIP itself.
+5. Hard refresh after deployment and confirm the page-source build tag:
+   v13.0.0-owner-command-center-2026-08-09
 
-Files changed by this update:
-- index.html
-- crew.html
-- crew-sw.js
-- UPLOAD-INSTRUCTIONS.txt
-- STUDIO-HANDOFF.md
+PRESERVED
+- Dates & Enquiries UI, logic and data paths.
+- Crew Planner UI, logic and data paths.
+- Existing client URLs, crew URLs, event IDs, attendance, cards, costs and deliverables.
 
-IMPORTANT — THESE CONTRACTS ARE PRESERVED:
-- Dates & Enquiries data and workflow are unchanged.
-- Crew Planner data and workflow are unchanged.
-- Existing private client links remain valid.
-- Existing crew links remain valid.
-- Existing Firebase root paths remain unchanged; no data migration is required.
-- Existing events, registrations, assignments, attendance, lists and submissions remain intact.
-- Multiple events for one couple on the same date remain separate event records.
+NEW OPERATING MODEL
+- Today is the owner command center for due follow-ups, client reviews, upcoming events and delivery work.
+- Team is the single crew directory for identity, contact, default role and default day rate.
+- Weddings → Team & prep is the only normal crew-assignment and day-cost editor.
+- Day-of reads the same event record for check-in, checkout, reminders, cards and handover.
+- Finance receives one crew cost per wedding/date/person, even when that person covers several events that day.
+- TP/TV time remains reference only; price is always entered manually.
+- New client event IDs are immutable; partial approvals and approved snapshots are preserved.
+- Legacy standalone checklist URLs now send crew into the authenticated Crew App.
 
-WHAT IS NEW:
-- Team & prep crew rates now sync immediately into Weddings → Package & spend / Finance.
-- Previously saved Team & prep rates are backfilled automatically after the new build loads.
-- One crew member has one cost per client date, even when assigned to multiple events that day.
-- Entering the day cost from any event updates that person's other event cards on the same date.
-- Finance receives one row per person per date and never adds the same person's same-day events together.
-- Removing or changing a Team & prep rate updates the matching Finance row.
-- TP/TV cards now include a manual Traditional cost field in Team & prep.
-- The amount entered is never calculated from hours; it syncs exactly as entered to the matching Finance day row.
-- Refresh no longer attempts an automatic shot-list write or shows the false push error.
-- The Crew App offline cache is isolated from the Ledger, preventing an old Ledger screen from being served by the Crew service worker.
-- Team & prep shows assigned crew directly. There are no Candid/Traditional Required controls.
-- + Add crew is role-first, shows only people registered for that role, supports multi-select and adds everyone once.
-- No CP/CV/TP/TV shortage is invented. A warning appears only when you deliberately reserve an empty role slot.
-- Any crew day rate, including TP/TV, can be applied to every separate working date that person has for this client.
-- Traditional day hours use the earliest actual check-in and latest actual client end time across that date.
-- The Crew Planner cost estimate is day-wise only; the older per-event rate option is removed.
-- Until both values exist, traditional worked hours display Pending timing.
-- TP/TV worked hours remain informational. Their manually entered cost is included in Team & prep and Finance totals.
-- Auto-generated TP/TV Finance rows from v12.7.9 are removed without touching manual Finance rows.
-- A confirmed booking appears immediately as a Weddings folder, even before its private client link exists.
-- Opening that new folder prefills the client-link setup from the booked dates and event names.
-- Creating/updating the client link refreshes the folder immediately.
-- Saving a published crew assignment writes to the existing Crew App assignment path and appears in an already-open Crew App without a manual reload.
-- The existing Copy crew link and WhatsApp crew actions remain available after the client event is approved/published.
-- Clients are shown one wedding month at a time and sorted by their first event in that month.
-- Weddings spanning more than one month appear in every relevant month.
-- The global Deliverables tab shows every client grouped and ordered by the date of their final event.
-- Client-link details remain the source for events, dates, timings, venue, Maps and contacts.
-- Exact Crew Planner rows automatically supply registered team members and CP/CV/TP/TV roles.
-- Before publication, a Planner team change updates the internal draft automatically and asks you to save it.
-- After publication, a Planner team change is held for review and never replaces the live assignment silently.
-- Once any crew member checks in, that event's timings and assignments are locked.
-- Combined Planner rows require one explicit decision before applying their team to separate client events.
-- Unregistered or ambiguous Planner names are shown clearly and never silently omitted.
-- Manual team changes remain available as a collapsed event-only adjustment.
-- Pending client approval still allows internal planning; crew publishing remains locked until approval.
-- Client details, advanced team controls, lists and boards, and Shoot Record stay collapsed until needed.
-
-NOT CHANGED:
-- Dates & Enquiries logic
-- Crew Planner logic
-- Client or crew URLs
-- Firebase root structure
-- Existing private-link event IDs
-- Manual WhatsApp contact/share actions
-
-DELETE THESE OLD REMINDER FILES FROM GITHUB IF THEY ARE STILL PRESENT:
-- REMINDER-SETUP.md
-- firebase.json
-- functions (delete the entire folder)
-- .firebaserc
-
-Telegram, calendar and automatic WhatsApp reminder code is not included.
-Do not delete or change any Firebase Realtime Database data.
+IMPORTANT RELEASE CHECK
+- Firebase Realtime Database rules are not included in this archive. Confirm the live rules still enforce owner-only studio/finance access, exact token-scoped client access, and assigned-crew-only event/attendance access before production rollout.
+- The functions folder is included as source reference. Do not deploy, delete or replace live Functions unless you intentionally manage the reminder/WhatsApp backend.
+- Test one real wedding with two same-day events, one existing crew member, one new crew member, a day-rate edit, partial client approval and full check-in/out before broad use.

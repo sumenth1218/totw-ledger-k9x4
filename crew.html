@@ -312,11 +312,30 @@ function signOutCrew(){
  if(!confirm('Sign out of the Tale of Two crew app on this device?'))return;
  auth.signOut().then(()=>location.href='crew.html');
 }
+async function claimStudioAddedProfile(nextProfile){
+ const matches=new Map(),email=String(nextProfile.email||'').trim().toLowerCase();
+ if(!email)return null;
+ try{
+  const s=await db.ref('crewProfiles').orderByChild('email').equalTo(email).once('value');Object.entries(s.val()||{}).forEach(([id,p])=>{if(id!==user.uid&&p&&p.manual&&String(p.email||'').trim().toLowerCase()===email)matches.set(id,p)});
+ }catch(e){return null;}
+ const exact=[...matches.entries()];
+ if(exact.length!==1)return null;
+ const [pendingId,pending]=exact[0],[assignmentSnap,plannedSnap]=await Promise.all([db.ref('crewCheckins/assignments/'+pendingId).once('value'),db.ref('crewCheckins/plannedAssignments/'+pendingId).once('value')]),pendingAssignments=assignmentSnap.val()||{},pendingPlanned=plannedSnap.val()||{},eventIds=[...new Set([...Object.keys(pendingAssignments).filter(id=>pendingAssignments[id]===true),...Object.keys(pendingPlanned).filter(id=>pendingPlanned[id]===true)])],updates={};
+ updates[`crewProfiles/${user.uid}`]={...pending,...nextProfile,manual:false,claimedFrom:pendingId,claimedAt:firebase.database.ServerValue.TIMESTAMP};updates[`crewProfiles/${pendingId}`]=null;
+ await Promise.all(eventIds.map(async eventId=>{
+  const [eventSnap,attendanceSnap]=await Promise.all([db.ref(`crewCheckins/events/${eventId}/crew/${pendingId}`).once('value'),db.ref(`crewCheckins/attendance/${eventId}/${pendingId}`).once('value')]);
+  const member=eventSnap.val();if(member){updates[`crewCheckins/events/${eventId}/crew/${user.uid}`]={...member,name:nextProfile.name,phone:nextProfile.phone,email:nextProfile.email,claimedFrom:pendingId};updates[`crewCheckins/events/${eventId}/crew/${pendingId}`]=null;}
+  const attendance=attendanceSnap.val();if(attendance){updates[`crewCheckins/attendance/${eventId}/${user.uid}`]=attendance;updates[`crewCheckins/attendance/${eventId}/${pendingId}`]=null;}
+  updates[`crewCheckins/assignments/${user.uid}/${eventId}`]=pendingAssignments[eventId]===true?true:null;updates[`crewCheckins/assignments/${pendingId}/${eventId}`]=null;
+  updates[`crewCheckins/plannedAssignments/${user.uid}/${eventId}`]=true;updates[`crewCheckins/plannedAssignments/${pendingId}/${eventId}`]=null;
+ }));
+ await db.ref().update(updates);return updates[`crewProfiles/${user.uid}`];
+}
 async function saveProfile(){
  const name=document.getElementById('profileName').value.trim(),phone=phoneDigits(document.getElementById('profilePhone').value),role=document.getElementById('profileRole').value;
  if(!name||phone.length<10){showError('profileError','Please enter your name and a valid mobile number.');return}
  profile={name,phone,role,email:user.email||'',updatedAt:firebase.database.ServerValue.TIMESTAMP};
- try{await db.ref('crewProfiles/'+user.uid).set(profile);toast('Profile saved');await loadDashboard()}catch(e){showError('profileError','Could not save your profile. Please try again.')}
+ try{const claimed=await claimStudioAddedProfile(profile);if(claimed)profile=claimed;else await db.ref('crewProfiles/'+user.uid).set(profile);toast(claimed?'Profile connected to your existing assignments':'Profile saved');await loadDashboard()}catch(e){showError('profileError','Could not save your profile. Please try again.')}
 }
 async function loadDashboard(){
  screen('loadingScreen');

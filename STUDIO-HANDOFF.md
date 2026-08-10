@@ -1,139 +1,54 @@
-# Tale of Two Weddings — Full Studio Handoff
+# Tale of Two Weddings — Studio Handoff
 
-**Build to upload:** full folder · `v12.7.12-day-wise-crew-cost-2026-08-09`  
-**Live links:** client + crew URLs unchanged · data paths unchanged  
+**Build:** `v13.0.0-owner-command-center-2026-08-09`  
+**Client and crew URLs:** unchanged
 
----
+## The simple operating rule
 
-## 1. What the product is now
+Use **Today** to see what needs you. Use **Weddings → Team & prep** to assign crew, timings, lists, boards, costs and data status once. **Day-of** and **Finance & Reports** read from that same operational record.
 
-One studio ledger with a **Weddings hub** at the center.
+Dates & Enquiries and Crew Planner remain unchanged.
 
-| Left rail | Job |
-|-----------|-----|
-| **Dates & Enquiries** | Sales / calendar / bookings |
-| **Weddings** | One couple home — plan, team, deliver, finance, handoff |
-| **Crew Planner** | Month roster (CP/CV/TP/TV) + optional push of pay/GB |
-| **Shoot Operations** | Day-of: links, check-in, cards, live status |
-| **Data & custody** | Deep disks / pay / cards / alerts / season PDF |
-| **Settings** | Common shot lists + Pinterest boards |
+## Main navigation
 
-Hidden from rail (still safe if old bookmarks exist): Business Overview, Deliverables → remapped into Weddings.
+| Area | Purpose |
+|---|---|
+| Today | Due follow-ups, client reviews, upcoming work, live events and delivery queue |
+| Dates & Enquiries | Sales calendar and enquiries — unchanged |
+| Weddings | One folder per couple; client link, event plan, crew, delivery and package spend |
+| Crew Planner | Monthly roster — unchanged |
+| Day-of | Check-in/out, WhatsApp, cards and handover |
+| Team | Master identity, contact, role and default day rate |
+| Finance & Reports | Package, crew spend, margin, custody and exports |
+| Settings | Shot-list and Pinterest templates plus checklist archive |
 
----
+## Single-source data contract
 
-## 2. End-to-end wedding flow
+- `crewProfiles/{uid}` owns crew identity, contact, default role and default day rate.
+- `crewCheckins/events/{eventId}/crew/{uid}` owns the exact event assignment and event-specific arrival/role.
+- `crewDayCosts/{formId}/{date}/{uid}` owns one manual cost per wedding/date/person.
+- `crewCheckins/assignments` is the Crew App index.
+- `prod.days[].roles[]` is the backwards-compatible Finance/report projection.
+- Client event details shown to crew come from the approved client snapshot, not a newer unapproved edit.
 
-```
-Enquiry → Booked → Weddings folder + client link
-    → Couple fills private link
-    → You approve in Weddings
-    → Events appear in Shoot Operations
-    → Plan team / lists / boards in Weddings → Events
-    → Shoot day in Shoot Operations
-    → Overview → Confirm handoff (per completed event)
-    → Deliver + Finance (+ Data & custody depth)
-    → Closed when deliverables done
-```
+## Workflow
 
-### A. Before the week
+1. Book in Dates & Enquiries.
+2. Open the couple in Weddings and create/share the private client link.
+3. Review and approve each completed client event.
+4. In Weddings → Team & prep, add crew once, set overall/individual arrival, shot lists, Pinterest and day cost.
+5. Share the crew link. Day-of uses the same assignment for check-in/out and cards.
+6. After the shoot, complete handoff, delivery and package/crew-cost review inside the same wedding folder.
 
-1. **Dates & Enquiries** — book the couple  
-2. The couple appears immediately in **Weddings**; open the folder and confirm the prefilled private **client link** setup  
-3. Couple fills timings, venue, maps (`event-details.html` — URL never changes)  
-4. Approve in Weddings (review panel if they update)  
-5. **Crew Planner** — fill month grid if you want studio-wide roster  
+## Crew without a phone number
 
-### B. Event prep (inside Weddings → Events)
+You can create a pending Team profile with only a name and role for planning. Add the person’s Google-account email before sharing the Crew App link; their first sign-in can then connect to the pending profile and inherit its assignments. The Team card clearly shows whether the profile is connected.
 
-For Haldi / Wedding / etc.:
+## Release checks
 
-- Team (CP/CV/TP/TV)  
-- Shot lists (content edited in **Settings**; assigned per event here)  
-- Optional Pinterest  
-- Save / publish plan → Shoot Operations  
-
-### C. Shoot day (Shoot Operations)
-
-- Crew link / WhatsApp  
-- Newly published assignments appear in an already-open Crew App without a manual reload  
-- Check-in / out, late, cards, handover  
-- **No Confirm handoff button here** — by design  
-
-### D. After checkout (Weddings → Overview)
-
-- Status **Complete** → **Confirm handoff** (once per event)  
-- Becomes **Handed off** → opens **Data & custody**  
-- Incomplete shoots never show Confirm  
-
-### E. Post-shoot money & data
-
-- **Weddings → Deliver** — deliverable checklist, album, client PDF  
-- **Weddings → Team & prep** — enter TP/TV cost manually beside worked hours; the exact amount syncs to Finance  
-- **Data & custody** — disks I/II, GB, card ticks, ₹ pay, alerts  
-
-**Sync shoot days from Weddings** — adds missing dates (Mehndi, Pre wedding…) without wiping pay/cards.  
-**Edit date & events** — rename/add/remove events on a day.  
-**Pull team from Weddings** — fills crew into existing days only.
-
----
-
-## 3. Where each kind of data lives
-
-| Data | Where you work | Store |
-|------|----------------|-------|
-| Client form answers | Weddings → Events / Overview / Activity | `clientForms` / `clientSubmissions` / `clientApprovals` |
-| Crew check-in | Shoot Operations + `crew.html` | `crewCheckins/*` |
-| Shot list content | Settings | `shotLists` |
-| Event Pinterest / list pick | Weddings → Events (also Shoot Ops board) | shoot / plan draft |
-| Deliverables | Weddings → Deliver | `prod.stages` |
-| Package / pay summary | Weddings → Finance | `prod.pkg`, day roles |
-| Disks / GB / card verify | Data & custody | `prod.days` |
-| Confirm handoff | Weddings Overview | `prod.businessEvents` |
-
----
-
-## 4. Confirm handoff vs Planner “→ Production”
-
-| Control | Place | Meaning |
-|---------|-------|---------|
-| **Confirm handoff** | Weddings Overview | “This completed shoot is handed to post-shoot tracking” |
-| **→ Production / Day wrap-up** | Crew Planner | Push that planner row’s crew / GB / ₹ into Data & custody |
-| **Sync shoot days from Weddings** | Data & custody | Create missing shoot **days** from the couple’s events |
-
-They do different jobs. Completing Shoot Ops alone does **not** auto-hand off — you Confirm once (option B).
-
----
-
-## 5. What must never break (and didn’t)
-
-- Client links: `event-details.html?f=…`  
-- Crew links: `crew.html?event=…`  
-- Firebase paths for forms, check-ins, `prod`  
-- Existing deliverable ticks, pay, disks, past `businessEvents`  
-
-Migration was **navigation + copy + hub**, not a data rewrite.
-
----
-
-## 6. GitHub / security (quick)
-
-- Firebase **web API key** in HTML is normal; real safety = Auth + DB rules + authorized domains  
-- “Main branch not protected” = GitHub hygiene — turn on branch protection when you can  
-- This Downloads folder is **not** a git clone — upload `index.html` manually when you update the live site  
-
----
-
-## 7. Upload checklist
-
-1. Upload  
-   `index.html` from this project folder  
-2. Hard refresh (Cmd+Shift+R)  
-3. Confirm build tag in page source: `v12.7.12-day-wise-crew-cost-2026-08-09`  
-4. Smoke: Weddings rail · Confirm handoff on a completed event · client link · crew link · Sync shoot days · Edit date & events  
-
----
-
-## 8. One-sentence operating rule
-
-**Open the couple in Weddings for the relationship and money; open Shoot Operations for the live day; use Data & custody when you need disk/card depth.**
+- Back up Firebase data first.
+- Verify the deployed Realtime Database rules separately; they are not present in this archive.
+- Confirm owner, client-token and assigned-crew access with separate test identities.
+- Test two events on one date: one person must appear twice operationally but only once in that day’s Finance cost.
+- Test partial client approval, crew registration, profile edit, check-in/out, cards and hard refresh on desktop and mobile.
+- Confirm page-source build tag: `v13.0.0-owner-command-center-2026-08-09`.
