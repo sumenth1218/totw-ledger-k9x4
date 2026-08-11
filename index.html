@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.7-finance-only-pay-2026-08-11">
+<meta name="totw-build" content="v13.1.8-trad-auto-context-2026-08-11">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1551,6 +1551,7 @@ body{background:
 .ci-assignment-member-cost{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .ci-assignment-member-cost input{width:120px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;font:12px var(--body)}
 .ci-assignment-member-cost .cw11-guest-tag{font:8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+#tradLocationInfo strong{display:block;font:600 13px var(--body);color:var(--ink)}#tradLocationInfo small{display:block;margin-top:4px;color:var(--ink-soft);font:11px var(--body);line-height:1.4}.trad-field.wide{grid-column:1/-1}
 .cw-ops-guest-box{margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:10px;background:rgba(0,0,0,.02)}
 .cw-ops-guest-box .cw11-guest-extra{margin-top:8px;padding-top:0;border-top:0}
 @media (max-width:720px){
@@ -9015,18 +9016,52 @@ function cwTradRows(state){
 }
 function cwTradFind(state,unitId){return cwTradRows(state).find(row=>row.unitId===unitId)||null;}
 function cwTradComposition(unit){const parts=[];if(Number(unit.tpCount))parts.push(`${unit.tpCount} TP`);if(Number(unit.tvCount))parts.push(`${unit.tvCount} TV`);return parts.join(' + ')||'Team count pending';}
-function cwTradOpenModal(unitId=''){cwTradEditId=String(unitId||'');cwTradModalOpen=true;renderClientsWorkspace();setTimeout(()=>document.getElementById('tradPartner')?.focus(),0);}
+function cwTradDayContext(state,date){
+  const events=(state&&state.events||[]).filter(e=>e&&e.date===date).sort((a,b)=>{
+    const da=cw10CurrentDetails(state,a)||{},db=cw10CurrentDetails(state,b)||{};
+    return String(da.startTime||'99:99').localeCompare(String(db.startTime||'99:99'))||(Number(a.order)||0)-(Number(b.order)||0);
+  });
+  let reportingTime='';
+  const venues=[],maps=[];
+  events.forEach(event=>{
+    const draft=cw11GetPlanDraft(state,event),details=cw10CurrentDetails(state,event)||{},shoot=event.shootId&&checkinEvents[event.shootId];
+    const candidates=[draft&&draft.teamArrival,shoot&&shoot.reportingTime,details.startTime,draft&&draft.startTime].filter(v=>/^\d{2}:\d{2}$/.test(String(v||'')));
+    if(!reportingTime&&candidates.length)reportingTime=candidates[0];
+    const venue=String(details.venueName||shoot&&shoot.venueName||'').trim();
+    const map=String(details.mapsUrl||shoot&&shoot.mapsUrl||'').trim();
+    if(venue&&!venues.some(v=>v.toLowerCase()===venue.toLowerCase()))venues.push(venue);
+    if(map&&!maps.includes(map))maps.push(map);
+  });
+  return {events,reportingTime,venues,maps,venueLabel:venues.join(' · ')||'Venue pending on client events',mapsUrl:maps[0]||''};
+}
+function cwTradFillDayDefaults(){
+  const entry=cwEntry(),state=entry&&cwState(entry),date=document.getElementById('tradDate')?.value||'';
+  if(!state||!date)return;
+  const ctx=cwTradDayContext(state,date),arrival=document.getElementById('tradArrival'),loc=document.getElementById('tradLocationInfo');
+  if(arrival&&!cwTradEditId){
+    // Prefill for new units; keep an existing typed value if user already changed it after open.
+    if(!arrival.dataset.touched||arrival.dataset.touched==='0')arrival.value=ctx.reportingTime||'';
+  }
+  if(loc){
+    const map=ctx.mapsUrl?` · <a href="${esc(ctx.mapsUrl)}" target="_blank" rel="noopener">Open Maps ↗</a>`:'';
+    const times=ctx.reportingTime?`Earliest team arrival / start: ${esc(ciFmtTime(ctx.reportingTime))}`:'No reporting/start time on this date’s events yet';
+    loc.innerHTML=`<strong>${esc(ctx.venueLabel)}</strong><small>${times}${map}</small>`;
+  }
+}
+function cwTradArrivalTouched(){const el=document.getElementById('tradArrival');if(el)el.dataset.touched='1';}
+function cwTradOpenModal(unitId=''){cwTradEditId=String(unitId||'');cwTradModalOpen=true;renderClientsWorkspace();setTimeout(()=>{const arrival=document.getElementById('tradArrival');if(arrival)arrival.dataset.touched=cwTradEditId?'1':'0';cwTradFillDayDefaults();document.getElementById('tradPartner')?.focus();},0);}
 function cwTradCloseModal(){cwTradModalOpen=false;cwTradEditId='';renderClientsWorkspace();}
 function cwTradModalHtml(state){
   if(!cwTradModalOpen)return '';
-  const row=cwTradEditId?cwTradFind(state,cwTradEditId):null,partners=cwTradPartnerRows(),dates=[...new Set((state.events||[]).map(e=>e.date).filter(Boolean))].sort(),defaultDate=row&&row.date||dates.find(d=>d>=ciTodayIso())||dates[0]||ciTodayIso();
+  const row=cwTradEditId?cwTradFind(state,cwTradEditId):null,partners=cwTradPartnerRows(),dates=[...new Set((state.events||[]).map(e=>e.date).filter(Boolean))].sort(),defaultDate=row&&row.date||dates.find(d=>d>=ciTodayIso())||dates[0]||ciTodayIso(),dayCtx=cwTradDayContext(state,defaultDate),defaultArrival=row&&row.reportingTime||dayCtx.reportingTime||'';
   if(!partners.length)return `<div class="trad-modal-wrap"><section class="trad-modal"><h3>Add a Traditional Partner first</h3><p>Open Team, add or edit Sai Charan, Prithvi or Srinivas, and choose the role Traditional Partner.</p><div class="trad-actions"><button class="cw10-soft" onclick="cwTradCloseModal()">Close</button><button class="cw10-primary" onclick="cwTradCloseModal();setView('team')">Open Team</button></div></section></div>`;
   return `<div class="trad-modal-wrap" onclick="if(event.target===this)cwTradCloseModal()"><section class="trad-modal"><h3>${row?'Edit':'Add'} traditional unit</h3><p>One supplier, one date and one private cost. The attending captain can be decided later.</p><div class="trad-grid">
-    <div class="trad-field"><label>Wedding date</label><select id="tradDate" ${row?'disabled':''}>${dates.map(d=>`<option value="${esc(d)}"${d===defaultDate?' selected':''}>${esc(ciDateLong(d))}</option>`).join('')}</select></div>
+    <div class="trad-field"><label>Wedding date</label><select id="tradDate" ${row?'disabled':''} onchange="cwTradFillDayDefaults()">${dates.map(d=>`<option value="${esc(d)}"${d===defaultDate?' selected':''}>${esc(ciDateLong(d))}</option>`).join('')}</select></div>
     <div class="trad-field"><label>Traditional partner</label><select id="tradPartner" ${row?'disabled':''}>${partners.map(([id,p])=>`<option value="${esc(id)}"${id===(row&&row.partnerId)?' selected':''}>${esc(p.name||'Partner')}</option>`).join('')}</select></div>
     <div class="trad-field"><label>Traditional photographers (TP)</label><input id="tradTp" type="number" min="0" max="20" inputmode="numeric" value="${esc(row&&row.tpCount!=null?row.tpCount:1)}"></div>
     <div class="trad-field"><label>Traditional videographers (TV)</label><input id="tradTv" type="number" min="0" max="20" inputmode="numeric" value="${esc(row&&row.tvCount!=null?row.tvCount:1)}"></div>
-    <div class="trad-field"><label>Team reporting time</label><input id="tradArrival" type="time" value="${esc(row&&row.reportingTime||'')}"></div>
+    <div class="trad-field"><label>Team reporting time</label><input id="tradArrival" type="time" value="${esc(defaultArrival)}" data-touched="${row?'1':'0'}" onchange="cwTradArrivalTouched()" oninput="cwTradArrivalTouched()"><small style="display:block;margin-top:5px;color:var(--ink-soft);font:10.5px var(--body);text-transform:none;letter-spacing:0">Auto from this date’s Team &amp; prep / event start. Edit only if traditional reports earlier.</small></div>
+    <div class="trad-field wide"><label>Location (from client events)</label><div id="tradLocationInfo" class="cw-ops-readonly" style="min-height:44px"><strong>${esc(dayCtx.venueLabel)}</strong><small>${dayCtx.reportingTime?`Earliest team arrival / start: ${esc(ciFmtTime(dayCtx.reportingTime))}`:'No reporting/start time on this date’s events yet'}${dayCtx.mapsUrl?` · <a href="${esc(dayCtx.mapsUrl)}" target="_blank" rel="noopener">Open Maps ↗</a>`:''}</small></div></div>
     <div class="trad-field"><label>Total day cost — private</label><input id="tradCost" type="number" min="0" step="100" inputmode="numeric" value="${esc(row&&row.amount!=null?row.amount:'')}" placeholder="₹"></div>
     <div class="trad-field wide"><label>Internal note (optional)</label><textarea id="tradNote" placeholder="Travel, overtime agreement, equipment or supplier notes">${esc(row&&row.internalNote||'')}</textarea></div>
   </div><div class="trad-private">The partner and captain never see the cost or this internal note. Hours remain informational and never calculate payment.</div><div class="trad-actions"><button class="cw10-soft" onclick="cwTradCloseModal()">Cancel</button><button class="cw10-primary" onclick="cwTradSaveUnit()">Save traditional unit</button></div></section></div>`;
@@ -9045,7 +9080,7 @@ function cwTradProjectFinance(state,unit,updates,remove=false){
 async function cwTradSaveUnit(){
   const entry=cwEntry(),state=entry&&cwState(entry);if(!state)return;
   const date=document.getElementById('tradDate')?.value||'',partnerId=document.getElementById('tradPartner')?.value||'',partner=crewProfiles[partnerId],tpCount=Math.max(0,Math.min(20,Number(document.getElementById('tradTp')?.value)||0)),tvCount=Math.max(0,Math.min(20,Number(document.getElementById('tradTv')?.value)||0)),reportingTime=document.getElementById('tradArrival')?.value||'',costRaw=document.getElementById('tradCost')?.value,amount=costRaw===''?null:Number(costRaw),internalNote=document.getElementById('tradNote')?.value.trim()||'';
-  if(!date||!partner){toast('Choose the date and Traditional Partner.');return;}if(!tpCount&&!tvCount){toast('Add at least one TP or TV.');return;}if(!reportingTime){toast('Enter the traditional team reporting time.');return;}if(amount==null||!Number.isFinite(amount)||amount<0){toast('Enter the agreed total day cost. Use 0 only when intentional.');return;}
+  if(!date||!partner){toast('Choose the date and Traditional Partner.');return;}if(!tpCount&&!tvCount){toast('Add at least one TP or TV.');return;}if(!reportingTime){toast('No reporting time on this date’s events yet — set Team arrival in Team & prep, or enter it here.');return;}if(amount==null||!Number.isFinite(amount)||amount<0){toast('Enter the agreed total day cost. Use 0 only when intentional.');return;}
   const key=cwTradWeddingKey(state),existing=cwTradEditId?cwTradFind(state,cwTradEditId):cwTradRows(state).find(x=>x.date===date&&x.partnerId===partnerId),unitId=existing&&existing.unitId||uid('tu_'),passId=existing&&existing.passId||uid('tdp_'),now=Date.now(),unit={...(existing||{}),unitId,passId,weddingKey:key,date,partnerId,partnerName:partner.name||'Traditional Partner',tpCount,tvCount,reportingTime,amount,internalNote,updatedAt:now,updatedBy:editor,createdAt:existing&&existing.createdAt||now,createdBy:existing&&existing.createdBy||editor},oldPass=traditionalPasses[passId]||{},pass={...oldPass,passId,unitId,weddingKey:key,couple:state.entry.name,date,partnerId,partnerName:unit.partnerName,tpCount,tvCount,reportingTime,events:cwTradPassEvents(state,date),status:oldPass.captainUid?(oldPass.checkedInAt?'active':'confirmed'):(existing&&existing.inviteHash?'link_issued':'awaiting_captain'),updatedAt:now};
   const updates={};updates[`traditionalUnits/${key}/${date}/${unitId}`]=unit;updates[`traditionalPasses/${passId}`]=pass;updates[`crewDayCosts/${key}/${date}/${partnerId}`]={amount,currency:'INR',crewUid:partnerId,nameSnapshot:unit.partnerName,roleSnapshot:`Traditional Unit · ${cwTradComposition(unit)}`,updatedAt:now,updatedBy:editor,source:'teamPrep'};const stagedProd=cwTradProjectFinance(state,unit,updates,false);
   try{await db.ref().update(updates);if(stagedProd)prods[stagedProd.prodId]=stagedProd.prod;cwTradModalOpen=false;cwTradEditId='';toast(`${unit.partnerName} traditional unit saved for ${ciDateLong(date)}.`);log(`saved traditional unit: ${state.entry.name} — ${unit.partnerName}`);renderClientsWorkspace();}catch(err){console.error('Traditional unit save failed',err);toast('Could not save the traditional unit. Check the new Firebase rules and try again.');}
