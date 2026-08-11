@@ -1,13 +1,16 @@
-TALE OF TWO WEDDINGS — OWNER COMMAND CENTER v13.0.1
+TALE OF TWO WEDDINGS — TRADITIONAL DAY PASS BETA v13.1.0
 
 UPLOAD
 1. Back up/export the current Firebase Realtime Database before rollout.
 2. Upload the contents of this folder to the existing GitHub repository, replacing matching website files.
 3. Keep the existing custom domain/CNAME and Firebase project unchanged.
 4. Do not upload the ZIP itself.
-5. Publish database.rules.json to the tot-ledger Realtime Database before testing Team, Team & prep or day-wise costs. The included firebase.json points to this file.
-6. Hard refresh after deployment and confirm the page-source build tag:
-   v13.0.1-owner-command-center-rules-fix-2026-08-10
+5. Publish database.rules.json to the tot-ledger Realtime Database before testing Team, Team & prep, day-wise costs or Traditional Day Passes.
+6. Deploy only the new claim Function from the functions folder:
+   firebase deploy --only functions:claimTraditionalDayPass
+   Do not redeploy the other reminder/WhatsApp Functions for this beta.
+7. Hard refresh after deployment and confirm the page-source build tag:
+   v13.1.0-traditional-day-pass-beta-2026-08-11
 
 PRESERVED
 - Dates & Enquiries UI, logic and data paths.
@@ -23,8 +26,9 @@ NEW OPERATING MODEL
 - TP/TV time remains reference only; price is always entered manually.
 - New client event IDs are immutable; partial approvals and approved snapshots are preserved.
 - Legacy standalone checklist URLs now send crew into the authenticated Crew App.
+- Traditional Partners can be assigned as one outsourced unit per wedding date. The private cost belongs to the partner/day, while a temporary captain pass carries only operational details.
 
 IMPORTANT RELEASE CHECK
-- Firebase Realtime Database rules are included as database.rules.json. They preserve the supplied owner/client/crew restrictions and add owner-only access for crewDayCosts and plannedAssignments plus the v13 Team profile fields.
-- The functions folder is included as source reference. Do not deploy, delete or replace live Functions unless you intentionally manage the reminder/WhatsApp backend.
+- Firebase Realtime Database rules are included as database.rules.json. Traditional supplier costs and internal notes remain owner-only; a claimed captain can read and update only their exact sanitized day pass.
+- The functions folder includes the secure one-time claim endpoint. Deploy only claimTraditionalDayPass for this beta unless you intentionally manage the reminder/WhatsApp backend.
 - Test one real wedding with two same-day events, one existing crew member, one new crew member, a day-rate edit, partial client approval and full check-in/out before broad use.

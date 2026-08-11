@@ -228,6 +228,46 @@ exports.telegramWebhook = onRequest(
     },
 );
 
+exports.claimTraditionalDayPass = onCall(
+    {region: REGION},
+    async (request) => {
+      if (!request.auth) throw new HttpsError("unauthenticated", "Sign in with Google to use this captain pass.");
+      const token = String(request.data && request.data.token || "").trim().toLowerCase();
+      if (!/^[a-f0-9]{48}$/.test(token)) throw new HttpsError("invalid-argument", "This captain pass is incomplete.");
+      const hash = crypto.createHash("sha256").update(token).digest("hex");
+      const inviteRef = getDatabase().ref(`traditionalInvites/${hash}`);
+      const now = Date.now();
+      const claim = await inviteRef.transaction((current) => {
+        if (!current || current.revoked || !current.passId || Number(current.expiresAt) < now) return;
+        if (current.captainUid && current.captainUid !== request.auth.uid) return;
+        return {...current, captainUid: request.auth.uid, claimedAt: current.claimedAt || now, lastOpenedAt: now};
+      });
+      if (!claim.committed) throw new HttpsError("permission-denied", "This captain pass has expired, was replaced, or belongs to another person.");
+      const invite = claim.snapshot.val() || {};
+      const passRef = getDatabase().ref(`traditionalPasses/${invite.passId}`);
+      const passSnap = await passRef.get();
+      if (!passSnap.exists()) {
+        await inviteRef.update({revoked: true, revokedAt: now});
+        throw new HttpsError("not-found", "This traditional unit is no longer available.");
+      }
+      const existing = passSnap.val() || {};
+      if (existing.captainUid && existing.captainUid !== request.auth.uid) {
+        throw new HttpsError("already-exists", "Another captain has already accepted this pass.");
+      }
+      const captainName = String(request.auth.token.name || existing.captainName || "").trim().slice(0, 120);
+      const captainEmail = String(request.auth.token.email || "").trim().toLowerCase().slice(0, 180);
+      await passRef.update({
+        captainUid: request.auth.uid,
+        captainName: captainName || null,
+        captainEmail: captainEmail || null,
+        status: existing.checkedInAt ? "active" : "confirmed",
+        confirmedAt: existing.confirmedAt || now,
+        updatedAt: now,
+      });
+      return {passId: invite.passId, date: invite.date || existing.date || ""};
+    },
+);
+
 function eventTimeMs(date, time) {
   const match = String(date || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
   const clock = String(time || "").match(/^(\d{1,2}):(\d{2})$/);

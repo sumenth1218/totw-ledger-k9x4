@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.0.1-owner-command-center-rules-fix-2026-08-10">
+<meta name="totw-build" content="v13.1.0-traditional-day-pass-beta-2026-08-11">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1173,6 +1173,12 @@ body.cw10-client-mode .app-rail{/* keep rail visible in Weddings */}
 .cw12-delivery-status.overdue{border-color:#633743;color:#D49AA6}.cw12-delivery-status.pending{border-color:#5C4A30;color:#D1AD74}.cw12-delivery-status.not-started{border-color:#3B3E41;color:#8F8982}
 .cw12-deliverables-empty{padding:38px;border:1px dashed #36393C;border-radius:12px;color:#817B74;text-align:center;font-size:10px}
 
+/* Traditional Day Pass beta */
+.trad-section{margin:14px 0;border:1px solid #3B352F;border-radius:13px;background:linear-gradient(145deg,#1B1816,#151719);overflow:hidden}
+.trad-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 16px;border-bottom:1px solid #35302B}.trad-head h3{font:500 22px var(--display)}.trad-head p{margin-top:4px;color:#8A8178;font-size:8.5px}.trad-list{display:grid;gap:8px;padding:12px}
+.trad-card{display:grid;grid-template-columns:minmax(190px,1.2fr) minmax(150px,.8fr) minmax(145px,.7fr) auto;gap:12px;align-items:center;padding:13px;border:1px solid #34302C;border-radius:10px;background:#121416}.trad-card strong,.trad-card small{display:block}.trad-card strong{font-size:11px}.trad-card small{margin-top:4px;color:#837B73;font-size:8px;line-height:1.45}.trad-card .trad-status{color:#C7A970;font:7px var(--mono);letter-spacing:.06em;text-transform:uppercase}.trad-card .trad-status.ready{color:#88A98D}.trad-card-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.trad-empty{padding:18px;color:#837B73;font-size:9px;text-align:center}.trad-modal-wrap{position:fixed;inset:0;z-index:1300;display:grid;place-items:center;padding:16px;background:rgba(5,7,8,.78);backdrop-filter:blur(7px)}.trad-modal{width:min(620px,100%);max-height:92vh;overflow:auto;padding:21px;border:1px solid #44403A;border-radius:16px;background:#17191B;box-shadow:0 24px 80px rgba(0,0,0,.45)}.trad-modal h3{font:500 27px var(--display)}.trad-modal>p{margin-top:6px;color:#89827A;font-size:9px;line-height:1.5}.trad-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:17px}.trad-field{display:grid;gap:6px}.trad-field.wide{grid-column:1/-1}.trad-field label{color:#857C73;font:7px var(--mono);letter-spacing:.08em;text-transform:uppercase}.trad-field input,.trad-field select,.trad-field textarea{width:100%;min-height:42px;padding:10px 11px;border:1px solid #393C3F;border-radius:9px;background:#101214;color:#E7E0D7;font-size:10px;outline:none;color-scheme:dark}.trad-field textarea{min-height:72px;resize:vertical}.trad-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.trad-private{margin-top:11px;padding:9px 10px;border-radius:8px;background:#201D18;color:#9C8D79;font-size:8px;line-height:1.5}
+
 @media(max-width:1180px){
   .cw10-workspace-shell{grid-template-columns:280px minmax(0,1fr)}
   .cw11-event-context{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1188,6 +1194,7 @@ body.cw10-client-mode .app-rail{/* keep rail visible in Weddings */}
   .cw11-member-actions{grid-column:3;grid-row:1/3}
 }
 @media(max-width:760px){
+  .trad-card{grid-template-columns:1fr}.trad-card-actions{justify-content:flex-start}.trad-grid{grid-template-columns:1fr}.trad-field.wide{grid-column:auto}.trad-head{align-items:flex-start;flex-direction:column}
   .cw10-event-nav{min-height:61px}
   .cw10-event-nav .cw10-nav-note{max-width:86px}
   .cw11-event-content{padding:18px 11px 30px}
@@ -2521,6 +2528,8 @@ let shotMoods = {};      // shotMoods: groupKey -> {url} — mood board link per
 let shotEventMoods = {}; // shotEventMoods: category -> {name,url,active} — common reusable event boards
 let crewProfiles = {};   // crewProfiles: Firebase uid -> one-time crew profile
 let crewDayCosts = {};   // one manual cost per wedding/date/crew UID
+let traditionalUnits = {}; // owner-only supplier/payee records by wedding/date
+let traditionalPasses = {}; // sanitized temporary captain-day records
 let checkinEvents = {};  // crewCheckins/events: event setup and team snapshot
 let checkinAttendance = {}; // crewCheckins/attendance: per-event, per-person status
 let clientForms = {};     // private client links and their pre-filled Planner events
@@ -2639,6 +2648,8 @@ function start(){
   db.ref('shotEventMoods').on('value',s=>{shotEventMoods=s.val()||{};renderEventBoards();renderClientsWorkspace();});
   db.ref('crewProfiles').on('value',s=>{crewProfiles=s.val()||{};renderCheckinTeam();renderCrewProfiles();renderClientsWorkspace();renderTeamDirectory();renderStudioHome();});
   db.ref('crewDayCosts').on('value',s=>{crewDayCosts=s.val()||{};renderClientsWorkspace();renderStudioHome();cwScheduleOpsFinanceRefresh();});
+  db.ref('traditionalUnits').on('value',s=>{traditionalUnits=s.val()||{};renderClientsWorkspace();renderStudioHome();});
+  db.ref('traditionalPasses').on('value',s=>{traditionalPasses=s.val()||{};renderClientsWorkspace();renderStudioHome();});
   db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};checkinEventsLoaded=true;cw11InvalidateCleanDrafts();renderCheckinEvents();ensureApprovedClientShoots();renderClientsWorkspace();renderTeamDirectory();renderStudioHome();cwScheduleOpsFinanceRefresh();});
   db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};ciBackfillVenuePins();renderCheckinEvents();renderClientsWorkspace();renderStudioHome();cwScheduleOpsFinanceRefresh();});
   db.ref('clientForms').on('value',s=>{clientForms=s.val()||{};clientFormsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();renderMoodSec();renderStudioHome();});
@@ -3896,13 +3907,13 @@ async function studioSaveCrew(){
   const name=document.getElementById('studioCrewName')?.value.trim()||'',role=document.getElementById('studioCrewRole')?.value||'',phone=ciPhone(document.getElementById('studioCrewPhone')?.value||''),email=(document.getElementById('studioCrewEmail')?.value||'').trim().toLowerCase(),dayRate=Math.max(0,Number(document.getElementById('studioCrewRate')?.value)||0);
   if(!name){toast('Enter the crew member’s name.');return;}if(!role){toast('Choose a default role.');return;}if(phone&&(phone.length<10||phone.length>16)){toast('Enter a valid mobile number, or leave it blank.');return;}if(email&&!email.includes('@')){toast('Enter a valid email address, or leave it blank.');return;}
   const duplicate=Object.values(crewProfiles||{}).find(p=>(phone&&ciPhone(p.phone||'')===phone)||(email&&String(p.email||'').trim().toLowerCase()===email)||(!phone&&!email&&String(p.name||'').trim().toLowerCase()===name.toLowerCase()));if(duplicate){toast('This crew member already exists. Open their profile instead.');return;}
-  const id='manual_'+uid('crew'),now=Date.now(),profile={name,role,phone,email,defaultDayRate:dayRate,manual:true,createdAt:now,updatedAt:now,createdBy:editor},personKey=crewLegacyPeopleKey(name),personRec={...(people[personKey]||{}),name,style:role,rate:dayRate,unit:'day'};
+  const id='manual_'+uid('crew'),now=Date.now(),profile={name,role,phone,email,defaultDayRate:dayRate,profileType:role==='Traditional Partner'?'traditional_partner':'crew',manual:true,createdAt:now,updatedAt:now,createdBy:editor},personKey=crewLegacyPeopleKey(name),personRec={...(people[personKey]||{}),name,style:role,rate:dayRate,unit:'day'};
   try{await db.ref().update({[`crewProfiles/${id}`]:profile,[`people/${personKey}`]:personRec});crewProfiles[id]=profile;people[personKey]=personRec;studioCrewAddOpen=false;renderTeamDirectory();renderCrewProfiles();toast(`${name} added once — ready for assignment.`);log(`added crew directory profile: ${name}`);}catch(err){toast('Could not add this crew member. Please try again.');}
 }
 function renderTeamDirectory(){
   const root=document.getElementById('studioTeamRoot');if(!root)return;const all=Object.entries(crewProfiles||{}).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||''))),list=all.filter(([,p])=>!studioTeamQuery||`${p.name||''} ${p.role||''} ${p.phone||''} ${p.email||''}`.toLowerCase().includes(studioTeamQuery));
-  const missingContact=all.filter(([,p])=>!p.phone&&!p.email).length,missingRate=all.filter(([uid,p])=>!crewDefaultDayRate(uid,p)).length,assigned=all.filter(([uid])=>studioCrewSchedule(uid).length).length;
-  const cards=list.map(([uid,p])=>{const schedule=studioCrewSchedule(uid),rate=crewDefaultDayRate(uid,p),contact=[p.phone,p.email].filter(Boolean).join(' · '),connection=p.manual?(p.email?'Pending crew sign-in':'Not connected · add email before sharing crew link'):'Crew App connected';return `<article class="team-person"><span class="team-avatar">${esc(studioInitials(p.name))}</span><span><b>${esc(p.name||'Unnamed')}</b><small>${esc(p.role||'Role not set')} · ${esc(connection)}</small><small class="${contact?'':'team-warning'}">${esc(contact||'Contact not added yet')}</small><span class="team-rate">${rate?studioMoney(rate)+' / day':'Day rate not set'} · ${schedule.length?schedule.length+' upcoming':'Available'}</span>${schedule[0]?`<small>Next: ${esc(ciDateLong(schedule[0].date))} · ${esc(schedule[0].couple)}</small>`:''}</span><span class="team-person-actions"><button class="studio-action" onclick="studioEditCrew('${esc(uid)}')">Edit</button></span></article>`;}).join('');
+  const missingContact=all.filter(([,p])=>!p.phone&&!p.email).length,missingRate=all.filter(([uid,p])=>p.profileType!=='traditional_partner'&&p.role!=='Traditional Partner'&&!crewDefaultDayRate(uid,p)).length,assigned=all.filter(([uid])=>studioCrewSchedule(uid).length).length;
+  const cards=list.map(([uid,p])=>{const schedule=studioCrewSchedule(uid),rate=crewDefaultDayRate(uid,p),contact=[p.phone,p.email].filter(Boolean).join(' · '),isPartner=p.profileType==='traditional_partner'||p.role==='Traditional Partner',connection=isPartner?'Traditional supplier · temporary captain pass':p.manual?(p.email?'Pending crew sign-in':'Not connected · add email before sharing crew link'):'Crew App connected',rateLabel=isPartner?'Cost entered per wedding date':rate?studioMoney(rate)+' / day':'Day rate not set';return `<article class="team-person"><span class="team-avatar">${esc(studioInitials(p.name))}</span><span><b>${esc(p.name||'Unnamed')}</b><small>${esc(p.role||'Role not set')} · ${esc(connection)}</small><small class="${contact?'':'team-warning'}">${esc(contact||'Contact not added yet')}</small><span class="team-rate">${esc(rateLabel)} · ${schedule.length?schedule.length+' upcoming':'Available'}</span>${schedule[0]?`<small>Next: ${esc(ciDateLong(schedule[0].date))} · ${esc(schedule[0].couple)}</small>`:''}</span><span class="team-person-actions"><button class="studio-action" onclick="studioEditCrew('${esc(uid)}')">Edit</button></span></article>`;}).join('');
   root.innerHTML=`<main class="studio-page"><div class="studio-page-head"><div><h2>One team directory</h2><p>Add a person once. Their identity, contact, default role and day rate are then reused in Weddings, the crew link, Day-of and Finance.</p></div><div class="studio-actions"><button class="studio-action" onclick="copyCrewRegistrationLink()">Copy registration link</button><button class="studio-action primary" onclick="studioToggleCrewAdd()">+ Add crew</button></div></div><section class="studio-metrics"><div class="studio-metric"><span>Crew profiles</span><strong>${all.length}</strong><small>One shared directory</small></div><div class="studio-metric"><span>Upcoming</span><strong>${assigned}</strong><small>With a future assignment</small></div><div class="studio-metric"><span>Missing contact</span><strong>${missingContact}</strong><small>Can still be planned now</small></div><div class="studio-metric"><span>Missing rate</span><strong>${missingRate}</strong><small>Default for new shoot days</small></div><div class="studio-metric"><span>Source of truth</span><strong>1</strong><small>Weddings → Team & prep</small></div></section><div class="team-toolbar"><input class="team-search" aria-label="Search team directory" value="${esc(studioTeamQuery)}" placeholder="Search name, role or phone…" oninput="studioSetTeamQuery(this.value)"><button class="studio-action" onclick="setView('shoots')">Open Day-of</button></div><section class="team-add-card ${studioCrewAddOpen?'open':''}"><div class="team-add-grid"><input id="studioCrewName" aria-label="Crew member name" placeholder="Full name"><select id="studioCrewRole" aria-label="Default crew role"><option value="">Default role</option>${CI_ROLES.map(r=>`<option>${esc(r)}</option>`).join('')}</select><input id="studioCrewPhone" aria-label="Crew member phone" inputmode="tel" placeholder="Phone (optional)"><input id="studioCrewEmail" aria-label="Crew member Google account email" type="email" placeholder="Google email (for Crew App)"><input id="studioCrewRate" aria-label="Default day rate for new shoot days" type="number" min="0" step="100" inputmode="numeric" placeholder="Default ₹ / new day"></div><div class="team-add-actions"><button class="studio-action" onclick="studioToggleCrewAdd(false)">Cancel</button><button class="studio-action primary" onclick="studioSaveCrew()">Save crew member</button></div></section><section class="team-directory">${cards||'<div class="studio-empty">No matching crew members.</div>'}</section></main>`;
 }
 
@@ -6219,7 +6230,7 @@ function removeMoodBoard(k){
 }
 
 /* ---------------- Crew check-ins (isolated from Crew Planner) ---------------- */
-const CI_ROLES=['Candid Photographer','Candid Cinematographer','Traditional Photographer','Traditional Videographer','Drone Operator','LED Assistant','Live Streaming','Other'];
+const CI_ROLES=['Candid Photographer','Candid Cinematographer','Traditional Photographer','Traditional Videographer','Traditional Partner','Drone Operator','LED Assistant','Live Streaming','Other'];
 const CI_OPS_ROLE_CHIPS=[
   ['Candid Photographer','CP'],['Candid Cinematographer','CV'],['Traditional Photographer','TP'],['Traditional Videographer','TV'],
   ['Drone Operator','Drone'],['LED Assistant','LED'],['Live Streaming','Live'],['Other','Other']
@@ -6926,7 +6937,7 @@ async function saveCrewProfile(uid){
   if(phone&&(phone.length<10||phone.length>16)){toast('Enter a valid mobile number, or leave it blank.');return;}
   if(email&&!email.includes('@')){toast('Enter a valid email address, or leave it blank.');return;}
   if(!role){toast('Choose their role.');return;}
-  const updated={...old,name,phone,email,role,defaultDayRate:dayRate,updatedAt:Date.now()},personKey=crewLegacyPeopleKey(name),oldPersonKey=crewLegacyPeopleKey(old.name),personRec={...(people[personKey]||{}),name,style:role,rate:dayRate,unit:'day'},updates={},oldKeyShared=Object.entries(crewProfiles||{}).some(([otherUid,p])=>otherUid!==uid&&crewLegacyPeopleKey(p&&p.name)===oldPersonKey);
+  const updated={...old,name,phone,email,role,profileType:role==='Traditional Partner'?'traditional_partner':'crew',defaultDayRate:dayRate,updatedAt:Date.now()},personKey=crewLegacyPeopleKey(name),oldPersonKey=crewLegacyPeopleKey(old.name),personRec={...(people[personKey]||{}),name,style:role,rate:dayRate,unit:'day'},updates={},oldKeyShared=Object.entries(crewProfiles||{}).some(([otherUid,p])=>otherUid!==uid&&crewLegacyPeopleKey(p&&p.name)===oldPersonKey);
   updates[`crewProfiles/${uid}`]=updated;updates[`people/${personKey}`]=personRec;if(oldPersonKey&&oldPersonKey!==personKey&&!oldKeyShared&&String(people[oldPersonKey]?.name||'').trim().toLowerCase()===String(old.name||'').trim().toLowerCase())updates[`people/${oldPersonKey}`]=null;
   Object.entries(checkinEvents||{}).forEach(([eventId,event])=>{if(!event||!event.crew||!event.crew[uid]||cwShootComplete(eventId,event))return;updates[`crewCheckins/events/${eventId}/crew/${uid}/name`]=name;updates[`crewCheckins/events/${eventId}/crew/${uid}/phone`]=phone;updates[`crewCheckins/events/${eventId}/crew/${uid}/email`]=email;});
   try{await db.ref().update(updates);crewProfiles[uid]=updated;people[personKey]=personRec;if(updates[`people/${oldPersonKey}`]===null)delete people[oldPersonKey];crewProfileEditUid='';renderCrewProfiles();renderCheckinTeam();renderTeamDirectory();renderStudioHome();toast(`${name} updated everywhere.`);log(`updated registered crew profile: ${name}`);}catch(err){toast('Could not update this crew profile. Please try again.');}
@@ -8427,6 +8438,7 @@ function cwOpsCrewCostTotal(state,events){
     const draft=cw11GetPlanDraft(state,event);
     Object.keys(draft.crew||{}).forEach(uid=>{const key=`${event.date}|${uid}`;if(seen.has(key))return;seen.add(key);const n=cwOpsCrewDayCost(state,event.date,uid);if(n==null)pending++;else sum+=n;});
   });
+  cwTradRows(state).forEach(unit=>{const key=`traditional|${unit.date}|${unit.partnerId}`;if(seen.has(key))return;seen.add(key);if(unit.amount==null||Number.isNaN(Number(unit.amount)))pending++;else sum+=Number(unit.amount);});
   return {sum,pending};
 }
 function cwOpsCrewReadiness(state,events){
@@ -8727,6 +8739,72 @@ function cwOpsEventRowHtml(state,event,opts={}){
     </div>
   </article>`;
 }
+let cwTradModalOpen=false,cwTradEditId='';
+function cwTradPartnerRows(){
+  return Object.entries(crewProfiles||{}).filter(([,p])=>p&&((p.profileType||'')==='traditional_partner'||p.role==='Traditional Partner')).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
+}
+function cwTradWeddingKey(state){return cwOpsWeddingCostKey(state);}
+function cwTradRows(state){
+  const key=cwTradWeddingKey(state),root=traditionalUnits[key]||{},rows=[];
+  Object.entries(root).forEach(([date,units])=>Object.entries(units||{}).forEach(([unitId,unit])=>rows.push({date,unitId,...unit})));
+  return rows.sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.partnerName).localeCompare(String(b.partnerName)));
+}
+function cwTradFind(state,unitId){return cwTradRows(state).find(row=>row.unitId===unitId)||null;}
+function cwTradComposition(unit){const parts=[];if(Number(unit.tpCount))parts.push(`${unit.tpCount} TP`);if(Number(unit.tvCount))parts.push(`${unit.tvCount} TV`);return parts.join(' + ')||'Team count pending';}
+function cwTradOpenModal(unitId=''){cwTradEditId=String(unitId||'');cwTradModalOpen=true;renderClientsWorkspace();setTimeout(()=>document.getElementById('tradPartner')?.focus(),0);}
+function cwTradCloseModal(){cwTradModalOpen=false;cwTradEditId='';renderClientsWorkspace();}
+function cwTradModalHtml(state){
+  if(!cwTradModalOpen)return '';
+  const row=cwTradEditId?cwTradFind(state,cwTradEditId):null,partners=cwTradPartnerRows(),dates=[...new Set((state.events||[]).map(e=>e.date).filter(Boolean))].sort(),defaultDate=row&&row.date||dates.find(d=>d>=ciTodayIso())||dates[0]||ciTodayIso();
+  if(!partners.length)return `<div class="trad-modal-wrap"><section class="trad-modal"><h3>Add a Traditional Partner first</h3><p>Open Team, add or edit Sai Charan, Prithvi or Srinivas, and choose the role Traditional Partner.</p><div class="trad-actions"><button class="cw10-soft" onclick="cwTradCloseModal()">Close</button><button class="cw10-primary" onclick="cwTradCloseModal();setView('team')">Open Team</button></div></section></div>`;
+  return `<div class="trad-modal-wrap" onclick="if(event.target===this)cwTradCloseModal()"><section class="trad-modal"><h3>${row?'Edit':'Add'} traditional unit</h3><p>One supplier, one date and one private cost. The attending captain can be decided later.</p><div class="trad-grid">
+    <div class="trad-field"><label>Wedding date</label><select id="tradDate" ${row?'disabled':''}>${dates.map(d=>`<option value="${esc(d)}"${d===defaultDate?' selected':''}>${esc(ciDateLong(d))}</option>`).join('')}</select></div>
+    <div class="trad-field"><label>Traditional partner</label><select id="tradPartner" ${row?'disabled':''}>${partners.map(([id,p])=>`<option value="${esc(id)}"${id===(row&&row.partnerId)?' selected':''}>${esc(p.name||'Partner')}</option>`).join('')}</select></div>
+    <div class="trad-field"><label>Traditional photographers (TP)</label><input id="tradTp" type="number" min="0" max="20" inputmode="numeric" value="${esc(row&&row.tpCount!=null?row.tpCount:1)}"></div>
+    <div class="trad-field"><label>Traditional videographers (TV)</label><input id="tradTv" type="number" min="0" max="20" inputmode="numeric" value="${esc(row&&row.tvCount!=null?row.tvCount:1)}"></div>
+    <div class="trad-field"><label>Team reporting time</label><input id="tradArrival" type="time" value="${esc(row&&row.reportingTime||'')}"></div>
+    <div class="trad-field"><label>Total day cost — private</label><input id="tradCost" type="number" min="0" step="100" inputmode="numeric" value="${esc(row&&row.amount!=null?row.amount:'')}" placeholder="₹"></div>
+    <div class="trad-field wide"><label>Internal note (optional)</label><textarea id="tradNote" placeholder="Travel, overtime agreement, equipment or supplier notes">${esc(row&&row.internalNote||'')}</textarea></div>
+  </div><div class="trad-private">The partner and captain never see the cost or this internal note. Hours remain informational and never calculate payment.</div><div class="trad-actions"><button class="cw10-soft" onclick="cwTradCloseModal()">Cancel</button><button class="cw10-primary" onclick="cwTradSaveUnit()">Save traditional unit</button></div></section></div>`;
+}
+function cwTradPassEvents(state,date){
+  const out={};(state.events||[]).filter(e=>e.date===date).forEach(event=>{const d=cw10CurrentDetails(state,event)||{};out[event.eventId]={name:String(event.name||'Event'),date:event.date,startTime:String(d.startTime||''),endTime:String(d.endTime||''),venueName:String(d.venueName||''),mapsUrl:String(d.mapsUrl||''),notes:String(d.notes||''),traditionalListKey:shotListKey(event.name)};});return out;
+}
+function cwTradProjectFinance(state,unit,updates,remove=false){
+  let prodId=state.prodId||'',prod=prodId&&prods[prodId]?ciClone(prods[prodId]):null;if(!prod&&!remove){prodId=uid('p');prod=cwBusinessProdSeed(state);}if(!prod)return null;
+  const days=Array.isArray(prod.days)?prod.days:Object.values(prod.days||{});let day=days.find(d=>d&&d.date===unit.date);
+  if(!day&&!remove){day={date:unit.date,events:[],roles:[]};days.push(day);}if(!day)return null;
+  const roles=(Array.isArray(day.roles)?day.roles:Object.values(day.roles||{})).filter(r=>!(r&&r.opsSource==='traditionalUnit'&&r.sourceKey===unit.unitId));
+  if(!remove)roles.push({person:unit.partnerName,role:`Traditional Unit · ${cwTradComposition(unit)}`,pay:Number(unit.amount)||0,uid:unit.partnerId,opsSource:'traditionalUnit',sourceKey:unit.unitId});
+  day.roles=roles;prod.days=days;prod.updatedAt=Date.now();prod.updatedBy=editor;updates[`prod/${prodId}`]=prod;return {prodId,prod};
+}
+async function cwTradSaveUnit(){
+  const entry=cwEntry(),state=entry&&cwState(entry);if(!state)return;
+  const date=document.getElementById('tradDate')?.value||'',partnerId=document.getElementById('tradPartner')?.value||'',partner=crewProfiles[partnerId],tpCount=Math.max(0,Math.min(20,Number(document.getElementById('tradTp')?.value)||0)),tvCount=Math.max(0,Math.min(20,Number(document.getElementById('tradTv')?.value)||0)),reportingTime=document.getElementById('tradArrival')?.value||'',costRaw=document.getElementById('tradCost')?.value,amount=costRaw===''?null:Number(costRaw),internalNote=document.getElementById('tradNote')?.value.trim()||'';
+  if(!date||!partner){toast('Choose the date and Traditional Partner.');return;}if(!tpCount&&!tvCount){toast('Add at least one TP or TV.');return;}if(!reportingTime){toast('Enter the traditional team reporting time.');return;}if(amount==null||!Number.isFinite(amount)||amount<0){toast('Enter the agreed total day cost. Use 0 only when intentional.');return;}
+  const key=cwTradWeddingKey(state),existing=cwTradEditId?cwTradFind(state,cwTradEditId):cwTradRows(state).find(x=>x.date===date&&x.partnerId===partnerId),unitId=existing&&existing.unitId||uid('tu_'),passId=existing&&existing.passId||uid('tdp_'),now=Date.now(),unit={...(existing||{}),unitId,passId,weddingKey:key,date,partnerId,partnerName:partner.name||'Traditional Partner',tpCount,tvCount,reportingTime,amount,internalNote,updatedAt:now,updatedBy:editor,createdAt:existing&&existing.createdAt||now,createdBy:existing&&existing.createdBy||editor},oldPass=traditionalPasses[passId]||{},pass={...oldPass,passId,unitId,weddingKey:key,couple:state.entry.name,date,partnerId,partnerName:unit.partnerName,tpCount,tvCount,reportingTime,events:cwTradPassEvents(state,date),status:oldPass.captainUid?(oldPass.checkedInAt?'active':'confirmed'):(existing&&existing.inviteHash?'link_issued':'awaiting_captain'),updatedAt:now};
+  const updates={};updates[`traditionalUnits/${key}/${date}/${unitId}`]=unit;updates[`traditionalPasses/${passId}`]=pass;updates[`crewDayCosts/${key}/${date}/${partnerId}`]={amount,currency:'INR',crewUid:partnerId,nameSnapshot:unit.partnerName,roleSnapshot:`Traditional Unit · ${cwTradComposition(unit)}`,updatedAt:now,updatedBy:editor,source:'teamPrep'};const stagedProd=cwTradProjectFinance(state,unit,updates,false);
+  try{await db.ref().update(updates);if(stagedProd)prods[stagedProd.prodId]=stagedProd.prod;cwTradModalOpen=false;cwTradEditId='';toast(`${unit.partnerName} traditional unit saved for ${ciDateLong(date)}.`);log(`saved traditional unit: ${state.entry.name} — ${unit.partnerName}`);renderClientsWorkspace();}catch(err){console.error('Traditional unit save failed',err);toast('Could not save the traditional unit. Check the new Firebase rules and try again.');}
+}
+function cwTradRandomToken(){const bytes=new Uint8Array(24);crypto.getRandomValues(bytes);return [...bytes].map(n=>n.toString(16).padStart(2,'0')).join('');}
+async function cwTradHashToken(token){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));return [...new Uint8Array(buf)].map(n=>n.toString(16).padStart(2,'0')).join('');}
+async function cwTradIssuePass(unitId,whatsapp=false){
+  const entry=cwEntry(),state=entry&&cwState(entry),unit=state&&cwTradFind(state,unitId);if(!unit)return;const pass=traditionalPasses[unit.passId]||{};
+  if(pass.checkedInAt){toast('This traditional unit has already started. Its captain pass cannot be replaced.');return;}
+  if(pass.captainUid&&!confirm(`Replace the current captain pass for ${unit.partnerName}? The existing captain will lose access.`))return;
+  const token=cwTradRandomToken(),hash=await cwTradHashToken(token),now=Date.now(),expiresAt=new Date(`${unit.date}T23:59:59+05:30`).getTime()+2*86400000,updates={};if(unit.inviteHash)updates[`traditionalInvites/${unit.inviteHash}`]=null;
+  updates[`traditionalInvites/${hash}`]={passId:unit.passId,unitId:unit.unitId,weddingKey:unit.weddingKey,date:unit.date,partnerId:unit.partnerId,createdAt:now,createdBy:editor,expiresAt,revoked:false};updates[`traditionalUnits/${unit.weddingKey}/${unit.date}/${unit.unitId}/inviteHash`]=hash;updates[`traditionalUnits/${unit.weddingKey}/${unit.date}/${unit.unitId}/lastPassIssuedAt`]=now;updates[`traditionalPasses/${unit.passId}/captainUid`]=null;updates[`traditionalPasses/${unit.passId}/captainName`]=null;updates[`traditionalPasses/${unit.passId}/captainEmail`]=null;updates[`traditionalPasses/${unit.passId}/captainPhone`]=null;updates[`traditionalPasses/${unit.passId}/confirmedAt`]=null;updates[`traditionalPasses/${unit.passId}/status`]='link_issued';updates[`traditionalPasses/${unit.passId}/updatedAt`]=now;
+  try{await db.ref().update(updates);const url=new URL('traditional-pass.html',location.href);url.searchParams.set('t',token);const message=`Traditional team day pass — ${state.entry.name}\n${ciDateLong(unit.date)} · Reporting ${ciFmtTime(unit.reportingTime)}\nRequired: ${cwTradComposition(unit)}\n\nSai/Partner: please forward this secure link only to the person responsible on location:\n${url.href}`;if(whatsapp){const phone=ciPhone(crewProfiles[unit.partnerId]?.phone||'');if(phone){window.open(`https://wa.me/${phone.length===10?'91'+phone:phone}?text=${encodeURIComponent(message)}`,'_blank','noopener');}else{copyText(message,'Day-pass brief copied — this partner has no phone saved.');}}else copyText(url.href,'Traditional captain pass copied.');toast(whatsapp?'Traditional day brief ready in WhatsApp.':'Captain pass copied.');}catch(err){console.error('Traditional invite failed',err);toast('Could not create the temporary captain pass.');}
+}
+async function cwTradDeleteUnit(unitId){
+  const entry=cwEntry(),state=entry&&cwState(entry),unit=state&&cwTradFind(state,unitId);if(!unit)return;const pass=traditionalPasses[unit.passId]||{};if(pass.checkedInAt){toast('A started traditional day cannot be deleted. Keep it as history.');return;}if(!confirm(`Remove ${unit.partnerName}'s traditional unit for ${ciDateLong(unit.date)}?`))return;
+  const updates={};updates[`traditionalUnits/${unit.weddingKey}/${unit.date}/${unit.unitId}`]=null;updates[`traditionalPasses/${unit.passId}`]=null;if(unit.inviteHash)updates[`traditionalInvites/${unit.inviteHash}`]=null;updates[`crewDayCosts/${unit.weddingKey}/${unit.date}/${unit.partnerId}`]=null;const stagedProd=cwTradProjectFinance(state,unit,updates,true);
+  try{await db.ref().update(updates);if(stagedProd)prods[stagedProd.prodId]=stagedProd.prod;toast('Traditional unit removed.');renderClientsWorkspace();}catch(err){toast('Could not remove the traditional unit.');}
+}
+function cwTradRenderSection(state){
+  const rows=cwTradRows(state),cards=rows.map(unit=>{const pass=traditionalPasses[unit.passId]||{},captain=pass.captainName||'',status=pass.checkedOutAt?'Finished':pass.checkedInAt?'On shoot':captain?'Captain confirmed':unit.inviteHash?'Pass sent':'Captain awaited',ready=!!captain;return `<article class="trad-card"><div><strong>${esc(ciDateLong(unit.date))} · ${esc(unit.partnerName)}</strong><small>${esc(cwTradComposition(unit))} · Reporting ${esc(ciFmtTime(unit.reportingTime))}</small></div><div><span class="trad-status ${ready?'ready':''}">${esc(status)}</span><small>${captain?`Captain: ${esc(captain)}`:'Partner can forward the day pass later'}</small></div><div><strong>${esc(cwOpsInr(Number(unit.amount)||0))}</strong><small>Private partner-day cost · hours informational</small></div><div class="trad-card-actions"><button class="cw10-soft" onclick="cwTradOpenModal('${esc(unit.unitId)}')">Edit</button><button class="cw10-soft" onclick="cwTradIssuePass('${esc(unit.unitId)}',true)">${captain?'Replace pass':'WhatsApp pass'}</button><button class="cw10-text" onclick="cwTradDeleteUnit('${esc(unit.unitId)}')">Remove</button></div></article>`;}).join('');
+  return `<section class="trad-section"><div class="trad-head"><div><h3>Traditional Day Pass <small style="font:7px var(--mono);color:#B18E58">BETA</small></h3><p>Assign the supplier once. The attending captain gets a temporary, cost-free operational pass.</p></div><button class="cw10-primary" onclick="cwTradOpenModal()">+ Traditional unit</button></div><div class="trad-list">${cards||'<div class="trad-empty">No outsourced traditional unit added for this wedding.</div>'}</div></section>${cwTradModalHtml(state)}`;
+}
 function cw10RenderOperations(state){
   const approved=cwOpsSortEvents(state);
   const pending=state.events.filter(e=>!cw11EventApprovalState(state,e).approved).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||(Number(a.order)||0)-(Number(b.order)||0));
@@ -8749,6 +8827,7 @@ function cw10RenderOperations(state){
       <div><span>Crew readiness</span><strong>${ready.eventsWithCrew}/${ready.events||events.length} events · ${ready.assigned} assigned</strong></div>
       <div><span>Est. crew cost</span><strong>${esc(cwOpsInr(totalCost.sum))}</strong><small>${totalCost.pending?`${totalCost.pending} pending calculation${totalCost.pending===1?'':'s'}`:'All assigned costs calculated'}</small></div>
     </div>
+    ${cwTradRenderSection(state)}
     <div class="cw-ops-list">${approved.map(event=>cwOpsEventRowHtml(state,event,{approved:true})).join('')}${pending.length?`<div class="cw10-nav-label" style="margin:8px 0 4px">Draft · awaiting approval</div>${pending.map(event=>cwOpsEventRowHtml(state,event,{approved:false})).join('')}`:''}</div>
     <p class="cw10-event-footnote">Writes the same crewCheckins records used by Live day. Client and crew links are unchanged.</p>
   </div>`;
