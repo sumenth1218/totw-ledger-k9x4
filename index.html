@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.8-trad-auto-context-2026-08-11">
+<meta name="totw-build" content="v13.1.9-trad-replace-typed-2026-08-11">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -8261,6 +8261,10 @@ function cw11TeamMemberHtml(eventId,draft,uid,c){
   return `<div class="ci-assignment-member"><div class="ci-assignment-member-main"><div class="ci-assignment-member-name"><b>${esc(c.name||crewProfiles[uid]?.name||'Crew member')}${c.isLead?' · Lead':''}</b><small>${locked?'Checked in · assignment locked':`Uses team arrival · ${esc(ciFmtTime(draft.teamArrival))}`}</small></div><div class="ci-assignment-member-actions"><button type="button" class="${c.isLead?'on':''}" ${locked?'disabled':''} onclick="cw11ToggleLead('${esc(eventId)}','${esc(uid)}')">${c.isLead?'Lead ✓':'Make lead'}</button><button type="button" class="remove" ${locked?'disabled':''} aria-label="Remove ${esc(c.name||'crew member')}" onclick="cw11RemoveCrew('${esc(eventId)}','${esc(uid)}')">×</button></div></div><div class="ci-assignment-member-time"><label>Different arrival time (optional)</label><input type="time" value="${esc(c.arrivalOverride?arrival:'')}" ${locked?'disabled':''} onchange="cw11SetCrewTime('${esc(eventId)}','${esc(uid)}',this.value)"><button type="button" class="cw11-icon-button" onclick="cw11UseOverall('${esc(eventId)}','${esc(uid)}')">Use overall</button></div></div>`;
 }
 function cw11TeamRoleHtml(eventId,draft,role){
+  const {state,event}=cw11CurrentStateEvent(eventId),supplier=state&&event&&CW11_TRADITIONAL_ROLES.includes(role)?cwTradUnitForDate(state,event.date):null;
+  if(supplier&&CW11_TRADITIONAL_ROLES.includes(role)){
+    return `<section class="ci-assignment-role"><div class="ci-assignment-role-head"><div class="ci-assignment-role-name"><b>${esc(role)} <small>(${esc(ciRoleCode(role))})</small></b><small class="ok">Outsourced</small></div></div><div class="ci-assignment-members"><div class="ci-assignment-empty">Covered by ${esc(supplier.partnerName)} · ${esc(cwTradComposition(supplier))}</div></div></section>`;
+  }
   const status=cw11RoleStatus(role,draft),members=ciSortCrewEntries(Object.entries(draft.crew||{}).filter(([,c])=>(c.role||'Other')===role)),isExtra=CW11_EXTRA_ROLES.includes(role);
   const memberHtml=members.length?members.map(([uid,c])=>{
     const guest=cwIsGuestExtraUid(uid,c);
@@ -8272,8 +8276,11 @@ function cw11TeamRoleHtml(eventId,draft,role){
 }
 function cw11TeamSectionHtml(eventId,draft,title,roles){
   const assigned=Object.values(draft.crew||{}).filter(c=>roles.includes(c.role||'Other')).length;
-  const extrasNote=title==='Extras'?' · type names here · ₹ pay in Finance & Reports':' · multiple crew per role supported';
-  return `<div class="cw11-team-group"><div class="cw11-section-head"><div><h4>${esc(title)}</h4><p>${assigned} assigned${extrasNote}</p></div></div><div class="ci-assignment-roles">${roles.map(role=>cw11TeamRoleHtml(eventId,draft,role)).join('')}</div></div>`;
+  const {state,event}=cw11CurrentStateEvent(eventId);
+  const supplier=title==='Traditional team'&&state&&event?cwTradUnitForDate(state,event.date):null;
+  const extrasNote=title==='Extras'?' · type names here · ₹ pay in Finance & Reports':(supplier?` · outsourced via ${supplier.partnerName} (${cwTradComposition(supplier)})`:' · multiple crew per role supported');
+  const supplierNote=supplier?`<div class="cw11-plan-note" style="margin:0 0 10px"><i>i</i><div><strong>Traditional is outsourced to ${esc(supplier.partnerName)}.</strong>Typed TP/TV are replaced by this supplier unit. Manage the captain pass below — don’t re-add individual traditional crew for this date.</div></div>`:'';
+  return `<div class="cw11-team-group"><div class="cw11-section-head"><div><h4>${esc(title)}</h4><p>${assigned} assigned${extrasNote}</p></div></div>${supplierNote}<div class="ci-assignment-roles">${roles.map(role=>cw11TeamRoleHtml(eventId,draft,role)).join('')}</div></div>`;
 }
 
 function cw11DraftKey(formId,eventId){return `${formId||''}|${eventId||''}`;}
@@ -8401,6 +8408,7 @@ function cw11AddCrewFromSelect(eventId,role,select){
 function cw11AddCrewMember(eventId,role,uid){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
   const draft=cw11GetPlanDraft(state,event),p=crewProfiles[uid];if(!draft||!p)return;
+  if(CW11_TRADITIONAL_ROLES.includes(role)&&cwTradUnitForDate(state,event.date)){toast(`Traditional for ${ciDateLong(event.date)} is outsourced. Use the Traditional Day Pass unit, not individual TP/TV.`);return;}
   if(cw11CrewLocked(draft,uid)){toast(`${p.name||'This crew member'} has already checked in, so the assignment is locked.`);return;}
   if(draft.crew[uid]){toast(`${p.name||'This crew member'} is already assigned.`);return;}
   const defaultCost=crewDefaultDayRate(uid,p);
@@ -8515,7 +8523,7 @@ async function cw11SavePlans(drafts,label){
       if(result.draft._saveGen===result._saveGen)result.draft.dirty=false;
     });
     finance.staged.forEach((prod,id)=>{prods[id]=prod;});
-    const internal=results.some(r=>!r.published);toast(internal?'Planning saved internally. The crew will receive it only after approval.':label);
+    const internal=results.some(r=>!r.published);if(label)toast(internal?'Planning saved internally. The crew will receive it only after approval.':label);
     log(`saved client planning for ${results.length} event${results.length===1?'':'s'}: ${results[0].state.entry.name}`);
     renderCheckinEvents();renderClientsWorkspace();
     if(results.some(r=>r.draft.dirty))setTimeout(()=>cwOpsFlushPersist(),80);
@@ -8783,6 +8791,7 @@ function cwOpsAddSelectedCrew(eventId){
 }
 function cwOpsReserveSlot(eventId){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  if(CW11_TRADITIONAL_ROLES.includes(cwOpsAddRole)&&cwTradUnitForDate(state,event.date)){toast(`Traditional for ${ciDateLong(event.date)} is outsourced — no empty TP/TV slots needed.`);return;}
   const draft=cw11GetPlanDraft(state,event);draft.openSlots=draft.openSlots||{};
   draft.openSlots[cwOpsAddRole]=(Number(draft.openSlots[cwOpsAddRole])||0)+1;
   cwOpsSyncRequirements(draft);cw11MarkDraft(draft);cwOpsAddFor='';cwOpsAddSelected=new Set();renderClientsWorkspace();
@@ -9066,6 +9075,31 @@ function cwTradModalHtml(state){
     <div class="trad-field wide"><label>Internal note (optional)</label><textarea id="tradNote" placeholder="Travel, overtime agreement, equipment or supplier notes">${esc(row&&row.internalNote||'')}</textarea></div>
   </div><div class="trad-private">The partner and captain never see the cost or this internal note. Hours remain informational and never calculate payment.</div><div class="trad-actions"><button class="cw10-soft" onclick="cwTradCloseModal()">Cancel</button><button class="cw10-primary" onclick="cwTradSaveUnit()">Save traditional unit</button></div></section></div>`;
 }
+function cwTradUnitForDate(state,date){
+  return cwTradRows(state).find(row=>row.date===date)||null;
+}
+async function cwTradClearTypedTraditional(state,date){
+  if(!state||!date)return {removed:0,locked:0,drafts:[]};
+  const dirty=[],names=[];let removed=0,locked=0;
+  (state.events||[]).filter(e=>e&&e.date===date).forEach(event=>{
+    const draft=cw11GetPlanDraft(state,event);if(!draft||!draft.crew)return;
+    let changed=false;
+    Object.entries(draft.crew).forEach(([uid,c])=>{
+      if(!CW11_TRADITIONAL_ROLES.includes(c.role||''))return;
+      if(cw11CrewLocked(draft,uid)){locked++;return;}
+      names.push(c.name||crewProfiles[uid]?.name||'Traditional crew');
+      delete draft.crew[uid];removed++;changed=true;
+      if(draft.openSlots){CW11_TRADITIONAL_ROLES.forEach(role=>{if(draft.openSlots[role])draft.openSlots[role]=0;});}
+    });
+    if(changed){cwOpsSyncRequirements(draft);cw11MarkDraft(draft);dirty.push(draft);}
+  });
+  if(dirty.length){
+    // Also drop Finance roster pay rows for typed TP/TV on this date (supplier unit keeps its own row).
+    const res=await cw11SavePlans(dirty,null);
+    if(res&&res.error)throw new Error('Could not clear typed traditional crew');
+  }
+  return {removed,locked,names:[...new Set(names)],drafts:dirty};
+}
 function cwTradPassEvents(state,date){
   const out={};(state.events||[]).filter(e=>e.date===date).forEach(event=>{const d=cw10CurrentDetails(state,event)||{};out[event.eventId]={name:String(event.name||'Event'),date:event.date,startTime:String(d.startTime||''),endTime:String(d.endTime||''),venueName:String(d.venueName||''),mapsUrl:String(d.mapsUrl||''),notes:String(d.notes||''),traditionalListKey:shotListKey(event.name)};});return out;
 }
@@ -9083,7 +9117,17 @@ async function cwTradSaveUnit(){
   if(!date||!partner){toast('Choose the date and Traditional Partner.');return;}if(!tpCount&&!tvCount){toast('Add at least one TP or TV.');return;}if(!reportingTime){toast('No reporting time on this date’s events yet — set Team arrival in Team & prep, or enter it here.');return;}if(amount==null||!Number.isFinite(amount)||amount<0){toast('Enter the agreed total day cost. Use 0 only when intentional.');return;}
   const key=cwTradWeddingKey(state),existing=cwTradEditId?cwTradFind(state,cwTradEditId):cwTradRows(state).find(x=>x.date===date&&x.partnerId===partnerId),unitId=existing&&existing.unitId||uid('tu_'),passId=existing&&existing.passId||uid('tdp_'),now=Date.now(),unit={...(existing||{}),unitId,passId,weddingKey:key,date,partnerId,partnerName:partner.name||'Traditional Partner',tpCount,tvCount,reportingTime,amount,internalNote,updatedAt:now,updatedBy:editor,createdAt:existing&&existing.createdAt||now,createdBy:existing&&existing.createdBy||editor},oldPass=traditionalPasses[passId]||{},pass={...oldPass,passId,unitId,weddingKey:key,couple:state.entry.name,date,partnerId,partnerName:unit.partnerName,tpCount,tvCount,reportingTime,events:cwTradPassEvents(state,date),status:oldPass.captainUid?(oldPass.checkedInAt?'active':'confirmed'):(existing&&existing.inviteHash?'link_issued':'awaiting_captain'),updatedAt:now};
   const updates={};updates[`traditionalUnits/${key}/${date}/${unitId}`]=unit;updates[`traditionalPasses/${passId}`]=pass;updates[`crewDayCosts/${key}/${date}/${partnerId}`]={amount,currency:'INR',crewUid:partnerId,nameSnapshot:unit.partnerName,roleSnapshot:`Traditional Unit · ${cwTradComposition(unit)}`,updatedAt:now,updatedBy:editor,source:'teamPrep'};const stagedProd=cwTradProjectFinance(state,unit,updates,false);
-  try{await db.ref().update(updates);if(stagedProd)prods[stagedProd.prodId]=stagedProd.prod;cwTradModalOpen=false;cwTradEditId='';toast(`${unit.partnerName} traditional unit saved for ${ciDateLong(date)}.`);log(`saved traditional unit: ${state.entry.name} — ${unit.partnerName}`);renderClientsWorkspace();}catch(err){console.error('Traditional unit save failed',err);toast('Could not save the traditional unit. Check the new Firebase rules and try again.');}
+  try{
+    await db.ref().update(updates);
+    if(stagedProd)prods[stagedProd.prodId]=stagedProd.prod;
+    let cleared={removed:0,locked:0,names:[]};
+    try{cleared=await cwTradClearTypedTraditional(state,date);}catch(clearErr){console.warn('Traditional typed-crew clear failed',clearErr);}
+    cwTradModalOpen=false;cwTradEditId='';
+    const extra=cleared.removed?` Replaced ${cleared.removed} typed TP/TV with the supplier unit.`:(cleared.locked?` ${cleared.locked} checked-in TP/TV left in place.`:'');
+    toast(`${unit.partnerName} traditional unit saved for ${ciDateLong(date)}.${extra}`);
+    log(`saved traditional unit: ${state.entry.name} — ${unit.partnerName}${cleared.removed?` · cleared ${cleared.removed} typed TP/TV`:''}`);
+    renderClientsWorkspace();
+  }catch(err){console.error('Traditional unit save failed',err);toast('Could not save the traditional unit. Check the new Firebase rules and try again.');}
 }
 function cwTradRandomToken(){const bytes=new Uint8Array(24);crypto.getRandomValues(bytes);return [...bytes].map(n=>n.toString(16).padStart(2,'0')).join('');}
 async function cwTradHashToken(token){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));return [...new Uint8Array(buf)].map(n=>n.toString(16).padStart(2,'0')).join('');}
