@@ -1,0 +1,13 @@
+{
+  "name": "Tale of Two Weddings Crew",
+  "short_name": "Tale of Two Crew",
+  "description": "Private shoot assignments and GPS check-in for the Tale of Two Weddings crew.",
+  "start_url": "crew.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F7F3EC",
+  "theme_color": "#F7F3EC",
+  "icons": [
+    {"src":"totw-logo-square.jpg","sizes":"2048x2048","type":"image/jpeg","purpose":"any"}
+  ]
+}
