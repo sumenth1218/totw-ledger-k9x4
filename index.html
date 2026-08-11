@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.10-trad-event-chip-2026-08-11">
+<meta name="totw-build" content="v13.1.11-home-attention-fix-2026-08-12">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -3991,10 +3991,25 @@ function studioMoney(value){
 }
 function studioInitials(name){return String(name||'').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'—';}
 function studioDateBadge(iso){
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(iso||''))return 'TBD';
+  if(iso==='due')return 'DUE';
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(iso||''))return '—';
   const d=new Date(iso+'T00:00:00');return `${MN[d.getMonth()].slice(0,3)}<br>${d.getDate()}`;
 }
 function studioDayDiff(iso){const a=new Date(ciTodayIso()+'T00:00:00'),b=new Date(iso+'T00:00:00');return Math.round((b-a)/86400000);}
+function studioOpenDueEnquiries(){
+  setView('ledger');
+  setTimeout(function(){const el=document.getElementById('enqItems');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);
+}
+function studioFocusNewEnquiry(){
+  setView('ledger');
+  setTimeout(function(){const el=document.getElementById('enqName');if(el)el.focus();},50);
+}
+function cw10EventTeamCount(state,event){
+  const draft=cw11GetPlanDraft(state,event),crewCount=Object.keys(draft.crew||{}).length;
+  const trad=cwTradUnitForDate(state,event.date);
+  const tradCount=trad?(Number(trad.tpCount)||0)+(Number(trad.tvCount)||0):0;
+  return {crewCount,trad,tradCount,total:crewCount+tradCount,label:crewCount&&trad?`${crewCount} crew · Trad ${cwTradComposition(trad)}`:trad&&!crewCount?`Trad unit · ${cwTradComposition(trad)}`:`${crewCount} crew`};
+}
 function studioOpenWedding(key,section='operations',eventId=''){
   cwSelectedKey=String(key||'');cwSection=section;cw10SelectedEventId=String(eventId||'');
   localStorage.setItem('totw_client_workspace',cwSelectedKey);localStorage.setItem('totw_client_section',cwSection);
@@ -4004,7 +4019,11 @@ function studioOpenWedding(key,section='operations',eventId=''){
 function studioPayload(value){return btoa(unescape(encodeURIComponent(JSON.stringify(value))));}
 function studioOpenWeddingEncoded(payload){try{const [key,section,eventId]=JSON.parse(decodeURIComponent(escape(atob(payload))));studioOpenWedding(key,section,eventId);}catch(e){toast('Could not open this wedding.');}}
 function studioHomeRow(item){
-  const payload=studioPayload([item.key||'',item.section||'operations',item.eventId||'']),click=item.key?`onclick="studioOpenWeddingEncoded('${payload}')"`:item.onclick||'';
+  const payload=studioPayload([item.key||'',item.section||'operations',item.eventId||'']);
+  let click='';
+  if(item.key)click=`onclick="studioOpenWeddingEncoded('${payload}')"`;
+  else if(item.action)click=`onclick="${item.action}"`;
+  else if(item.onclick)click=item.onclick.indexOf('onclick=')===0?item.onclick:`onclick="${item.onclick}"`;
   return `<button type="button" class="studio-row" ${click}><span class="studio-date">${studioDateBadge(item.date)}</span><span class="studio-row-main"><b>${esc(item.title)}</b><small>${esc(item.detail||'')}</small></span><span class="studio-status ${esc(item.tone||'')}">${esc(item.status||'Open')}</span></button>`;
 }
 function renderStudioHome(){
@@ -4012,14 +4031,14 @@ function renderStudioHome(){
   let states=[];try{states=cwDirectory().map(entry=>({entry,state:cwState(entry)}));}catch(err){states=[];}
   const today=ciTodayIso(),futureLimit=new Date(today+'T00:00:00');futureLimit.setDate(futureLimit.getDate()+14);const limitIso=futureLimit.toISOString().slice(0,10);
   const upcoming=[],attention=[],deliveries=[];
-  Object.entries(enquiries||{}).forEach(([enquiryId,enquiry])=>{if(enquiry&&!enquiry.done&&!enquiry.status&&typeof isDue==='function'&&isDue(enquiryId,enquiry,Date.now()))attention.push({date:'',title:enquiry.name||'Enquiry',detail:'Enquiry follow-up is due',status:'Follow up',tone:'bad',onclick:"setView('ledger');setTimeout(()=>document.getElementById('enqItems')?.scrollIntoView({behavior:'smooth',block:'start'}),50)"});});
+  Object.entries(enquiries||{}).forEach(([enquiryId,enquiry])=>{if(enquiry&&!enquiry.done&&!enquiry.status&&typeof isDue==='function'&&isDue(enquiryId,enquiry,Date.now()))attention.push({date:'due',title:enquiry.name||'Enquiry',detail:'Enquiry follow-up is due',status:'Follow up',tone:'bad',action:'studioOpenDueEnquiries()'});});
   states.forEach(({entry,state})=>{
     if(entry.bookingOnly&&!state.form){const next=(entry.dates||[]).find(d=>d>=today);if(next&&next<=limitIso)attention.push({key:entry.key,date:next,title:entry.name,detail:'Confirmed booking · client link not created',status:'Create link',tone:'warn',section:'overview'});}
     (state.events||[]).forEach(event=>{
       if((event.date<today||event.date>limitIso)&&cw10ReviewSummary(state,event.eventId)){attention.push({key:entry.key,eventId:event.eventId,date:event.date,title:`${entry.name} · ${event.name}`,detail:'Client update waiting for approval',status:'Review',tone:'bad',section:'event'});}
       if(event.date<today||event.date>limitIso)return;
-      const details=cw10CurrentDetails(state,event),status=cw10EventStatus(state,event),crewCount=Object.keys(cw11GetPlanDraft(state,event).crew||{}).length;
-      const row={key:entry.key,eventId:event.eventId,date:event.date,title:`${entry.name} · ${event.name}`,detail:`${details.venueName||'Venue pending'} · ${details.startTime?ciFmtTime(details.startTime):'Time pending'} · ${crewCount} crew`,status:status.text,tone:status.key==='ready'?'good':status.key==='live'?'good':status.key==='attention'?'bad':'warn'};
+      const details=cw10CurrentDetails(state,event),status=cw10EventStatus(state,event),team=cw10EventTeamCount(state,event);
+      const row={key:entry.key,eventId:event.eventId,date:event.date,title:`${entry.name} · ${event.name}`,detail:`${details.venueName||'Venue pending'} · ${details.startTime?ciFmtTime(details.startTime):'Time pending'} · ${team.label}`,status:status.text,tone:status.key==='ready'?'good':status.key==='live'?'good':status.key==='attention'?'bad':'warn'};
       upcoming.push(row);if(!['ready','complete'].includes(status.key))attention.push(row);
     });
     if(state.deliveriesUnlocked&&!state.deliveriesOk)deliveries.push({key:entry.key,date:(entry.dates||[]).at(-1)||'',title:entry.name,detail:`${state.stageDone}/${state.stages.length||0} deliverables complete`,status:'In delivery',tone:'warn',section:'deliveries'});
@@ -4029,7 +4048,7 @@ function renderStudioHome(){
   const prodList=Object.values(prods||{}),packageValue=prodList.reduce((sum,p)=>sum+(Number(p&&p.pkg)||0),0),crewSpend=prodList.reduce((sum,p)=>sum+(p?crewCost(p).total:0),0);
   const openLeads=Object.values(enquiries||{}).filter(x=>x&&!x.done&&!x.status).length,hotLeads=Object.values(enquiries||{}).filter(x=>x&&!x.done&&!x.status&&x.cat==='HOT').length;
   const futureWeddings=states.filter(({entry})=>(entry.dates||[]).some(d=>d>=today)).length;
-  root.innerHTML=`<main class="studio-page"><div class="studio-page-head"><div><h2>Your studio, today</h2><p>Only the work that needs a decision now. Crew, client details, day-of status and finance all open into the same wedding record.</p></div><div class="studio-actions"><button class="studio-action" onclick="setView('ledger');setTimeout(()=>document.getElementById('enqName')?.focus(),50)">+ Enquiry</button><button class="studio-action" onclick="openClientsHome()">Open weddings</button><button class="studio-action primary" onclick="setView('team')">Manage team</button></div></div>
+  root.innerHTML=`<main class="studio-page"><div class="studio-page-head"><div><h2>Your studio, today</h2><p>Only the work that needs a decision now. Crew, client details, day-of status and finance all open into the same wedding record.</p></div><div class="studio-actions"><button class="studio-action" onclick="studioFocusNewEnquiry()">+ Enquiry</button><button class="studio-action" onclick="openClientsHome()">Open weddings</button><button class="studio-action primary" onclick="setView('team')">Manage team</button></div></div>
     <section class="studio-metrics"><div class="studio-metric"><span>Needs action</span><strong>${attention.length}</strong><small>Across the next 14 days</small></div><div class="studio-metric"><span>Today</span><strong>${todayEvents.length}</strong><small>Events on the floor</small></div><div class="studio-metric"><span>Upcoming weddings</span><strong>${futureWeddings}</strong><small>Confirmed folders</small></div><div class="studio-metric"><span>Open enquiries</span><strong>${openLeads}</strong><small>${hotLeads} hot lead${hotLeads===1?'':'s'}</small></div><div class="studio-metric"><span>Est. gross margin</span><strong>${packageValue?studioMoney(packageValue-crewSpend):'—'}</strong><small>${studioMoney(packageValue)} packages · crew only</small></div></section>
     <div class="studio-grid"><div class="studio-stack"><section class="studio-card"><header class="studio-card-head"><h3>Needs your attention</h3><span>${attention.length} item${attention.length===1?'':'s'}</span></header>${attention.length?attention.slice(0,10).map(studioHomeRow).join(''):'<div class="studio-empty">Nothing urgent. Your upcoming weddings are ready.</div>'}</section><section class="studio-card"><header class="studio-card-head"><h3>Next 14 days</h3><span>${nextEvents.length} event${nextEvents.length===1?'':'s'}</span></header>${nextEvents.length?nextEvents.map(studioHomeRow).join(''):'<div class="studio-empty">No upcoming events in the next 14 days.</div>'}</section></div><div class="studio-stack"><section class="studio-card"><header class="studio-card-head"><h3>Today</h3><span>Live operations</span></header>${todayEvents.length?todayEvents.map(studioHomeRow).join(''):'<div class="studio-empty">No shoots today.</div>'}</section><section class="studio-card"><header class="studio-card-head"><h3>In delivery</h3><span>${deliveries.length} wedding${deliveries.length===1?'':'s'}</span></header>${deliveries.length?deliveries.slice(0,6).map(studioHomeRow).join(''):'<div class="studio-empty">No active delivery queues.</div>'}</section></div></div></main>`;
 }
@@ -8024,22 +8043,27 @@ function cw10AttentionBanner(state,eventId=''){
 }
 function cw10TeamStaffing(state,event){
   const draft=cw11GetPlanDraft(state,event),crewEntries=ciSortCrewEntries(Object.entries(draft.crew||{})),requirements=draft.requirements||{};
+  const tradUnit=cwTradUnitForDate(state,event.date);
+  const tradCover={'Traditional Photographer':tradUnit?Math.max(0,Number(tradUnit.tpCount)||0):0,'Traditional Videographer':tradUnit?Math.max(0,Number(tradUnit.tvCount)||0):0};
   const roles=[...CW11_CANDID_ROLES,...CW11_TRADITIONAL_ROLES,...Object.keys(requirements).filter(role=>!CW11_CANDID_ROLES.includes(role)&&!CW11_TRADITIONAL_ROLES.includes(role)).sort((a,b)=>ciRoleSortKey(a)-ciRoleSortKey(b))];
   const gaps=[],slots=[];
   roles.forEach(role=>{
-    const required=Math.max(0,Number(requirements[role])||0),count=crewEntries.filter(([,c])=>(c.role||'Other')===role).length;
+    const required=Math.max(0,Number(requirements[role])||0);
+    const count=crewEntries.filter(([,c])=>(c.role||'Other')===role).length+(tradCover[role]||0);
     if(!required&&!count)return;
     const code=ciRoleCode(role);
     slots.push({role,code,count,required});
     if(count<required)gaps.push({role,code,count,required,need:required-count});
   });
   const summary=ciRequirementSummary(draft.crew,requirements),extras=ciExtrasText(draft.extras);
-  return {draft,crewEntries,gaps,slots,summary,extras,complete:!gaps.length&&!!crewEntries.length};
+  const hasTeam=!!crewEntries.length||!!tradUnit;
+  return {draft,crewEntries,gaps,slots,summary,extras,tradUnit,hasTeam,complete:!gaps.length&&hasTeam};
 }
 function cw10TeamLine(state,event){
   const staff=cw10TeamStaffing(state,event);
-  if(!staff.crewEntries.length&&!staff.gaps.length&&!staff.extras)return 'No team yet — assign CP / CV / TP / TV';
+  if(!staff.hasTeam&&!staff.gaps.length&&!staff.extras)return 'No team yet — assign CP / CV / TP / TV';
   const assigned=staff.crewEntries.map(([,c])=>`${ciRoleCode(c.role)} ${c.name||'Crew'}`);
+  if(staff.tradUnit)assigned.push(`Trad unit · ${cwTradComposition(staff.tradUnit)}`);
   const missing=staff.gaps.map(g=>`Need ${g.code} ${g.count}/${g.required}`);
   const extras=staff.extras?[`Extras · ${staff.extras}`]:[];
   return [...assigned,...missing,...extras].join(' · ')||'No team yet';
@@ -8631,9 +8655,9 @@ function cw10EventStatus(state,event){
     if(staff.crewEntries.length)return {key:'attention',text:'Approval pending'};
     return {key:'attention',text:'Approval pending'};
   }
-  if(!shoot&&!staff.crewEntries.length)return {key:'planning',text:'Plan pending'};
+  if(!shoot&&!staff.hasTeam)return {key:'planning',text:'Plan pending'};
   if(shoot&&!shoot.mapsUrl)return {key:'attention',text:'Map missing'};
-  if(!staff.crewEntries.length)return {key:'attention',text:'Team pending'};
+  if(!staff.hasTeam)return {key:'attention',text:'Team pending'};
   if(staff.gaps.length){
     const short=staff.gaps.map(g=>`${g.code} ${g.count}/${g.required}`).join(' · ');
     return {key:'attention',text:staff.gaps.length<=2?`Need ${short}`:`Team ${staff.summary.filled}/${staff.summary.required}`};
