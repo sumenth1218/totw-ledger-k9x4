@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.3-crew-profile-save-2026-08-11">
+<meta name="totw-build" content="v13.1.4-guest-extras-2026-08-11">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1499,6 +1499,15 @@ body{background:
 
 /* Team assignment cards — editorial paper (same surface as plan) */
 .cw11-plan-card .ci-assignment-role,
+.cw11-guest-extra{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(88px,.7fr) auto;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.cw11-guest-extra input{width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:12.5px var(--body)}
+.cw11-guest-extra button{border:0;border-radius:8px;background:var(--ink);color:#fff;font:600 11px var(--body);padding:9px 12px;cursor:pointer;white-space:nowrap}
+.cw11-guest-extra-help{grid-column:1/-1;font-size:10.5px;color:var(--ink-soft);margin-top:-2px}
+.ci-assignment-member-cost{display:flex;gap:8px;align-items:center;margin-top:8px}
+.ci-assignment-member-cost input{width:120px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;font:12px var(--body)}
+.ci-assignment-member-cost .cw11-guest-tag{font:8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.cw-ops-guest-box{margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:10px;background:rgba(0,0,0,.02)}
+.cw-ops-guest-box .cw11-guest-extra{margin-top:8px;padding-top:0;border-top:0}
 .cw11-team-group .ci-assignment-role,
 .ci-assignment-roles .ci-assignment-role{
   background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:12px;
@@ -8067,6 +8076,39 @@ let cwOpsMobileOpen=new Set();
 let cwOpsSaveNote='';
 const CW11_CANDID_ROLES=['Candid Photographer','Candid Cinematographer'];
 const CW11_TRADITIONAL_ROLES=['Traditional Photographer','Traditional Videographer'];
+const CW11_EXTRA_ROLES=['Drone Operator','LED Assistant','Live Streaming','Other'];
+let cwGuestExtraDrafts={};
+function cwIsGuestExtraUid(uid,c){return !!(c&&(c.guestExtra||c.noCrewApp))||/^extra_/.test(String(uid||''));}
+function cwGuestExtraRoleKey(role){return String(role||'').replace(/\W+/g,'_');}
+function cwGuestExtraDraftKey(eventId,role){return `${eventId}|${role}`;}
+function cwGuestExtraDraft(eventId,role){return cwGuestExtraDrafts[cwGuestExtraDraftKey(eventId,role)]||{name:'',cost:''};}
+function cwSetGuestExtraDraft(eventId,role,field,value){const key=cwGuestExtraDraftKey(eventId,role);cwGuestExtraDrafts[key]={...cwGuestExtraDraft(eventId,role),[field]:value};}
+function cw11AddGuestExtra(eventId,role,name,cost){
+  name=String(name||'').trim();
+  if(!CW11_EXTRA_ROLES.includes(role)){toast('Day-hire names are only for Extras roles.');return;}
+  if(!name){toast('Enter the person’s name.');return;}
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const draft=cw11GetPlanDraft(state,event);if(!draft)return;
+  if(Object.values(draft.crew||{}).some(c=>(c.role||'Other')===role&&String(c.name||'').trim().toLowerCase()===name.toLowerCase())){toast(`${name} is already listed as ${ciRoleCode(role)}.`);return;}
+  const uid=`extra_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,7)}`;
+  const dayCost=cost===''||cost==null||Number.isNaN(Number(cost))?'':Math.max(0,Number(cost));
+  draft.crew=draft.crew||{};draft.openSlots=draft.openSlots||{};
+  draft.crew[uid]={name,phone:'',email:'',role,arrivalTime:draft.teamArrival,reportTime:draft.teamArrival,arrivalOverride:false,isLead:false,crewCost:dayCost,dataStatus:'',opsNotes:'',guestExtra:true,noCrewApp:true};
+  if((Number(draft.openSlots[role])||0)>0)draft.openSlots[role]=Math.max(0,(Number(draft.openSlots[role])||0)-1);
+  cwOpsSyncRequirements(draft);cw11MarkDraft(draft);
+  delete cwGuestExtraDrafts[cwGuestExtraDraftKey(eventId,role)];
+  cwOpsPersistDraft(draft,`${name} added as ${ciRoleCode(role)} · day hire (not in Crew directory).`);
+  renderClientsWorkspace();
+}
+function cw11AddGuestExtraFromForm(eventId,role){
+  const rk=cwGuestExtraRoleKey(role),d=cwGuestExtraDraft(eventId,role);
+  const nameEl=document.getElementById(`cwGuestName_${eventId}_${rk}`),costEl=document.getElementById(`cwGuestCost_${eventId}_${rk}`);
+  cw11AddGuestExtra(eventId,role,(nameEl?nameEl.value:d.name||'').trim(),costEl?costEl.value:d.cost);
+}
+function cw11GuestExtraFormHtml(eventId,role){
+  const rk=cwGuestExtraRoleKey(role),d=cwGuestExtraDraft(eventId,role);
+  return `<div class="cw11-guest-extra"><input id="cwGuestName_${esc(eventId)}_${rk}" type="text" maxlength="80" placeholder="Name" value="${esc(d.name||'')}" oninput="cwSetGuestExtraDraft('${esc(eventId)}','${esc(role)}','name',this.value)"><input id="cwGuestCost_${esc(eventId)}_${rk}" type="number" min="0" step="100" inputmode="numeric" placeholder="Cost ₹" value="${esc(d.cost||'')}" oninput="cwSetGuestExtraDraft('${esc(eventId)}','${esc(role)}','cost',this.value)"><button type="button" onclick="cw11AddGuestExtraFromForm('${esc(eventId)}','${esc(role)}')">Add</button><div class="cw11-guest-extra-help">Day hire only — name + cost for Finance. No Crew App registration.</div></div>`;
+}
 function cw11EventStarted(draft){
   if(!draft||!draft.shootId)return false;
   return !!Object.values(checkinAttendance[draft.shootId]||{}).some(attendance=>attendance&&attendance.checkedInAt);
@@ -8093,12 +8135,19 @@ function cw11TeamMemberHtml(eventId,draft,uid,c){
   return `<div class="ci-assignment-member"><div class="ci-assignment-member-main"><div class="ci-assignment-member-name"><b>${esc(c.name||crewProfiles[uid]?.name||'Crew member')}${c.isLead?' · Lead':''}</b><small>${locked?'Checked in · assignment locked':`Uses team arrival · ${esc(ciFmtTime(draft.teamArrival))}`}</small></div><div class="ci-assignment-member-actions"><button type="button" class="${c.isLead?'on':''}" ${locked?'disabled':''} onclick="cw11ToggleLead('${esc(eventId)}','${esc(uid)}')">${c.isLead?'Lead ✓':'Make lead'}</button><button type="button" class="remove" ${locked?'disabled':''} aria-label="Remove ${esc(c.name||'crew member')}" onclick="cw11RemoveCrew('${esc(eventId)}','${esc(uid)}')">×</button></div></div><div class="ci-assignment-member-time"><label>Different arrival time (optional)</label><input type="time" value="${esc(c.arrivalOverride?arrival:'')}" ${locked?'disabled':''} onchange="cw11SetCrewTime('${esc(eventId)}','${esc(uid)}',this.value)"><button type="button" class="cw11-icon-button" onclick="cw11UseOverall('${esc(eventId)}','${esc(uid)}')">Use overall</button></div></div>`;
 }
 function cw11TeamRoleHtml(eventId,draft,role){
-  const status=cw11RoleStatus(role,draft),members=ciSortCrewEntries(Object.entries(draft.crew||{}).filter(([,c])=>(c.role||'Other')===role));
-  return `<section class="ci-assignment-role"><div class="ci-assignment-role-head"><div class="ci-assignment-role-name"><b>${esc(role)} <small>(${esc(ciRoleCode(role))})</small></b><small class="${status.className}">${esc(status.label)}</small></div></div><div class="ci-assignment-members">${members.length?members.map(([uid,c])=>`<div class="ci-assignment-member"><div class="ci-assignment-member-main"><div class="ci-assignment-member-name"><b>${esc(c.name||crewProfiles[uid]?.name||'Crew')}${c.isLead?' · Lead':''}</b><small>${esc(ciFmtTime(c.arrivalOverride?c.arrivalTime:draft.teamArrival))}</small></div></div></div>`).join(''):'<div class="ci-assignment-empty">Assigned in Team & prep</div>'}</div></section>`;
+  const status=cw11RoleStatus(role,draft),members=ciSortCrewEntries(Object.entries(draft.crew||{}).filter(([,c])=>(c.role||'Other')===role)),isExtra=CW11_EXTRA_ROLES.includes(role);
+  const memberHtml=members.length?members.map(([uid,c])=>{
+    const guest=cwIsGuestExtraUid(uid,c),dayCost=c.crewCost!==''&&c.crewCost!=null&&!Number.isNaN(Number(c.crewCost))?Number(c.crewCost):'';
+    const meta=guest?'Day hire · not in Crew directory':esc(ciFmtTime(c.arrivalOverride?c.arrivalTime:draft.teamArrival));
+    const costRow=isExtra?`<div class="ci-assignment-member-cost"><input type="number" min="0" step="100" inputmode="numeric" value="${dayCost===''?'':esc(dayCost)}" placeholder="Cost ₹" onchange="cwOpsSetCrewField('${esc(eventId)}','${esc(uid)}','crewCost',this.value)"><span class="cw11-guest-tag">${guest?'Day hire':'Cost'}</span><button type="button" class="remove" aria-label="Remove ${esc(c.name||'person')}" onclick="cwOpsRemoveCrew('${esc(eventId)}','${esc(uid)}')">×</button></div>`:'';
+    return `<div class="ci-assignment-member"><div class="ci-assignment-member-main"><div class="ci-assignment-member-name"><b>${esc(c.name||crewProfiles[uid]?.name||'Crew')}${c.isLead?' · Lead':''}</b><small>${meta}</small></div></div>${costRow}</div>`;
+  }).join(''):(isExtra?'':`<div class="ci-assignment-empty">Assigned in Team & prep</div>`);
+  return `<section class="ci-assignment-role"><div class="ci-assignment-role-head"><div class="ci-assignment-role-name"><b>${esc(role)} <small>(${esc(ciRoleCode(role))})</small></b><small class="${status.className}">${esc(status.label)}</small></div></div><div class="ci-assignment-members">${memberHtml}${isExtra?cw11GuestExtraFormHtml(eventId,role):''}</div></section>`;
 }
 function cw11TeamSectionHtml(eventId,draft,title,roles){
   const assigned=Object.values(draft.crew||{}).filter(c=>roles.includes(c.role||'Other')).length;
-  return `<div class="cw11-team-group"><div class="cw11-section-head"><div><h4>${esc(title)}</h4><p>${assigned} assigned · multiple crew per role supported</p></div></div><div class="ci-assignment-roles">${roles.map(role=>cw11TeamRoleHtml(eventId,draft,role)).join('')}</div></div>`;
+  const extrasNote=title==='Extras'?' · type name + cost here (no Crew registration)':' · multiple crew per role supported';
+  return `<div class="cw11-team-group"><div class="cw11-section-head"><div><h4>${esc(title)}</h4><p>${assigned} assigned${extrasNote}</p></div></div><div class="ci-assignment-roles">${roles.map(role=>cw11TeamRoleHtml(eventId,draft,role)).join('')}</div></div>`;
 }
 
 function cw11DraftKey(formId,eventId){return `${formId||''}|${eventId||''}`;}
@@ -8313,7 +8362,11 @@ function cw11PlanPayload(state,event,draft){
 function cw11AppendPlanUpdates(updates,result){
   const {id,old,record,published}=result;updates[`crewCheckins/events/${id}`]=record;
   const allUids=new Set([...Object.keys(old.crew||{}),...Object.keys(record.crew||{})]);
-  allUids.forEach(uid=>{updates[`crewCheckins/assignments/${uid}/${id}`]=published&&record.crew[uid]?true:null;updates[`crewCheckins/plannedAssignments/${uid}/${id}`]=record.crew[uid]?true:null;});
+  allUids.forEach(uid=>{
+    const person=record.crew&&record.crew[uid]||old.crew&&old.crew[uid],guest=cwIsGuestExtraUid(uid,person);
+    updates[`crewCheckins/assignments/${uid}/${id}`]=(!guest&&published&&record.crew[uid])?true:null;
+    updates[`crewCheckins/plannedAssignments/${uid}/${id}`]=(!guest&&record.crew[uid])?true:null;
+  });
 }
 async function cw11SavePlans(drafts,label){
   if(cw11Saving)return {skipped:true};
@@ -8384,7 +8437,7 @@ function cw11RenderPlanning(state,event){
   const staff=cw10TeamStaffing(state,event),gapNote=staff.gaps.length?`<div class="cw11-plan-note" style="margin-top:10px"><i>!</i><div><strong>Still needed for this event:</strong>${staff.gaps.map(g=>`${g.code} ${g.count}/${g.required}`).join(' · ')}</div></div>`:'';
   const candidList=cwListItems(event.name,'candid',draft.candidListKey||''),tradList=cwListItems(event.name,'traditional',draft.traditionalListKey||'');
   const crewLine=staff.crewEntries.length?staff.crewEntries.map(([,c])=>`${ciRoleCode(c.role)} ${c.name||'Crew'}`).join(' · '):'No crew assigned yet';
-  return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Event detail</h3><p>Client context and handoff live here. Edit crew, timings, lists and cost in Team &amp; prep.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
+  return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Event detail</h3><p>Client context and handoff live here. Type Extras name + cost below without Crew registration. Edit core crew in Team &amp; prep.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
     ${started?`<div class="cw11-plan-note"><i>✓</i><div><strong>This shoot has started.</strong>Operational timings and checked-in assignments are locked.</div></div>`:''}
     <div class="cw11-plan-fields">
       <div class="cw11-field"><label>Event start</label><div class="cw-ops-readonly">${esc(ciFmtTime(draft.startTime))}</div></div>
@@ -8396,7 +8449,7 @@ function cw11RenderPlanning(state,event){
     <div class="cw11-plan-note" style="margin-top:8px"><i>i</i><div><strong>${esc(crewLine)}</strong>Candid ${candidList.items.length||0} · Traditional ${tradList.items.length||0}${draft.pinterestUrl?' · Pinterest set':''}</div></div>
     ${cw11TeamSectionHtml(event.eventId,draft,'Candid team',CW11_CANDID_ROLES)}
     ${cw11TeamSectionHtml(event.eventId,draft,'Traditional team',CW11_TRADITIONAL_ROLES)}
-    ${cw11TeamSectionHtml(event.eventId,draft,'Extras',['Drone Operator','LED Assistant','Live Streaming','Other'])}
+    ${cw11TeamSectionHtml(event.eventId,draft,'Extras',CW11_EXTRA_ROLES)}
     </div>
   </section>`;
 }
@@ -8758,7 +8811,7 @@ function cwOpsCrewDetailHtml(state,event,draft,uid,c){
   const hoursField=traditional?`<label class="wide">Day worked hours<div class="cw-ops-readonly"><strong>${duration?`${Math.floor(duration.minutes/60)}h ${duration.minutes%60}m`:'Pending timing'}</strong><small>${duration?'Earliest actual check-in → latest actual client end time on this date':'Needs an actual check-in and actual client end time for this date'}</small></div></label>`:'';
   const costField=`<label class="wide">Crew cost for ${esc(cw10CompactDate(event.date))}<div class="cw-ops-rate-row"><input type="number" min="0" step="100" inputmode="numeric" value="${dayCost!=null?esc(dayCost):''}" placeholder="Enter one day cost" onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','crewCost',this.value)"><button type="button" class="cw10-soft" onclick="cwOpsApplyRateToClient('${esc(event.eventId)}','${esc(uid)}')">Apply this day rate to all working days for this client</button></div><small>One amount for this person on this date, shared across every event. ${traditional?'Enter it manually; hours never calculate the price.':''}</small></label>`;
   return `<div class="cw-ops-detail">
-    <div class="cw-ops-detail-head"><strong>${esc(c.name||crewProfiles[uid]?.name||'Crew')}</strong><span>${esc(ciRoleCode(c.role))} · ${esc(c.role||'Other')}</span></div>
+    <div class="cw-ops-detail-head"><strong>${esc(c.name||crewProfiles[uid]?.name||'Crew')}</strong><span>${esc(ciRoleCode(c.role))} · ${esc(c.role||'Other')}${cwIsGuestExtraUid(uid,c)?' · Day hire':''}</span></div>
     <div class="cw-ops-detail-grid">
       <label>Event arrival<div class="cw-ops-readonly">${esc(ciFmtTime(draft.teamArrival))}</div></label>
       <label>Individual exception<input type="time" value="${esc(overrideVal)}" ${locked?'disabled':''} onchange="cwOpsSetCrewField('${esc(event.eventId)}','${esc(uid)}','arrivalOverride',this.value)"><button type="button" class="cw-ops-link" ${locked||!c.arrivalOverride?'hidden':''} onclick="cwOpsClearOverride('${esc(event.eventId)}','${esc(uid)}')">Use overall</button></label>
@@ -8779,12 +8832,14 @@ function cwOpsCrewDetailHtml(state,event,draft,uid,c){
 }
 function cwOpsAddPopoverHtml(state,event,draft){
   const role=CI_ROLES.includes(cwOpsAddRole)?cwOpsAddRole:'Candid Photographer';
+  const isExtra=CW11_EXTRA_ROLES.includes(role);
   const options=Object.entries(crewProfiles||{}).filter(([uid,p])=>!(draft.crew||{})[uid]&&(p.role||'Other')===role).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
   const roleChips=CI_OPS_ROLE_CHIPS.map(([full,label])=>`<button type="button" class="cw-ops-chip role ${role===full?'on':''}" onclick="cwOpsPickRole('${esc(full)}')">${esc(label)}</button>`).join('');
   const people=options.length
     ?options.map(([uid,p])=>`<label class="cw-ops-person-pick"><input type="checkbox" ${cwOpsAddSelected.has(uid)?'checked':''} onchange="cwOpsToggleAddSelection('${esc(event.eventId)}','${esc(uid)}',this.checked)"><span><b>${esc(p.name||'Crew')}</b><small>${esc(role)}</small></span></label>`).join('')
     :`<p>No unassigned crew registered as ${esc(role)}.</p>`;
-  return `<div class="cw-ops-add-pop"><div class="cw-ops-add-label">1 · Select role</div><div class="cw-ops-chip-row">${roleChips}</div><div class="cw-ops-add-label" style="margin-top:12px">2 · Select one or more ${esc(ciRoleCode(role))}</div><div class="cw-ops-person-grid">${people}</div><div class="cw-ops-add-actions"><button type="button" id="cwOpsAddSelected_${esc(event.eventId)}" class="cw10-primary" ${cwOpsAddSelected.size?'':'disabled'} onclick="cwOpsAddSelectedCrew('${esc(event.eventId)}')">${cwOpsAddSelected.size?`Add ${cwOpsAddSelected.size} selected`:'Add selected crew'}</button><button type="button" class="cw10-soft" onclick="cwOpsReserveSlot('${esc(event.eventId)}')">Reserve empty ${esc(ciRoleCode(role))} slot</button></div><small class="cw-ops-add-help">Reserve a slot only when this role is required but you have not chosen the person. Only reserved empty slots create a warning.</small></div>`;
+  const guestBox=isExtra?`<div class="cw-ops-guest-box"><div class="cw-ops-add-label">2 · Day hire (no Crew registration)</div>${cw11GuestExtraFormHtml(event.eventId,role)}<small class="cw-ops-add-help">Use this for drone / LED / live / other hires who should not appear in Team.</small></div><div class="cw-ops-add-label" style="margin-top:14px">Or select registered ${esc(ciRoleCode(role))} (optional)</div>`:`<div class="cw-ops-add-label" style="margin-top:12px">2 · Select one or more ${esc(ciRoleCode(role))}</div>`;
+  return `<div class="cw-ops-add-pop"><div class="cw-ops-add-label">1 · Select role</div><div class="cw-ops-chip-row">${roleChips}</div>${guestBox}<div class="cw-ops-person-grid">${people}</div><div class="cw-ops-add-actions"><button type="button" id="cwOpsAddSelected_${esc(event.eventId)}" class="cw10-primary" ${cwOpsAddSelected.size?'':'disabled'} onclick="cwOpsAddSelectedCrew('${esc(event.eventId)}')">${cwOpsAddSelected.size?`Add ${cwOpsAddSelected.size} selected`:'Add selected crew'}</button><button type="button" class="cw10-soft" onclick="cwOpsReserveSlot('${esc(event.eventId)}')">Reserve empty ${esc(ciRoleCode(role))} slot</button></div><small class="cw-ops-add-help">Reserve a slot only when this role is required but you have not chosen the person. Only reserved empty slots create a warning.</small></div>`;
 }
 function cwOpsEventRowHtml(state,event,opts={}){
   const approved=opts.approved!==false,details=cw10CurrentDetails(state,event),draft=cw11GetPlanDraft(state,event),crew=ciSortCrewEntries(Object.entries(draft.crew||{}));
