@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.2-typing-guard-2026-08-11">
+<meta name="totw-build" content="v13.1.3-crew-profile-save-2026-08-11">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -7003,13 +7003,20 @@ async function saveCrewProfile(uid){
   if(phone&&(phone.length<10||phone.length>16)){toast('Enter a valid mobile number, or leave it blank.');return;}
   if(email&&!email.includes('@')){toast('Enter a valid email address, or leave it blank.');return;}
   if(!role){toast('Choose their role.');return;}
-  const updated={...old,name,phone,email,role,profileType:role==='Traditional Partner'?'traditional_partner':'crew',defaultDayRate:dayRate,updatedAt:Date.now()},personKey=crewLegacyPeopleKey(name),oldPersonKey=crewLegacyPeopleKey(old.name),personRec={...(people[personKey]||{}),name,style:role,rate:dayRate,unit:'day'},updates={},oldKeyShared=Object.entries(crewProfiles||{}).some(([otherUid,p])=>otherUid!==uid&&crewLegacyPeopleKey(p&&p.name)===oldPersonKey);
-  updates[`crewProfiles/${uid}/name`]=name;updates[`crewProfiles/${uid}/phone`]=phone;updates[`crewProfiles/${uid}/email`]=email;updates[`crewProfiles/${uid}/role`]=role;updates[`crewProfiles/${uid}/profileType`]=updated.profileType;updates[`crewProfiles/${uid}/defaultDayRate`]=dayRate;updates[`crewProfiles/${uid}/updatedAt`]=updated.updatedAt;updates[`people/${personKey}`]=personRec;if(oldPersonKey&&oldPersonKey!==personKey&&!oldKeyShared&&String(people[oldPersonKey]?.name||'').trim().toLowerCase()===String(old.name||'').trim().toLowerCase())updates[`people/${oldPersonKey}`]=null;
-  Object.entries(checkinEvents||{}).forEach(([eventId,event])=>{if(!event||!event.crew||!event.crew[uid]||cwShootComplete(eventId,event))return;updates[`crewCheckins/events/${eventId}/crew/${uid}/name`]=name;updates[`crewCheckins/events/${eventId}/crew/${uid}/phone`]=phone;updates[`crewCheckins/events/${eventId}/crew/${uid}/email`]=email;});
-  try{await db.ref().update(updates);}catch(err){console.error('Crew profile update failed',err);toast(`Could not update this crew profile${err&&err.code?` · ${err.code}`:''}.`);return;}
-  crewProfiles[uid]=updated;people[personKey]=personRec;if(updates[`people/${oldPersonKey}`]===null)delete people[oldPersonKey];crewProfileEditUid='';
+  const profileType=role==='Traditional Partner'?'traditional_partner':'crew';
+  const updated={...old,name,phone,email,role,profileType,defaultDayRate:dayRate,updatedAt:Date.now()},personKey=crewLegacyPeopleKey(name),oldPersonKey=crewLegacyPeopleKey(old.name),personRec={...(people[personKey]||{}),name,style:role,rate:dayRate,unit:'day'},oldKeyShared=Object.entries(crewProfiles||{}).some(([otherUid,p])=>otherUid!==uid&&crewLegacyPeopleKey(p&&p.name)===oldPersonKey);
+  // Core identity fields first — works even if live rules have not yet allowlisted rate/profileType.
+  const core={};core[`crewProfiles/${uid}/name`]=name;core[`crewProfiles/${uid}/phone`]=phone;core[`crewProfiles/${uid}/email`]=email;core[`crewProfiles/${uid}/role`]=role;core[`crewProfiles/${uid}/updatedAt`]=updated.updatedAt;core[`people/${personKey}`]=personRec;if(oldPersonKey&&oldPersonKey!==personKey&&!oldKeyShared&&String(people[oldPersonKey]?.name||'').trim().toLowerCase()===String(old.name||'').trim().toLowerCase())core[`people/${oldPersonKey}`]=null;
+  Object.entries(checkinEvents||{}).forEach(([eventId,event])=>{if(!event||!event.crew||!event.crew[uid]||cwShootComplete(eventId,event))return;core[`crewCheckins/events/${eventId}/crew/${uid}/name`]=name;core[`crewCheckins/events/${eventId}/crew/${uid}/phone`]=phone;core[`crewCheckins/events/${eventId}/crew/${uid}/email`]=email;});
+  try{await db.ref().update(core);}catch(err){console.error('Crew profile core update failed',err);toast(`Could not update this crew profile${err&&err.code?` · ${err.code}`:''}.`);return;}
+  // Day rate + partner type need published v13 rules (profileType / defaultDayRate). Soft-fail so name/contact still save.
+  const extras={};extras[`crewProfiles/${uid}/profileType`]=profileType;extras[`crewProfiles/${uid}/defaultDayRate`]=dayRate;
+  let rateSaved=true;
+  try{await db.ref().update(extras);}catch(err){rateSaved=false;console.warn('Crew profile rate/type update blocked — publish database.rules.json',err);updated.profileType=old.profileType;updated.defaultDayRate=old.defaultDayRate;personRec.rate=Number((people[personKey]||{}).rate)||dayRate;}
+  crewProfiles[uid]=updated;people[personKey]=personRec;if(core[`people/${oldPersonKey}`]===null)delete people[oldPersonKey];crewProfileEditUid='';
   try{renderCrewProfiles();renderCheckinTeam();renderTeamDirectory();renderStudioHome();}catch(err){console.error('Crew directory refresh failed after successful update',err);}
-  toast(`${name} updated everywhere.`);log(`updated registered crew profile: ${name}`);
+  if(rateSaved){toast(`${name} updated everywhere.`);log(`updated registered crew profile: ${name}`);}
+  else{toast(`${name} saved. Day rate needs Firebase rules publish (database.rules.json).`);log(`updated crew profile without rate fields: ${name}`);}
 }
 async function deleteCrewProfile(uid){
   const p=crewProfiles[uid];if(!p)return;
