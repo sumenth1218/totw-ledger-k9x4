@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.1-team-save-runtime-fix-2026-08-11">
+<meta name="totw-build" content="v13.1.2-typing-guard-2026-08-11">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -3498,6 +3498,37 @@ function renderActivity(){
 
 /* ---------------- toast ---------------- */
 let toastTimer;
+function uiIsTyping(root){
+  const a=document.activeElement;if(!a)return false;
+  if(root&&!root.contains(a))return false;
+  const tag=(a.tagName||'').toLowerCase();
+  if(tag==='textarea'||tag==='select')return true;
+  if(tag!=='input')return false;
+  const type=String(a.type||'text').toLowerCase();
+  return !['button','submit','checkbox','radio','file','reset','range','color','hidden','image'].includes(type);
+}
+function uiDeferWhileTyping(root,fn,key,ms=350){
+  if(!uiIsTyping(root))return false;
+  clearTimeout(window[key]);
+  window[key]=setTimeout(fn,ms);
+  return true;
+}
+function uiForceClearBlockingOverlays(){
+  try{
+    document.getElementById('ciAttendanceModal')?.classList.remove('open');
+    document.getElementById('ciProfilesModal')?.classList.remove('open');
+    document.getElementById('ciAssignmentModal')?.classList.remove('open');
+    document.getElementById('ciAssignmentModal')?.setAttribute('aria-hidden','true');
+    document.getElementById('cwAddEventModal')?.classList.remove('open');
+    document.getElementById('cwSetupDrawer')?.classList.remove('open');
+    document.querySelector('.cw10-mobile-backdrop')?.classList.remove('on');
+    document.querySelector('.cw10-sidebar')?.classList.remove('mobile-open');
+    if(typeof cwTradCloseModal==='function')cwTradCloseModal();
+    if(typeof closeCiAttendanceModal==='function')closeCiAttendanceModal();
+    document.body.style.overflow='';
+    document.documentElement.style.overflow='';
+  }catch(err){console.warn(err);}
+}
 function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
@@ -3916,10 +3947,23 @@ async function studioSaveCrew(){
   toast(`${name} added once — ready for assignment.`);log(`added crew directory profile: ${name}`);
 }
 function renderTeamDirectory(){
-  const root=document.getElementById('studioTeamRoot');if(!root)return;const all=Object.entries(crewProfiles||{}).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||''))),list=all.filter(([,p])=>!studioTeamQuery||`${p.name||''} ${p.role||''} ${p.phone||''} ${p.email||''}`.toLowerCase().includes(studioTeamQuery));
+  const root=document.getElementById('studioTeamRoot');if(!root)return;
+  if(uiDeferWhileTyping(root,renderTeamDirectory,'_totwTeamRenderT'))return;
+  const keepAdd=studioCrewAddOpen?{
+    name:document.getElementById('studioCrewName')?.value||'',
+    role:document.getElementById('studioCrewRole')?.value||'',
+    phone:document.getElementById('studioCrewPhone')?.value||'',
+    email:document.getElementById('studioCrewEmail')?.value||'',
+    rate:document.getElementById('studioCrewRate')?.value||''
+  }:null;
+  const all=Object.entries(crewProfiles||{}).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||''))),list=all.filter(([,p])=>!studioTeamQuery||`${p.name||''} ${p.role||''} ${p.phone||''} ${p.email||''}`.toLowerCase().includes(studioTeamQuery));
   const missingContact=all.filter(([,p])=>!p.phone&&!p.email).length,missingRate=all.filter(([uid,p])=>p.profileType!=='traditional_partner'&&p.role!=='Traditional Partner'&&!crewDefaultDayRate(uid,p)).length,assigned=all.filter(([uid])=>studioCrewSchedule(uid).length).length;
   const cards=list.map(([uid,p])=>{const schedule=studioCrewSchedule(uid),rate=crewDefaultDayRate(uid,p),contact=[p.phone,p.email].filter(Boolean).join(' · '),isPartner=p.profileType==='traditional_partner'||p.role==='Traditional Partner',connection=isPartner?'Traditional supplier · temporary captain pass':p.manual?(p.email?'Pending crew sign-in':'Not connected · add email before sharing crew link'):'Crew App connected',rateLabel=isPartner?'Cost entered per wedding date':rate?studioMoney(rate)+' / day':'Day rate not set';return `<article class="team-person"><span class="team-avatar">${esc(studioInitials(p.name))}</span><span><b>${esc(p.name||'Unnamed')}</b><small>${esc(p.role||'Role not set')} · ${esc(connection)}</small><small class="${contact?'':'team-warning'}">${esc(contact||'Contact not added yet')}</small><span class="team-rate">${esc(rateLabel)} · ${schedule.length?schedule.length+' upcoming':'Available'}</span>${schedule[0]?`<small>Next: ${esc(ciDateLong(schedule[0].date))} · ${esc(schedule[0].couple)}</small>`:''}</span><span class="team-person-actions"><button class="studio-action" onclick="studioEditCrew('${esc(uid)}')">Edit</button></span></article>`;}).join('');
   root.innerHTML=`<main class="studio-page"><div class="studio-page-head"><div><h2>One team directory</h2><p>Add a person once. Their identity, contact, default role and day rate are then reused in Weddings, the crew link, Day-of and Finance.</p></div><div class="studio-actions"><button class="studio-action" onclick="copyCrewRegistrationLink()">Copy registration link</button><button class="studio-action primary" onclick="studioToggleCrewAdd()">+ Add crew</button></div></div><section class="studio-metrics"><div class="studio-metric"><span>Crew profiles</span><strong>${all.length}</strong><small>One shared directory</small></div><div class="studio-metric"><span>Upcoming</span><strong>${assigned}</strong><small>With a future assignment</small></div><div class="studio-metric"><span>Missing contact</span><strong>${missingContact}</strong><small>Can still be planned now</small></div><div class="studio-metric"><span>Missing rate</span><strong>${missingRate}</strong><small>Default for new shoot days</small></div><div class="studio-metric"><span>Source of truth</span><strong>1</strong><small>Weddings → Team & prep</small></div></section><div class="team-toolbar"><input class="team-search" aria-label="Search team directory" value="${esc(studioTeamQuery)}" placeholder="Search name, role or phone…" oninput="studioSetTeamQuery(this.value)"><button class="studio-action" onclick="setView('shoots')">Open Day-of</button></div><section class="team-add-card ${studioCrewAddOpen?'open':''}"><div class="team-add-grid"><input id="studioCrewName" aria-label="Crew member name" placeholder="Full name"><select id="studioCrewRole" aria-label="Default crew role"><option value="">Default role</option>${CI_ROLES.map(r=>`<option>${esc(r)}</option>`).join('')}</select><input id="studioCrewPhone" aria-label="Crew member phone" inputmode="tel" placeholder="Phone (optional)"><input id="studioCrewEmail" aria-label="Crew member Google account email" type="email" placeholder="Google email (for Crew App)"><input id="studioCrewRate" aria-label="Default day rate for new shoot days" type="number" min="0" step="100" inputmode="numeric" placeholder="Default ₹ / new day"></div><div class="team-add-actions"><button class="studio-action" onclick="studioToggleCrewAdd(false)">Cancel</button><button class="studio-action primary" onclick="studioSaveCrew()">Save crew member</button></div></section><section class="team-directory">${cards||'<div class="studio-empty">No matching crew members.</div>'}</section></main>`;
+  if(keepAdd){
+    const n=document.getElementById('studioCrewName'),r=document.getElementById('studioCrewRole'),p=document.getElementById('studioCrewPhone'),e=document.getElementById('studioCrewEmail'),d=document.getElementById('studioCrewRate');
+    if(n)n.value=keepAdd.name;if(r&&keepAdd.role)r.value=keepAdd.role;if(p)p.value=keepAdd.phone;if(e)e.value=keepAdd.email;if(d)d.value=keepAdd.rate;
+  }
 }
 
 /* ---- view tabs ---- */
@@ -6915,21 +6959,38 @@ function copyCrewRegistrationLink(){copyText(ciCrewUrl(),'Crew registration link
 function openCrewProfiles(){renderCrewProfiles();document.getElementById('ciProfilesModal').classList.add('open');}
 function closeCrewProfiles(){crewProfileEditUid='';document.getElementById('ciProfilesModal').classList.remove('open');}
 document.getElementById('ciProfilesModal').addEventListener('click',e=>{if(e.target.id==='ciProfilesModal')closeCrewProfiles();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('ciProfilesModal').classList.contains('open'))closeCrewProfiles();if(e.key==='Escape'&&document.getElementById('ciAttendanceModal')&&document.getElementById('ciAttendanceModal').classList.contains('open'))closeCiAttendanceModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&cwTradModalOpen)cwTradCloseModal();if(e.key==='Escape'&&document.getElementById('ciProfilesModal').classList.contains('open'))closeCrewProfiles();if(e.key==='Escape'&&document.getElementById('ciAttendanceModal')&&document.getElementById('ciAttendanceModal').classList.contains('open'))closeCiAttendanceModal();});
 let crewProfileEditUid='',crewProfileGroupsOpen=new Set();
 function crewProfileGroup(p){const role=String(p&&p.role||'').toLowerCase();return role.includes('traditional')?'traditional':role.includes('candid')?'candid':'operations';}
 function toggleCrewProfileGroup(key){crewProfileGroupsOpen.has(key)?crewProfileGroupsOpen.delete(key):crewProfileGroupsOpen.add(key);renderCrewProfiles();}
 function renderCrewProfiles(){
   const el=document.getElementById('ciProfileList');if(!el)return;
+  const modal=document.getElementById('ciProfilesModal');
+  if(uiDeferWhileTyping(modal||el,renderCrewProfiles,'_totwProfileRenderT'))return;
+  const draftEdit=crewProfileEditUid?{
+    name:document.getElementById('ciEditName')?.value,
+    phone:document.getElementById('ciEditPhone')?.value,
+    email:document.getElementById('ciEditEmail')?.value,
+    role:document.getElementById('ciEditRole')?.value,
+    rate:document.getElementById('ciEditRate')?.value
+  }:null;
   const list=Object.entries(crewProfiles||{}).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
-  const card=([id,p])=>crewProfileEditUid===id?`<div class="ci-profile editing"><div class="ci-profile-form">
-    <div class="field"><label for="ciEditName">Name</label><input id="ciEditName" value="${esc(p.name||'')}" autocomplete="name"></div>
-    <div class="field"><label for="ciEditPhone">Mobile number</label><input id="ciEditPhone" value="${esc(p.phone||'')}" inputmode="tel" autocomplete="tel"></div>
-    <div class="field wide"><label for="ciEditEmail">Email address</label><input id="ciEditEmail" type="email" value="${esc(p.email||'')}" autocomplete="email"></div>
-    <div class="field wide"><label for="ciEditRole">Role</label><select id="ciEditRole">${CI_ROLES.map(r=>`<option${r===(p.role||'')?' selected':''}>${esc(r)}</option>`).join('')}</select></div>
-    <div class="field wide"><label for="ciEditRate">Default day rate (optional)</label><input id="ciEditRate" type="number" min="0" step="100" inputmode="numeric" value="${esc(crewDefaultDayRate(id,p)||'')}" placeholder="₹"></div>
+  const card=([id,p])=>{
+    const editing=crewProfileEditUid===id;
+    const name=editing&&draftEdit&&draftEdit.name!=null?draftEdit.name:(p.name||'');
+    const phone=editing&&draftEdit&&draftEdit.phone!=null?draftEdit.phone:(p.phone||'');
+    const email=editing&&draftEdit&&draftEdit.email!=null?draftEdit.email:(p.email||'');
+    const role=editing&&draftEdit&&draftEdit.role?draftEdit.role:(p.role||'');
+    const rate=editing&&draftEdit&&draftEdit.rate!=null?draftEdit.rate:(crewDefaultDayRate(id,p)||'');
+    return editing?`<div class="ci-profile editing"><div class="ci-profile-form">
+    <div class="field"><label for="ciEditName">Name</label><input id="ciEditName" value="${esc(name)}" autocomplete="name"></div>
+    <div class="field"><label for="ciEditPhone">Mobile number</label><input id="ciEditPhone" value="${esc(phone)}" inputmode="tel" autocomplete="tel"></div>
+    <div class="field wide"><label for="ciEditEmail">Email address</label><input id="ciEditEmail" type="email" value="${esc(email)}" autocomplete="email"></div>
+    <div class="field wide"><label for="ciEditRole">Role</label><select id="ciEditRole">${CI_ROLES.map(r=>`<option${r===role?' selected':''}>${esc(r)}</option>`).join('')}</select></div>
+    <div class="field wide"><label for="ciEditRate">Default day rate (optional)</label><input id="ciEditRate" type="number" min="0" step="100" inputmode="numeric" value="${esc(rate)}" placeholder="₹"></div>
     <div class="ci-profile-form-actions"><button class="ci-profile-edit" onclick="cancelCrewProfileEdit()">Cancel</button><button class="btn-mini" onclick="saveCrewProfile('${esc(id)}')">Save changes</button></div>
    </div></div>`:`<div class="ci-profile"><div class="ci-profile-main"><b>${esc(p.name||'Unnamed')}</b><small>${esc(p.role||'Role not set')} · ${esc(p.phone||'No phone')}</small><small>${esc(p.email||'')}</small></div><div class="ci-profile-actions"><button class="ci-profile-edit" onclick="editCrewProfile('${esc(id)}')">Edit</button><button class="ci-profile-delete" onclick="deleteCrewProfile('${esc(id)}')">Delete</button></div></div>`;
+  };
   if(!list.length){el.innerHTML='<div class="empty">No crew members registered yet.</div>';return;}
   el.innerHTML=[['candid','Candid Team'],['traditional','Traditional Team'],['operations','Specialists & Operations']].map(([key,label])=>{const members=list.filter(([,p])=>crewProfileGroup(p)===key),open=crewProfileGroupsOpen.has(key);return `<section class="ci-profile-group ${open?'':'closed'}"><button class="ci-profile-group-head" onclick="toggleCrewProfileGroup('${key}')"><b>${label}</b><span>${members.length} member${members.length===1?'':'s'} · ${open?'Hide ▴':'Show ▾'}</span></button><div class="ci-profile-group-body">${members.length?members.map(card).join(''):'<div class="empty">No registered crew in this group.</div>'}</div></section>`;}).join('');
 }
@@ -7974,6 +8035,8 @@ function cw10RenderWorkspace(entry){
 }
 function renderClientsWorkspace(){
   const root=document.getElementById('cwRoot');if(!root)return;
+  if(uiDeferWhileTyping(root,renderClientsWorkspace,'_totwCwRenderT',400))return;
+  if(uiDeferWhileTyping(document.getElementById('cwSetupDrawer'),renderClientsWorkspace,'_totwCwRenderT',400))return;
   const all=cwDirectory();
   if(cwSelectedKey&&!cwEntry())cwSelectedKey='';
   const entry=cwEntry();
