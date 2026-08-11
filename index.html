@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.4-guest-extras-2026-08-11">
+<meta name="totw-build" content="v13.1.5-guest-extras-fix-2026-08-11">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1497,17 +1497,67 @@ body{background:
 .cw12-planner-sync.warning .cw12-sync-badge,.cw12-planner-sync.locked .cw12-sync-badge{border-color:#E8C4CA!important;color:var(--sindoor)!important;background:var(--sindoor-soft)!important}
 .cw12-planner-sync.none .cw12-sync-badge{border-color:var(--line)!important;color:var(--ink-soft)!important;background:var(--surface)!important}
 
-/* Team assignment cards — editorial paper (same surface as plan) */
-.cw11-plan-card .ci-assignment-role,
-.cw11-guest-extra{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(88px,.7fr) auto;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
-.cw11-guest-extra input{width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:12.5px var(--body)}
-.cw11-guest-extra button{border:0;border-radius:8px;background:var(--ink);color:#fff;font:600 11px var(--body);padding:9px 12px;cursor:pointer;white-space:nowrap}
-.cw11-guest-extra-help{grid-column:1/-1;font-size:10.5px;color:var(--ink-soft);margin-top:-2px}
-.ci-assignment-member-cost{display:flex;gap:8px;align-items:center;margin-top:8px}
+/* Day-hire Extras form — keep separate from role-card selectors */
+.cw11-guest-extra{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px dashed var(--line);
+}
+.cw11-guest-extra-fields{
+  display:grid;
+  grid-template-columns:minmax(0,1.4fr) minmax(110px,.8fr) auto;
+  gap:8px;
+  align-items:end;
+}
+.cw11-guest-extra label{
+  display:grid;
+  gap:4px;
+  min-width:0;
+  font:8px var(--mono);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+}
+.cw11-guest-extra input{
+  width:100%;
+  min-width:0;
+  padding:10px 11px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fff;
+  color:var(--ink);
+  font:13px var(--body);
+  box-shadow:none;
+}
+.cw11-guest-extra button{
+  border:0;
+  border-radius:8px;
+  background:var(--ink);
+  color:#fff;
+  font:600 12px var(--body);
+  padding:11px 14px;
+  cursor:pointer;
+  white-space:nowrap;
+  height:40px;
+}
+.cw11-guest-extra-help{
+  font-size:10.5px;
+  color:var(--ink-soft);
+  line-height:1.35;
+}
+.ci-assignment-member-cost{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .ci-assignment-member-cost input{width:120px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;font:12px var(--body)}
 .ci-assignment-member-cost .cw11-guest-tag{font:8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
 .cw-ops-guest-box{margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:10px;background:rgba(0,0,0,.02)}
 .cw-ops-guest-box .cw11-guest-extra{margin-top:8px;padding-top:0;border-top:0}
+@media (max-width:720px){
+  .cw11-guest-extra-fields{grid-template-columns:1fr; }
+  .cw11-guest-extra button{width:100%;}
+}
+/* Team assignment cards — editorial paper (same surface as plan) */
 .cw11-team-group .ci-assignment-role,
 .ci-assignment-roles .ci-assignment-role{
   background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:12px;
@@ -8107,7 +8157,7 @@ function cw11AddGuestExtraFromForm(eventId,role){
 }
 function cw11GuestExtraFormHtml(eventId,role){
   const rk=cwGuestExtraRoleKey(role),d=cwGuestExtraDraft(eventId,role);
-  return `<div class="cw11-guest-extra"><input id="cwGuestName_${esc(eventId)}_${rk}" type="text" maxlength="80" placeholder="Name" value="${esc(d.name||'')}" oninput="cwSetGuestExtraDraft('${esc(eventId)}','${esc(role)}','name',this.value)"><input id="cwGuestCost_${esc(eventId)}_${rk}" type="number" min="0" step="100" inputmode="numeric" placeholder="Cost ₹" value="${esc(d.cost||'')}" oninput="cwSetGuestExtraDraft('${esc(eventId)}','${esc(role)}','cost',this.value)"><button type="button" onclick="cw11AddGuestExtraFromForm('${esc(eventId)}','${esc(role)}')">Add</button><div class="cw11-guest-extra-help">Day hire only — name + cost for Finance. No Crew App registration.</div></div>`;
+  return `<div class="cw11-guest-extra"><div class="cw11-guest-extra-fields"><label>Name<input id="cwGuestName_${esc(eventId)}_${rk}" type="text" maxlength="80" autocomplete="off" placeholder="e.g. Arjun" value="${esc(d.name||'')}" oninput="cwSetGuestExtraDraft('${esc(eventId)}','${esc(role)}','name',this.value)"></label><label>Day cost ₹<input id="cwGuestCost_${esc(eventId)}_${rk}" type="number" min="0" step="100" inputmode="numeric" autocomplete="off" placeholder="0" value="${esc(d.cost||'')}" oninput="cwSetGuestExtraDraft('${esc(eventId)}','${esc(role)}','cost',this.value)"></label><button type="button" onclick="cw11AddGuestExtraFromForm('${esc(eventId)}','${esc(role)}')">Add</button></div><div class="cw11-guest-extra-help">Day hire for Finance only — not added to Team / Crew App.</div></div>`;
 }
 function cw11EventStarted(draft){
   if(!draft||!draft.shootId)return false;
@@ -8437,7 +8487,7 @@ function cw11RenderPlanning(state,event){
   const staff=cw10TeamStaffing(state,event),gapNote=staff.gaps.length?`<div class="cw11-plan-note" style="margin-top:10px"><i>!</i><div><strong>Still needed for this event:</strong>${staff.gaps.map(g=>`${g.code} ${g.count}/${g.required}`).join(' · ')}</div></div>`:'';
   const candidList=cwListItems(event.name,'candid',draft.candidListKey||''),tradList=cwListItems(event.name,'traditional',draft.traditionalListKey||'');
   const crewLine=staff.crewEntries.length?staff.crewEntries.map(([,c])=>`${ciRoleCode(c.role)} ${c.name||'Crew'}`).join(' · '):'No crew assigned yet';
-  return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Event detail</h3><p>Client context and handoff live here. Type Extras name + cost below without Crew registration. Edit core crew in Team &amp; prep.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
+  return `<section class="cw11-plan-card"><div class="cw11-plan-head"><div><h3>Event detail</h3><p>Client context and handoff. For Drone / LED / Live / Other, type name + day cost below (no Crew registration). Core crew still goes in Team &amp; prep.</p></div><span class="cw11-plan-state ${published?'published':''}"><i></i>${published?'Published to crew':'Internal draft'}</span></div>
     ${started?`<div class="cw11-plan-note"><i>✓</i><div><strong>This shoot has started.</strong>Operational timings and checked-in assignments are locked.</div></div>`:''}
     <div class="cw11-plan-fields">
       <div class="cw11-field"><label>Event start</label><div class="cw-ops-readonly">${esc(ciFmtTime(draft.startTime))}</div></div>
