@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.11-home-attention-fix-2026-08-12">
+<meta name="totw-build" content="v13.1.12-trad-section-ui-2026-08-12">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1174,10 +1174,41 @@ body.cw10-client-mode .app-rail{/* keep rail visible in Weddings */}
 .cw12-deliverables-empty{padding:38px;border:1px dashed #36393C;border-radius:12px;color:#817B74;text-align:center;font-size:10px}
 
 /* Traditional Day Pass beta */
-.trad-section{margin:14px 0;border:1px solid #3B352F;border-radius:13px;background:linear-gradient(145deg,#1B1816,#151719);overflow:hidden}
-.trad-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 16px;border-bottom:1px solid #35302B}.trad-head h3{font:500 22px var(--display)}.trad-head p{margin-top:4px;color:#8A8178;font-size:8.5px}.trad-list{display:grid;gap:8px;padding:12px}
-.trad-card{display:grid;grid-template-columns:minmax(190px,1.2fr) minmax(150px,.8fr) minmax(145px,.7fr) auto;gap:12px;align-items:center;padding:13px;border:1px solid #34302C;border-radius:10px;background:#121416}.trad-card strong,.trad-card small{display:block}.trad-card strong{font-size:11px}.trad-card small{margin-top:4px;color:#837B73;font-size:8px;line-height:1.45}.trad-card .trad-status{color:#C7A970;font:7px var(--mono);letter-spacing:.06em;text-transform:uppercase}.trad-card .trad-status.ready{color:#88A98D}.trad-card-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
-.trad-empty{padding:18px;color:#837B73;font-size:9px;text-align:center}.trad-modal-wrap{position:fixed;inset:0;z-index:1300;display:grid;place-items:center;padding:16px;background:rgba(5,7,8,.78);backdrop-filter:blur(7px)}.trad-modal{width:min(620px,100%);max-height:92vh;overflow:auto;padding:21px;border:1px solid #44403A;border-radius:16px;background:#17191B;box-shadow:0 24px 80px rgba(0,0,0,.45)}.trad-modal h3{font:500 27px var(--display)}.trad-modal>p{margin-top:6px;color:#89827A;font-size:9px;line-height:1.5}.trad-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:17px}.trad-field{display:grid;gap:6px}.trad-field.wide{grid-column:1/-1}.trad-field label{color:#857C73;font:7px var(--mono);letter-spacing:.08em;text-transform:uppercase}.trad-field input,.trad-field select,.trad-field textarea{width:100%;min-height:42px;padding:10px 11px;border:1px solid #393C3F;border-radius:9px;background:#101214;color:#E7E0D7;font-size:10px;outline:none;color-scheme:dark}.trad-field textarea{min-height:72px;resize:vertical}.trad-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.trad-private{margin-top:11px;padding:9px 10px;border-radius:8px;background:#201D18;color:#9C8D79;font-size:8px;line-height:1.5}
+.trad-section{margin:18px 0 0;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 10px 28px rgba(48,36,28,.04);overflow:hidden;color:var(--ink)}
+.trad-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 15px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
+.trad-toggle:hover{background:var(--surface-3)}
+.trad-toggle-main{min-width:0;flex:1}
+.trad-toggle h3{margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font:500 18px/1.15 var(--display);color:var(--ink)}
+.trad-toggle h3 .trad-beta{padding:3px 6px;border-radius:999px;background:var(--amber-soft);color:#7A5A1E;font:7px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.trad-toggle p{margin:4px 0 0;color:var(--ink-soft);font-size:11px;line-height:1.4}
+.trad-toggle-meta{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.trad-toggle-count{padding:5px 8px;border-radius:8px;background:var(--surface-2);color:var(--ink-soft);font:7.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.trad-chevron{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:var(--surface-2);color:var(--ink-soft);font:600 14px/1 var(--mono);transition:transform .18s ease}
+.trad-section.open .trad-chevron{transform:rotate(90deg)}
+.trad-body{display:none;padding:0 12px 12px;border-top:1px solid var(--line)}
+.trad-section.open .trad-body{display:block}
+.trad-body-actions{display:flex;justify-content:flex-end;gap:8px;padding:11px 3px 8px}
+.trad-list{display:grid;gap:8px}
+.trad-card{display:grid;grid-template-columns:minmax(180px,1.15fr) minmax(140px,.85fr) minmax(120px,.65fr) auto;gap:12px;align-items:center;padding:12px 13px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink)}
+.trad-card strong,.trad-card small{display:block}
+.trad-card strong{font:600 12.5px/1.3 var(--body);color:var(--ink)}
+.trad-card small{margin-top:4px;color:var(--ink-soft);font-size:10.5px;line-height:1.4}
+.trad-card .trad-status{color:#8A6A2E;font:7.5px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.trad-card .trad-status.ready{color:var(--leaf)}
+.trad-card .trad-status.sent{color:#7A5A1E}
+.trad-card-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.trad-empty{padding:14px 10px;color:var(--ink-soft);font-size:12px;text-align:center;line-height:1.45}
+.trad-modal-wrap{position:fixed;inset:0;z-index:1300;display:grid;place-items:center;padding:16px;background:rgba(28,22,18,.55);backdrop-filter:blur(7px)}
+.trad-modal{width:min(620px,100%);max-height:92vh;overflow:auto;padding:21px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);box-shadow:0 24px 80px rgba(48,36,28,.22)}
+.trad-modal h3{margin:0;font:500 27px var(--display);color:var(--ink)}
+.trad-modal>p{margin-top:6px;color:var(--ink-soft);font-size:12px;line-height:1.5}
+.trad-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:17px}
+.trad-field{display:grid;gap:6px}.trad-field.wide{grid-column:1/-1}
+.trad-field label{color:var(--ink-soft);font:7.5px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.trad-field input,.trad-field select,.trad-field textarea{width:100%;min-height:42px;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-size:13px;outline:none}
+.trad-field textarea{min-height:72px;resize:vertical}
+.trad-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.trad-private{margin-top:11px;padding:9px 10px;border-radius:8px;background:var(--amber-soft);color:#7A5A1E;font-size:11px;line-height:1.5}
 
 @media(max-width:1180px){
   .cw10-workspace-shell{grid-template-columns:280px minmax(0,1fr)}
@@ -1194,7 +1225,7 @@ body.cw10-client-mode .app-rail{/* keep rail visible in Weddings */}
   .cw11-member-actions{grid-column:3;grid-row:1/3}
 }
 @media(max-width:760px){
-  .trad-card{grid-template-columns:1fr}.trad-card-actions{justify-content:flex-start}.trad-grid{grid-template-columns:1fr}.trad-field.wide{grid-column:auto}.trad-head{align-items:flex-start;flex-direction:column}
+  .trad-card{grid-template-columns:1fr}.trad-card-actions{justify-content:flex-start}.trad-grid{grid-template-columns:1fr}.trad-field.wide{grid-column:auto}.trad-toggle{align-items:flex-start}.trad-toggle-meta{padding-top:2px}
   .cw10-event-nav{min-height:61px}
   .cw10-event-nav .cw10-nav-note{max-width:86px}
   .cw11-event-content{padding:18px 11px 30px}
@@ -9085,7 +9116,7 @@ function cwTradFillDayDefaults(){
   }
 }
 function cwTradArrivalTouched(){const el=document.getElementById('tradArrival');if(el)el.dataset.touched='1';}
-function cwTradOpenModal(unitId=''){cwTradEditId=String(unitId||'');cwTradModalOpen=true;renderClientsWorkspace();setTimeout(()=>{const arrival=document.getElementById('tradArrival');if(arrival)arrival.dataset.touched=cwTradEditId?'1':'0';cwTradFillDayDefaults();document.getElementById('tradPartner')?.focus();},0);}
+function cwTradOpenModal(unitId=''){cwTradEditId=String(unitId||'');cwTradModalOpen=true;try{localStorage.setItem('totw_trad_section_open','1');}catch(e){}renderClientsWorkspace();setTimeout(()=>{const arrival=document.getElementById('tradArrival');if(arrival)arrival.dataset.touched=cwTradEditId?'1':'0';cwTradFillDayDefaults();document.getElementById('tradPartner')?.focus();},0);}
 function cwTradCloseModal(){cwTradModalOpen=false;cwTradEditId='';renderClientsWorkspace();}
 function cwTradModalHtml(state){
   if(!cwTradModalOpen)return '';
@@ -9171,9 +9202,38 @@ async function cwTradDeleteUnit(unitId){
   const updates={};updates[`traditionalUnits/${unit.weddingKey}/${unit.date}/${unit.unitId}`]=null;updates[`traditionalPasses/${unit.passId}`]=null;if(unit.inviteHash)updates[`traditionalInvites/${unit.inviteHash}`]=null;updates[`crewDayCosts/${unit.weddingKey}/${unit.date}/${unit.partnerId}`]=null;const stagedProd=cwTradProjectFinance(state,unit,updates,true);
   try{await db.ref().update(updates);if(stagedProd)prods[stagedProd.prodId]=stagedProd.prod;toast('Traditional unit removed.');renderClientsWorkspace();}catch(err){toast('Could not remove the traditional unit.');}
 }
+function cwTradSectionIsOpen(){
+  try{const raw=localStorage.getItem('totw_trad_section_open');if(raw===null)return false;return raw==='1';}catch(e){return false;}
+}
+function cwTradToggleSection(force){
+  const open=typeof force==='boolean'?force:!cwTradSectionIsOpen();
+  try{localStorage.setItem('totw_trad_section_open',open?'1':'0');}catch(e){}
+  const el=document.querySelector('.trad-section');
+  if(el)el.classList.toggle('open',open);
+  else renderClientsWorkspace();
+}
 function cwTradRenderSection(state){
-  const rows=cwTradRows(state),cards=rows.map(unit=>{const pass=traditionalPasses[unit.passId]||{},captain=pass.captainName||'',status=pass.checkedOutAt?'Finished':pass.checkedInAt?'On shoot':captain?'Captain confirmed':unit.inviteHash?'Pass sent':'Captain awaited',ready=!!captain;return `<article class="trad-card"><div><strong>${esc(ciDateLong(unit.date))} · ${esc(unit.partnerName)}</strong><small>${esc(cwTradComposition(unit))} · Reporting ${esc(ciFmtTime(unit.reportingTime))}</small></div><div><span class="trad-status ${ready?'ready':''}">${esc(status)}</span><small>${captain?`Captain: ${esc(captain)}`:'Partner can forward the day pass later'}</small></div><div><strong>${esc(cwOpsInr(Number(unit.amount)||0))}</strong><small>Private partner-day cost · hours informational</small></div><div class="trad-card-actions"><button class="cw10-soft" onclick="cwTradOpenModal('${esc(unit.unitId)}')">Edit</button><button class="cw10-soft" onclick="cwTradIssuePass('${esc(unit.unitId)}',true)">${captain?'Replace pass':'WhatsApp pass'}</button><button class="cw10-text" onclick="cwTradDeleteUnit('${esc(unit.unitId)}')">Remove</button></div></article>`;}).join('');
-  return `<section class="trad-section"><div class="trad-head"><div><h3>Traditional Day Pass <small style="font:7px var(--mono);color:#B18E58">BETA</small></h3><p>Assign the supplier once. The attending captain gets a temporary, cost-free operational pass.</p></div><button class="cw10-primary" onclick="cwTradOpenModal()">+ Traditional unit</button></div><div class="trad-list">${cards||'<div class="trad-empty">No outsourced traditional unit added for this wedding.</div>'}</div></section>${cwTradModalHtml(state)}`;
+  const rows=cwTradRows(state),open=cwTradSectionIsOpen()||cwTradModalOpen;
+  const summary=rows.length?rows.map(u=>`${cw10CompactDate(u.date)} · ${u.partnerName||'Partner'}`).slice(0,2).join(' · ')+(rows.length>2?` · +${rows.length-2} more`:''):'Outsource TP/TV once per date · captain gets a cost-free day pass';
+  const cards=rows.map(unit=>{
+    const pass=traditionalPasses[unit.passId]||{},captain=pass.captainName||'';
+    let status='Partner booked',tone='',hint='Send WhatsApp pass when the on-ground captain is ready';
+    if(pass.checkedOutAt){status='Finished';tone='ready';hint=captain?`Captain: ${captain}`:'Day closed';}
+    else if(pass.checkedInAt){status='On shoot';tone='ready';hint=captain?`Captain: ${captain}`:'Live traditional day';}
+    else if(captain){status='Captain confirmed';tone='ready';hint=`Captain: ${captain}`;}
+    else if(unit.inviteHash){status='Pass sent';tone='sent';hint='Partner can forward the day pass to the captain';}
+    return `<article class="trad-card"><div><strong>${esc(ciDateLong(unit.date))} · ${esc(unit.partnerName)}</strong><small>${esc(cwTradComposition(unit))} · Reporting ${esc(ciFmtTime(unit.reportingTime))}</small></div><div><span class="trad-status ${tone}">${esc(status)}</span><small>${esc(hint)}</small></div><div><strong>${esc(cwOpsInr(Number(unit.amount)||0))}</strong><small>Private partner-day cost</small></div><div class="trad-card-actions"><button class="cw10-soft" onclick="cwTradOpenModal('${esc(unit.unitId)}')">Edit</button><button class="cw10-soft" onclick="cwTradIssuePass('${esc(unit.unitId)}',true)">${captain?'Replace pass':'WhatsApp pass'}</button><button class="cw10-text" onclick="cwTradDeleteUnit('${esc(unit.unitId)}')">Remove</button></div></article>`;
+  }).join('');
+  return `<section class="trad-section${open?' open':''}">
+    <button type="button" class="trad-toggle" onclick="cwTradToggleSection()" aria-expanded="${open?'true':'false'}">
+      <div class="trad-toggle-main"><h3>Traditional unit <span class="trad-beta">Beta</span></h3><p>${esc(summary)}</p></div>
+      <div class="trad-toggle-meta"><span class="trad-toggle-count">${rows.length?`${rows.length} day${rows.length===1?'':'s'}`:'None yet'}</span><span class="trad-chevron" aria-hidden="true">›</span></div>
+    </button>
+    <div class="trad-body">
+      <div class="trad-body-actions"><button type="button" class="cw10-primary" onclick="cwTradOpenModal()">+ Traditional unit</button></div>
+      <div class="trad-list">${cards||'<div class="trad-empty">No outsourced traditional unit for this wedding yet. Add one date when TP/TV are supplied by a partner.</div>'}</div>
+    </div>
+  </section>${cwTradModalHtml(state)}`;
 }
 function cw10RenderOperations(state){
   const approved=cwOpsSortEvents(state);
@@ -9197,8 +9257,8 @@ function cw10RenderOperations(state){
       <div><span>Crew readiness</span><strong>${ready.eventsWithCrew}/${ready.events||events.length} events · ${ready.assigned} assigned</strong></div>
       <div><span>Recorded in Finance</span><strong>${esc(cwOpsInr(recordedCost))}</strong><small>${recordedCost?'From Finance & Reports · Package &amp; spend':'Enter ₹ pay in Finance &amp; Reports'}</small></div>
     </div>
-    ${cwTradRenderSection(state)}
     <div class="cw-ops-list">${approved.map(event=>cwOpsEventRowHtml(state,event,{approved:true})).join('')}${pending.length?`<div class="cw10-nav-label" style="margin:8px 0 4px">Draft · awaiting approval</div>${pending.map(event=>cwOpsEventRowHtml(state,event,{approved:false})).join('')}`:''}</div>
+    ${cwTradRenderSection(state)}
     <p class="cw10-event-footnote">Writes the same crewCheckins records used by Live day. Client and crew links are unchanged.</p>
   </div>`;
 }
