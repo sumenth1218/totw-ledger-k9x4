@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.9-trad-replace-typed-2026-08-11">
+<meta name="totw-build" content="v13.1.10-trad-event-chip-2026-08-11">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1551,6 +1551,7 @@ body{background:
 .ci-assignment-member-cost{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .ci-assignment-member-cost input{width:120px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;font:12px var(--body)}
 .ci-assignment-member-cost .cw11-guest-tag{font:8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.cw-ops-chip.trad-unit{border-color:#C4A574;background:#F7F0E4;color:#5C4A2E}.cw-ops-chip.trad-unit small{color:#8A734A}
 #tradLocationInfo strong{display:block;font:600 13px var(--body);color:var(--ink)}#tradLocationInfo small{display:block;margin-top:4px;color:var(--ink-soft);font:11px var(--body);line-height:1.4}.trad-field.wide{grid-column:1/-1}
 .cw-ops-guest-box{margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:10px;background:rgba(0,0,0,.02)}
 .cw-ops-guest-box .cw11-guest-extra{margin-top:8px;padding-top:0;border-top:0}
@@ -8990,7 +8991,9 @@ function cwOpsEventRowHtml(state,event,opts={}){
   const maps=details.mapsUrl?`<a class="cw-ops-maps" href="${esc(details.mapsUrl)}" target="_blank" rel="noopener">${esc(details.venueName||'Open map')} ↗</a>`:esc(details.venueName||'Venue pending');
   const openKey=cwOpsOpenCrew,addOpen=cwOpsAddFor===event.eventId,mobileOpen=cwOpsMobileOpen.has(event.eventId);
   const review=cw10ReviewSummary(state,event.eventId);
-  const chips=crew.map(([uid,c])=>{
+  const tradUnit=cwTradUnitForDate(state,event.date);
+  const tradChips=tradUnit?`<button type="button" class="cw-ops-chip trad-unit" title="Outsourced traditional unit for this date" onclick="cwTradOpenModal('${esc(tradUnit.unitId)}')"><b>${esc(tradUnit.partnerName||'Traditional supplier')}</b><small>TP/TV · ${esc(cwTradComposition(tradUnit))}</small></button>`:'';
+  const chips=tradChips+crew.map(([uid,c])=>{
     const tone=cwOpsDataTone(draft,uid,c),on=openKey===`${event.eventId}|${uid}`;
     return `<button type="button" class="cw-ops-chip ${on?'on':''} ${tone}" onclick="cwOpsToggleCrew('${esc(event.eventId)}','${esc(uid)}')"><b>${esc(c.name||crewProfiles[uid]?.name||'Crew')}</b><small>${esc(ciRoleCode(c.role))}</small></button>`;
   }).join('');
