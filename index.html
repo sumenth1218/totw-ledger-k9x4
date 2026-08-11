@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.5-guest-extras-fix-2026-08-11">
+<meta name="totw-build" content="v13.1.6-finance-dedupe-2026-08-11">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -3628,6 +3628,40 @@ function prodNewRoleRow(role,person,pay){
   const r=ciRoleToProdRole(role);
   return {role:r,person:String(person||'').trim(),pay:+pay||0,cards:NODATA.has(r)?[]:[{a:false,b:false,v:false}]};
 }
+function prodPersonKey(name){return String(name||'').trim().toLowerCase().replace(/\s+/g,' ');}
+function prodRolePersonKey(r){return prodPersonKey(r&&r.person)+'|'+ciRoleToProdRole(r&&r.role);}
+function dedupeProdDayRoles(day){
+  if(!day)return 0;
+  const roles=Array.isArray(day.roles)?day.roles:[];
+  const kept=[],byKey=new Map();
+  let removed=0;
+  roles.forEach(r=>{
+    if(!r)return;
+    const person=String(r.person||'').trim();
+    if(!person){kept.push(r);return;}
+    const key=prodRolePersonKey(r),prev=byKey.get(key);
+    if(!prev){
+      const row={...r,role:ciRoleToProdRole(r.role),person};
+      byKey.set(key,row);kept.push(row);return;
+    }
+    removed++;
+    const pay=Math.max(+prev.pay||0,+r.pay||0);
+    if(pay)prev.pay=pay;
+    if(r.opsSource&&(!prev.opsSource||prev.opsSource==='manual'))prev.opsSource=r.opsSource;
+    if(r.opsUid)prev.opsUid=r.opsUid;
+    if(r.sourceKey)prev.sourceKey=r.sourceKey;
+    if((r.cards||[]).length>(prev.cards||[]).length)prev.cards=r.cards;
+    if(NODATA.has(prev.role))prev.cards=[];
+    else if(!(prev.cards||[]).length)prev.cards=[{a:false,b:false,v:false}];
+  });
+  day.roles=kept;
+  return removed;
+}
+function dedupeProdAllDays(p){
+  if(!p)return 0;
+  let removed=0;(p.days||[]).forEach(day=>removed+=dedupeProdDayRoles(day));
+  return removed;
+}
 function prodClientCrewForDay(p,day){
   const coupleKey=cwKey(p&&p.couple),date=day&&day.date;if(!coupleKey||!date)return [];
   const found=new Map();
@@ -3646,20 +3680,34 @@ function pullCrewFromClientsDay(id,di,quiet){
   const incoming=prodClientCrewForDay(p,day);
   if(!incoming.length){if(!quiet)toast('No Clients team found for this shoot day.');return 0;}
   day.roles=day.roles||[];
+  dedupeProdDayRoles(day);
   const existing=new Map();
-  day.roles.forEach(r=>{const person=String(r.person||'').trim();if(person)existing.set(person.toLowerCase()+'|'+(r.role||''),r);});
+  day.roles.forEach(r=>{const person=String(r.person||'').trim();if(person)existing.set(prodRolePersonKey(r),r);});
   let added=0;
   incoming.forEach(inc=>{
-    const key=inc.person.toLowerCase()+'|'+inc.role;
-    if(existing.has(key))return;
-    day.roles.push(inc);existing.set(key,inc);added++;regPerson(inc.person,inc.role);
+    const row=prodNewRoleRow(inc.role,inc.person,inc.pay),key=prodRolePersonKey(row),prev=existing.get(key);
+    if(prev){
+      prev.role=row.role;
+      if(!(+prev.pay||0)&&(+row.pay||0))prev.pay=row.pay;
+      return;
+    }
+    day.roles.push(row);existing.set(key,row);added++;regPerson(row.person,row.role);
   });
+  dedupeProdDayRoles(day);
   if(!quiet){
     writeProd(id);
     toast(added?`Pulled ${added} from Clients. Type ₹ pay for each.`:(incoming.length?'Team already listed for this day.':'No Clients team found.'));
     if(added)log(`pulled client team into ${p.couple} · ${fmt(day.date)} (+${added})`);
   }
   return added;
+}
+function cleanProdDayDupes(id,di){
+  const p=prods[id],day=p&&p.days&&p.days[di];if(!day)return;
+  const removed=dedupeProdDayRoles(day);
+  writeProd(id);
+  toast(removed?`Removed ${removed} duplicate crew row${removed===1?'':'s'} on this day.`:'No duplicates on this day.');
+  if(removed)log(`cleaned ${removed} duplicate finance crew rows — ${p.couple} · ${fmt(day.date)}`);
+  if(typeof renderClientsWorkspace==='function')renderClientsWorkspace();
 }
 function pullCrewFromClients(id,di){pullCrewFromClientsDay(id,di,false);if(typeof renderClientsWorkspace==='function')renderClientsWorkspace();}
 function pullCrewFromClientsAll(id){
@@ -4314,7 +4362,7 @@ function dayCard(id,p,d,di,now){
     ${al?`<div style="font-size:12px;color:#7A2A1E;margin-top:6px;font-weight:500">${al==='none'?'No cards logged — shoot was over 24h ago.':'Copies incomplete past the 24h rule.'}</div>`:''}
     ${evEd}
     ${rolesHtml}
-    <div class="role-line" style="margin-top:9px;flex-wrap:wrap"><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pullCrewFromClients('${id}',${di})">Pull team from Weddings</button><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="rAdd('${id}',${di})">+ Role</button>${(p.days||[]).length>1&&(d.roles||[]).some(r=>r.person&&r.person.trim())?`<button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="copyCrewToAll('${id}',${di})">Copy crew to all days</button>`:''}</div>
+    <div class="role-line" style="margin-top:9px;flex-wrap:wrap"><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pullCrewFromClients('${id}',${di})">Pull team from Weddings</button><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="rAdd('${id}',${di})">+ Role</button><button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="cleanProdDayDupes('${id}',${di})">Clean duplicates</button>${(p.days||[]).length>1&&(d.roles||[]).some(r=>r.person&&r.person.trim())?`<button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="copyCrewToAll('${id}',${di})">Copy crew to all days</button>`:''}</div>
     <div class="fmt-row"><input type="checkbox" ${d.fmt?'checked':''} ${all?'':'disabled'} onchange="dSet('${id}',${di},'fmt',this.checked)"><span style="${all?'':'color:var(--ink-soft)'}">Cards formatted${all?'':' — locked until every card is on both disks and verified'}</span>${total?`<span class="sdue ${all?'ok':'warn'}" style="margin-left:auto">${ok}/${total} CARDS SAFE</span>`:''}</div>
   </div>`;
 }
@@ -6645,10 +6693,13 @@ function cwBuildOpsFinanceSync(results){
       const override=group.overrides.get(event.eventId),shootId=override&&override.id||event.shootId||'',record=override&&override.record||shootId&&checkinEvents[shootId];
       if(!record)return;
       Object.entries(record.crew||{}).forEach(([crewUid,c])=>{
-        const person=String(c.name||crewProfiles[crewUid]?.name||'Crew member').trim(),role=String(c.role||'Other'),personKey=crewUid||`${person.toLowerCase()}|${role}`;
+        const person=String(c.name||crewProfiles[crewUid]?.name||'Crew member').trim(),role=ciRoleToProdRole(c.role||'Other'),personKey=crewUid||`${prodPersonKey(person)}|${role}`;
         const pay=cwOpsCostFromRecord(record,shootId,crewUid,c,state,date),prev=people.get(personKey);
         if(!prev)people.set(personKey,{crewUid,c,person,role,pay});
-        else if(pay!=null&&(prev.pay==null||Number(pay)>Number(prev.pay)))prev.pay=pay;
+        else{
+          if(pay!=null&&(prev.pay==null||Number(pay)>Number(prev.pay)))prev.pay=pay;
+          if(role&&(!prev.role||prev.role==='Other'))prev.role=role;
+        }
       });
     });
     const rows=[...people.values()].filter(x=>x.pay!=null&&Number(x.pay)>=0);
@@ -6659,12 +6710,22 @@ function cwBuildOpsFinanceSync(results){
     let day=prod.days.find(d=>d.date===date);
     if(!day){day={date,events:dayEvents.map(e=>e.name),gb:0,roles:[],fmt:false};prod.days.push(day);}
     day.events=[...new Set([...(Array.isArray(day.events)?day.events:[]),...dayEvents.map(e=>e.name)])];
-    // Replace only our own projection rows. Manual/legacy prices are preserved.
+    // Rebuild Team & prep projection with Finance role labels, and drop legacy
+    // duplicates that used short/truncated names for the same person+role.
+    const projected=rows.map(({crewUid,person,role,pay})=>({person,role:ciRoleToProdRole(role),pay:Number(pay),opsSource:'teamPrep',opsDay:date,opsUid:crewUid,cards:NODATA.has(ciRoleToProdRole(role))?[]:[{a:false,b:false,v:false}]}));
+    const incomingKeys=new Set(projected.map(prodRolePersonKey));
+    const incomingUids=new Set(projected.map(r=>r.opsUid).filter(Boolean));
     day.roles=(Array.isArray(day.roles)?day.roles:[]).filter(r=>{
-      if(r&&r.opsSource==='teamPrep')return false;
+      if(!r)return false;
+      if(r.opsSource==='traditionalUnit')return true;
+      if(r.opsSource==='teamPrep')return false;
+      const person=prodPersonKey(r.person),role=ciRoleToProdRole(r.role);
+      if(r.opsUid&&incomingUids.has(r.opsUid))return false;
+      if(person&&incomingKeys.has(`${person}|${role}`))return false;
       return true;
     });
-    rows.forEach(({crewUid,person,role,pay})=>day.roles.push({person,role,pay:Number(pay),opsSource:'teamPrep',opsDay:date,opsUid:crewUid}));
+    projected.forEach(row=>day.roles.push(row));
+    dedupeProdDayRoles(day);
     prod.days.sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
     staged.set(prodId,prod);
   });
@@ -6687,9 +6748,19 @@ async function cwRefreshAllOpsFinance(){
     });
   });
   const finance=cwBuildOpsFinanceSync(results);
+  // Always scrub legacy short-name duplicates even when no Team & prep delta.
+  Object.entries(prods||{}).forEach(([id,prod])=>{
+    if(!prod)return;
+    const before=JSON.stringify(prod.days||[]);
+    const removed=dedupeProdAllDays(prod);
+    if(removed||JSON.stringify(prod.days||[])!==before){
+      finance.updates[`prod/${id}`]=prod;
+      finance.staged.set(id,prod);
+    }
+  });
   if(!Object.keys(finance.updates).length)return;
   cwOpsFinanceRefreshBusy=true;
-  try{await db.ref().update(finance.updates);finance.staged.forEach((prod,id)=>{prods[id]=prod;});}
+  try{await db.ref().update(finance.updates);finance.staged.forEach((prod,id)=>{prods[id]=prod;});if(typeof renderProd==='function')renderProd();if(typeof renderProdAll==='function')renderProdAll();}
   catch(err){console.warn('Crew cost finance refresh failed',err);}
   finally{cwOpsFinanceRefreshBusy=false;}
 }
