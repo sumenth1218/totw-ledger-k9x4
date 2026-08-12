@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.14-per-event-cards-2026-08-12">
+<meta name="totw-build" content="v13.1.15-bulk-trad-passes-2026-08-12">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1187,7 +1187,7 @@ body.cw10-client-mode .app-rail{/* keep rail visible in Weddings */}
 .trad-section.open .trad-chevron{transform:rotate(90deg)}
 .trad-body{display:none;padding:0 12px 12px;border-top:1px solid var(--line)}
 .trad-section.open .trad-body{display:block}
-.trad-body-actions{display:flex;justify-content:flex-end;gap:8px;padding:11px 3px 8px}
+.trad-body-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;padding:11px 3px 8px}
 .trad-list{display:grid;gap:8px}
 .trad-card{display:grid;grid-template-columns:minmax(180px,1.15fr) minmax(140px,.85fr) minmax(120px,.65fr) auto;gap:12px;align-items:center;padding:12px 13px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink)}
 .trad-card strong,.trad-card small{display:block}
@@ -9189,13 +9189,83 @@ async function cwTradSaveUnit(){
 }
 function cwTradRandomToken(){const bytes=new Uint8Array(24);crypto.getRandomValues(bytes);return [...bytes].map(n=>n.toString(16).padStart(2,'0')).join('');}
 async function cwTradHashToken(token){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));return [...new Uint8Array(buf)].map(n=>n.toString(16).padStart(2,'0')).join('');}
+function cwTradEventNamesForDate(state,date){
+  return (state.events||[]).filter(e=>e&&e.date===date).map(e=>e.name||'Event').filter(Boolean);
+}
+function cwTradWaPhone(partnerId){
+  const phone=ciPhone(crewProfiles[partnerId]?.phone||'');
+  return phone?(phone.length===10?'91'+phone:phone):'';
+}
+function cwTradOpenWhatsApp(phone,message,fallbackLabel){
+  if(phone)window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`,'_blank','noopener');
+  else copyText(message,fallbackLabel||'Day-pass brief copied — partner phone missing.');
+}
+async function cwTradBuildInvite(unit,{confirmReplace=true}={}){
+  const pass=traditionalPasses[unit.passId]||{};
+  if(pass.checkedInAt)return {ok:false,reason:'started',unit};
+  if(pass.checkedOutAt)return {ok:false,reason:'finished',unit};
+  if(pass.captainUid&&confirmReplace&&!confirm(`Replace the current captain pass for ${unit.partnerName} on ${ciDateLong(unit.date)}? The existing captain will lose access.`))return {ok:false,reason:'cancelled',unit};
+  const token=cwTradRandomToken(),hash=await cwTradHashToken(token),now=Date.now(),expiresAt=new Date(`${unit.date}T23:59:59+05:30`).getTime()+2*86400000,updates={};
+  if(unit.inviteHash)updates[`traditionalInvites/${unit.inviteHash}`]=null;
+  updates[`traditionalInvites/${hash}`]={passId:unit.passId,unitId:unit.unitId,weddingKey:unit.weddingKey,date:unit.date,partnerId:unit.partnerId,createdAt:now,createdBy:editor,expiresAt,revoked:false};
+  updates[`traditionalUnits/${unit.weddingKey}/${unit.date}/${unit.unitId}/inviteHash`]=hash;
+  updates[`traditionalUnits/${unit.weddingKey}/${unit.date}/${unit.unitId}/lastPassIssuedAt`]=now;
+  updates[`traditionalPasses/${unit.passId}/captainUid`]=null;
+  updates[`traditionalPasses/${unit.passId}/captainName`]=null;
+  updates[`traditionalPasses/${unit.passId}/captainEmail`]=null;
+  updates[`traditionalPasses/${unit.passId}/captainPhone`]=null;
+  updates[`traditionalPasses/${unit.passId}/confirmedAt`]=null;
+  updates[`traditionalPasses/${unit.passId}/status`]='link_issued';
+  updates[`traditionalPasses/${unit.passId}/updatedAt`]=now;
+  await db.ref().update(updates);
+  const url=new URL('traditional-pass.html',location.href);url.searchParams.set('t',token);
+  return {ok:true,unit,token,url:url.href,pass};
+}
 async function cwTradIssuePass(unitId,whatsapp=false){
-  const entry=cwEntry(),state=entry&&cwState(entry),unit=state&&cwTradFind(state,unitId);if(!unit)return;const pass=traditionalPasses[unit.passId]||{};
-  if(pass.checkedInAt){toast('This traditional unit has already started. Its captain pass cannot be replaced.');return;}
-  if(pass.captainUid&&!confirm(`Replace the current captain pass for ${unit.partnerName}? The existing captain will lose access.`))return;
-  const token=cwTradRandomToken(),hash=await cwTradHashToken(token),now=Date.now(),expiresAt=new Date(`${unit.date}T23:59:59+05:30`).getTime()+2*86400000,updates={};if(unit.inviteHash)updates[`traditionalInvites/${unit.inviteHash}`]=null;
-  updates[`traditionalInvites/${hash}`]={passId:unit.passId,unitId:unit.unitId,weddingKey:unit.weddingKey,date:unit.date,partnerId:unit.partnerId,createdAt:now,createdBy:editor,expiresAt,revoked:false};updates[`traditionalUnits/${unit.weddingKey}/${unit.date}/${unit.unitId}/inviteHash`]=hash;updates[`traditionalUnits/${unit.weddingKey}/${unit.date}/${unit.unitId}/lastPassIssuedAt`]=now;updates[`traditionalPasses/${unit.passId}/captainUid`]=null;updates[`traditionalPasses/${unit.passId}/captainName`]=null;updates[`traditionalPasses/${unit.passId}/captainEmail`]=null;updates[`traditionalPasses/${unit.passId}/captainPhone`]=null;updates[`traditionalPasses/${unit.passId}/confirmedAt`]=null;updates[`traditionalPasses/${unit.passId}/status`]='link_issued';updates[`traditionalPasses/${unit.passId}/updatedAt`]=now;
-  try{await db.ref().update(updates);const url=new URL('traditional-pass.html',location.href);url.searchParams.set('t',token);const message=`Traditional team day pass — ${state.entry.name}\n${ciDateLong(unit.date)} · Reporting ${ciFmtTime(unit.reportingTime)}\nRequired: ${cwTradComposition(unit)}\n\nSai/Partner: please forward this secure link only to the person responsible on location:\n${url.href}`;if(whatsapp){const phone=ciPhone(crewProfiles[unit.partnerId]?.phone||'');if(phone){window.open(`https://wa.me/${phone.length===10?'91'+phone:phone}?text=${encodeURIComponent(message)}`,'_blank','noopener');}else{copyText(message,'Day-pass brief copied — this partner has no phone saved.');}}else copyText(url.href,'Traditional captain pass copied.');toast(whatsapp?'Traditional day brief ready in WhatsApp.':'Captain pass copied.');}catch(err){console.error('Traditional invite failed',err);toast('Could not create the temporary captain pass.');}
+  const entry=cwEntry(),state=entry&&cwState(entry),unit=state&&cwTradFind(state,unitId);if(!unit||!state)return;
+  try{
+    const built=await cwTradBuildInvite(unit,{confirmReplace:true});
+    if(!built.ok){
+      if(built.reason==='started')toast('This traditional unit has already started. Its captain pass cannot be replaced.');
+      return;
+    }
+    const events=cwTradEventNamesForDate(state,unit.date);
+    const message=`Traditional team day pass — ${state.entry.name}\n${ciDateLong(unit.date)} · Reporting ${ciFmtTime(unit.reportingTime)}\nRequired: ${cwTradComposition(unit)}${events.length?`\nEvents: ${events.join(', ')}`:''}\n\nPartner: please forward this secure link only to the on-ground captain for this date:\n${built.url}`;
+    if(whatsapp)cwTradOpenWhatsApp(cwTradWaPhone(unit.partnerId),message,'Day-pass brief copied — this partner has no phone saved.');
+    else copyText(built.url,'Traditional captain pass copied.');
+    toast(whatsapp?'Traditional day brief ready in WhatsApp.':'Captain pass copied.');
+    renderClientsWorkspace();
+  }catch(err){console.error('Traditional invite failed',err);toast('Could not create the temporary captain pass.');}
+}
+async function cwTradIssueAllPasses(){
+  const entry=cwEntry(),state=entry&&cwState(entry);if(!state)return;
+  const rows=cwTradRows(state);if(!rows.length){toast('Add traditional units for this wedding first.');return;}
+  const issuable=rows.filter(unit=>{const pass=traditionalPasses[unit.passId]||{};return !pass.checkedInAt&&!pass.checkedOutAt;});
+  const skipped=rows.length-issuable.length;
+  if(!issuable.length){toast(skipped?'All traditional days have already started or finished.':'Nothing to send.');return;}
+  const replaceCount=issuable.filter(u=>(traditionalPasses[u.passId]||{}).captainUid).length;
+  if(!confirm(`Create captain day passes for all ${issuable.length} traditional day${issuable.length===1?'':'s'} on ${state.entry.name}?${replaceCount?`\n\n${replaceCount} day${replaceCount===1?' has':'s have'} an existing captain and will be replaced.`:''}${skipped?`\n\n${skipped} started/finished day${skipped===1?'':'s'} will be skipped.`:''}`))return;
+  try{
+    const byPartner={};
+    for(const unit of issuable){
+      const built=await cwTradBuildInvite(unit,{confirmReplace:false});
+      if(!built.ok)continue;
+      const key=unit.partnerId||unit.partnerName||'partner';
+      if(!byPartner[key])byPartner[key]={partnerId:unit.partnerId,partnerName:unit.partnerName||'Traditional Partner',days:[]};
+      byPartner[key].days.push({unit,url:built.url,events:cwTradEventNamesForDate(state,unit.date)});
+    }
+    const packs=Object.values(byPartner);
+    if(!packs.length){toast('No captain passes could be created.');return;}
+    packs.forEach((pack,idx)=>{
+      const lines=pack.days.sort((a,b)=>String(a.unit.date).localeCompare(String(b.unit.date))).map(({unit,url,events})=>`• ${ciDateLong(unit.date)} · Reporting ${ciFmtTime(unit.reportingTime)} · ${cwTradComposition(unit)}${events.length?` · ${events.join(', ')}`:''}\n  ${url}`);
+      const message=`Traditional team day passes — ${state.entry.name}\nPartner: ${pack.partnerName}\n\nOne secure captain link per date. Forward each link only to the on-ground captain for that day:\n\n${lines.join('\n\n')}\n\nCards after every event stay with the captain until copied or handed to Tale of Two Weddings.`;
+      if(idx===0)cwTradOpenWhatsApp(cwTradWaPhone(pack.partnerId),message,`All day-pass links copied for ${pack.partnerName}.`);
+      else copyText(message,`${pack.partnerName}: ${pack.days.length} day-pass link${pack.days.length===1?'':'s'} copied (multiple partners).`);
+    });
+    const total=packs.reduce((n,p)=>n+p.days.length,0);
+    toast(packs.length===1?`WhatsApp ready · ${total} day pass${total===1?'':'es'} for this wedding.`:`${total} day passes created · first partner opened in WhatsApp, others copied.`);
+    renderClientsWorkspace();
+  }catch(err){console.error('Bulk traditional invites failed',err);toast('Could not create all captain passes. Try again or send one day at a time.');}
 }
 async function cwTradDeleteUnit(unitId){
   const entry=cwEntry(),state=entry&&cwState(entry),unit=state&&cwTradFind(state,unitId);if(!unit)return;const pass=traditionalPasses[unit.passId]||{};if(pass.checkedInAt){toast('A started traditional day cannot be deleted. Keep it as history.');return;}if(!confirm(`Remove ${unit.partnerName}'s traditional unit for ${ciDateLong(unit.date)}?`))return;
@@ -9232,7 +9302,7 @@ function cwTradRenderSection(state){
       <div class="trad-toggle-meta"><span class="trad-toggle-count">${rows.length?`${rows.length} day${rows.length===1?'':'s'}`:'None yet'}</span><span class="trad-chevron" aria-hidden="true">›</span></div>
     </button>
     <div class="trad-body">
-      <div class="trad-body-actions"><button type="button" class="cw10-primary" onclick="cwTradOpenModal()">+ Traditional unit</button></div>
+      <div class="trad-body-actions">${rows.length?`<button type="button" class="cw10-soft" onclick="cwTradIssueAllPasses()">WhatsApp all days</button>`:''}<button type="button" class="cw10-primary" onclick="cwTradOpenModal()">+ Traditional unit</button></div>
       <div class="trad-list">${cards||'<div class="trad-empty">No outsourced traditional unit for this wedding yet. Add one date when TP/TV are supplied by a partner.</div>'}</div>
     </div>
   </section>${cwTradModalHtml(state)}`;
