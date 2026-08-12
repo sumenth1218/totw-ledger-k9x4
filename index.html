@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.12-trad-section-ui-2026-08-12">
+<meta name="totw-build" content="v13.1.14-per-event-cards-2026-08-12">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -9217,9 +9217,11 @@ function cwTradRenderSection(state){
   const summary=rows.length?rows.map(u=>`${cw10CompactDate(u.date)} · ${u.partnerName||'Partner'}`).slice(0,2).join(' · ')+(rows.length>2?` · +${rows.length-2} more`:''):'Outsource TP/TV once per date · captain gets a cost-free day pass';
   const cards=rows.map(unit=>{
     const pass=traditionalPasses[unit.passId]||{},captain=pass.captainName||'';
+    const dataLabel=({handed_over:'Handed to studio · ready to copy',copying:'Copying in progress',with_captain:'Still with captain'})[pass.dataStatus]||'';
+    const eventCardBits=Object.entries(pass.eventCards||{}).map(([eid,row])=>{const en=(pass.events&&pass.events[eid]&&pass.events[eid].name)||'Event';const st=({with_captain:'with captain',copying:'copying',handed_to_studio:'to studio'})[row.status]||'pending';return `${en}: ${row.cardsUsed!=null?row.cardsUsed:'—'} ${st}`;});
     let status='Partner booked',tone='',hint='Send WhatsApp pass when the on-ground captain is ready';
-    if(pass.checkedOutAt){status='Finished';tone='ready';hint=captain?`Captain: ${captain}`:'Day closed';}
-    else if(pass.checkedInAt){status='On shoot';tone='ready';hint=captain?`Captain: ${captain}`:'Live traditional day';}
+    if(pass.checkedOutAt){status='Finished';tone='ready';hint=[captain?`Captain: ${captain}`:'',pass.cardsUsed!=null?`${pass.cardsUsed} cards total`:'',dataLabel,pass.handoverName?`Final to: ${pass.handoverName}`:'',eventCardBits.length?eventCardBits.join(' · '):''].filter(Boolean).join(' · ')||'Day closed';}
+    else if(pass.checkedInAt){status='On shoot';tone='ready';hint=[captain?`Captain: ${captain}`:'Live traditional day',eventCardBits.length?eventCardBits.join(' · '):'Record cards after each event on the day pass'].filter(Boolean).join(' · ');}
     else if(captain){status='Captain confirmed';tone='ready';hint=`Captain: ${captain}`;}
     else if(unit.inviteHash){status='Pass sent';tone='sent';hint='Partner can forward the day pass to the captain';}
     return `<article class="trad-card"><div><strong>${esc(ciDateLong(unit.date))} · ${esc(unit.partnerName)}</strong><small>${esc(cwTradComposition(unit))} · Reporting ${esc(ciFmtTime(unit.reportingTime))}</small></div><div><span class="trad-status ${tone}">${esc(status)}</span><small>${esc(hint)}</small></div><div><strong>${esc(cwOpsInr(Number(unit.amount)||0))}</strong><small>Private partner-day cost</small></div><div class="trad-card-actions"><button class="cw10-soft" onclick="cwTradOpenModal('${esc(unit.unitId)}')">Edit</button><button class="cw10-soft" onclick="cwTradIssuePass('${esc(unit.unitId)}',true)">${captain?'Replace pass':'WhatsApp pass'}</button><button class="cw10-text" onclick="cwTradDeleteUnit('${esc(unit.unitId)}')">Remove</button></div></article>`;
