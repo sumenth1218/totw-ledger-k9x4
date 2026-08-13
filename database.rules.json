@@ -45,6 +45,7 @@
       ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
     },
     "crewProfiles": {
+      ".indexOn": ["email"],
       ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
@@ -163,6 +164,7 @@
               "$section": {
                 ".validate": "newData.hasChildren(['name','items'])",
                 "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120" },
+                "sourceKey": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 200)" },
                 "items": {
                   "$item": {
                     ".validate": "newData.hasChildren(['t','done'])",
@@ -218,18 +220,18 @@
         "unitId": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200" },
         "weddingKey": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200" },
         "couple": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
-        "date": { ".validate": "newData.isString() && newData.val().matches(/^20(26|27)-[0-1][0-9]-[0-3][0-9]$/)" },
+        "date": { ".validate": "newData.isString() && newData.val().matches(/^20(26|27|28|29)-[0-1][0-9]-[0-3][0-9]$/)" },
         "partnerId": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200" },
         "partnerName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120" },
         "tpCount": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 20 && newData.val() % 1 === 0" },
         "tvCount": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 20 && newData.val() % 1 === 0" },
         "reportingTime": { ".validate": "newData.isString() && newData.val().matches(/^([01][0-9]|2[0-3]):[0-5][0-9]$/)" },
         "events": {
-          ".validate": "newData.hasChildren()",
+          ".validate": "true",
           "$eventId": {
             ".validate": "newData.hasChildren(['name','date','startTime','endTime','venueName','mapsUrl','notes','traditionalListKey'])",
             "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120" },
-            "date": { ".validate": "newData.isString() && newData.val().matches(/^20(26|27)-[0-1][0-9]-[0-3][0-9]$/)" },
+            "date": { ".validate": "newData.isString() && newData.val().matches(/^20(26|27|28|29)-[0-1][0-9]-[0-3][0-9]$/)" },
             "startTime": { ".validate": "newData.isString() && (newData.val() === '' || newData.val().matches(/^([01][0-9]|2[0-3]):[0-5][0-9]$/))" },
             "endTime": { ".validate": "newData.isString() && (newData.val() === '' || newData.val().matches(/^([01][0-9]|2[0-3]):[0-5][0-9]$/))" },
             "venueName": { ".validate": "newData.isString() && newData.val().length <= 240" },
@@ -297,7 +299,7 @@
       "$event": {
         ".validate": "newData.hasChildren(['client','date'])",
         "client": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
-        "date": { ".validate": "newData.isString() && newData.val().matches(/^20(26|27)-[0-1][0-9]-[0-3][0-9]$/)" },
+        "date": { ".validate": "newData.isString() && newData.val().matches(/^20(26|27|28|29)-[0-1][0-9]-[0-3][0-9]$/)" },
         "event": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120" },
         "teams": {
           ".validate": "newData.hasChildren(['candid','traditional'])",
@@ -334,7 +336,7 @@
           "$eventId": {
             ".validate": "newData.hasChildren(['name','date','order'])",
             "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120" },
-            "date": { ".validate": "newData.isString() && newData.val().matches(/^20(26|27)-[0-1][0-9]-[0-3][0-9]$/)" },
+            "date": { ".validate": "newData.isString() && newData.val().matches(/^20(26|27|28|29)-[0-1][0-9]-[0-3][0-9]$/)" },
             "order": { ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 100" },
             "studioOnly": { ".validate": "newData.isBoolean()" },
             "createdAt": { ".validate": "newData.isNumber() && newData.val() <= now + 60000" },
@@ -401,6 +403,8 @@
         "updatedById": { ".validate": "newData.isString() && newData.val().length <= 80" },
         "updatedByName": { ".validate": "newData.isString() && newData.val().length <= 120" },
         "updatedByRole": { ".validate": "newData.isString() && (newData.val() === '' || newData.val() === 'bride' || newData.val() === 'groom' || newData.val() === 'family' || newData.val() === 'planner')" },
+        "reviewedAt": { ".validate": "newData.isNumber() && newData.val() <= now + 60000" },
+        "reviewDecision": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80" },
         "$other": { ".validate": false }
       }
     },
@@ -409,6 +413,10 @@
       ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
     },
 
+    "shotListsMeta": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
     "shotLists": {
       ".read": true,
       ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
@@ -432,7 +440,7 @@
         ".validate": "newData.hasChildren(['client','eventType','eventDate','team','crewName','startTime','endTime','items','tickedCount','totalCount','submittedAt'])",
         "client": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160" },
         "eventType": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120" },
-        "eventDate": { ".validate": "newData.isString() && newData.val().matches(/^20(26|27)-[0-1][0-9]-[0-3][0-9]$/)" },
+        "eventDate": { ".validate": "newData.isString() && newData.val().matches(/^20(26|27|28|29)-[0-1][0-9]-[0-3][0-9]$/)" },
         "team": { ".validate": "newData.val() === 'candid' || newData.val() === 'traditional'" },
         "crewName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120" },
         "startTime": { ".validate": "newData.isString() && newData.val().matches(/^([01][0-9]|2[0-3]):[0-5][0-9]$/)" },

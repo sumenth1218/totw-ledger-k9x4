@@ -315,40 +315,36 @@ function signOutCrew(){
 }
 async function claimStudioAddedProfile(nextProfile){
  const email=String(nextProfile.email||'').trim().toLowerCase();
- if(!email)return null;
- // Prefer Admin callable — client cannot migrate manual_* under RTDB rules.
+ if(!email)return {claimed:false,reason:'no_email',profile:null};
  try{
   const fn=firebase.app().functions('asia-southeast1');
   const result=await fn.httpsCallable('claimCrewStudioProfile')({
     email,name:nextProfile.name||'',phone:nextProfile.phone||'',role:nextProfile.role||'Other'
   });
-  if(result&&result.data&&result.data.profile)return result.data.profile;
- }catch(e){console.warn('claimCrewStudioProfile callable failed, falling back',e);}
- const matches=new Map();
- try{
-  const s=await db.ref('crewProfiles').orderByChild('email').equalTo(email).once('value');Object.entries(s.val()||{}).forEach(([id,p])=>{if(id!==user.uid&&p&&p.manual&&String(p.email||'').trim().toLowerCase()===email)matches.set(id,p)});
- }catch(e){return null;}
- const exact=[...matches.entries()];
- if(exact.length!==1)return null;
- const [pendingId,pending]=exact[0],[assignmentSnap,plannedSnap]=await Promise.all([db.ref('crewCheckins/assignments/'+pendingId).once('value'),db.ref('crewCheckins/plannedAssignments/'+pendingId).once('value')]),pendingAssignments=assignmentSnap.val()||{},pendingPlanned=plannedSnap.val()||{},eventIds=[...new Set([...Object.keys(pendingAssignments).filter(id=>pendingAssignments[id]===true),...Object.keys(pendingPlanned).filter(id=>pendingPlanned[id]===true)])],updates={};
- updates[`crewProfiles/${user.uid}`]={...pending,...nextProfile,manual:false,claimedFrom:pendingId,claimedAt:firebase.database.ServerValue.TIMESTAMP};updates[`crewProfiles/${pendingId}`]=null;
- await Promise.all(eventIds.map(async eventId=>{
-  const [eventSnap,attendanceSnap]=await Promise.all([db.ref(`crewCheckins/events/${eventId}/crew/${pendingId}`).once('value'),db.ref(`crewCheckins/attendance/${eventId}/${pendingId}`).once('value')]);
-  const member=eventSnap.val();if(member){updates[`crewCheckins/events/${eventId}/crew/${user.uid}`]={...member,name:nextProfile.name,phone:nextProfile.phone,email:nextProfile.email,claimedFrom:pendingId};updates[`crewCheckins/events/${eventId}/crew/${pendingId}`]=null;}
-  const attendance=attendanceSnap.val();if(attendance){updates[`crewCheckins/attendance/${eventId}/${user.uid}`]=attendance;updates[`crewCheckins/attendance/${eventId}/${pendingId}`]=null;}
-  updates[`crewCheckins/assignments/${user.uid}/${eventId}`]=pendingAssignments[eventId]===true?true:null;updates[`crewCheckins/assignments/${pendingId}/${eventId}`]=null;
-  updates[`crewCheckins/plannedAssignments/${user.uid}/${eventId}`]=true;updates[`crewCheckins/plannedAssignments/${pendingId}/${eventId}`]=null;
- }));
- try{await db.ref().update(updates);return updates[`crewProfiles/${user.uid}`];}catch(e){console.error(e);return null;}
+  const data=result&&result.data||{};
+  if(data.claimed===true&&data.profile)return {claimed:true,profile:data.profile};
+  return {claimed:false,reason:data.reason||'no_match',profile:data.profile||null,matchCount:data.matchCount};
+ }catch(e){
+  console.warn('claimCrewStudioProfile callable failed',e);
+  const err=new Error('Claim service unavailable. Ask the studio to redeploy claimCrewStudioProfile.');
+  err.code='claim-unavailable';
+  throw err;
+ }
 }
 async function saveProfile(){
  const name=document.getElementById('profileName').value.trim(),phone=phoneDigits(document.getElementById('profilePhone').value),role=document.getElementById('profileRole').value;
  if(!name||phone.length<10){showError('profileError','Please enter your name and a valid mobile number.');return}
  profile={name,phone,role,email:user.email||'',updatedAt:firebase.database.ServerValue.TIMESTAMP};
- try{const claimed=await claimStudioAddedProfile(profile);if(claimed)profile=claimed;else await db.ref('crewProfiles/'+user.uid).set(profile);toast(claimed?'Profile connected to your existing assignments':'Profile saved');await loadDashboard()}catch(e){showError('profileError','Could not save your profile. Please try again.')}
+ try{const result=await claimStudioAddedProfile(profile);if(result&&result.claimed&&result.profile){profile=result.profile;toast('Profile connected to your existing assignments');}else{if(result&&result.profile)profile={...profile,...result.profile};await db.ref('crewProfiles/'+user.uid).set({...profile,updatedAt:firebase.database.ServerValue.TIMESTAMP});if(result&&result.reason==='ambiguous')showError('profileError','More than one studio profile uses your Google email. Ask Tale of Two to clean duplicates.');else if(result&&result.reason==='no_match')toast('Profile saved. If assignments are missing, ask studio to use this exact Google email: '+(user.email||''));else toast('Profile saved');}await loadDashboard()}catch(e){showError('profileError',e&&e.code==='claim-unavailable'?e.message:'Could not save your profile. Please try again.')}
 }
 async function loadDashboard(){
  screen('loadingScreen');
+ if(profile&&!profile.claimedFrom&&profile.email){
+  try{
+   const claim=await claimStudioAddedProfile(profile);
+   if(claim&&claim.claimed&&claim.profile)profile=claim.profile;
+  }catch(e){console.warn('reclaim skipped',e);}
+ }
  const [a,l,m,em]=await Promise.all([db.ref('crewCheckins/assignments/'+user.uid).once('value'),db.ref('shotLists').once('value'),db.ref('shotMoods').once('value'),db.ref('shotEventMoods').once('value')]);
  assignments=a.val()||{};shotLists=l.val()||{};shotMoods=m.val()||{};shotEventMoods=em.val()||{};events={};
  const ids=Object.keys(assignments).filter(k=>assignments[k]===true);
@@ -386,7 +382,9 @@ function startAssignmentSync(){
   await Promise.all(ids.filter(id=>!events[id]).map(async id=>{try{const snap=await db.ref('crewCheckins/events/'+id).once('value');if(snap.exists())events[id]=snap.val();}catch(e){}}));
   Object.keys(events).forEach(id=>{if(!ids.includes(id))delete events[id];});
   syncAssignedEventListeners(ids);
-  if(activeId&&!events[activeId])showDashboard();else if(!activeId)renderDashboard();
+  if(activeId&&!events[activeId])showDashboard();
+  else if(eventParam&&!activeId&&events[eventParam])openEvent(eventParam);
+  else if(!activeId)renderDashboard();
   if(!first&&ids.some(id=>!previous.has(id)))toast('A new shoot assignment has been added.');
   first=false;
  };
@@ -402,7 +400,7 @@ function nextShootDate(activeList){
 function renderDashboard(){
  const el=document.getElementById('shootList');
  const list=Object.entries(events).sort((a,b)=>(a[1].date||'9999-12-31').localeCompare(b[1].date||'9999-12-31')||assignmentMinutes(a[1])-assignmentMinutes(b[1])||String(a[1].eventName||'').localeCompare(String(b[1].eventName||'')));
- if(!list.length){el.innerHTML='<div class="card empty">No assignments have been shared with you yet.</div>';return}
+ if(!list.length){el.innerHTML='<div class="card empty">No assignments yet. If studio already added you, confirm they used this Google email: '+esc(user&&user.email||'')+' — then ask them to tap Publish crew links.</div>';return}
  const card=([id,e])=>{
    const at=attendanceMap[id]||{};
    const dayState=eventDayState(e.date);let label=dayState==='today'?'Ready for check-in':'Upcoming',cl='';if(at.checkedOutAt){label='Completed';cl='ok'}else if(at.checkedInAt){label='In progress';cl='ok'}else if(dayState==='today'){label='Ready for check-in';cl='ok'}
@@ -458,7 +456,7 @@ function renderEvent(){
  const out=document.getElementById('eventBody');
  let html='';
  if(!attendance.checkedInAt){
-   html=detailCard()+assignmentCards();const hasLocation=!!activeEvent.mapsUrl;
+   html=detailCard()+assignmentCards();const hasLocation=!!(activeEvent.mapsUrl||(Number.isFinite(+activeEvent.venueLat)&&Number.isFinite(+activeEvent.venueLng)));
    const dayState=eventDayState(activeEvent.date);
    if(dayState==='today')html+=`<div class="action-stack"><button class="primary" id="checkBtn" ${hasLocation?'onclick="checkIn()"':'disabled'}>${hasLocation?'Check In':'Maps link pending'}</button></div><div id="geoOverrideBox"></div>${hasLocation?'':'<p class="confirm-note">Tale of Two will update the venue link before check-in.</p>'}`;
    else if(dayState==='upcoming')html+=`<div class="action-stack"><button class="primary" disabled>Check In available on ${esc(fmtDate(activeEvent.date))}</button></div><p class="confirm-note">Your assignment is ready. Check in on the shoot day.</p>`;
@@ -495,7 +493,8 @@ function showGeoOverride(d,limit,accuracy){
  box.innerHTML=`<div class="card" style="margin-top:10px"><strong style="display:block;font-size:14px">Phone GPS is ${esc(fmtDistance(d))} from the saved pin</strong><span style="display:block;font-size:12px;color:var(--soft);margin-top:6px;line-height:1.45">Allowed radius is about ${esc(fmtDistance(limit))} (includes GPS accuracy ${accuracy?accuracy+' m':'n/a'}). If you are at the shoot, confirm below — Studio will see it was a manual confirm.</span><div class="action-stack" style="margin-top:12px"><button class="secondary" onclick="confirmVenueCheckIn()">I am at the venue — check in</button><button class="quiet" onclick="checkIn()">Try GPS again</button></div></div>`;
 }
 async function finishCheckIn(lat,lng,accuracy,distance,bypassed){
- const now=Date.now(),me=currentCrew(),arrival=eventTimeParts(activeEvent.date,me.arrivalTime||me.reportTime||activeEvent.reportingTime),deadline=arrival?new Date(arrival.year,arrival.month-1,arrival.day,arrival.hour,arrival.minute).getTime():null,late=Number.isFinite(deadline)&&now>deadline,lateMinutes=late?Math.max(1,Math.ceil((now-deadline)/60000)):0;
+ if(attendance&&attendance.checkedInAt){toast('Already checked in.');renderEvent();return;}
+ const now=Date.now(),me=currentCrew(),arrival=eventTimeParts(activeEvent.date,assignmentTime(activeEvent)),deadline=arrival?Date.parse(`${String(arrival.year).padStart(4,'0')}-${String(arrival.month).padStart(2,'0')}-${String(arrival.day).padStart(2,'0')}T${String(arrival.hour).padStart(2,'0')}:${String(arrival.minute).padStart(2,'0')}:00+05:30`):null,late=Number.isFinite(deadline)&&now>deadline,lateMinutes=late?Math.min(1440,Math.max(1,Math.ceil((now-deadline)/60000))):0;
  let d=Number(distance)||0,hasPin=Number.isFinite(+activeEvent.venueLat)&&Number.isFinite(+activeEvent.venueLng);
  try{
   if(!hasPin){
@@ -504,7 +503,7 @@ async function finishCheckIn(lat,lng,accuracy,distance,bypassed){
     if(fixed){activeEvent.venueLat=+fixed.lat;activeEvent.venueLng=+fixed.lng;events[activeId]=activeEvent;await eventRef.update({venueLat:+fixed.lat,venueLng:+fixed.lng});d=distanceM(lat,lng,+fixed.lat,+fixed.lng);}
    }catch(pinError){d=0;}
   }
-  const payload={confirmedAt:attendance.confirmedAt||now,checkedInAt:now,checkinLat:lat,checkinLng:lng,gpsAccuracy:Math.round(accuracy||0),distanceM:Math.round(d),late,lateMinutes};
+  const payload={confirmedAt:attendance.confirmedAt||now,checkedInAt:now,checkinLat:lat,checkinLng:lng,gpsAccuracy:Math.round(accuracy||0),distanceM:Math.min(50000,Math.round(d)),late,lateMinutes};
   if(bypassed){payload.geofenceBypass=true;payload.geofenceNote='Crew confirmed on-site after GPS radius mismatch';}
   await persistAttendance(payload);
   pendingVenueCheckIn=null;
@@ -607,7 +606,7 @@ document.getElementById('eventScreen').addEventListener('touchend',e=>{
  if(dx>=75&&dy<=Math.max(55,dx*.65)&&elapsed<=900)showDashboard();
 },{passive:true});
 document.getElementById('eventScreen').addEventListener('touchcancel',()=>{swipeStartX=null;swipeStartY=0;swipeStartedAt=0},{passive:true});
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js?v=18').catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js?v=19').catch(()=>{}));
 </script>
 </body>
 </html>

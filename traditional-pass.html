@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
-<meta name="totw-build" content="v13.1.14-per-event-cards-2026-08-12">
+<meta name="totw-build" content="v13.1.20-a2z-audit-2026-08-14">
 <title>Traditional Day Pass · Tale of Two Weddings</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap');
@@ -25,9 +25,10 @@ function fmtDate(iso){if(!iso)return 'Date pending';return new Date(iso+'T12:00:
 function fmtTime(v){if(!v)return 'Time pending';const[h,m]=String(v).split(':').map(Number);return `${h%12||12}:${String(m||0).padStart(2,'0')} ${h>=12?'PM':'AM'}`}
 function duration(a,b){if(!a)return 'The working duration starts at check-in.';const end=b||Date.now(),min=Math.max(0,Math.round((end-a)/60000));return `${Math.floor(min/60)} hr ${min%60} min${b?' recorded':' so far'}`}
 function error(message){app.innerHTML=`<section class="card"><div class="error">${esc(message)}</div></section>`}
-async function boot(){if(token.length<40)return error('This day-pass link is incomplete. Ask the traditional partner or Tale of Two Weddings for a fresh link.');try{firebase.initializeApp(FIREBASE);auth=firebase.auth();db=firebase.database();fn=firebase.app().functions('asia-southeast1');await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);auth.onAuthStateChanged(async value=>{user=value||null;if(!user)return renderLogin();await claim();});}catch(e){error('The day pass could not connect. Please reload and try again.')}}
-function renderLogin(){app.innerHTML=`<section class="card"><div class="kicker">Secure captain access</div><h2 style="font-size:31px;margin-top:9px">Confirm who is responsible today</h2><p class="muted">Sign in with your Google account. You will receive access only to this wedding date, and you will not be added as permanent crew.</p><button class="btn" onclick="signIn()">Continue with Google</button></section>`}
-function signIn(){const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});auth.signInWithPopup(p).catch(e=>{if(e.code==='auth/popup-blocked')auth.signInWithRedirect(p);else if(e.code!=='auth/popup-closed-by-user')error('Google sign-in could not be completed. Open this link in Safari or Chrome.')})}
+function isEmbeddedBrowser(){return /\b(Instagram|FBAN|FBAV|FB_IAB|WhatsApp|Line\/|wv\b)/i.test(navigator.userAgent||'')}
+async function boot(){if(!/^[a-f0-9]{48}$/i.test(token))return error('This day-pass link is incomplete. Ask the traditional partner or Tale of Two Weddings for a fresh link.');try{firebase.initializeApp(FIREBASE);auth=firebase.auth();db=firebase.database();fn=firebase.app().functions('asia-southeast1');await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);auth.onAuthStateChanged(async value=>{user=value||null;if(!user)return renderLogin();await claim();});}catch(e){error('The day pass could not connect. Please reload and try again.')}}
+function renderLogin(){const embed=isEmbeddedBrowser();app.innerHTML=`<section class="card"><div class="kicker">Secure captain access</div><h2 style="font-size:31px;margin-top:9px">Confirm who is responsible today</h2><p class="muted">Sign in with your Google account. You will receive access only to this wedding date, and you will not be added as permanent crew.</p>${embed?'<div class="error" style="margin:12px 0">Open this same link in Safari or Chrome. Google sign-in does not work inside WhatsApp or Instagram.</div><button class="btn secondary" onclick="navigator.clipboard&&navigator.clipboard.writeText(location.href).then(()=>alert(\'Link copied. Paste it into Safari or Chrome.\')).catch(()=>prompt(\'Copy this link:\',location.href))">Copy link</button>':'<button class="btn" onclick="signIn()">Continue with Google</button>'}</section>`}
+function signIn(){if(isEmbeddedBrowser())return renderLogin();const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});auth.signInWithPopup(p).catch(e=>{if(e.code==='auth/popup-blocked')auth.signInWithRedirect(p);else if(e.code!=='auth/popup-closed-by-user')error('Google sign-in could not be completed. Open this link in Safari or Chrome.')})}
 function claimErrorMessage(err){
   const code=String(err&&err.code||'').replace(/^functions\//,'').toLowerCase();
   const raw=String(err&&err.message||'').trim();

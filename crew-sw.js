@@ -1,4 +1,4 @@
-const CACHE='tale-of-two-crew-v18-3km-radius';
+const CACHE='tale-of-two-crew-v19-audit-fix';
 const SHELL=['./crew.html','./crew-manifest.webmanifest','./totw-logo-black.png','./totw-logo-white.png','./totw-logo-square.jpg','./crew-icon-180.png','./crew-icon-512.png'];
 const CREW_FILES=new Set(SHELL.map(path=>new URL(path,self.location.href).pathname));
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
