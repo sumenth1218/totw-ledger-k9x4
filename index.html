@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.15-bulk-trad-passes-2026-08-12">
+<meta name="totw-build" content="v13.1.16-finance-cards-dupes-2026-08-13">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -3663,31 +3663,67 @@ function prodNewRoleRow(role,person,pay){
 }
 function prodPersonKey(name){return String(name||'').trim().toLowerCase().replace(/\s+/g,' ');}
 function prodRolePersonKey(r){return prodPersonKey(r&&r.person)+'|'+ciRoleToProdRole(r&&r.role);}
-function dedupeProdDayRoles(day){
+function prodEditDist(a,b){
+  a=String(a||'');b=String(b||'');if(a===b)return 0;if(!a.length)return b.length;if(!b.length)return a.length;
+  const rows=Array.from({length:a.length+1},(_,i)=>i);
+  for(let j=1;j<=b.length;j++){let prev=rows[0];rows[0]=j;for(let i=1;i<=a.length;i++){const cur=rows[i];rows[i]=a[i-1]===b[j-1]?prev:Math.min(prev+1,rows[i]+1,rows[i-1]+1);prev=cur;}}
+  return rows[a.length];
+}
+function prodNamesLikelySame(a,b){
+  const ka=prodPersonKey(a),kb=prodPersonKey(b);if(!ka||!kb)return false;if(ka===kb)return true;
+  if(ka.includes(kb)||kb.includes(ka))return true;
+  const ta=ka.split(' ').filter(Boolean),tb=kb.split(' ').filter(Boolean);if(!ta.length||!tb.length)return false;
+  const fa=ta[0],fb=tb[0];if(fa===fb)return true;
+  if(Math.min(fa.length,fb.length)>=4&&(fa.startsWith(fb)||fb.startsWith(fa)))return true;
+  if(fa.length>=4&&fb.length>=4&&prodEditDist(fa,fb)<=2)return true;
+  return false;
+}
+function prodMergeRoleRows(prev,r){
+  const pay=Math.max(+prev.pay||0,+r.pay||0);if(pay)prev.pay=pay;
+  if(r.opsSource&&(!prev.opsSource||prev.opsSource==='manual'))prev.opsSource=r.opsSource;
+  if(r.opsUid)prev.opsUid=r.opsUid;if(r.sourceKey)prev.sourceKey=r.sourceKey;
+  // Prefer the longer / fuller person name (Shoaib Zabih over Shoib).
+  if(String(r.person||'').trim().length>String(prev.person||'').trim().length)prev.person=String(r.person||'').trim();
+  prev.cards=prodMergeCards(prev.cards,r.cards,prev.role);
+  return prev;
+}
+function prodMergeCards(a,b,role){
+  if(NODATA.has(ciRoleToProdRole(role)))return [];
+  const aa=Array.isArray(a)?a:[],bb=Array.isArray(b)?b:[],n=Math.max(aa.length,bb.length,1);
+  const out=[];for(let i=0;i<n;i++){const x=aa[i]||{},y=bb[i]||{};out.push({a:!!(x.a||y.a),b:!!(x.b||y.b),v:!!(x.v||y.v)});}
+  return out;
+}
+function prodCardsStillSafe(day){
+  const roles=(day&&day.roles)||[];
+  let total=0,ok=0;
+  roles.forEach(r=>{if(NODATA.has(ciRoleToProdRole(r&&r.role)))return;(r.cards||[]).forEach(c=>{total++;if(c&&c.a&&c.b&&c.v)ok++;});});
+  return total>0&&ok===total;
+}
+function dedupeProdDayRoles(day,fuzzy=false){
   if(!day)return 0;
-  const roles=Array.isArray(day.roles)?day.roles:[];
+  const roles=Array.isArray(day.roles)?day.roles:Object.values(day.roles||{});
   const kept=[],byKey=new Map();
   let removed=0;
   roles.forEach(r=>{
     if(!r)return;
     const person=String(r.person||'').trim();
     if(!person){kept.push(r);return;}
-    const key=prodRolePersonKey(r),prev=byKey.get(key);
+    const role=ciRoleToProdRole(r.role),key=prodPersonKey(person)+'|'+role;
+    let prev=byKey.get(key);
+    if(!prev&&fuzzy){
+      for(const [k,row] of byKey){
+        if(!k.endsWith('|'+role))continue;
+        if(prodNamesLikelySame(row.person,person)){prev=row;removed++;prodMergeRoleRows(prev,r);return;}
+      }
+    }
     if(!prev){
-      const row={...r,role:ciRoleToProdRole(r.role),person};
+      const row={...r,role,person,cards:prodMergeCards(r.cards,null,role)};
       byKey.set(key,row);kept.push(row);return;
     }
-    removed++;
-    const pay=Math.max(+prev.pay||0,+r.pay||0);
-    if(pay)prev.pay=pay;
-    if(r.opsSource&&(!prev.opsSource||prev.opsSource==='manual'))prev.opsSource=r.opsSource;
-    if(r.opsUid)prev.opsUid=r.opsUid;
-    if(r.sourceKey)prev.sourceKey=r.sourceKey;
-    if((r.cards||[]).length>(prev.cards||[]).length)prev.cards=r.cards;
-    if(NODATA.has(prev.role))prev.cards=[];
-    else if(!(prev.cards||[]).length)prev.cards=[{a:false,b:false,v:false}];
+    removed++;prodMergeRoleRows(prev,{...r,person});
   });
   day.roles=kept;
+  if(day.fmt&&!prodCardsStillSafe(day))day.fmt=false;
   return removed;
 }
 function dedupeProdAllDays(p){
@@ -3736,7 +3772,7 @@ function pullCrewFromClientsDay(id,di,quiet){
 }
 function cleanProdDayDupes(id,di){
   const p=prods[id],day=p&&p.days&&p.days[di];if(!day)return;
-  const removed=dedupeProdDayRoles(day);
+  const exact=dedupeProdDayRoles(day,false),fuzzy=dedupeProdDayRoles(day,true),removed=exact+fuzzy;
   writeProd(id);
   toast(removed?`Removed ${removed} duplicate crew row${removed===1?'':'s'} on this day.`:'No duplicates on this day.');
   if(removed)log(`cleaned ${removed} duplicate finance crew rows — ${p.couple} · ${fmt(day.date)}`);
@@ -4378,7 +4414,7 @@ function dayCard(id,p,d,di,now){
       <div class="role-line">
         <input list="dlProdRoles" type="text" placeholder="Role (Drone, LED…)" value="${esc(r.role||'')}" onchange="rSet('${id}',${di},${ri},'role',this.value)" style="min-width:128px">
         <input class="person" list="dlPeople" type="text" placeholder="Who shot" value="${esc(r.person||'')}" onchange="rSet('${id}',${di},${ri},'person',this.value)">
-        <input class="payin" type="number" placeholder="₹ pay" value="${r.pay||''}" onchange="rSet('${id}',${di},${ri},'pay',this.value)">
+        <input class="payin" type="number" placeholder="₹ pay" value="${r.pay??''}" onchange="rSet('${id}',${di},${ri},'pay',this.value)">
         <button class="xs" onclick="rDel('${id}',${di},${ri})">×</button>
       </div>
       <div class="cardchips">${NODATA.has(r.role)?'<span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft)">No data to copy</span>':cards+`<button class="xs" style="border:1px dashed var(--line);border-radius:6px;padding:3px 8px;font-size:10px;font-family:var(--mono)" onclick="cAdd('${id}',${di},${ri})">+ CARD</button>`}</div>
@@ -4407,7 +4443,7 @@ function dayCard(id,p,d,di,now){
       <b>${fmt(d.date)}${evs.length?' · '+evs.map(esc).join(' + '):''}</b>
       <span style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
         <button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pEvOpen('${id}',${di})">${evEditP&&evEditP.id===id&&evEditP.di===di?'Close editor':'Edit date & events'}</button>
-        <input class="gb-in" type="number" placeholder="GB" value="${d.gb||''}" onchange="dSet('${id}',${di},'gb',this.value)">
+        <input class="gb-in" type="number" placeholder="GB" value="${d.gb??''}" onchange="dSet('${id}',${di},'gb',this.value)">
         <button class="xs" onclick="dDel('${id}',${di})">×</button>
       </span>
     </div>
@@ -6755,23 +6791,30 @@ function cwBuildOpsFinanceSync(results){
     let prodId=clientProdIds.get(clientKey)||state.prodId||'',prod=prodId&&(staged.get(prodId)||ciClone(prods[prodId]));
     if(!prod&&rows.length){prodId=uid('p');prod=cwBusinessProdSeed(state);clientProdIds.set(clientKey,prodId);}
     if(!prod)return;
-    prod.days=Array.isArray(prod.days)?prod.days:[];
+    prod.days=Array.isArray(prod.days)?prod.days:Object.values(prod.days||{});
     let day=prod.days.find(d=>d.date===date);
     if(!day){day={date,events:dayEvents.map(e=>e.name),gb:0,roles:[],fmt:false};prod.days.push(day);}
     day.events=[...new Set([...(Array.isArray(day.events)?day.events:[]),...dayEvents.map(e=>e.name)])];
-    // Sync roster from Team & prep. Preserve ₹ pay already entered in Finance & Reports.
-    const prior=Array.isArray(day.roles)?day.roles:[];
-    const payByUid=new Map(),payByKey=new Map();
+    // Sync roster from Team & prep. Preserve ₹ pay + Disk I/II/✓ already entered in Finance.
+    const prior=Array.isArray(day.roles)?day.roles:Object.values(day.roles||{});
+    const payByUid=new Map(),payByKey=new Map(),cardsByUid=new Map(),cardsByKey=new Map();
     prior.forEach(r=>{
       const pay=Number(r&&r.pay)||0;
-      if(r&&r.opsUid)payByUid.set(r.opsUid,Math.max(payByUid.get(r.opsUid)||0,pay));
-      const key=prodRolePersonKey(r);if(key&&key!=='|')payByKey.set(key,Math.max(payByKey.get(key)||0,pay));
+      if(r&&r.opsUid){payByUid.set(r.opsUid,Math.max(payByUid.get(r.opsUid)||0,pay));if(r.cards)cardsByUid.set(r.opsUid,r.cards);}
+      const key=prodRolePersonKey(r);if(key&&key!=='|'){payByKey.set(key,Math.max(payByKey.get(key)||0,pay));if(r.cards)cardsByKey.set(key,r.cards);}
     });
     const traditional=prior.filter(r=>r&&r.opsSource==='traditionalUnit');
     const projected=rows.map(({crewUid,person,role})=>{
       const prodRole=ciRoleToProdRole(role),key=`${prodPersonKey(person)}|${prodRole}`;
       const pay=crewUid&&payByUid.has(crewUid)?payByUid.get(crewUid):(payByKey.get(key)||0);
-      return {person,role:prodRole,pay:Number(pay)||0,opsSource:'teamPrep',opsDay:date,opsUid:crewUid||null,cards:NODATA.has(prodRole)?[]:[{a:false,b:false,v:false}]};
+      let cards=crewUid&&cardsByUid.has(crewUid)?cardsByUid.get(crewUid):(cardsByKey.get(key)||null);
+      if(!cards){
+        // Fuzzy match prior cards when names differ slightly (Shoib vs Shoaib Zabih).
+        for(const [k,c] of cardsByKey){if(k.endsWith('|'+prodRole)&&prodNamesLikelySame(k.split('|')[0],person)){cards=c;break;}}
+      }
+      if(NODATA.has(prodRole))cards=[];
+      else cards=prodMergeCards(cards,[{a:false,b:false,v:false}],prodRole);
+      return {person,role:prodRole,pay:Number(pay)||0,opsSource:'teamPrep',opsDay:date,opsUid:crewUid||null,cards};
     });
     const incomingKeys=new Set(projected.map(prodRolePersonKey)),incomingUids=new Set(projected.map(r=>r.opsUid).filter(Boolean));
     const leftovers=prior.filter(r=>{
@@ -6782,7 +6825,8 @@ function cwBuildOpsFinanceSync(results){
       return true;
     });
     day.roles=[...traditional,...leftovers,...projected];
-    dedupeProdDayRoles(day);
+    dedupeProdDayRoles(day,true);
+    if(day.fmt&&!prodCardsStillSafe(day))day.fmt=false;
     prod.days.sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
     staged.set(prodId,prod);
   });
