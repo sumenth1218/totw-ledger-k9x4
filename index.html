@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.16-finance-cards-dupes-2026-08-13">
+<meta name="totw-build" content="v13.1.18-shoot-day-recovery-2026-08-14">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -2741,7 +2741,7 @@ function start(){
   db.ref('crewProfiles').on('value',s=>{crewProfiles=s.val()||{};renderCheckinTeam();renderCrewProfiles();renderClientsWorkspace();renderTeamDirectory();renderStudioHome();});
   db.ref('crewDayCosts').on('value',s=>{crewDayCosts=s.val()||{};renderClientsWorkspace();renderStudioHome();cwScheduleOpsFinanceRefresh();});
   db.ref('traditionalUnits').on('value',s=>{traditionalUnits=s.val()||{};renderClientsWorkspace();renderStudioHome();});
-  db.ref('traditionalPasses').on('value',s=>{traditionalPasses=s.val()||{};renderClientsWorkspace();renderStudioHome();});
+  db.ref('traditionalPasses').on('value',s=>{traditionalPasses=s.val()||{};if(typeof cwTradSyncFinanceLabels==='function')cwTradSyncFinanceLabels();renderClientsWorkspace();renderStudioHome();if(typeof renderProd==='function')renderProd();});
   db.ref('crewCheckins/events').on('value',s=>{checkinEvents=s.val()||{};checkinEventsLoaded=true;cw11InvalidateCleanDrafts();renderCheckinEvents();ensureApprovedClientShoots();renderClientsWorkspace();renderTeamDirectory();renderStudioHome();cwScheduleOpsFinanceRefresh();});
   db.ref('crewCheckins/attendance').on('value',s=>{checkinAttendance=s.val()||{};ciBackfillVenuePins();renderCheckinEvents();renderClientsWorkspace();renderStudioHome();cwScheduleOpsFinanceRefresh();});
   db.ref('clientForms').on('value',s=>{clientForms=s.val()||{};clientFormsLoaded=true;renderClientForms();renderCheckinFormOptions();ensureApprovedClientShoots();renderMoodSec();renderStudioHome();});
@@ -3630,7 +3630,7 @@ function toast(msg){
 
 /* ================= PRODUCTION ================= */
 const EVQ=['Pre wedding','Mehndi','Mehendi','Haldi','Sangeet','Bride Making','Groom Making','Vratam','Baarat','Wedding','Reception','Cocktail','Engagement','Kotnam'];
-const ROLES=['Traditional Photo','Traditional Video','Candid Photo','Candid Video','Drone','LED','Live Streaming'];
+const ROLES=['Traditional Photo','Traditional Video','Traditional Photo & Video','Candid Photo','Candid Video','Drone','LED','Live Streaming'];
 const NODATA=new Set(['LED','Live Streaming']);
 const CI_ROLE_TO_PROD={
   'Candid Photographer':'Candid Photo',
@@ -3646,8 +3646,9 @@ const DAYMS=86400000;
 function ciRoleToProdRole(role){
   const r=String(role||'').trim();
   if(CI_ROLE_TO_PROD[r])return CI_ROLE_TO_PROD[r];
-  if(ROLES.includes(r))return r;
+  if(ROLES.includes(r)||r==='Traditional Photo & Video')return r;
   const low=r.toLowerCase();
+  if(low.includes('traditional unit')||low.includes('traditional photo &'))return 'Traditional Photo & Video';
   if(low.includes('drone'))return 'Drone';
   if(low.includes('led'))return 'LED';
   if(low.includes('live'))return 'Live Streaming';
@@ -4410,14 +4411,19 @@ function dayCard(id,p,d,di,now){
         <i class="tickbox ${c.v?'on':''}" onclick="cTog('${id}',${di},${ri},${ci},'v')" title="Verified — files opened and checked">✓</i>
         <i class="xs" onclick="cDel('${id}',${di},${ri},${ci})">×</i></span>`;
     }).join('');
+    const trad=r.opsSource==='traditionalUnit';
+    const tradNote=trad?`<div style="margin:4px 0 0;font:10.5px var(--body);color:var(--ink-soft)">Partner ${esc(r.partnerName||'Traditional supplier')}${r.composition?` · ${esc(r.composition)}`:''}${r.captainName?` · Captain logged in`:' · Waiting for captain login'}</div>`:'';
+    const roleVal=trad?'Traditional Photo & Video':(r.role||'');
+    const personPh=trad?(r.captainName?'Captain on ground':'Traditional Photo & Traditional Video'):'Who shot';
     return `<div class="role-row">
       <div class="role-line">
-        <input list="dlProdRoles" type="text" placeholder="Role (Drone, LED…)" value="${esc(r.role||'')}" onchange="rSet('${id}',${di},${ri},'role',this.value)" style="min-width:128px">
-        <input class="person" list="dlPeople" type="text" placeholder="Who shot" value="${esc(r.person||'')}" onchange="rSet('${id}',${di},${ri},'person',this.value)">
+        <input list="dlProdRoles" type="text" placeholder="Role (Drone, LED…)" value="${esc(roleVal)}" ${trad?'readonly style="min-width:168px;background:var(--surface-2)"':`onchange="rSet('${id}',${di},${ri},'role',this.value)" style="min-width:128px"`}>
+        <input class="person" list="dlPeople" type="text" placeholder="${esc(personPh)}" value="${esc(r.person||'')}" ${trad&&!r.captainName?'readonly style="background:var(--surface-2)"':''} onchange="rSet('${id}',${di},${ri},'person',this.value)">
         <input class="payin" type="number" placeholder="₹ pay" value="${r.pay??''}" onchange="rSet('${id}',${di},${ri},'pay',this.value)">
         <button class="xs" onclick="rDel('${id}',${di},${ri})">×</button>
       </div>
-      <div class="cardchips">${NODATA.has(r.role)?'<span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft)">No data to copy</span>':cards+`<button class="xs" style="border:1px dashed var(--line);border-radius:6px;padding:3px 8px;font-size:10px;font-family:var(--mono)" onclick="cAdd('${id}',${di},${ri})">+ CARD</button>`}</div>
+      ${tradNote}
+      <div class="cardchips">${NODATA.has(ciRoleToProdRole(r.role))?'<span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft)">No data to copy</span>':cards+`<button class="xs" style="border:1px dashed var(--line);border-radius:6px;padding:3px 8px;font-size:10px;font-family:var(--mono)" onclick="cAdd('${id}',${di},${ri})">+ CARD</button>`}</div>
     </div>`;
   }).join('');
   let evEd='';
@@ -8593,12 +8599,28 @@ function cw11PlanPayload(state,event,draft){
   };
   return {id,old,record,published,draft,event,state};
 }
+function cw11ShootHasLiveAttendance(shootId,oldRecord){
+  const all=checkinAttendance[shootId]||{};
+  if(Object.values(all).some(a=>a&&(a.checkedInAt||a.checkedOutAt)))return true;
+  // Also treat an already-published shoot as live for assignment purposes.
+  return !!(oldRecord&&(oldRecord.publicationStatus==='published'||oldRecord.planningOnly===false));
+}
 function cw11AppendPlanUpdates(updates,result){
-  const {id,old,record,published}=result;updates[`crewCheckins/events/${id}`]=record;
+  const {id,old,record,published}=result;
+  // Never re-lock a shoot that was already published or already has check-ins.
+  const keepLive=cw11ShootHasLiveAttendance(id,old);
+  if(keepLive&&record.planningOnly){
+    record.planningOnly=false;
+    record.publicationStatus='published';
+    if(!record.setupStatus||record.setupStatus==='planned_pending_approval'||record.setupStatus==='approval_pending')
+      record.setupStatus=Object.keys(record.crew||{}).length?'prepared':'crew_pending';
+  }
+  updates[`crewCheckins/events/${id}`]=record;
+  const share=published||keepLive||!record.planningOnly;
   const allUids=new Set([...Object.keys(old.crew||{}),...Object.keys(record.crew||{})]);
   allUids.forEach(uid=>{
     const person=record.crew&&record.crew[uid]||old.crew&&old.crew[uid],guest=cwIsGuestExtraUid(uid,person);
-    updates[`crewCheckins/assignments/${uid}/${id}`]=(!guest&&published&&record.crew[uid])?true:null;
+    updates[`crewCheckins/assignments/${uid}/${id}`]=(!guest&&share&&record.crew[uid])?true:null;
     updates[`crewCheckins/plannedAssignments/${uid}/${id}`]=(!guest&&record.crew[uid])?true:null;
   });
 }
@@ -8996,6 +9018,41 @@ function cwOpsSetPinterest(eventId,value){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
   cwOpsPersistDraft(cw11GetPlanDraft(state,event),'Pinterest saved.');
 }
+async function cwOpsForcePublishCrewLinks(){
+  const entry=cwEntry(),state=entry&&cwState(entry);if(!state){toast('Open a wedding first.');return;}
+  const shoots=[];
+  (state.events||[]).forEach(event=>{
+    const row=cw10ShootRow(state,event),id=row&&row[0],shoot=row&&row[1];
+    if(id&&shoot)shoots.push([id,shoot]);
+  });
+  // Also include any shoot linked by couple name/date for this wedding
+  const coupleKey=cwKey(state.entry.name);
+  Object.entries(checkinEvents||{}).forEach(([id,e])=>{
+    if(!e||cwKey(e.couple)!==coupleKey)return;
+    if(!shoots.some(([sid])=>sid===id))shoots.push([id,e]);
+  });
+  if(!shoots.length){toast('No Live day shoots found for this wedding yet. Save Team & prep first.');return;}
+  if(!confirm(`Publish crew check-in links for ${state.entry.name}?\n\nThis unlocks Crew App assignments for ${shoots.length} shoot record${shoots.length===1?'':'s'} (including any that were stuck as planning drafts).`))return;
+  const updates={},now=Date.now();
+  shoots.forEach(([id,shoot])=>{
+    updates[`crewCheckins/events/${id}/planningOnly`]=false;
+    updates[`crewCheckins/events/${id}/publicationStatus`]='published';
+    updates[`crewCheckins/events/${id}/setupStatus`]=Object.keys(shoot.crew||{}).length?'prepared':'crew_pending';
+    updates[`crewCheckins/events/${id}/updatedAt`]=now;
+    Object.entries(shoot.crew||{}).forEach(([uid,c])=>{
+      if(cwIsGuestExtraUid(uid,c))return;
+      updates[`crewCheckins/assignments/${uid}/${id}`]=true;
+      updates[`crewCheckins/plannedAssignments/${uid}/${id}`]=true;
+    });
+  });
+  try{
+    await db.ref().update(updates);
+    shoots.forEach(([id,shoot])=>{checkinEvents[id]={...shoot,planningOnly:false,publicationStatus:'published'};});
+    toast(`Crew links published for ${shoots.length} shoot${shoots.length===1?'':'s'}. Ask crew to reopen crew.html in Safari/Chrome.`);
+    log(`force-published crew links: ${state.entry.name} (${shoots.length})`);
+    renderCheckinEvents();renderClientsWorkspace();
+  }catch(err){console.error(err);toast('Could not publish crew links. Check Firebase rules and try again.');}
+}
 function cwOpsCopyCrewLink(eventId){
   const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
   const draft=cw11GetPlanDraft(state,event);
@@ -9205,13 +9262,80 @@ async function cwTradClearTypedTraditional(state,date){
 function cwTradPassEvents(state,date){
   const out={};(state.events||[]).filter(e=>e.date===date).forEach(event=>{const d=cw10CurrentDetails(state,event)||{};out[event.eventId]={name:String(event.name||'Event'),date:event.date,startTime:String(d.startTime||''),endTime:String(d.endTime||''),venueName:String(d.venueName||''),mapsUrl:String(d.mapsUrl||''),notes:String(d.notes||''),traditionalListKey:shotListKey(event.name)};});return out;
 }
+function cwTradFinanceRoleLabel(unit){
+  return 'Traditional Photo & Video';
+}
+function cwTradFinancePersonLabel(unit,pass){
+  const captain=String(pass&&pass.captainName||'').trim();
+  if(captain)return captain;
+  // Until the on-ground captain logs in, show the unit seats — not the partner supplier name.
+  return 'Traditional Photo & Traditional Video';
+}
+function cwTradFinanceRow(unit,pass,prior){
+  const role=cwTradFinanceRoleLabel(unit),person=cwTradFinancePersonLabel(unit,pass);
+  const cards=prior&&Array.isArray(prior.cards)?prior.cards:[{a:false,b:false,v:false}];
+  return {
+    person,role,pay:Number(unit.amount)||0,uid:unit.partnerId||null,
+    opsSource:'traditionalUnit',sourceKey:unit.unitId,opsDay:unit.date,
+    partnerName:unit.partnerName||'',partnerId:unit.partnerId||'',
+    composition:cwTradComposition(unit),captainName:String(pass&&pass.captainName||'').trim(),
+    cards
+  };
+}
 function cwTradProjectFinance(state,unit,updates,remove=false){
   let prodId=state.prodId||'',prod=prodId&&prods[prodId]?ciClone(prods[prodId]):null;if(!prod&&!remove){prodId=uid('p');prod=cwBusinessProdSeed(state);}if(!prod)return null;
   const days=Array.isArray(prod.days)?prod.days:Object.values(prod.days||{});let day=days.find(d=>d&&d.date===unit.date);
   if(!day&&!remove){day={date:unit.date,events:[],roles:[]};days.push(day);}if(!day)return null;
-  const roles=(Array.isArray(day.roles)?day.roles:Object.values(day.roles||{})).filter(r=>!(r&&r.opsSource==='traditionalUnit'&&r.sourceKey===unit.unitId));
-  if(!remove)roles.push({person:unit.partnerName,role:`Traditional Unit · ${cwTradComposition(unit)}`,pay:Number(unit.amount)||0,uid:unit.partnerId,opsSource:'traditionalUnit',sourceKey:unit.unitId});
+  const priorRoles=Array.isArray(day.roles)?day.roles:Object.values(day.roles||{});
+  const prior=priorRoles.find(r=>r&&r.opsSource==='traditionalUnit'&&r.sourceKey===unit.unitId);
+  const roles=priorRoles.filter(r=>!(r&&r.opsSource==='traditionalUnit'&&r.sourceKey===unit.unitId));
+  if(!remove){
+    const pass=traditionalPasses[unit.passId]||{};
+    roles.push(cwTradFinanceRow(unit,pass,prior));
+  }
   day.roles=roles;prod.days=days;prod.updatedAt=Date.now();prod.updatedBy=editor;updates[`prod/${prodId}`]=prod;return {prodId,prod};
+}
+function cwTradSyncFinanceLabels(){
+  if(!liveMode||!db||!prodsLoaded)return;
+  const updates={},now=Date.now();
+  Object.entries(prods||{}).forEach(([prodId,prod])=>{
+    if(!prod)return;const next=ciClone(prod);let changed=false;
+    const days=Array.isArray(next.days)?next.days:Object.values(next.days||{});
+    days.forEach(day=>{
+      if(!day||!Array.isArray(day.roles)&&!day.roles)return;
+      day.roles=Array.isArray(day.roles)?day.roles:Object.values(day.roles||{});
+      day.roles.forEach((r,i)=>{
+        if(!r||r.opsSource!=='traditionalUnit'||!r.sourceKey)return;
+        // Find matching unit/pass
+        let unit=null,pass=null;
+        Object.values(traditionalUnits||{}).forEach(byDate=>{
+          Object.values(byDate||{}).forEach(byUnit=>{
+            Object.values(byUnit||{}).forEach(u=>{if(u&&u.unitId===r.sourceKey)unit=u;});
+          });
+        });
+        if(!unit){
+          // Fallback: use stored partner/composition fields
+          const captain=String(r.captainName||'').trim();
+          const person=captain||'Traditional Photo & Traditional Video';
+          const role='Traditional Photo & Video';
+          if(r.person!==person||ciRoleToProdRole(r.role)!==role){day.roles[i]={...r,person,role};changed=true;}
+          return;
+        }
+        pass=traditionalPasses[unit.passId]||{};
+        const row=cwTradFinanceRow(unit,pass,r);
+        if(r.person!==row.person||ciRoleToProdRole(r.role)!==row.role||r.captainName!==row.captainName||r.composition!==row.composition){
+          day.roles[i]={...r,...row,pay:Number(r.pay)||Number(row.pay)||0,cards:r.cards||row.cards};
+          changed=true;
+        }
+      });
+    });
+    if(changed){next.days=days;next.updatedAt=now;updates[`prod/${prodId}`]=next;}
+  });
+  const keys=Object.keys(updates);if(!keys.length)return;
+  db.ref().update(updates).then(()=>{
+    keys.forEach(k=>{const id=k.split('/')[1];if(updates[k])prods[id]=updates[k];});
+    if(typeof renderProd==='function')renderProd();
+  }).catch(err=>console.warn('Traditional finance label sync failed',err));
 }
 async function cwTradSaveUnit(){
   const entry=cwEntry(),state=entry&&cwState(entry);if(!state)return;
@@ -9360,7 +9484,7 @@ function cw10RenderOperations(state){
   const nextLabel=next?`${cw10CompactDate(next.date)} · ${next.name} · ${ciFmtTime(cw10CurrentDetails(state,next).startTime||cw11GetPlanDraft(state,next).startTime)}`:'No events yet';
   const clientStatus=state.formId?(state.form.locked?'Client details locked':state.approval&&state.approval.status==='approved'?'Client details approved':state.events.some(e=>cw11EventApprovalState(state,e).approved)?'Partially approved':'Awaiting approval'):'No client link';
   const dirty=cw11DirtyDrafts().length;
-  const actions=`${state.events.length?`<button type="button" class="cw10-soft" onclick="exportClientCrewCrossCheckPDF()">Crew cross-check PDF</button>`:''}<button type="button" class="cw10-soft" onclick="cwOpenAddEventModal()">+ Add event</button>${dirty?`<button type="button" class="cw10-primary" onclick="cw11SaveAllPlans()">Save · ${dirty}</button>`:''}`;
+  const actions=`${state.events.length?`<button type="button" class="cw10-soft" onclick="exportClientCrewCrossCheckPDF()">Crew cross-check PDF</button>`:''}<button type="button" class="cw10-soft" onclick="cwOpsForcePublishCrewLinks()">Publish crew links</button><button type="button" class="cw10-soft" onclick="cwOpenAddEventModal()">+ Add event</button>${dirty?`<button type="button" class="cw10-primary" onclick="cw11SaveAllPlans()">Save · ${dirty}</button>`:''}`;
   if(!events.length){
     return `<div class="cw10-content cw-ops-page">${cw10PageHead('Team & prep',state.entry.name,'Client events appear here from the private link — draft crew even before approval.',cw10ClientActions(state))}
       <div class="cw10-empty-state"><h3>No client events yet</h3><p>Create or open the client link, then return here to assign crew, timings, lists and costs.</p><button type="button" class="cw10-soft" onclick="setClientSection('overview')">Back to Overview</button></div></div>`;

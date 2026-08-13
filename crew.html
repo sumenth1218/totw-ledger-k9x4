@@ -194,6 +194,7 @@ input::placeholder{color:var(--soft);opacity:1}
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
 <script>
 const FIREBASE={
   apiKey:"AIzaSyCV14o1M9eUANLRxG_JrDZH2aGfqY3kjA4",authDomain:"tot-ledger.firebaseapp.com",
@@ -313,8 +314,17 @@ function signOutCrew(){
  auth.signOut().then(()=>location.href='crew.html');
 }
 async function claimStudioAddedProfile(nextProfile){
- const matches=new Map(),email=String(nextProfile.email||'').trim().toLowerCase();
+ const email=String(nextProfile.email||'').trim().toLowerCase();
  if(!email)return null;
+ // Prefer Admin callable — client cannot migrate manual_* under RTDB rules.
+ try{
+  const fn=firebase.app().functions('asia-southeast1');
+  const result=await fn.httpsCallable('claimCrewStudioProfile')({
+    email,name:nextProfile.name||'',phone:nextProfile.phone||'',role:nextProfile.role||'Other'
+  });
+  if(result&&result.data&&result.data.profile)return result.data.profile;
+ }catch(e){console.warn('claimCrewStudioProfile callable failed, falling back',e);}
+ const matches=new Map();
  try{
   const s=await db.ref('crewProfiles').orderByChild('email').equalTo(email).once('value');Object.entries(s.val()||{}).forEach(([id,p])=>{if(id!==user.uid&&p&&p.manual&&String(p.email||'').trim().toLowerCase()===email)matches.set(id,p)});
  }catch(e){return null;}
@@ -329,7 +339,7 @@ async function claimStudioAddedProfile(nextProfile){
   updates[`crewCheckins/assignments/${user.uid}/${eventId}`]=pendingAssignments[eventId]===true?true:null;updates[`crewCheckins/assignments/${pendingId}/${eventId}`]=null;
   updates[`crewCheckins/plannedAssignments/${user.uid}/${eventId}`]=true;updates[`crewCheckins/plannedAssignments/${pendingId}/${eventId}`]=null;
  }));
- await db.ref().update(updates);return updates[`crewProfiles/${user.uid}`];
+ try{await db.ref().update(updates);return updates[`crewProfiles/${user.uid}`];}catch(e){console.error(e);return null;}
 }
 async function saveProfile(){
  const name=document.getElementById('profileName').value.trim(),phone=phoneDigits(document.getElementById('profilePhone').value),role=document.getElementById('profileRole').value;

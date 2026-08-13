@@ -1,0 +1,70 @@
+# SHOOT DAY RECOVERY — Traditional Pass + Crew Check-in
+
+## What broke (verified by agents)
+
+### 1) Traditional Day Pass (pink error)
+Captains see: “redeploy claimTraditionalDayPass”
+**Cause:** Cloud Function `claimTraditionalDayPass` is not successfully deployed / callable on `tot-ledger` (`asia-southeast1`).
+HTML page is already live. **Function deploy is the blocker.**
+
+### 2) Crew check-in links
+**Causes (ranked):**
+1. Shoot stuck as `planningOnly` → assignments cleared → “No assignments shared with you”
+2. Studio-added `manual_*` profiles can’t claim under RTDB rules (needs `claimCrewStudioProfile` function)
+3. Opening link inside WhatsApp in-app browser (Google sign-in fails)
+
+---
+
+## DO THIS NOW (in order)
+
+### A. Deploy the two claim functions (REQUIRED)
+From this project folder:
+
+```bash
+cd /Users/kakarlasumenth/Downloads/ledger-build/totw-ledger-k9x4
+npx firebase-tools login
+npx firebase-tools deploy --only functions:claim --project tot-ledger
+```
+
+(`functions-claim/` is a secret-free codebase with:
+- `claimTraditionalDayPass`
+- `claimCrewStudioProfile`)
+
+If deploy says Secret Manager / Failed to list functions:
+1. Open Google Cloud Console for project **tot-ledger**
+2. Enable: Cloud Functions, Cloud Build, Artifact Registry, Secret Manager
+3. Retry the deploy command above
+
+### B. Publish RTDB rules
+Firebase Console → Realtime Database → Rules → paste `database.rules.json` → Publish  
+(needed for traditional `eventCards`)
+
+### C. Upload GitHub / studio host zip
+Upload `totw-github-upload.zip` which now includes:
+- `index.html` (v13.1.18 — Publish crew links button + assignment lock fix)
+- `traditional-pass.html`
+- `crew.html` (claim callable fallback)
+- `database.rules.json`
+
+### D. Unlock today’s crew (in the app, after upload)
+1. Open the wedding → **Team & prep**
+2. Click **Publish crew links** (new button)
+3. Tell crew: open link in **Safari / Chrome**, not WhatsApp’s in-app browser
+4. Re-send WhatsApp crew reminder
+
+### E. Traditional captain (after function deploy)
+1. Team & prep → Traditional unit → **WhatsApp pass** (or **WhatsApp all days**) again
+2. Captain opens fresh link → Google → confirm
+
+### F. Immediate workaround if functions still won’t deploy
+**Crew:** Day-of operations → **Studio check-in** for each person (works without Crew App).  
+**Traditional:** cannot claim without the function — deploy is mandatory.
+
+---
+
+## Code fixes already in this package (v13.1.18)
+- Stop re-locking published / live shoots when saving Team & prep
+- **Publish crew links** emergency button
+- Crew App tries `claimCrewStudioProfile` callable first
+- Traditional finance names: TP&TV placeholder until captain logs in
+- Claim-only functions codebase without WhatsApp secrets
