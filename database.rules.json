@@ -258,6 +258,18 @@
             }
           }
         },
+        "eventCards": {
+          "$eventId": {
+            ".write": "auth != null && root.child('traditionalPasses').child($passId).child('captainUid').val() === auth.uid",
+            ".validate": "newData.hasChildren(['cardsUsed','status','updatedAt'])",
+            "cardsUsed": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100 && newData.val() % 1 === 0" },
+            "status": { ".validate": "newData.val() === 'with_captain' || newData.val() === 'copying' || newData.val() === 'handed_to_studio'" },
+            "handedTo": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length > 0 && newData.val().length <= 120)" },
+            "note": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 240)" },
+            "updatedAt": { ".validate": "newData.isNumber() && newData.val() <= now + 60000" },
+            "$other": { ".validate": false }
+          }
+        },
         "updatedAt": { ".write": "auth != null && root.child('traditionalPasses').child($passId).child('captainUid').val() === auth.uid", ".validate": "newData.isNumber() && newData.val() <= now + 60000" },
         "$other": { ".validate": false }
       }
