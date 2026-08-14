@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="totw-build" content="v13.1.21-a2z-round2-2026-08-14">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#F7F3EC">
@@ -214,7 +215,7 @@ const DEFAULT_SHOTS={
 };
 const MN=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const eventParam=new URLSearchParams(location.search).get('event')||'';
+const eventParam=()=>new URLSearchParams(location.search).get('event')||'';
 let auth=null,db=null,user=null,profile=null,assignments={},events={},attendanceMap={},activeId='',activeEvent=null,attendance={},shotLists={},shotMoods={},shotEventMoods={},items=[],checklistSections={},attendanceWrite=Promise.resolve(),checkoutReviewOpen=false,assignmentLiveRef=null,assignmentLiveCallback=null,eventLiveRefs={};
 
 function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id===id));window.scrollTo(0,0)}
@@ -297,7 +298,7 @@ async function boot(){
      const s=await db.ref('crewProfiles/'+u.uid).once('value');profile=s.val()||null;
      if(!profile){document.getElementById('profileName').value=u.displayName||'';screen('profileScreen');return}
      await loadDashboard();
-   }catch(e){screen('loginScreen');showError('loginError','Your crew access could not be loaded. Please try again.')}
+   }catch(e){console.warn('crew load failed',e);screen('profileScreen');showError('profileError','Your shoots could not be loaded. Check your connection and tap Save to retry.')}
  });
 }
 function signInCrew(){
@@ -326,8 +327,11 @@ async function claimStudioAddedProfile(nextProfile){
   return {claimed:false,reason:data.reason||'no_match',profile:data.profile||null,matchCount:data.matchCount};
  }catch(e){
   console.warn('claimCrewStudioProfile callable failed',e);
-  const err=new Error('Claim service unavailable. Ask the studio to redeploy claimCrewStudioProfile.');
-  err.code='claim-unavailable';
+  const code=String(e&&e.code||'');
+  const err=new Error(code==='functions/failed-precondition'
+   ?'Your Google account needs an email address to link studio assignments.'
+   :'Could not reach the assignment service. Check your connection and try again in a minute.');
+  err.code=code==='functions/failed-precondition'?'claim-precondition':'claim-unavailable';
   throw err;
  }
 }
@@ -335,7 +339,27 @@ async function saveProfile(){
  const name=document.getElementById('profileName').value.trim(),phone=phoneDigits(document.getElementById('profilePhone').value),role=document.getElementById('profileRole').value;
  if(!name||phone.length<10){showError('profileError','Please enter your name and a valid mobile number.');return}
  profile={name,phone,role,email:user.email||'',updatedAt:firebase.database.ServerValue.TIMESTAMP};
- try{const result=await claimStudioAddedProfile(profile);if(result&&result.claimed&&result.profile){profile=result.profile;toast('Profile connected to your existing assignments');}else{if(result&&result.profile)profile={...profile,...result.profile};await db.ref('crewProfiles/'+user.uid).set({...profile,updatedAt:firebase.database.ServerValue.TIMESTAMP});if(result&&result.reason==='ambiguous')showError('profileError','More than one studio profile uses your Google email. Ask Tale of Two to clean duplicates.');else if(result&&result.reason==='no_match')toast('Profile saved. If assignments are missing, ask studio to use this exact Google email: '+(user.email||''));else toast('Profile saved');}await loadDashboard()}catch(e){showError('profileError',e&&e.code==='claim-unavailable'?e.message:'Could not save your profile. Please try again.')}
+ let result=null;
+ try{result=await claimStudioAddedProfile(profile);}
+ catch(e){
+  try{
+   await db.ref('crewProfiles/'+user.uid).set({...profile,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+   toast('Profile saved. Linking your shoots now — reopen the app in a minute if any are missing.');
+   await loadDashboard();
+  }catch(saveErr){showError('profileError',e&&e.code==='claim-precondition'?e.message:'Could not save your profile. Check your connection and try again.');}
+  return;
+ }
+ try{
+  if(result&&result.claimed&&result.profile){profile=result.profile;toast('Profile connected to your existing assignments');}
+  else{
+   if(result&&result.profile)profile={...profile,...result.profile};
+   await db.ref('crewProfiles/'+user.uid).set({...profile,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+   if(result&&result.reason==='ambiguous')toast('Profile saved. Two studio profiles share your email — ask Tale of Two to merge them.');
+   else if(result&&result.reason==='no_match')toast('Profile saved. If shoots are missing, ask studio to use this Google email: '+(user.email||''));
+   else toast('Profile saved');
+  }
+  await loadDashboard();
+ }catch(e){showError('profileError','Could not save your profile. Please try again.')}
 }
 async function loadDashboard(){
  screen('loadingScreen');
@@ -352,7 +376,8 @@ async function loadDashboard(){
  document.getElementById('helloTitle').textContent=`Hello, ${(profile.name||'').split(' ')[0]||'there'}.`;
  renderDashboard();
  startAssignmentSync();
- if(eventParam&&events[eventParam])openEvent(eventParam);else screen('dashboardScreen');
+ const deep=eventParam();
+ if(deep&&events[deep])openEvent(deep);else screen('dashboardScreen');
 }
 function stopAssignmentSync(){
  if(assignmentLiveRef&&assignmentLiveCallback)assignmentLiveRef.off('value',assignmentLiveCallback);
@@ -383,7 +408,7 @@ function startAssignmentSync(){
   Object.keys(events).forEach(id=>{if(!ids.includes(id))delete events[id];});
   syncAssignedEventListeners(ids);
   if(activeId&&!events[activeId])showDashboard();
-  else if(eventParam&&!activeId&&events[eventParam])openEvent(eventParam);
+  else if(eventParam()&&!activeId&&events[eventParam()])openEvent(eventParam());
   else if(!activeId)renderDashboard();
   if(!first&&ids.some(id=>!previous.has(id)))toast('A new shoot assignment has been added.');
   first=false;
@@ -418,7 +443,8 @@ function renderDashboard(){
 }
 function showDashboard(){activeId='';activeEvent=null;checkoutReviewOpen=false;history.replaceState({},'',location.pathname);renderDashboard();screen('dashboardScreen')}
 async function openEvent(id){
- if(!events[id])return;activeId=id;activeEvent=events[id];items=[];checklistSections={};checkoutReviewOpen=false;history.replaceState({},'',`?event=${encodeURIComponent(id)}`);screen('loadingScreen');
+ if(!events[id]){try{const snap=await db.ref('crewCheckins/events/'+id).once('value');if(!snap.exists()){toast('That shoot is not open for you yet.');return;}events[id]=snap.val();}catch(e){toast('Could not open that shoot. Check your connection.');return;}}
+ activeId=id;activeEvent=events[id];items=[];checklistSections={};checkoutReviewOpen=false;history.replaceState({},'',`?event=${encodeURIComponent(id)}`);screen('loadingScreen');
  const s=await db.ref(`crewCheckins/attendance/${id}/${user.uid}`).once('value');attendance=s.val()||{};attendanceMap[id]=attendance;
  document.getElementById('eventDate').textContent=fmtDate(activeEvent.date);document.getElementById('eventCouple').textContent=activeEvent.couple;document.getElementById('eventName').textContent=eventNamesFor(activeEvent).join(' + ');
  renderEvent();screen('eventScreen');if(!attendance.openedAt)persistAttendance({openedAt:Date.now()}).catch(()=>{});
@@ -564,8 +590,8 @@ async function completeCheckOut(){
  const button=document.getElementById('checkoutBtn'),now=Date.now(),cleanSections=cleanChecklistSections();if(button){button.disabled=true;button.textContent='Checking out…';}
  try{
    const eventRef=db.ref(`crewCheckins/events/${activeId}`),latest=await eventRef.once('value');if(latest.exists()){activeEvent=latest.val();events[activeId]=activeEvent;}
-   let workStartAt=activeEvent.actualStartAt||attendance.checkedInAt||now;
-   if(!activeEvent.actualStartAt){try{const result=await eventRef.child('actualStartAt').transaction(value=>value||workStartAt);if(result.committed&&result.snapshot.val()){workStartAt=result.snapshot.val();activeEvent.actualStartAt=workStartAt;events[activeId]=activeEvent;}}catch(startError){}}
+   let workStartAt=attendance.checkedInAt||now;
+   if(!activeEvent.actualStartAt){try{const result=await eventRef.child('actualStartAt').transaction(value=>value||workStartAt);if(result.committed&&result.snapshot.val()){activeEvent.actualStartAt=result.snapshot.val();events[activeId]=activeEvent;}}catch(startError){}}
    const continuingToNextShoot=!!(next&&nextShootChoice==='continuing'),checkout={checkedOutAt:now,cardsUsed,cardCustody,continuingToNextShoot,updatedAt:now};
    if(continuingToNextShoot&&next)checkout.nextShootEventId=next[0];
    if(cardCustody==='handed_over'){checkout.handedToName=handoverName;checkout.handoverAt=now;}
@@ -581,11 +607,12 @@ function completedCards(){
  let detail=`${used} card${used===1?'':'s'} used.`;
  if(attendance.cardCustody==='handed_over'||attendance.cardCustody==='handed_to_lead')detail=`${used} card${used===1?'':'s'} handed to ${esc(attendance.handedToName||'the named person')}${attendance.handoverAt?' at '+esc(fmtClock(attendance.handoverAt)):''}.`;
  else if(attendance.cardCustody==='copying_with_me'||attendance.cardCustody==='taking_with_me')detail=`${used} card${used===1?'':'s'} taken by you for copying.`;
- const next=attendance.continuingToNextShoot&&attendance.nextShootEventId&&events[attendance.nextShootEventId]?[attendance.nextShootEventId,events[attendance.nextShootEventId]]:null;
+ const nextId=attendance.continuingToNextShoot?attendance.nextShootEventId:'';
+ const next=nextId?[nextId,events[nextId]||{}]:null;
  return `<div class="card" style="margin-top:12px;text-align:center"><div class="eyebrow">Checked out at ${esc(fmtClock(attendance.checkedOutAt))}</div><h2 style="font-size:24px">Coverage completed</h2></div><div class="card card-status"><strong>Memory-card status</strong><span>${detail}</span></div>${next?`<div class="section-title">Next shoot</div><div class="card"><b>${esc(next[1].eventName||'Next event')}</b><p style="font-size:11.5px;color:var(--soft);margin-top:5px">${esc(fmtTime(assignmentTime(next[1])))} · ${esc(next[1].venueName||'Venue pending')}</p><div class="action-stack"><button class="primary" onclick="openEvent('${esc(next[0])}')">Open Next Shoot</button></div></div>`:''}`;
 }
 async function submitLegacyChecklist(checkedOutAt,workStartAt){
- const me=currentCrew(),team=teamType(me.role),startedAt=workStartAt||activeEvent.actualStartAt||attendance.checkedInAt;if(!startedAt||!team)return;
+ const me=currentCrew(),team=teamType(me.role),startedAt=workStartAt||attendance.checkedInAt;if(!startedAt||!team)return;
  const tm=ms=>{const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${p(d.getHours())}:${p(d.getMinutes())}`;};
  const updates={};Object.entries(cleanChecklistSections()).forEach(([key,section])=>{const list=section.items||[];if(!list.length)return;updates[`shotChecklists/ci_${activeId}_${user.uid}_${key}`]={client:activeEvent.couple,eventType:section.name,eventDate:activeEvent.date,team,crewName:me.name,startTime:tm(startedAt),endTime:tm(checkedOutAt),items:list.map(x=>({t:x.t,done:!!x.done})),tickedCount:list.filter(x=>x.done).length,totalCount:list.length,submittedAt:Date.now(),crewEventId:activeId};});
  try{await db.ref().update(updates)}catch(e){}
@@ -606,7 +633,7 @@ document.getElementById('eventScreen').addEventListener('touchend',e=>{
  if(dx>=75&&dy<=Math.max(55,dx*.65)&&elapsed<=900)showDashboard();
 },{passive:true});
 document.getElementById('eventScreen').addEventListener('touchcancel',()=>{swipeStartX=null;swipeStartY=0;swipeStartedAt=0},{passive:true});
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js?v=19').catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('crew-sw.js?v=20').catch(()=>{}));
 </script>
 </body>
 </html>

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.20-a2z-audit-2026-08-14">
+<meta name="totw-build" content="v13.1.21-a2z-round2-2026-08-14">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -2658,6 +2658,8 @@ let seedLoaded = false, bookingsLoaded = false, enquiriesLoaded = false;
 let crewEventsLast = "";
 
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Safe interpolation for a JS string literal that also lives inside a double-quoted HTML attribute.
+const jsq = v => String(v==null?"":v).replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\r?\n/g,"\\n");
 const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 const p2 = n => String(n).padStart(2,'0');
 const fmt = iso => {const[y,m,d]=iso.split('-').map(Number);return MN[m-1].slice(0,3)+" "+d;};
@@ -3674,9 +3676,17 @@ function prodNamesLikelySame(a,b){
   const ka=prodPersonKey(a),kb=prodPersonKey(b);if(!ka||!kb)return false;if(ka===kb)return true;
   // Only treat as same when one full name properly contains the other (min 5 chars), or edit-distance on full key is tiny.
   if(Math.min(ka.length,kb.length)>=5&&(ka.includes(kb)||kb.includes(ka)))return true;
-  if(ka.length>=6&&kb.length>=6&&Math.abs(ka.length-kb.length)<=2&&prodEditDist(ka,kb)<=2)return true;
   const ta=ka.split(' ').filter(Boolean),tb=kb.split(' ').filter(Boolean);
+  // A shared surname is not identity: "Anil Reddy" and "Sunil Reddy" must stay apart, so the
+  // whole-key edit-distance shortcut only applies when both first names also line up.
+  if(ka.length>=6&&kb.length>=6&&Math.abs(ka.length-kb.length)<=2&&prodEditDist(ka,kb)<=2
+     &&(ta.length<2||tb.length<2||prodEditDist(ta[0],tb[0])<=1))return true;
   if(ta.length>=2&&tb.length>=2&&ta[0]===tb[0]&&ta[ta.length-1]===tb[tb.length-1])return true;
+  // Single-token spelling variants (Shoib / Shoaib)
+  if(ta.length===1&&tb.length===1&&Math.min(ka.length,kb.length)>=5&&prodEditDist(ka,kb)<=1)return true;
+  // Short name vs fuller name where the first token is a near-typo (Shoib / Shoaib Zabih)
+  const fa=ta[0]||'',fb=tb[0]||'';
+  if(fa&&fb&&(ta.length===1||tb.length===1)&&Math.min(fa.length,fb.length)>=4&&prodEditDist(fa,fb)<=1)return true;
   return false;
 }
 function prodMergeRoleRows(prev,r){
@@ -3711,7 +3721,7 @@ function dedupeProdDayRoles(day,fuzzy=false){
     if(!person){kept.push(r);return;}
     const role=ciRoleToProdRole(r.role);
     const isTrad=r.opsSource==='traditionalUnit';
-    const key=isTrad?('trad|'+(r.sourceKey||r.opsUid||prodPersonKey(person)+'|'+role)+'|'+role):(prodPersonKey(person)+'|'+role);
+    const key=isTrad?('trad|'+(r.sourceKey||r.opsUid||r.partnerId||r.uid||prodPersonKey(person)+'|'+role)+'|'+role):(prodPersonKey(person)+'|'+role);
     let prev=byKey.get(key);
     if(!prev&&fuzzy&&!isTrad){
       for(const [k,row] of byKey){
@@ -4816,7 +4826,7 @@ function renderTeam(){
   el.innerHTML=(rows.length?roleSpendHtml+`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Events</th><th style="text-align:right">Weddings</th><th style="text-align:right">Paid</th></tr>${rows.map(s=>{
     const pr=people[s.name.toLowerCase()];
     const open=openPerson===s.key;
-    const main=`<tr class="person-row${open?' on':''}" onclick="personTog('${s.key}')"><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill ${famClass(pr.style)}">${esc(pr.style)}</span>`:''} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
+    const main=`<tr class="person-row${open?' on':''}" onclick="personTog('${jsq(s.key)}')"><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill ${famClass(pr.style)}">${esc(pr.style)}</span>`:''} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
     if(!open)return main;
     const shoots=s.shoots.slice().sort((a,b)=>a.date<b.date?-1:1).map(sh=>`<div class="cost-line"><span>${fmt(sh.date)} · ${esc(sh.couple)}${sh.events.length?' · '+sh.events.map(esc).join(' + '):''} <span class="ev-pill ${famClass(sh.role)}" style="margin-left:2px">${esc(sh.role)}</span></span><span>${sh.pay?'₹'+sh.pay.toLocaleString('en-IN'):'—'}</span></div>`).join('');
     return main+`<tr class="person-detail"><td colspan="5"><div class="pd-wrap">${shoots}</div></td></tr>`;
@@ -5240,8 +5250,8 @@ function renderPlan(){
       const val=(pl.cells&&pl.cells[rk])||'';
       const need=pl.need&&pl.need[rk];
       const gap=need&&!val.trim();
-      const dot=!val.trim()?`<i class="need-dot ${need?'on':''}" onclick="planNeed('${r.key}','${rk}')" title="${need?'Needed — click to clear':'Mark this role needed'}"></i>`:'';
-      return `<td class="pcell${gap?' gap':''}${val.trim()?' filled':''}"><input list="dlPeople" value="${esc(val)}" placeholder="–" onchange="planCell('${r.key}','${rk}',this.value)">${dot}</td>`;
+      const dot=!val.trim()?`<i class="need-dot ${need?'on':''}" onclick="planNeed('${jsq(r.key)}','${jsq(rk)}')" title="${need?'Needed — click to clear':'Mark this role needed'}"></i>`:'';
+      return `<td class="pcell${gap?' gap':''}${val.trim()?' filled':''}"><input list="dlPeople" value="${esc(val)}" placeholder="–" onchange="planCell('${jsq(r.key)}','${jsq(rk)}',this.value)">${dot}</td>`;
     }).join('');
     const past=r.iso<=todayISO;
     const anyCrew=PLAN_ROLES.some(([rk])=>(pl.cells&&pl.cells[rk]||'').trim());
@@ -5250,25 +5260,25 @@ function renderPlan(){
     let pushBtn='';
     if(anyCrew){
       if(prodHit){
-        pushBtn=`<button type="button" class="push-btn pushed" onclick="planWrapToggle('${r.key}')">${wrapOpen?'⌃ Close':'Day wrap-up'}</button> `;
+        pushBtn=`<button type="button" class="push-btn pushed" onclick="planWrapToggle('${jsq(r.key)}')">${wrapOpen?'⌃ Close':'Day wrap-up'}</button> `;
       }else{
-        pushBtn=`<button type="button" class="push-btn" id="push-${r.key}" onclick="pushRow('${r.key}')">→ Production</button> `;
+        pushBtn=`<button type="button" class="push-btn" id="push-${esc(r.key)}" onclick="pushRow('${jsq(r.key)}')">→ Production</button> `;
       }
     }
-    const pushCell=`<td class="ppush">${pushBtn}<button class="xs" title="Remove this row" onclick="planDel('${r.key}')">×</button></td>`;
+    const pushCell=`<td class="ppush">${pushBtn}<button class="xs" title="Remove this row" onclick="planDel('${jsq(r.key)}')">×</button></td>`;
     const mainRow=`<tr class="${past?'ppast':''}"><td class="pd">${fmt(r.iso)}</td>${coupleCellHtml(r)}<td class="pe">${esc(r.event)}</td><td class="pl">${esc(r.loc||'')}</td>${cells}${pushCell}</tr>`;
     if(!prodHit||!wrapOpen)return mainRow;
     const payRows=(prodHit.day.roles||[]).map((c,ri)=>{
       if(!c.person||!String(c.person).trim())return '';
-      return `<div class="plan-wrap-pay"><span>${esc(c.person)} · ${esc(c.role)}</span><input type="number" min="0" placeholder="₹ pay" value="${c.pay||''}" onchange="planWrapPay('${r.key}',${ri},this.value)"></div>`;
+      return `<div class="plan-wrap-pay"><span>${esc(c.person)} · ${esc(c.role)}</span><input type="number" min="0" placeholder="₹ pay" value="${c.pay||''}" onchange="planWrapPay('${jsq(r.key)}',${ri},this.value)"></div>`;
     }).filter(Boolean).join('')||'<div class="plan-wrap-pay" style="color:var(--ink-soft)">No named crew on this production day yet.</div>';
     const gb=prodHit.day.gb||'';
     const dayCost=(prodHit.day.roles||[]).reduce((t,c)=>t+(+c.pay||0),0);
     const wrapRow=`<tr class="plan-wrap-row"><td colspan="${4+PLAN_ROLES.length+1}"><div class="pd-wrap plan-day-wrap">
       <div class="plan-wrap-head"><div><b>End of day · ${esc(pl.couple||r.couple)} · ${fmt(pl.iso||r.iso)}</b><small>Log data captured and crew pay for this shoot day.</small></div>${dayCost?`<span style="font-family:var(--mono);font-size:11px;color:var(--ink-soft)">Team ₹${dayCost.toLocaleString('en-IN')}</span>`:''}</div>
-      <div class="plan-wrap-gb"><span>Data captured</span><input class="gb-in" type="number" min="0" placeholder="GB" value="${gb||''}" onchange="planWrapGb('${r.key}',this.value)"><span>GB on cards</span></div>
+      <div class="plan-wrap-gb"><span>Data captured</span><input class="gb-in" type="number" min="0" placeholder="GB" value="${gb||''}" onchange="planWrapGb('${jsq(r.key)}',this.value)"><span>GB on cards</span></div>
       <div class="plan-wrap-pays">${payRows}</div>
-      <div class="plan-wrap-actions"><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pushRow('${r.key}')">Sync crew → Production</button><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="openProd('${prodHit.pid}',true);setView('business')">Open wedding file</button></div>
+      <div class="plan-wrap-actions"><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pushRow('${jsq(r.key)}')">Sync crew → Production</button><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="openProd('${prodHit.pid}',true);setView('business')">Open wedding file</button></div>
     </div></td></tr>`;
     return mainRow+wrapRow;
   }).join('');
@@ -5370,7 +5380,7 @@ function renderPlanTeam(month){
     const days=o.dates.size;
     const changes=o.assigned.filter(a=>a.isNew).length+o.removed.length;
     const chipHtml=changes?`<span class="chg-chip">${changes} change${changes!==1?'s':''}</span>`:'';
-    const main=`<tr class="person-row${open?' on':''}" onclick="planPersonTog('${o.key}')"><td>${esc(o.name)}${o.style?` <span class="ev-pill ${famClass(o.style)}">${esc(o.style)}</span>`:''}${chipHtml} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${days}</td><td class="num">${est?'₹'+est.toLocaleString('en-IN'):'—'}</td></tr>`;
+    const main=`<tr class="person-row${open?' on':''}" onclick="planPersonTog('${jsq(o.key)}')"><td>${esc(o.name)}${o.style?` <span class="ev-pill ${famClass(o.style)}">${esc(o.style)}</span>`:''}${chipHtml} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${days}</td><td class="num">${est?'₹'+est.toLocaleString('en-IN'):'—'}</td></tr>`;
     if(!open)return main;
     const monthLabel=month?MN[+month.slice(5)-1]+' '+month.slice(0,4):'All months';
     const sentLine=o.lastSentAt?`changes since last sent ${esc(fmt(new Date(o.lastSentAt).toISOString().slice(0,10)))}`:'no baseline yet — this is his first schedule';
@@ -5486,7 +5496,7 @@ function pushToProd(key){
       ...prev,
       date:pl.iso,
       events:events.length?events:(prev.events||[]),
-      roles:mergePlanDayRoles(prev.roles||[],crew)
+      roles:(()=>{const box={roles:mergePlanDayRoles(prev.roles||[],crew)};dedupeProdDayRoles(box,true);return box.roles;})()
     };
   }
   p.days.sort((a,b)=>a.date<b.date?-1:1);
@@ -7406,7 +7416,7 @@ async function saveCheckinEvent(){
   const updates={},published=!event.planningOnly;updates[`crewCheckins/events/${id}`]=event;Object.keys(old.crew||{}).forEach(uid=>{if(!crew[uid])updates[`crewCheckins/assignments/${uid}/${id}`]=null;});Object.keys(crew).forEach(uid=>updates[`crewCheckins/assignments/${uid}/${id}`]=published?true:null);
   try{await db.ref().update(updates);checkinEvents[id]=event;if(typeof cw11InvalidateCleanDrafts==='function')cw11InvalidateCleanDrafts();log(`${old.couple?'updated':'created'} crew check-in event: ${couple} — ${eventName}`);toast(event.planningOnly?'Internal planning draft saved. Client approval is still required before sharing.':mapsUrl?'Event link ready.':'Event saved — remember to add the Maps link.');toggleCheckinForm(false);if(!event.planningOnly)setTimeout(()=>shareCheckinEvent(id,false),120);}catch(e){res.className='check-result show clash';res.innerHTML='<b>Could not save</b>Please try again.';}
 }
-function eventShareText(id){const e=checkinEvents[id];if(!e)return '';return `Hi team — reminder for tomorrow’s shoot.\n\n${e.couple} — ${e.eventName}\nReporting time: ${ciFmtTime(e.reportingTime)}\nScheduled shoot start: ${ciFmtTime(e.functionStart||e.scheduledStart)}\nVenue: ${e.venueName||'Open the link for directions'}\n\nShoot link:\n${ciCrewUrl(id)}`;}
+function eventShareText(id){const e=checkinEvents[id];if(!e)return '';return `Hi team — reminder for tomorrow’s shoot.\n\n${e.couple} — ${e.eventName}\nReporting time: ${ciFmtTime(e.reportingTime)}\nScheduled shoot start: ${ciFmtTime(e.functionStart||e.scheduledStart)}\nVenue: ${e.venueName||'Open the link for directions'}\n\nShoot link (open in Safari or Chrome, not inside WhatsApp):\n${ciCrewUrl(id)}`;}
 function ciEventNames(e){const raw=e&&e.eventNames,a=Array.isArray(raw)?raw:(raw&&typeof raw==='object'?Object.values(raw):[]);return a.length?a:[e&&(e.eventName||e.checklistType)||'Event'];}
 function shareCheckinEvent(id,open=true){
   const e=checkinEvents[id];if(e&&e.planningOnly){toast('Approve this client event before sharing it with crew.');return;}
@@ -7427,9 +7437,9 @@ async function saveActualStart(id){
   const input=document.getElementById('ciStart_'+id),v=input&&input.value,e=checkinEvents[id];if(e&&e.planningOnly){toast('Approve this client event before starting the crew workflow.');return;}const ms=v&&e&&e.date?ciIstMs(e.date,v):null;if(!ms){toast('Enter the actual shoot start time, or tap Skip.');return;}try{await db.ref(`crewCheckins/events/${id}/actualStartAt`).set(ms);await db.ref(`crewCheckins/events/${id}/updatedAt`).set(Date.now());if(checkinEvents[id])checkinEvents[id].actualStartAt=ms;ciActualStartSkipped.delete(id);toast('Actual shoot start saved.');setTimeout(()=>syncCheckinSubmissions(id),250);renderCheckinEvents();}catch(e){toast('Could not save the shoot start.');}
 }
 async function syncCheckinSubmissions(id){
-  const e=checkinEvents[id],all=checkinAttendance[id]||{};if(!e||!e.actualStartAt)return;
+  const e=checkinEvents[id],all=checkinAttendance[id]||{};if(!e)return;
   const tm=ms=>{const d=new Date(ms),p=n=>String(n).padStart(2,'0');return `${p(d.getHours())}:${p(d.getMinutes())}`;};
-  const updates={};Object.entries(all).forEach(([uid,a])=>{const c=e.crew&&e.crew[uid],team=c&&ciTeamType(c.role);if(!c||!a.checkedOutAt||!team)return;const sections=a.checklistSections&&typeof a.checklistSections==='object'?a.checklistSections:{},legacy=Array.isArray(a.checklistItems)?a.checklistItems:Object.values(a.checklistItems||{});if(Object.keys(sections).length)Object.entries(sections).forEach(([key,section])=>{const its=Array.isArray(section)?section:Object.values(section&&section.items||section||{}),name=section&&section.name||ciEventNames(e).find(x=>shotListKey(x)===key)||key;if(!its.length)return;updates[`shotChecklists/ci_${id}_${uid}_${key}`]={client:e.couple,eventType:name,eventDate:e.date,team,crewName:c.name,startTime:tm(e.actualStartAt),endTime:tm(a.checkedOutAt),items:its.map(x=>({t:x.t,done:!!x.done})),tickedCount:its.filter(x=>x&&x.done).length,totalCount:its.length,submittedAt:Date.now(),crewEventId:id};});else if(legacy.length){const name=ciEventNames(e)[0];updates[`shotChecklists/ci_${id}_${uid}`]={client:e.couple,eventType:name,eventDate:e.date,team,crewName:c.name,startTime:tm(e.actualStartAt),endTime:tm(a.checkedOutAt),items:legacy.map(x=>({t:x.t,done:!!x.done})),tickedCount:legacy.filter(x=>x&&x.done).length,totalCount:legacy.length,submittedAt:Date.now(),crewEventId:id};}});if(Object.keys(updates).length)await db.ref().update(updates);
+  const updates={};Object.entries(all).forEach(([uid,a])=>{const c=e.crew&&e.crew[uid],team=c&&ciTeamType(c.role);if(!c||!a.checkedOutAt||!team)return;const sections=a.checklistSections&&typeof a.checklistSections==='object'?a.checklistSections:{},legacy=Array.isArray(a.checklistItems)?a.checklistItems:Object.values(a.checklistItems||{});if(Object.keys(sections).length)Object.entries(sections).forEach(([key,section])=>{const its=Array.isArray(section)?section:Object.values(section&&section.items||section||{}),name=section&&section.name||ciEventNames(e).find(x=>shotListKey(x)===key)||key;if(!its.length)return;updates[`shotChecklists/ci_${id}_${uid}_${key}`]={client:e.couple,eventType:name,eventDate:e.date,team,crewName:c.name,startTime:tm(a.checkedInAt||e.actualStartAt),endTime:tm(a.checkedOutAt),items:its.map(x=>({t:x.t,done:!!x.done})),tickedCount:its.filter(x=>x&&x.done).length,totalCount:its.length,submittedAt:Date.now(),crewEventId:id};});else if(legacy.length){const name=ciEventNames(e)[0];updates[`shotChecklists/ci_${id}_${uid}`]={client:e.couple,eventType:name,eventDate:e.date,team,crewName:c.name,startTime:tm(a.checkedInAt||e.actualStartAt),endTime:tm(a.checkedOutAt),items:legacy.map(x=>({t:x.t,done:!!x.done})),tickedCount:legacy.filter(x=>x&&x.done).length,totalCount:legacy.length,submittedAt:Date.now(),crewEventId:id};}});if(Object.keys(updates).length)await db.ref().update(updates);
 }
 let ciEventCardsOpen=new Set(),ciCoupleGroupsOpen=new Set(),ciCoupleGroupEvents=new Map(),ciCompletedOpen=false,ciActualStartSkipped=new Set();
 async function skipActualStart(id){ciActualStartSkipped.add(id);renderCheckinEvents();}
@@ -7597,13 +7607,6 @@ function ciInlineCrewEditor(id,e){
   return `<div class="ci-crew-overview"><div class="ci-crew-overview-head"><label>Team assignment</label><span>${summary.filled}/${summary.required} roles filled · ${assigned.length} crew</span></div>${roles?`<div class="ci-crew-overview-roles">${roles}</div>`:'<div class="ci-assignment-empty" style="margin-top:10px">Assign crew in Weddings → Team &amp; prep.</div><div style="margin-top:10px"><button class="btn-mini" onclick="cwOpenWeddingOperationsFromShoot(\''+id+'\')">Open Team & prep</button></div>'}</div>`;
 }
 function focusCiCrew(id){cwOpenWeddingOperationsFromShoot(id);}
-function openCiAssignmentBoard(groupId){
-  const ids=(ciCoupleGroupEvents.get(groupId)||[]).filter(id=>checkinEvents[id]);
-  if(!ids.length){toast('No active events are available for this couple.');return;}
-  cwOpenWeddingOperationsFromShoot(ids[0]);
-}
-function openCiAssignmentBoardByEvent(id){cwOpenWeddingOperationsFromShoot(id);}
-function openCiAssignmentBoardWithEvents(ids,focusId){cwOpenWeddingOperationsFromShoot(focusId||(ids&&ids[0]));}
 function cwOpenWeddingOperationsFromShoot(shootId){
   const e=checkinEvents[shootId];
   if(!e){toast('That shoot is not available.');return;}
@@ -8200,7 +8203,7 @@ function cw10RenderShootRecord(state,event){
     <div class="cw10-record-field"><span>First check-in</span><strong>${esc(ciClock(firstIn))}</strong><small>${late?late+' late check-in'+(late===1?'':'s'):'Team arrival recorded'}</small></div>
     <div class="cw10-record-field"><span>Final checkout</span><strong>${lastOut?esc(ciClock(lastOut)):'In progress'}</strong><small>${outs.length}/${crew.length} checked out${allOut?' · Complete':''}</small></div>
     <div class="cw10-record-field"><span>Cards used</span><strong>${cards.recorded?cards.total:'Pending'}</strong><small>${cards.recorded}/${crew.length} crew reports</small></div>
-    <div class="cw10-record-field"><span>Card handover</span><strong title="${esc(handover)}">${esc(handover)}</strong><small>${lastOut?esc(ciDuration(shoot.actualStartAt||firstIn,lastOut)):'Shoot active'}</small></div>
+    <div class="cw10-record-field"><span>Card handover</span><strong title="${esc(handover)}">${esc(handover)}</strong><small>${lastOut?esc(ciDuration(firstIn,lastOut)):'Shoot active'}</small></div>
   </div><div class="cw10-panel-actions"><button type="button" class="cw10-soft" onclick="cwOpenShoot('${id}')">Open full shoot record</button></div>`;
 }
 function cw10ProductionEmpty(state,source='deliveries'){
@@ -8410,7 +8413,7 @@ function cw11IsPublished(state,event){
   if(!state||!event)return false;
   if(event.studioOnly||(state.form&&state.form.events&&state.form.events[event.eventId]&&state.form.events[event.eventId].studioOnly))return true;
   const shoot=cw10ShootRow(state,event);
-  if(shoot&&shoot[1]&&(shoot[1].planningOnly===false||shoot[1].publicationStatus==='published'))return true;
+  if(shoot&&shoot[1]&&shoot[1].publicationStatus==='published')return true;
   const a=state.approval||{},eventApproval=a.events&&a.events[event.eventId],globalSnapshot=a.snapshot&&a.snapshot.events&&a.snapshot.events[event.eventId];
   return !!(a.status==='approved'||eventApproval&&eventApproval.status==='approved'||['changes_pending','partially_approved'].includes(a.status)&&globalSnapshot);
 }
@@ -8801,7 +8804,7 @@ function cwOpsSyncRequirements(draft){
 function cwOpsIsTraditional(role){return CW11_TRADITIONAL_ROLES.includes(role||'');}
 function cwOpsEndTimestamp(draft){
   if(!draft||!draft.date||!/^\d{2}:\d{2}$/.test(draft.actualClientEndTime||''))return null;
-  const ms=new Date(`${draft.date}T${draft.actualClientEndTime}:00`).getTime();
+  const ms=ciIstMs(draft.date,draft.actualClientEndTime);
   return Number.isFinite(ms)?ms:null;
 }
 function cwOpsDayCrewRows(state,date,uid){
@@ -9063,8 +9066,7 @@ async function cwOpsForcePublishCrewLinks(){
   try{
     await db.ref().update(updates);
     withCrew.forEach(([id,shoot])=>{checkinEvents[id]={...shoot,planningOnly:false,publicationStatus:'published'};});
-    copyText(links.join('\n\n'),`Crew links published for ${withCrew.length} shoot${withCrew.length===1?'':'s'} · copied.`);
-    toast(`Published ${withCrew.length} crew link${withCrew.length===1?'':'s'}. Ask crew to open in Safari/Chrome.`);
+    copyText(links.join('\n\n'),`Published ${withCrew.length} crew link${withCrew.length===1?'':'s'} · copied. Ask crew to open in Safari/Chrome.`);
     log(`force-published crew links: ${state.entry.name} (${withCrew.length})`);
     renderCheckinEvents();renderClientsWorkspace();
   }catch(err){console.error(err);toast('Could not publish crew links. Check Firebase rules and try again.');}
@@ -9275,8 +9277,14 @@ async function cwTradClearTypedTraditional(state,date){
   }
   return {removed,locked,names:[...new Set(names)],drafts:dirty};
 }
+function cwTradPassTime(v){
+  const m=String(v||'').trim().match(/^(\d{1,2}):(\d{2})$/);
+  if(!m)return '';
+  const h=Number(m[1]);
+  return h>=0&&h<=23?`${String(h).padStart(2,'0')}:${m[2]}`:'';
+}
 function cwTradPassEvents(state,date){
-  const out={};(state.events||[]).filter(e=>e.date===date).forEach(event=>{const d=cw10CurrentDetails(state,event)||{};out[event.eventId]={name:String(event.name||'Event'),date:event.date,startTime:String(d.startTime||''),endTime:String(d.endTime||''),venueName:String(d.venueName||''),mapsUrl:String(d.mapsUrl||''),notes:String(d.notes||''),traditionalListKey:shotListKey(event.name)};});return out;
+  const out={};(state.events||[]).filter(e=>e.date===date).forEach(event=>{const d=cw10CurrentDetails(state,event)||{};out[event.eventId]={name:String(event.name||'Event').slice(0,120),date:event.date,startTime:cwTradPassTime(d.startTime),endTime:cwTradPassTime(d.endTime),venueName:String(d.venueName||'').slice(0,240),mapsUrl:String(d.mapsUrl||'').slice(0,1000),notes:String(d.notes||'').slice(0,1000),traditionalListKey:String(shotListKey(event.name)||'').slice(0,160)};});return out;
 }
 function cwTradFinanceRoleLabel(unit){
   return 'Traditional Photo & Video';
@@ -9380,11 +9388,15 @@ function cwTradWaPhone(partnerId){
   const phone=ciPhone(crewProfiles[partnerId]?.phone||'');
   return phone?(phone.length===10?'91'+phone:phone):'';
 }
-function cwTradOpenWhatsApp(phone,message,fallbackLabel){
-  if(phone)window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`,'_blank','noopener');
-  else copyText(message,fallbackLabel||'Day-pass brief copied — partner phone missing.');
+function cwTradOpenWhatsApp(phone,message,fallbackLabel,win){
+  if(!phone){copyText(message,fallbackLabel||'Day-pass brief copied — partner phone missing.');return false;}
+  const url=`https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  if(win&&!win.closed){win.location.href=url;return true;}
+  if(window.open(url,'_blank','noopener'))return true;
+  copyText(message,fallbackLabel||'WhatsApp was blocked — message copied instead.');
+  return false;
 }
-async function cwTradBuildInvite(unit,{confirmReplace=true}={}){
+async function cwTradBuildInvite(unit,{confirmReplace=true,state=null}={}){
   const pass=traditionalPasses[unit.passId]||{};
   if(pass.checkedInAt)return {ok:false,reason:'started',unit};
   if(pass.checkedOutAt)return {ok:false,reason:'finished',unit};
@@ -9405,29 +9417,30 @@ async function cwTradBuildInvite(unit,{confirmReplace=true}={}){
   updates[`traditionalPasses/${unit.passId}/tvCount`]=Number(unit.tvCount)||0;
   updates[`traditionalPasses/${unit.passId}/reportingTime`]=unit.reportingTime||'09:00';
   updates[`traditionalPasses/${unit.passId}/partnerName`]=unit.partnerName||'Traditional Partner';
-  try{
-    const entry=cwEntry(),state=entry&&cwState(entry);
-    if(state)updates[`traditionalPasses/${unit.passId}/events`]=cwTradPassEvents(state,unit.date);
-  }catch(e){}
+  const weddingState=state&&cwTradWeddingKey(state)===unit.weddingKey?state:null;
+  if(weddingState)updates[`traditionalPasses/${unit.passId}/events`]=cwTradPassEvents(weddingState,unit.date);
+  else console.warn('cwTradBuildInvite: events not refreshed (wedding mismatch)',unit.passId);
   await db.ref().update(updates);
   const urlHref=studioPublicUrl('traditional-pass.html',{t:token});
   return {ok:true,unit,token,url:urlHref,pass};
 }
 async function cwTradIssuePass(unitId,whatsapp=false){
   const entry=cwEntry(),state=entry&&cwState(entry),unit=state&&cwTradFind(state,unitId);if(!unit||!state)return;
+  const waWin=whatsapp?window.open('about:blank','_blank'):null;
   try{
-    const built=await cwTradBuildInvite(unit,{confirmReplace:true});
+    const built=await cwTradBuildInvite(unit,{confirmReplace:true,state});
     if(!built.ok){
+      if(waWin&&!waWin.closed)waWin.close();
       if(built.reason==='started')toast('This traditional unit has already started. Its captain pass cannot be replaced.');
       return;
     }
     const events=cwTradEventNamesForDate(state,unit.date);
     const message=`Traditional team day pass — ${state.entry.name}\n${ciDateLong(unit.date)} · Reporting ${ciFmtTime(unit.reportingTime)}\nRequired: ${cwTradComposition(unit)}${events.length?`\nEvents: ${events.join(', ')}`:''}\n\nPartner: please forward this secure link only to the on-ground captain for this date.\nOpen in Safari or Chrome (not inside WhatsApp):\n${built.url}`;
-    if(whatsapp)cwTradOpenWhatsApp(cwTradWaPhone(unit.partnerId),message,'Day-pass brief copied — this partner has no phone saved.');
-    else copyText(built.url,'Traditional captain pass copied.');
-    toast(whatsapp?'Traditional day brief ready in WhatsApp.':'Captain pass copied.');
+    if(whatsapp){
+      if(cwTradOpenWhatsApp(cwTradWaPhone(unit.partnerId),message,'Day-pass brief copied — this partner has no phone saved.',waWin))toast('Traditional day brief ready in WhatsApp.');
+    }else copyText(built.url,'Captain pass copied.');
     renderClientsWorkspace();
-  }catch(err){console.error('Traditional invite failed',err);toast('Could not create the temporary captain pass.');}
+  }catch(err){if(waWin&&!waWin.closed)waWin.close();console.error('Traditional invite failed',err);toast('Could not create the temporary captain pass.');}
 }
 async function cwTradIssueAllPasses(){
   const entry=cwEntry(),state=entry&&cwState(entry);if(!state)return;
@@ -9437,30 +9450,37 @@ async function cwTradIssueAllPasses(){
   if(!issuable.length){toast(skipped?'All traditional days have already started or finished.':'Nothing to send.');return;}
   const replaceCount=issuable.filter(u=>(traditionalPasses[u.passId]||{}).captainUid).length;
   if(!confirm(`Create captain day passes for all ${issuable.length} traditional day${issuable.length===1?'':'s'} on ${state.entry.name}?${replaceCount?`\n\n${replaceCount} day${replaceCount===1?' has':'s have'} an existing captain and will be replaced.`:''}${skipped?`\n\n${skipped} started/finished day${skipped===1?'':'s'} will be skipped.`:''}`))return;
+  const partnerOrder=[];
+  issuable.forEach(unit=>{const key=unit.partnerId||unit.partnerName||'partner';if(!partnerOrder.includes(key))partnerOrder.push(key);});
+  const waWins={};
+  partnerOrder.forEach(key=>{const unit=issuable.find(u=>(u.partnerId||u.partnerName||'partner')===key);if(unit&&cwTradWaPhone(unit.partnerId))waWins[key]=window.open('about:blank','_blank');});
+  const usedWins=new Set();
+  const closeUnused=()=>Object.entries(waWins).forEach(([key,w])=>{if(w&&!w.closed&&!usedWins.has(key)){try{w.close();}catch(e){}}});
   try{
     const byPartner={};
     for(const unit of issuable){
-      const built=await cwTradBuildInvite(unit,{confirmReplace:false});
+      const built=await cwTradBuildInvite(unit,{confirmReplace:false,state});
       if(!built.ok)continue;
       const key=unit.partnerId||unit.partnerName||'partner';
-      if(!byPartner[key])byPartner[key]={partnerId:unit.partnerId,partnerName:unit.partnerName||'Traditional Partner',days:[]};
+      if(!byPartner[key])byPartner[key]={key,partnerId:unit.partnerId,partnerName:unit.partnerName||'Traditional Partner',days:[]};
       byPartner[key].days.push({unit,url:built.url,events:cwTradEventNamesForDate(state,unit.date)});
     }
     const packs=Object.values(byPartner);
-    if(!packs.length){toast('No captain passes could be created.');return;}
-    const clipboardParts=[];
+    if(!packs.length){closeUnused();toast('No captain passes could be created.');return;}
+    const clipboardParts=[];let opened=0;
     packs.forEach((pack,idx)=>{
       const lines=pack.days.sort((a,b)=>String(a.unit.date).localeCompare(String(b.unit.date))).map(({unit,url,events})=>`• ${ciDateLong(unit.date)} · Reporting ${ciFmtTime(unit.reportingTime)} · ${cwTradComposition(unit)}${events.length?` · ${events.join(', ')}`:''}\n  ${url}`);
       const message=`Traditional team day passes — ${state.entry.name}\nPartner: ${pack.partnerName}\n\nOne secure captain link per date. Forward each link only to the on-ground captain for that day.\nOpen each link in Safari or Chrome (not inside WhatsApp):\n\n${lines.join('\n\n')}\n\nCards after every event stay with the captain until copied or handed to Tale of Two Weddings.`;
       const phone=cwTradWaPhone(pack.partnerId);
-      if(phone)setTimeout(()=>cwTradOpenWhatsApp(phone,message,`Day-pass links for ${pack.partnerName}.`),idx*700);
+      if(phone){usedWins.add(pack.key);if(cwTradOpenWhatsApp(phone,message,`Day-pass links for ${pack.partnerName}.`,waWins[pack.key]))opened++;}
       else clipboardParts.push(message);
     });
+    closeUnused();
     if(clipboardParts.length)copyText(clipboardParts.join('\n\n———\n\n'),`${clipboardParts.length} partner pack${clipboardParts.length===1?'':'s'} copied (no phone on file).`);
     const total=packs.reduce((n,p)=>n+p.days.length,0);
-    toast(packs.length===1?`WhatsApp ready · ${total} day pass${total===1?'':'es'} for this wedding.`:`${total} day passes created · WhatsApp opened per partner with a phone.`);
+    toast(`${total} day pass${total===1?'':'es'} created${opened?` · WhatsApp opened for ${opened} partner${opened===1?'':'s'}`:''}.`);
     renderClientsWorkspace();
-  }catch(err){console.error('Bulk traditional invites failed',err);toast('Could not create all captain passes. Try again or send one day at a time.');}
+  }catch(err){closeUnused();console.error('Bulk traditional invites failed',err);toast('Could not create all captain passes. Try again or send one day at a time.');}
 }
 async function cwTradDeleteUnit(unitId){
   const entry=cwEntry(),state=entry&&cwState(entry),unit=state&&cwTradFind(state,unitId);if(!unit)return;const pass=traditionalPasses[unit.passId]||{};if(pass.checkedInAt){toast('A started traditional day cannot be deleted. Keep it as history.');return;}if(!confirm(`Remove ${unit.partnerName}'s traditional unit for ${ciDateLong(unit.date)}?`))return;
