@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.23-trad-per-event-2026-08-14">
+<meta name="totw-build" content="v13.1.24-trad-handover-2026-08-14">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -9410,10 +9410,29 @@ async function cwTradPersistUnit(state,input){
   if(!/^\d{2}:\d{2}$/.test(reportingTime)){toast('No reporting time on this date’s events yet — set Team arrival in Team & prep, or enter it here.');return false;}
   if(amount==null||!Number.isFinite(amount)||amount<0){toast('Enter the agreed total day cost. Use 0 only when intentional.');return false;}
   const key=cwTradWeddingKey(state),existing=input.editUnitId?cwTradFind(state,input.editUnitId):cwTradRows(state).find(x=>x.date===date&&x.partnerId===partnerId),unitId=existing&&existing.unitId||uid('tu_'),passId=existing&&existing.passId||uid('tdp_'),now=Date.now();
-  // undefined eventIds means "leave the scope alone"; an array re-scopes the unit to those events.
+  // undefined eventIds means "leave the scope alone". An empty scope is never stored — a unit with
+  // no eventIds is the legacy whole-date unit, so [] and "covers everything" must not collide.
   const eventIds=Array.isArray(input.eventIds)?[...new Set(input.eventIds.map(String).filter(Boolean))]:cwTradUnitEventIds(existing);
-  const unit={...(existing||{}),unitId,passId,weddingKey:key,date,partnerId,partnerName:partner.name||'Traditional Partner',tpCount,tvCount,reportingTime,amount,internalNote,eventIds,updatedAt:now,updatedBy:editor,createdAt:existing&&existing.createdAt||now,createdBy:existing&&existing.createdBy||editor},oldPass=traditionalPasses[passId]||{},pass={...oldPass,passId,unitId,weddingKey:key,couple:state.entry.name,date,partnerId,partnerName:unit.partnerName,tpCount,tvCount,reportingTime,events:cwTradPassEvents(state,date,eventIds),status:oldPass.captainUid?(oldPass.checkedInAt?'active':'confirmed'):(existing&&existing.inviteHash?'link_issued':'awaiting_captain'),updatedAt:now};
+  const dayEventIds=(state.events||[]).filter(e=>e&&e.date===date).map(e=>String(e.eventId));
+  const scoped=eventIds.length&&eventIds.length<dayEventIds.length?eventIds:[];
+  const unit={...(existing||{}),unitId,passId,weddingKey:key,date,partnerId,partnerName:partner.name||'Traditional Partner',tpCount,tvCount,reportingTime,amount,internalNote,updatedAt:now,updatedBy:editor,createdAt:existing&&existing.createdAt||now,createdBy:existing&&existing.createdBy||editor};
+  if(scoped.length)unit.eventIds=scoped;else delete unit.eventIds;
+  const covered=scoped.length?scoped:dayEventIds;
+  // Taking an event over means the previous team must give it up, including a legacy whole-date team.
+  const rescope=[];
+  for(const other of cwTradRows(state).filter(x=>x.date===date&&x.unitId!==unitId)){
+    const keep=dayEventIds.filter(id=>cwTradUnitCoversEvent(other,{date,eventId:id})&&!covered.includes(id));
+    if(keep.length===cwTradUnitEventIds(other).length&&cwTradUnitEventIds(other).length)continue;
+    if(!keep.length){toast(`${other.partnerName||'The other team'} would be left with no events on ${ciDateLong(date)}. Untick an event here, or remove that team first.`);return false;}
+    if(keep.join('|')!==cwTradUnitEventIds(other).join('|'))rescope.push({other,keep});
+  }
+  const oldPass=traditionalPasses[passId]||{},pass={...oldPass,passId,unitId,weddingKey:key,couple:state.entry.name,date,partnerId,partnerName:unit.partnerName,tpCount,tvCount,reportingTime,events:cwTradPassEvents(state,date,scoped),status:oldPass.captainUid?(oldPass.checkedInAt?'active':'confirmed'):(existing&&existing.inviteHash?'link_issued':'awaiting_captain'),updatedAt:now};
   const updates={};updates[`traditionalUnits/${key}/${date}/${unitId}`]=unit;updates[`traditionalPasses/${passId}`]=pass;
+  rescope.forEach(({other,keep})=>{
+    updates[`traditionalUnits/${key}/${date}/${other.unitId}/eventIds`]=keep;
+    updates[`traditionalUnits/${key}/${date}/${other.unitId}/updatedAt`]=now;
+    if(other.passId)updates[`traditionalPasses/${other.passId}/events`]=cwTradPassEvents(state,date,keep);
+  });
   // One partner can run more than one team on a date, so their day cost is the sum of those units.
   const partnerUnits=[...cwTradRows(state).filter(x=>x.date===date&&x.partnerId===partnerId&&x.unitId!==unitId),unit];
   const dayAmount=partnerUnits.reduce((t,x)=>t+(Number(x.amount)||0),0);
@@ -9424,7 +9443,7 @@ async function cwTradPersistUnit(state,input){
     await db.ref().update(updates);
     if(stagedProd)prods[stagedProd.prodId]=stagedProd.prod;
     let cleared={removed:0,locked:0,names:[]};
-    try{cleared=await cwTradClearTypedTraditional(state,date,eventIds);}catch(clearErr){console.warn('Traditional typed-crew clear failed',clearErr);}
+    try{cleared=await cwTradClearTypedTraditional(state,date,scoped);}catch(clearErr){console.warn('Traditional typed-crew clear failed',clearErr);}
     const extra=cleared.removed?` Replaced ${cleared.removed} typed TP/TV with the supplier unit.`:(cleared.locked?` ${cleared.locked} checked-in TP/TV left in place.`:'');
     toast(`${unit.partnerName} · ${cwTradComposition(unit)} saved for ${ciDateLong(date)}.${extra}`);
     log(`saved traditional unit: ${state.entry.name} — ${unit.partnerName}${cleared.removed?` · cleared ${cleared.removed} typed TP/TV`:''}`);
@@ -9463,10 +9482,11 @@ function cwOpsTradProviderBoxHtml(state,event,draft){
   const dayEvents=(state.events||[]).filter(e=>e&&e.date===event.date).sort((a,b)=>(Number(a.order)||0)-(Number(b.order)||0));
   const others=cwTradUnitsForDate(state,event.date).filter(u=>!unit||u.unitId!==unit.unitId);
   const eventBox=dayEvents.length>1?`<div class="cw-ops-trad-events"><span class="cw-ops-add-label">Events this team covers on ${esc(cw10CompactDate(event.date))}</span>${dayEvents.map(e=>{
-    const taken=others.find(u=>cwTradUnitCoversEvent(u,e));
-    const checked=unit?cwTradUnitCoversEvent(unit,e):(String(e.eventId)===String(event.eventId)||!taken);
+    const owner=others.find(u=>cwTradUnitCoversEvent(u,e));
+    const checked=unit?cwTradUnitCoversEvent(unit,e):String(e.eventId)===String(event.eventId);
     const venue=String((cw10CurrentDetails(state,e)||{}).venueName||'').trim();
-    return `<label class="cw-ops-trad-event ${taken?'taken':''}"><input type="checkbox" data-trad-event="${esc(e.eventId)}" ${checked&&!taken?'checked':''} ${taken?'disabled':''}><span><b>${esc(e.name||'Event')}</b><small>${taken?`Covered by ${esc(taken.partnerName||'another team')}`:(venue||'Venue pending')}</small></span></label>`;
+    const note=owner&&!checked?`Now with ${esc(owner.partnerName||'another team')} — tick to move it here`:(venue||'Venue pending');
+    return `<label class="cw-ops-trad-event"><input type="checkbox" data-trad-event="${esc(e.eventId)}" ${checked?'checked':''}><span><b>${esc(e.name||'Event')}</b><small>${note}</small></span></label>`;
   }).join('')}</div>`:'';
   return `<div class="cw-ops-guest-box"><div class="cw-ops-add-label">2 · Traditional provider for ${esc(event.name||'this event')}</div>
     <div class="cw-ops-trad-grid">
@@ -9479,7 +9499,7 @@ function cwOpsTradProviderBoxHtml(state,event,draft){
     </div>
     ${eventBox}
     <div class="cw-ops-add-actions"><button type="button" class="cw10-primary" onclick="cwOpsSaveTradProvider('${eid}')">${unit?'Update this traditional team':'Save traditional team'}</button></div>
-    <small class="cw-ops-add-help">Arrival is pre-filled from this event’s team arrival (${esc(ciFmtTime(arrival))}) — change it only if the team reports separately. ${dayEvents.length>1?'Untick an event to free it up for a second team at another venue. Each team gets its own captain pass.':'Each team gets its own captain pass.'} Cost stays in Finance &amp; Reports and never reaches the captain.</small>
+    <small class="cw-ops-add-help">Arrival is pre-filled from this event’s team arrival (${esc(ciFmtTime(arrival))}) — change it only if the team reports separately. ${dayEvents.length>1?'Tick the events this team covers — ticking one moves it off any other team. Each team gets its own captain pass.':'Each team gets its own captain pass.'} Cost stays in Finance &amp; Reports and never reaches the captain.</small>
   </div><div class="cw-ops-add-label" style="margin-top:14px">Or assign our own registered ${esc(ciRoleCode(role))} (optional)</div>`;
 }
 function cwOpsEditTradForEvent(eventId){
