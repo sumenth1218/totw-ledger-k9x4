@@ -1,0 +1,16 @@
+TALE OF TWO — assistant pass (v13.1.27)
+
+Upload these to the website (GitHub / studio.taleoftwoweddings.com):
+
+  index.html
+  assistant-pass.html
+
+Then publish database.rules.json in Firebase Console → Realtime Database → Rules.
+Without that, the Assistant pass button cannot save.
+
+How to send it
+  Live day or Team & prep → Assistant pass
+  WhatsApp opens with client name, arrival time, location, and a no-login link.
+
+The link works inside WhatsApp. Assistants do not sign in.
+It shows only briefing details — not crew, pay, or check-in.
