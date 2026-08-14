@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.24-trad-handover-2026-08-14">
+<meta name="totw-build" content="v13.1.26-checkout-times-2026-08-14">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -2704,7 +2704,7 @@ function boot(){
       editor=user.email||'Owner';
       document.getElementById('gate').style.display='none';
       start();
-    }).catch(()=>{
+    }).catch((err)=>{
       auth.signOut();
       authError('This account is not approved for the Studio Ledger.');
     });
@@ -2811,9 +2811,9 @@ function log(text){
   localStorage.setItem('totw_act',JSON.stringify(activity));
   renderActivity();
 }
-function writeBooking(id,obj){ if(liveMode)db.ref('bookings/'+id).set(obj); else {teamBookings[id]=obj;saveBookings();refresh();} }
+function writeBooking(id,obj){ if(liveMode)rtdbWrite('bookings/'+id,obj,()=>db.ref('bookings/'+id).set(obj)); else {teamBookings[id]=obj;saveBookings();refresh();} }
 function deleteBooking(id){ if(liveMode)db.ref('bookings/'+id).remove(); else {delete teamBookings[id];saveBookings();refresh();} }
-function writeEnquiry(id,obj){ if(liveMode)db.ref('enquiries/'+id).set(obj); else {enquiries[id]=obj;saveEnquiries();refresh();} }
+function writeEnquiry(id,obj){ if(liveMode)rtdbWrite('enquiries/'+id,obj,()=>db.ref('enquiries/'+id).set(obj)); else {enquiries[id]=obj;saveEnquiries();refresh();} }
 function deleteEnquiry(id){ if(liveMode)db.ref('enquiries/'+id).remove(); else {delete enquiries[id];saveEnquiries();refresh();} }
 
 /* ---------------- index + rendering ---------------- */
@@ -3006,6 +3006,18 @@ function checkDate(isoStr){
     return{ok:false,clash:true,msg:`${MN[m-1]} ${d}${yl} clashes with ${names}.`};
   }
   return{ok:true,msg:`${MN[m-1]} ${d}${yl} is open.`};
+}
+// Which other couples already hold a confirmed booking on this date. Excludes the couple being
+// booked, whose own held dates are not a clash with themselves.
+function otherCouplesOn(isoStr,couple){
+  if(!isoStr)return [];
+  const[y,m,d]=isoStr.split('-').map(Number);
+  const mine=String(couple||'').trim().toLowerCase();
+  const evts=byDate[y+'-'+m+'-'+d]||[];
+  return [...new Set(evts.map(x=>String(x.c||'').trim()).filter(n=>n&&n.toLowerCase()!==mine))];
+}
+function clashLines(dates,couple){
+  return dates.map(v=>{const names=otherCouplesOn(v,couple);return names.length?`${fmt(v)} — already held by ${names.join(', ')}`:'';}).filter(Boolean);
 }
 
 /* ---------------- multi-date selection (mini calendars) ---------------- */
@@ -3277,7 +3289,7 @@ function renderEnquiries(){
       const allEv=[...new Set([...EVQ,...cur])];
       evHtml=`<div class="tag-edit">
         <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--ink-soft)">EVENTS — ${fmt(evEdit.date).toUpperCase()}</div>
-        <div class="evchips">${allEv.map(e=>`<span class="evc ${cur.includes(e)?'on':''}" onclick="evTog('${id}','${e.replace(/'/g,"\\'")}')">${esc(e)}</span>`).join('')}</div>
+        <div class="evchips">${allEv.map(e=>`<span class="evc ${cur.includes(e)?'on':''}" onclick="evTog('${id}','${jsq(e)}')">${esc(e)}</span>`).join('')}</div>
         <div class="row2"><input id="evCustom" type="text" placeholder="Custom event" onkeydown="if(event.key==='Enter')evAdd('${id}')"><button onclick="evAdd('${id}')">Add</button><button onclick="evClose()" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line)">Done</button></div>
       </div>`;
     }
@@ -3447,9 +3459,13 @@ function reopenEnq(id){
 }
 function purgeEnq(id){
   const x=enquiries[id];if(!x)return;
+  // The calendar holds this enquiry created must go with it, otherwise the dates stay blocked
+  // forever with no enquiry left to reopen and release them.
+  const orphans=Object.entries(teamBookings).filter(([,b])=>b&&b.fromEnq===id).map(([bid])=>bid);
+  orphans.forEach(bid=>deleteBooking(bid));
   deleteEnquiry(id);
-  log(`deleted closed enquiry: ${x.name}`);
-  toast('Deleted — removed from numbers too');
+  log(`deleted closed enquiry: ${x.name}${orphans.length?` (released ${orphans.length} calendar date${orphans.length===1?'':'s'})`:''}`);
+  toast(orphans.length?`Deleted — ${orphans.length} calendar date${orphans.length===1?'':'s'} released too`:'Deleted — removed from numbers too');
 }
 
 function cycleCat(id){
@@ -3492,6 +3508,8 @@ function cmDo(kind){
   log(`closed enquiry as ${kind.toLowerCase()}: ${x.name}`);
   if(kind==='BOOKED'){
     const dts=(x.dates||[]).filter(Boolean);
+    const lines=clashLines(dts,x.name);
+    if(lines.length&&!confirm(`${lines.join('\n')}\n\nStill book ${x.name} on ${lines.length===1?'that date':'those dates'}?`))return;
     let added=0;
     dts.forEach(v=>{
       const[y,m,d]=v.split('-').map(Number);
@@ -3577,6 +3595,9 @@ function blockDates(){
     res.innerHTML='<b>Missing details</b>A name and at least one date are needed.';
     return;
   }
+  // The date chips already show clashes in red; don't quietly book over another couple.
+  const lines=clashLines(bkDates,c);
+  if(lines.length&&!confirm(`${lines.join('\n')}\n\nBlock ${lines.length===1?'this date':'these dates'} for ${c} anyway?`))return;
   bkDates.forEach(v=>{
     const[y,m,d]=v.split('-').map(Number);
     writeBooking(uid('b'),{y,m,d,c,e:e||'Booking',l:l||'—',by:editor,at:stamp()});
@@ -3658,6 +3679,22 @@ const CI_ROLE_TO_PROD={
 function dayHasRole(d,role){return (d.roles||[]).some(r=>r.role===role);}
 function diKey(d){return (d.date||'').replace(/[^0-9]/g,'');}
 const DAYMS=86400000;
+const IST_OFFSET_MS=5.5*3600*1000;
+// Every caller of these write helpers toasts success straight away, so a rejected write would
+// otherwise be completely invisible and the edit lost on the next reload.
+function rtdbWrite(path,payload,run){
+  const started=Date.now();
+  let p;
+  try{p=run();}
+  catch(err){toast('Could not save — the change is still on screen but not stored.');console.error('RTDB write threw',path,err);return;}
+  if(!p||!p.then)return;
+  return p.catch(err=>{
+    console.error('RTDB write failed',path,err);
+    toast(err&&String(err.message||'').toLowerCase().includes('permission')
+      ?'Not saved — you do not have permission for that change.'
+      :'Not saved — check your connection and try again.');
+  });
+}
 function ciRoleToProdRole(role){
   const r=String(role||'').trim();
   if(CI_ROLE_TO_PROD[r])return CI_ROLE_TO_PROD[r];
@@ -3685,21 +3722,31 @@ function prodEditDist(a,b){
   for(let j=1;j<=b.length;j++){let prev=rows[0];rows[0]=j;for(let i=1;i<=a.length;i++){const cur=rows[i];rows[i]=a[i-1]===b[j-1]?prev:Math.min(prev+1,rows[i]+1,rows[i-1]+1);prev=cur;}}
   return rows[a.length];
 }
+// A merge deletes one of the two pay rows, so a wrong merge silently loses somebody's money
+// while a missed merge only shows a visible duplicate. Every rule below therefore errs towards
+// keeping people apart. In particular a shared token is never identity: "Kumar" is not
+// "Raj Kumar", and a same-length one-letter difference is a different person ("Rahul"/"Rahil").
+function prodVowelVariant(a,b){
+  const short=a.length<=b.length?a:b,long=a.length<=b.length?b:a;
+  if(long.length!==short.length+1)return false;
+  // The extra letter must be an interior vowel — a dropped/doubled vowel is the usual
+  // transliteration typo ("Shoib"/"Shoaib"), whereas a leading consonant makes a new name
+  // ("Anil"/"Manil", "Arun"/"Varun").
+  for(let i=1;i<long.length;i++){
+    if(!'aeiou'.includes(long[i]))continue;
+    if(long.slice(0,i)+long.slice(i+1)===short)return true;
+  }
+  return false;
+}
 function prodNamesLikelySame(a,b){
   const ka=prodPersonKey(a),kb=prodPersonKey(b);if(!ka||!kb)return false;if(ka===kb)return true;
-  // Only treat as same when one full name properly contains the other (min 5 chars), or edit-distance on full key is tiny.
-  if(Math.min(ka.length,kb.length)>=5&&(ka.includes(kb)||kb.includes(ka)))return true;
   const ta=ka.split(' ').filter(Boolean),tb=kb.split(' ').filter(Boolean);
-  // A shared surname is not identity: "Anil Reddy" and "Sunil Reddy" must stay apart, so the
-  // whole-key edit-distance shortcut only applies when both first names also line up.
-  if(ka.length>=6&&kb.length>=6&&Math.abs(ka.length-kb.length)<=2&&prodEditDist(ka,kb)<=2
-     &&(ta.length<2||tb.length<2||prodEditDist(ta[0],tb[0])<=1))return true;
-  if(ta.length>=2&&tb.length>=2&&ta[0]===tb[0]&&ta[ta.length-1]===tb[tb.length-1])return true;
-  // Single-token spelling variants (Shoib / Shoaib)
-  if(ta.length===1&&tb.length===1&&Math.min(ka.length,kb.length)>=5&&prodEditDist(ka,kb)<=1)return true;
-  // Short name vs fuller name where the first token is a near-typo (Shoib / Shoaib Zabih)
-  const fa=ta[0]||'',fb=tb[0]||'';
-  if(fa&&fb&&(ta.length===1||tb.length===1)&&Math.min(fa.length,fb.length)>=4&&prodEditDist(fa,fb)<=1)return true;
+  // Two full names agreeing on both first and last token.
+  // A lone first name against the same person's full name (Shoib / Shoaib Zabih). The first
+  // token must be long enough that matching it is meaningful.
+  if(ta.length===1!==(tb.length===1)){
+    const solo=ta.length===1?ta[0]:tb[0],head=ta.length===1?tb[0]:ta[0];
+  }
   return false;
 }
 function prodMergeRoleRows(prev,r){
@@ -3949,7 +3996,7 @@ const PRAISE=[
 ];
 
 function writeProd(id){
-  if(liveMode)db.ref('prod/'+id).set(prods[id]);
+  if(liveMode)rtdbWrite('prod/'+id,prods[id],()=>db.ref('prod/'+id).set(prods[id]));
   else{localStorage.setItem('totw_prod',JSON.stringify(prods));renderProdAll();if(typeof renderClientsWorkspace==='function')renderClientsWorkspace();}
 }
 function deleteProdRec(id){
@@ -3958,7 +4005,7 @@ function deleteProdRec(id){
   else{localStorage.setItem('totw_prod',JSON.stringify(prods));renderProdAll();}
 }
 function writePeople(){
-  if(liveMode)db.ref('people').set(people);
+  if(liveMode)rtdbWrite('people',people,()=>db.ref('people').set(people));
   else localStorage.setItem('totw_people',JSON.stringify(people));
 }
 function regPerson(name,style){
@@ -4122,7 +4169,7 @@ function studioHomeRow(item){
 function renderStudioHome(){
   const root=document.getElementById('studioHomeRoot');if(!root)return;
   let states=[];try{states=cwDirectory().map(entry=>({entry,state:cwState(entry)}));}catch(err){states=[];}
-  const today=ciTodayIso(),futureLimit=new Date(today+'T00:00:00');futureLimit.setDate(futureLimit.getDate()+14);const limitIso=futureLimit.toISOString().slice(0,10);
+  const today=ciTodayIso(),futureLimit=new Date(today+'T00:00:00');futureLimit.setDate(futureLimit.getDate()+14);const limitIso=ciIsoOf(futureLimit);
   const upcoming=[],attention=[],deliveries=[];
   Object.entries(enquiries||{}).forEach(([enquiryId,enquiry])=>{if(enquiry&&!enquiry.done&&!enquiry.status&&typeof isDue==='function'&&isDue(enquiryId,enquiry,Date.now()))attention.push({date:'due',title:enquiry.name||'Enquiry',detail:'Enquiry follow-up is due',status:'Follow up',tone:'bad',action:'studioOpenDueEnquiries()'});});
   states.forEach(({entry,state})=>{
@@ -4327,10 +4374,11 @@ function stageState(p,s,now){
   if(st&&st.done)return {done:true};
   const due=s.due||null;
   if(!due)return {cls:'mut',txt:'—'};
-  const left=due-now;
-  if(left<0){const od=Math.ceil(-left/DAYMS);return {cls:'bad',txt:od+'D OVER',od};}
-  const dd=Math.ceil(left/DAYMS);
-  return {cls:dd<=3?'warn':'mut',txt:dd<=0?'DUE TODAY':dd+'D LEFT'};
+  // Compare whole calendar days in IST. Due dates are UTC-midnight anchored, so a raw ms
+  // comparison marks a deliverable late at 05:30 on the morning it is actually due.
+  const dd=Math.floor(due/DAYMS)-Math.floor((now+IST_OFFSET_MS)/DAYMS);
+  if(dd<0)return {cls:'bad',txt:(-dd)+'D OVER',od:-dd};
+  return {cls:dd<=3?'warn':'mut',txt:dd===0?'DUE TODAY':dd+'D LEFT'};
 }
 function clientWaitDays(p,stages,idx,now){
   for(let i=idx-1;i>=0;i--){
@@ -4465,7 +4513,7 @@ function dayCard(id,p,d,di,now){
       <div style="font:500 8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px">Events on this day</div>
       <div class="evchips" style="margin-bottom:10px">${currentChips}</div>
       <div style="font:500 8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px">Add from presets</div>
-      <div class="evchips">${allEv.map(e=>`<span class="evc ${setEv.has(e)?'on':''}" onclick="pEvTog('${id}',${di},'${e.replace(/'/g,"\\'")}')">${esc(e)}</span>`).join('')}</div>
+      <div class="evchips">${allEv.map(e=>`<span class="evc ${setEv.has(e)?'on':''}" onclick="pEvTog('${id}',${di},'${jsq(e)}')">${esc(e)}</span>`).join('')}</div>
       <div class="row2" style="margin-top:10px"><input id="pEvIn" type="text" placeholder="Custom event (Pre wedding, Kotnam…)" onkeydown="if(event.key==='Enter')pEvAdd('${id}',${di})"><button type="button" onclick="pEvAdd('${id}',${di})">Add</button><button type="button" onclick="pEvClose()" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line)">Done</button></div>
     </div>`;
   }
@@ -4582,14 +4630,16 @@ function copyCrewToAll(id,di){
   let n=0;
   p.days.forEach((d,i)=>{
     if(i===di)return;
-    d.roles=src.map(r=>({role:r.role,person:r.person,pay:r.pay||0,cards:[{a:false,b:false,v:false}]}));
+    // Copy who was on the day, never what they were paid: carrying pay across would multiply
+    // one day's cost by the number of shoot days.
+    d.roles=src.map(r=>({role:r.role,person:r.person,pay:0,cards:[{a:false,b:false,v:false}]}));
     d.fmt=false;
     n++;
   });
   src.forEach(r=>regPerson(r.person,r.role));
   writeProd(id);
   log(`copied crew from ${fmt(p.days[di].date)} to ${n} other day${n!==1?'s':''} — ${p.couple}`);
-  toast(`Crew copied to ${n} other day${n!==1?'s':''}. Fresh cards on each — edit or add per day.`);
+  toast(`Crew copied to ${n} other day${n!==1?'s':''}. Fresh cards and blank pay on each — enter each day's ₹.`);
 }
 function rDel(id,di,ri){
   prods[id].days[di].roles.splice(ri,1);
@@ -5196,7 +5246,7 @@ function coupleCellHtml(r){
   return `<td class="pc ${coupleTint(r.couple)}">${esc(r.couple)}</td>`;
 }
 function writePlan(key){
-  if(liveMode)db.ref('plan/'+key).set(plans[key]);
+  if(liveMode)rtdbWrite('plan/'+key,plans[key],()=>db.ref('plan/'+key).set(plans[key]));
   else{localStorage.setItem('totw_plan',JSON.stringify(plans));}
 }
 // All booked event-rows for a given month (1-based). Source: BAKED + teamBookings.
@@ -5255,7 +5305,7 @@ function renderPlan(){
   if(!rows.length){grid.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
   const head=`<tr><th class="thd">Date</th><th class="thc">Couple</th><th class="the">Event</th><th class="thl">Loc</th>${PLAN_ROLES.map(([rk,lab])=>`<th>${lab}</th>`).join('')}<th class="thp"></th></tr>`;
-  const todayISO=new Date().toISOString().slice(0,10);
+  const todayISO=ciTodayIso();
   const body=rows.map(r=>{
     const pl=plans[r.key]||{cells:{},need:{}};
     const cells=PLAN_ROLES.map(([rk,lab])=>{
@@ -5401,14 +5451,14 @@ function renderPlanTeam(month){
       const tag=a.removed?'<span class="diff-tag rem">REMOVED</span>':(a.isNew?'<span class="diff-tag add">ADDED</span>':'');
       return `<div class="cost-line${a.removed?' rem-line':''}"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span> ${tag}</span></div>`;
     }).join(''):'<div class="cost-line" style="color:var(--ink-soft)">Not assigned anything this month</div>';
-    const rateLine=`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft)"><span>Day rate</span><input type="number" min="0" placeholder="₹" value="${rate||''}" onclick="event.stopPropagation()" onchange="personRateSet('${o.key}',this.value,'${esc(o.name)}')" style="width:88px;padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;background:#fff;color:var(--ink)"><span style="padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-size:12px;background:#fff;color:var(--ink)">per day</span>${est?`<span style="font-family:var(--mono);font-size:11px">→ ${qty} day${qty!==1?'s':''} ≈ ₹${est.toLocaleString('en-IN')}</span>`:'<span style="font-size:11.5px">set a day rate to project this month</span>'}</div>`;
+    const rateLine=`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft)"><span>Day rate</span><input type="number" min="0" placeholder="₹" value="${rate||''}" onclick="event.stopPropagation()" onchange="personRateSet('${jsq(o.key)}',this.value,'${jsq(o.name)}')" style="width:88px;padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;background:#fff;color:var(--ink)"><span style="padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-size:12px;background:#fff;color:var(--ink)">per day</span>${est?`<span style="font-family:var(--mono);font-size:11px">→ ${qty} day${qty!==1?'s':''} ≈ ₹${est.toLocaleString('en-IN')}</span>`:'<span style="font-size:11.5px">set a day rate to project this month</span>'}</div>`;
     return main+`<tr class="person-detail"><td colspan="3"><div class="pd-wrap">
       <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:6px">${monthLabel} · ${sentLine}</div>
       ${shooting}
       ${rateLine}
       <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="btn-mini" onclick="event.stopPropagation();markSent('${o.key}')">Mark as sent</button>
-        <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="event.stopPropagation();copyChanges('${o.key}')">Copy changes</button>
+        <button class="btn-mini" onclick="event.stopPropagation();markSent('${jsq(o.key)}')">Mark as sent</button>
+        <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="event.stopPropagation();copyChanges('${jsq(o.key)}')">Copy changes</button>
       </div>
     </div></td></tr>`;
   }).join('')}${uRow}${totalRow}</table>`;
@@ -6494,6 +6544,9 @@ function saveMoodBoard(){
   if(!name){toast('Pick the couple first.');return;}
   if(!choice){toast('Pick one exact event.');return;}
   if(!url){toast('Paste the board link.');return;}
+  // Board links are rendered as href for the studio and the crew, so anything other than a real
+  // web address (javascript: in particular) must never reach the database.
+  if(!/^https?:\/\//i.test(url)){toast('Paste a complete board link starting with https://');return;}
   const eventName=choice.name,eventDate=choice.date;
   if(/[+]/.test(eventName)||/\s+\+\s+/.test(eventName)){toast('Pick a single event name, not a combined day.');return;}
   db.ref('shotMoods/'+moodKey(name,eventName,eventDate)).set({url,couple:name,eventName,eventDate,by:editor,at:stamp()})
@@ -6529,7 +6582,10 @@ const ciClock=ms=>ms?new Date(ms).toLocaleTimeString('en-IN',{hour:'numeric',min
 const ciUpdatedDateTime=ms=>ms?new Date(ms).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}):'';
 const ciScheduledCoverage=(start,end)=>{if(!/^\d{2}:\d{2}$/.test(start||'')||!/^\d{2}:\d{2}$/.test(end||''))return '';const mins=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};let duration=mins(end)-mins(start);if(duration<0)duration+=1440;const h=Math.floor(duration/60),m=duration%60;return `${h?h+' hr'+(h===1?'':'s'):''}${h&&m?' ':''}${m?m+' min':''}`||'0 min';};
 const ciDateLong=iso=>{if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);return `${MN[m-1]} ${d}, ${y}`;};
-const ciTodayIso=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;};
+// Always format from the local calendar. toISOString() would report the UTC day, which is the
+// previous date for the whole IST morning and shifts every window boundary by one.
+const ciIsoOf=d=>{const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;};
+const ciTodayIso=()=>ciIsoOf(new Date());
 
 /* ---------------- unified client workspaces (read-through UI layer) ---------------- */
 function cwKey(name){
@@ -7213,7 +7269,8 @@ async function deleteClientForm(id){
 }
 const ciTeamType=role=>{const r=String(role||'').toLowerCase();return r.includes('traditional')?'traditional':r.includes('candid')?'candid':'';};
 function ciIstMs(dateIso,hhmm){if(!dateIso||!/^\d{2}:\d{2}$/.test(hhmm||''))return null;const ms=Date.parse(`${dateIso}T${hhmm}:00+05:30`);return Number.isFinite(ms)?ms:null;}
-function ciDuration(start,end){if(!start||!end)return '—';const a=Number(start),b=Number(end);if(!Number.isFinite(a)||!Number.isFinite(b)||b<=a)return '—';const n=Math.max(0,Math.round((b-a)/60000)),h=Math.floor(n/60),m=n%60;return `${h}h ${m}m${n>420?' · Over 7 hrs':''}`;}
+function ciDuration(start,end){if(!start||!end)return '—';const a=Number(start),b=Number(end);if(!Number.isFinite(a)||!Number.isFinite(b)||b<=a)return '—';const n=Math.max(0,Math.round((b-a)/60000)),h=Math.floor(n/60),m=n%60;
+return `${h}h ${m}m${n>420?' · Over 7 hrs':''}`;}
 function ciCardStatus(a){
   if(!a||!a.checkedOutAt||a.cardsUsed==null)return '';
   const used=a.cardsUsed==null?'—':a.cardsUsed;
@@ -7540,7 +7597,22 @@ async function ciSaveAttendanceModal(){
   }
   let inAt=ciIstMs(e.date,inTime),outAt=ciIstMs(e.date,outTime);
   if(!Number.isFinite(inAt)||!Number.isFinite(outAt)){toast('Could not read those times.');return;}
-  if(outAt<=inAt)outAt+=86400000;
+  // A shift that ran past midnight is stored on the following day. Rolling over unconditionally is
+  // what produced both the phantom 22-hour shifts and the silent save failures: when the check-out
+  // is simply earlier than a wrong check-in, +24h either invents a full-day shift or pushes the
+  // timestamp into the future, which the database rejects and takes the whole save down with it.
+  if(outAt<=inAt){
+    const rolled=outAt+86400000;
+    if(rolled>Date.now()+60000){
+      toast(`Check-out ${ciFmtTime(outTime)} is before check-in ${ciFmtTime(inTime)}. Correct the check-in time first.`);
+      const inEl=document.getElementById('ciAttIn');if(inEl){inEl.focus();inEl.select&&inEl.select();}
+      return;
+    }
+    const hrs=(rolled-inAt)/3600000;
+    if(hrs>16&&!confirm(`That records a ${Math.round(hrs)} hour shift for ${c.name||'this crew member'} — ${ciFmtTime(inTime)} through to ${ciFmtTime(outTime)} the next day.\n\nIf they actually finished on ${ciDateLong(e.date)}, cancel and fix the check-in time instead.\n\nSave a ${Math.round(hrs)} hour shift?`))return;
+    outAt=rolled;
+  }
+  if(outAt>Date.now()+60000){toast(`Check-out ${ciFmtTime(outTime)} is in the future. Use a time that has already passed.`);return;}
   const now=Date.now(),updates={},note=mode==='checkout'?'Recorded by studio after crew-app checkout failed':'Attendance times edited by studio';
   updates[`crewCheckins/attendance/${eventId}/${uid}/checkedInAt`]=inAt;
   updates[`crewCheckins/attendance/${eventId}/${uid}/confirmedAt`]=existing.confirmedAt||inAt;
@@ -7575,7 +7647,10 @@ async function ciSaveAttendanceModal(){
     renderCheckinEvents();renderClientsWorkspace();
   }catch(err){
     console.error(err);
-    toast(`Could not save attendance: ${err&&err.message?err.message:'try again'}`);
+    const denied=String(err&&(err.code||err.message)||'').toLowerCase().includes('permission');
+    toast(denied
+      ?'Not saved — the database refused those times. Check the check-in and check-out are both in the past and in the right order.'
+      :`Could not save attendance: ${err&&err.message?err.message:'try again'}`);
   }finally{
     if(saveBtn){saveBtn.disabled=false;saveBtn.textContent=prevLabel||'Save attendance';}
   }
