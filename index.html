@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.21-a2z-round2-2026-08-14">
+<meta name="totw-build" content="v13.1.22-trad-inline-2026-08-14">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -1586,6 +1586,11 @@ body{background:
 #tradLocationInfo strong{display:block;font:600 13px var(--body);color:var(--ink)}#tradLocationInfo small{display:block;margin-top:4px;color:var(--ink-soft);font:11px var(--body);line-height:1.4}.trad-field.wide{grid-column:1/-1}
 .cw-ops-guest-box{margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:10px;background:rgba(0,0,0,.02)}
 .cw-ops-guest-box .cw11-guest-extra{margin-top:8px;padding-top:0;border-top:0}
+.cw-ops-trad-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.cw-ops-trad-grid label{display:flex;flex-direction:column;gap:4px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}
+.cw-ops-trad-grid label.wide{grid-column:1/-1}
+.cw-ops-trad-grid input,.cw-ops-trad-grid select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font:inherit;font-size:13px;text-transform:none;letter-spacing:0;color:var(--ink)}
+@media (max-width:720px){.cw-ops-trad-grid{grid-template-columns:1fr}}
 @media (max-width:720px){
   .cw11-guest-extra-fields{grid-template-columns:1fr; }
   .cw11-guest-extra button{width:100%;}
@@ -3888,7 +3893,6 @@ function stageDueValue(due){
 function stagesFor(p){
   const out=[];
   const days=(p.days||[]).slice().sort((a,b)=>a.date<b.date?-1:1);
-  const f=days.length?Date.parse(days[0].date):null;
   const l=days.length?Date.parse(days[days.length-1].date):null;
   // Which roles were shot anywhere across the wedding
   const has=role=>days.some(d=>dayHasRole(d,role));
@@ -3896,8 +3900,8 @@ function stagesFor(p){
   const anyTradPhoto=has('Traditional Photo');
   const anyTradVideo=has('Traditional Video');
   const anyCandidVideo=has('Candid Video');
-  // One line per deliverable type, for the whole couple. Deadlines: sneak from first day, rest from last day.
-  if(anyCandidPhoto)out.push({k:'sneak',l:'Sneak peek',o:'Sumenth',due:f?f+2*DAYMS:null,clientPdf:true});
+  // One line per deliverable type, for the whole couple. Every deadline runs from the last shoot day.
+  if(anyCandidPhoto)out.push({k:'sneak',l:'Sneak peek',o:'Sumenth',due:l?l+2*DAYMS:null,clientPdf:true});
   if(anyCandidPhoto||anyTradPhoto)out.push({k:'cull',l:'Culling',o:'Mahima',due:l?l+7*DAYMS:null,clientPdf:false});
   if(anyCandidPhoto)out.push({k:'cphoto',l:'Candid photos',o:'Sumenth',due:l?l+14*DAYMS:null,gate:1,clientPdf:true});
   if(anyTradPhoto)out.push({k:'tphoto',l:'Traditional photos',o:'Team',due:l?l+14*DAYMS:null,gate:1,clientPdf:true});
@@ -9157,7 +9161,10 @@ function cwOpsAddPopoverHtml(state,event,draft){
   const people=options.length
     ?options.map(([uid,p])=>`<label class="cw-ops-person-pick"><input type="checkbox" ${cwOpsAddSelected.has(uid)?'checked':''} onchange="cwOpsToggleAddSelection('${esc(event.eventId)}','${esc(uid)}',this.checked)"><span><b>${esc(p.name||'Crew')}</b><small>${esc(role)}</small></span></label>`).join('')
     :`<p>No unassigned crew registered as ${esc(role)}.</p>`;
-  const guestBox=isExtra?`<div class="cw-ops-guest-box"><div class="cw-ops-add-label">2 · Day hire (no Crew registration)</div>${cw11GuestExtraFormHtml(event.eventId,role)}<small class="cw-ops-add-help">Use this for drone / LED / live / other hires who should not appear in Team. Enter ₹ pay in Finance &amp; Reports.</small></div><div class="cw-ops-add-label" style="margin-top:14px">Or select registered ${esc(ciRoleCode(role))} (optional)</div>`:`<div class="cw-ops-add-label" style="margin-top:12px">2 · Select one or more ${esc(ciRoleCode(role))}</div>`;
+  const isTrad=CW11_TRADITIONAL_ROLES.includes(role);
+  const guestBox=isExtra?`<div class="cw-ops-guest-box"><div class="cw-ops-add-label">2 · Day hire (no Crew registration)</div>${cw11GuestExtraFormHtml(event.eventId,role)}<small class="cw-ops-add-help">Use this for drone / LED / live / other hires who should not appear in Team. Enter ₹ pay in Finance &amp; Reports.</small></div><div class="cw-ops-add-label" style="margin-top:14px">Or select registered ${esc(ciRoleCode(role))} (optional)</div>`
+    :isTrad?cwOpsTradProviderBoxHtml(state,event,draft)
+    :`<div class="cw-ops-add-label" style="margin-top:12px">2 · Select one or more ${esc(ciRoleCode(role))}</div>`;
   return `<div class="cw-ops-add-pop"><div class="cw-ops-add-label">1 · Select role</div><div class="cw-ops-chip-row">${roleChips}</div>${guestBox}<div class="cw-ops-person-grid">${people}</div><div class="cw-ops-add-actions"><button type="button" id="cwOpsAddSelected_${esc(event.eventId)}" class="cw10-primary" ${cwOpsAddSelected.size?'':'disabled'} onclick="cwOpsAddSelectedCrew('${esc(event.eventId)}')">${cwOpsAddSelected.size?`Add ${cwOpsAddSelected.size} selected`:'Add selected crew'}</button><button type="button" class="cw10-soft" onclick="cwOpsReserveSlot('${esc(event.eventId)}')">Reserve empty ${esc(ciRoleCode(role))} slot</button></div><small class="cw-ops-add-help">Reserve a slot only when this role is required but you have not chosen the person. Only reserved empty slots create a warning.</small></div>`;
 }
 function cwOpsEventRowHtml(state,event,opts={}){
@@ -9361,23 +9368,88 @@ function cwTradSyncFinanceLabels(){
     if(typeof renderProd==='function')renderProd();
   }).catch(err=>console.warn('Traditional finance label sync failed',err));
 }
-async function cwTradSaveUnit(){
-  const entry=cwEntry(),state=entry&&cwState(entry);if(!state)return;
-  const date=document.getElementById('tradDate')?.value||'',partnerId=document.getElementById('tradPartner')?.value||'',partner=crewProfiles[partnerId],tpCount=Math.max(0,Math.min(20,Number(document.getElementById('tradTp')?.value)||0)),tvCount=Math.max(0,Math.min(20,Number(document.getElementById('tradTv')?.value)||0)),reportingTime=document.getElementById('tradArrival')?.value||'',costRaw=document.getElementById('tradCost')?.value,amount=costRaw===''?null:Number(costRaw),internalNote=document.getElementById('tradNote')?.value.trim()||'';
-  if(!date||!partner){toast('Choose the date and Traditional Partner.');return;}if(!tpCount&&!tvCount){toast('Add at least one TP or TV.');return;}if(!reportingTime){toast('No reporting time on this date’s events yet — set Team arrival in Team & prep, or enter it here.');return;}if(amount==null||!Number.isFinite(amount)||amount<0){toast('Enter the agreed total day cost. Use 0 only when intentional.');return;}
-  const key=cwTradWeddingKey(state),existing=cwTradEditId?cwTradFind(state,cwTradEditId):cwTradRows(state).find(x=>x.date===date&&x.partnerId===partnerId),unitId=existing&&existing.unitId||uid('tu_'),passId=existing&&existing.passId||uid('tdp_'),now=Date.now(),unit={...(existing||{}),unitId,passId,weddingKey:key,date,partnerId,partnerName:partner.name||'Traditional Partner',tpCount,tvCount,reportingTime,amount,internalNote,updatedAt:now,updatedBy:editor,createdAt:existing&&existing.createdAt||now,createdBy:existing&&existing.createdBy||editor},oldPass=traditionalPasses[passId]||{},pass={...oldPass,passId,unitId,weddingKey:key,couple:state.entry.name,date,partnerId,partnerName:unit.partnerName,tpCount,tvCount,reportingTime,events:cwTradPassEvents(state,date),status:oldPass.captainUid?(oldPass.checkedInAt?'active':'confirmed'):(existing&&existing.inviteHash?'link_issued':'awaiting_captain'),updatedAt:now};
+// Shared by the Traditional unit modal and the inline Traditional Provider box in Team & prep.
+async function cwTradPersistUnit(state,input){
+  if(!state)return false;
+  const date=String(input.date||''),partnerId=String(input.partnerId||''),partner=crewProfiles[partnerId];
+  const tpCount=Math.max(0,Math.min(20,Number(input.tpCount)||0)),tvCount=Math.max(0,Math.min(20,Number(input.tvCount)||0));
+  const reportingTime=String(input.reportingTime||''),internalNote=String(input.internalNote||'').trim();
+  const amount=input.amount===''||input.amount==null?null:Number(input.amount);
+  if(!date||!partner){toast('Choose the date and Traditional Partner.');return false;}
+  if(!tpCount&&!tvCount){toast('Add at least one TP or TV.');return false;}
+  if(!/^\d{2}:\d{2}$/.test(reportingTime)){toast('No reporting time on this date’s events yet — set Team arrival in Team & prep, or enter it here.');return false;}
+  if(amount==null||!Number.isFinite(amount)||amount<0){toast('Enter the agreed total day cost. Use 0 only when intentional.');return false;}
+  const key=cwTradWeddingKey(state),existing=input.editUnitId?cwTradFind(state,input.editUnitId):cwTradRows(state).find(x=>x.date===date&&x.partnerId===partnerId),unitId=existing&&existing.unitId||uid('tu_'),passId=existing&&existing.passId||uid('tdp_'),now=Date.now(),unit={...(existing||{}),unitId,passId,weddingKey:key,date,partnerId,partnerName:partner.name||'Traditional Partner',tpCount,tvCount,reportingTime,amount,internalNote,updatedAt:now,updatedBy:editor,createdAt:existing&&existing.createdAt||now,createdBy:existing&&existing.createdBy||editor},oldPass=traditionalPasses[passId]||{},pass={...oldPass,passId,unitId,weddingKey:key,couple:state.entry.name,date,partnerId,partnerName:unit.partnerName,tpCount,tvCount,reportingTime,events:cwTradPassEvents(state,date),status:oldPass.captainUid?(oldPass.checkedInAt?'active':'confirmed'):(existing&&existing.inviteHash?'link_issued':'awaiting_captain'),updatedAt:now};
   const updates={};updates[`traditionalUnits/${key}/${date}/${unitId}`]=unit;updates[`traditionalPasses/${passId}`]=pass;updates[`crewDayCosts/${key}/${date}/${partnerId}`]={amount,currency:'INR',crewUid:partnerId,nameSnapshot:unit.partnerName,roleSnapshot:`Traditional Unit · ${cwTradComposition(unit)}`,updatedAt:now,updatedBy:editor,source:'teamPrep'};const stagedProd=cwTradProjectFinance(state,unit,updates,false);
   try{
     await db.ref().update(updates);
     if(stagedProd)prods[stagedProd.prodId]=stagedProd.prod;
     let cleared={removed:0,locked:0,names:[]};
     try{cleared=await cwTradClearTypedTraditional(state,date);}catch(clearErr){console.warn('Traditional typed-crew clear failed',clearErr);}
-    cwTradModalOpen=false;cwTradEditId='';
     const extra=cleared.removed?` Replaced ${cleared.removed} typed TP/TV with the supplier unit.`:(cleared.locked?` ${cleared.locked} checked-in TP/TV left in place.`:'');
-    toast(`${unit.partnerName} traditional unit saved for ${ciDateLong(date)}.${extra}`);
+    toast(`${unit.partnerName} · ${cwTradComposition(unit)} saved for ${ciDateLong(date)}.${extra}`);
     log(`saved traditional unit: ${state.entry.name} — ${unit.partnerName}${cleared.removed?` · cleared ${cleared.removed} typed TP/TV`:''}`);
-    renderClientsWorkspace();
-  }catch(err){console.error('Traditional unit save failed',err);toast('Could not save the traditional unit. Check the new Firebase rules and try again.');}
+    return true;
+  }catch(err){console.error('Traditional unit save failed',err);toast('Could not save the traditional unit. Check the new Firebase rules and try again.');return false;}
+}
+async function cwTradSaveUnit(){
+  const entry=cwEntry(),state=entry&&cwState(entry);if(!state)return;
+  const costRaw=document.getElementById('tradCost')?.value;
+  const saved=await cwTradPersistUnit(state,{
+    date:document.getElementById('tradDate')?.value||'',
+    partnerId:document.getElementById('tradPartner')?.value||'',
+    tpCount:document.getElementById('tradTp')?.value,
+    tvCount:document.getElementById('tradTv')?.value,
+    reportingTime:document.getElementById('tradArrival')?.value||'',
+    amount:costRaw,
+    internalNote:document.getElementById('tradNote')?.value||'',
+    editUnitId:cwTradEditId
+  });
+  if(!saved)return;
+  cwTradModalOpen=false;cwTradEditId='';
+  renderClientsWorkspace();
+}
+// Inline Traditional Provider box, shown under the TP / TV role chips on each shoot day.
+function cwOpsTradProviderBoxHtml(state,event,draft){
+  const role=CW11_TRADITIONAL_ROLES.includes(cwOpsAddRole)?cwOpsAddRole:'Traditional Photographer';
+  const partners=cwTradPartnerRows();
+  const eid=esc(event.eventId);
+  const unit=cwTradUnitForDate(state,event.date);
+  const arrival=(unit&&unit.reportingTime)||draft.teamArrival||cwTradDayContext(state,event.date).reportingTime||'';
+  const wantTp=unit?Number(unit.tpCount)||0:(role==='Traditional Photographer'?1:0);
+  const wantTv=unit?Number(unit.tvCount)||0:(role==='Traditional Videographer'?1:0);
+  if(!partners.length)return `<div class="cw-ops-guest-box"><div class="cw-ops-add-label">2 · Traditional provider</div><small class="cw-ops-add-help">No traditional partners saved yet. Add one in Team with type “Traditional partner”, then come back here.</small></div>`;
+  const options=partners.map(([pid,p])=>`<option value="${esc(pid)}" ${unit&&unit.partnerId===pid?'selected':''}>${esc(p.name||'Traditional Partner')}</option>`).join('');
+  return `<div class="cw-ops-guest-box"><div class="cw-ops-add-label">2 · Traditional provider for ${esc(cw10CompactDate(event.date))}</div>
+    <div class="cw-ops-trad-grid">
+      <label class="wide">Provider<select id="cwTradInPartner_${eid}">${options}</select></label>
+      <label>TP required<input id="cwTradInTp_${eid}" type="number" min="0" max="20" step="1" value="${wantTp}"></label>
+      <label>TV required<input id="cwTradInTv_${eid}" type="number" min="0" max="20" step="1" value="${wantTv}"></label>
+      <label>Arrival time<input id="cwTradInArrival_${eid}" type="time" value="${esc(arrival)}"></label>
+      <label>Total day cost ₹<input id="cwTradInCost_${eid}" type="number" min="0" step="1" placeholder="e.g. 18000" value="${unit&&unit.amount!=null?esc(unit.amount):''}"></label>
+      <label class="wide">Note (internal, never on the pass)<input id="cwTradInNote_${eid}" type="text" maxlength="200" placeholder="Optional" value="${esc(unit&&unit.internalNote||'')}"></label>
+    </div>
+    <div class="cw-ops-add-actions"><button type="button" class="cw10-primary" onclick="cwOpsSaveTradProvider('${eid}')">${unit?'Update traditional provider':'Save traditional provider'}</button></div>
+    <small class="cw-ops-add-help">Arrival is pre-filled from this event’s team arrival time (${esc(ciFmtTime(arrival))}) — change it only if the provider reports separately. Cost stays in Finance &amp; Reports and never reaches the captain pass. One provider covers the whole date.</small>
+  </div><div class="cw-ops-add-label" style="margin-top:14px">Or assign our own registered ${esc(ciRoleCode(role))} (optional)</div>`;
+}
+async function cwOpsSaveTradProvider(eventId){
+  const {state,event}=cw11CurrentStateEvent(eventId);if(!state||!event)return;
+  const g=id=>document.getElementById(`${id}_${eventId}`);
+  const existing=cwTradUnitForDate(state,event.date);
+  const saved=await cwTradPersistUnit(state,{
+    date:event.date,
+    partnerId:g('cwTradInPartner')?.value||'',
+    tpCount:g('cwTradInTp')?.value,
+    tvCount:g('cwTradInTv')?.value,
+    reportingTime:g('cwTradInArrival')?.value||'',
+    amount:g('cwTradInCost')?.value,
+    internalNote:g('cwTradInNote')?.value||'',
+    editUnitId:existing&&existing.unitId||''
+  });
+  if(!saved)return;
+  cwOpsAddFor='';cwOpsAddSelected=new Set();
+  renderClientsWorkspace();
 }
 function cwTradRandomToken(){const bytes=new Uint8Array(24);crypto.getRandomValues(bytes);return [...bytes].map(n=>n.toString(16).padStart(2,'0')).join('');}
 async function cwTradHashToken(token){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));return [...new Uint8Array(buf)].map(n=>n.toString(16).padStart(2,'0')).join('');}
