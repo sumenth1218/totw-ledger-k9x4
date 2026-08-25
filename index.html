@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.30-crew-invoice-save-2026-08-25">
+<meta name="totw-build" content="v13.1.31-trad-captain-invoice-2026-08-25">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -4518,13 +4518,15 @@ function dayCard(id,p,d,di,now){
         <i class="xs" onclick="cDel('${id}',${di},${ri},${ci})">×</i></span>`;
     }).join('');
     const trad=r.opsSource==='traditionalUnit';
-    const tradNote=trad?`<div style="margin:4px 0 0;font:10.5px var(--body);color:var(--ink-soft)">Partner ${esc(r.partnerName||'Traditional supplier')}${r.composition?` · ${esc(r.composition)}`:''}${r.captainName?` · Captain logged in`:' · Waiting for captain login'}</div>`:'';
+    const tradNamed=trad&&String(r.captainName||r.person||'').trim()&&!cwTradIsPlaceholderPerson(r.person);
+    const tradNote=trad?`<div style="margin:4px 0 0;font:10.5px var(--body);color:var(--ink-soft)">Partner ${esc(r.partnerName||'Traditional supplier')}${r.composition?` · ${esc(r.composition)}`:''}${tradNamed?` · Captain ${esc(r.captainName||r.person)}`:' · Name the captain here to invoice this unit'}</div>`:'';
     const roleVal=trad?'Traditional Photo & Video':(r.role||'');
-    const personPh=trad?(r.captainName?'Captain on ground':'Traditional Photo & Traditional Video'):'Who shot';
+    const personVal=cwTradIsPlaceholderPerson(r.person)?'':(r.person||'');
+    const personPh=trad?'Captain name':'Who shot';
     return `<div class="role-row">
       <div class="role-line">
         <input list="dlProdRoles" type="text" placeholder="Role (Drone, LED…)" value="${esc(roleVal)}" ${trad?'readonly style="min-width:168px;background:var(--surface-2)"':`onchange="rSet('${id}',${di},${ri},'role',this.value)" style="min-width:128px"`}>
-        <input class="person" list="dlPeople" type="text" placeholder="${esc(personPh)}" value="${esc(r.person||'')}" ${trad&&!r.captainName?'readonly style="background:var(--surface-2)"':''} onchange="rSet('${id}',${di},${ri},'person',this.value)">
+        <input class="person" list="dlPeople" type="text" placeholder="${esc(personPh)}" value="${esc(personVal)}" onchange="rSet('${id}',${di},${ri},'person',this.value)">
         <input class="payin" type="number" placeholder="₹ pay" value="${r.pay??''}" onchange="rSet('${id}',${di},${ri},'pay',this.value)">
         <button class="xs" onclick="rDel('${id}',${di},${ri})">×</button>
       </div>
@@ -4686,7 +4688,10 @@ function rSet(id,di,ri,k,v){
     if(NODATA.has(r.role))r.cards=[];
     else if(!(r.cards||[]).length)r.cards=[{a:false,b:false,v:false}];
   }else r[k]=v;
-  if(k==='person'&&v)regPerson(v,r.role);
+  if(k==='person'&&v){
+    regPerson(v,r.role);
+    if(r.opsSource==='traditionalUnit')r.captainName=String(v).trim();
+  }
   writeProd(id);
 }
 function cAdd(id,di,ri){
@@ -4898,7 +4903,7 @@ function renderTeam(){
     (p.days||[]).forEach(d=>{
       if(mFil&&String(d.date||'').slice(0,7)!==mFil)return;
       (d.roles||[]).forEach(r=>{
-        if(!r.person)return;
+        if(!r.person||cwTradIsPlaceholderPerson(r.person))return;
         const k=r.person.trim().toLowerCase();
         const s=stats[k]=stats[k]||{name:r.person.trim(),key:k,days:new Set(),ev:0,weds:new Set(),pay:0,shoots:[]};
         s.days.add(d.date);
@@ -4937,7 +4942,7 @@ function crewInvoicePeople(){
     (p.days||[]).forEach(d=>{
       if(mFil&&String(d.date||'').slice(0,7)!==mFil)return;
       (d.roles||[]).forEach(r=>{
-        const name=String(r.person||'').trim();if(!name)return;
+        const name=String(r.person||'').trim();if(!name||cwTradIsPlaceholderPerson(name))return;
         const k=prodPersonKey(name);
         const s=map[k]=map[k]||{key:k,name,couples:new Map(),pay:0};
         if(name.length>s.name.length)s.name=name;
@@ -9698,23 +9703,29 @@ function cwTradPassEvents(state,date,eventIds){
   const scope=Array.isArray(eventIds)?eventIds.map(String).filter(Boolean):[];
   const out={};(state.events||[]).filter(e=>e.date===date&&(!scope.length||scope.includes(String(e.eventId)))).forEach(event=>{const d=cw10CurrentDetails(state,event)||{};out[event.eventId]={name:String(event.name||'Event').slice(0,120),date:event.date,startTime:cwTradPassTime(d.startTime),endTime:cwTradPassTime(d.endTime),venueName:String(d.venueName||'').slice(0,240),mapsUrl:String(d.mapsUrl||'').slice(0,1000),notes:String(d.notes||'').slice(0,1000),traditionalListKey:String(shotListKey(event.name)||'').slice(0,160)};});return out;
 }
+function cwTradIsPlaceholderPerson(name){
+  const n=String(name||'').trim().toLowerCase();
+  return !n||n==='traditional photo & traditional video'||n==='traditional photo & video';
+}
 function cwTradFinanceRoleLabel(unit){
   return 'Traditional Photo & Video';
 }
-function cwTradFinancePersonLabel(unit,pass){
-  const captain=String(pass&&pass.captainName||'').trim();
-  if(captain)return captain;
-  // Until the on-ground captain logs in, show the unit seats — not the partner supplier name.
-  return 'Traditional Photo & Traditional Video';
+function cwTradFinancePersonLabel(unit,pass,prior){
+  const logged=String(pass&&pass.captainName||'').trim();
+  if(logged)return logged;
+  const named=String(prior&&(prior.captainName||prior.person)||'').trim();
+  if(named&&!cwTradIsPlaceholderPerson(named))return named;
+  return '';
 }
 function cwTradFinanceRow(unit,pass,prior){
-  const role=cwTradFinanceRoleLabel(unit),person=cwTradFinancePersonLabel(unit,pass);
+  const role=cwTradFinanceRoleLabel(unit),person=cwTradFinancePersonLabel(unit,pass,prior);
   const cards=prior&&Array.isArray(prior.cards)?prior.cards:[{a:false,b:false,v:false}];
+  const captain=String(pass&&pass.captainName||prior&&prior.captainName||person||'').trim();
   return {
-    person,role,pay:Number(unit.amount)||0,uid:unit.partnerId||null,
+    person,role,pay:Number(prior&&prior.pay)||Number(unit.amount)||0,uid:unit.partnerId||null,
     opsSource:'traditionalUnit',sourceKey:unit.unitId,opsDay:unit.date,
     partnerName:unit.partnerName||'',partnerId:unit.partnerId||'',
-    composition:cwTradComposition(unit),captainName:String(pass&&pass.captainName||'').trim(),
+    composition:cwTradComposition(unit),captainName:captain,
     cards
   };
 }
@@ -9752,9 +9763,9 @@ function cwTradSyncFinanceLabels(){
         if(!unit){
           // Fallback: use stored partner/composition fields
           const captain=String(r.captainName||'').trim();
-          const person=captain||'Traditional Photo & Traditional Video';
+          const person=captain||(cwTradIsPlaceholderPerson(r.person)?'':String(r.person||'').trim());
           const role='Traditional Photo & Video';
-          if(r.person!==person||ciRoleToProdRole(r.role)!==role){day.roles[i]={...r,person,role};changed=true;}
+          if(r.person!==person||ciRoleToProdRole(r.role)!==role){day.roles[i]={...r,person,role,captainName:captain||person};changed=true;}
           return;
         }
         pass=traditionalPasses[unit.passId]||{};
