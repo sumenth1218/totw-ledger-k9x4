@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.31-trad-captain-invoice-2026-08-25">
+<meta name="totw-build" content="v13.1.32-season-profit-2026-08-25">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -2354,12 +2354,13 @@ body{background:
       <span id="seasonMeta">Show ▸</span>
     </div>
     <div class="act-body">
-      <p class="hint" style="margin:10px 0 8px">Pick a date range and export a finance summary PDF — cost per couple, total paid to each person, spend by role, and the headline totals.</p>
+      <p class="hint" style="margin:10px 0 8px">Pick a date range. The review lists each client’s package value, crew cost and profit (package − crew cost), plus totals paid per person.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-        <div><label style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase;display:block;margin-bottom:4px">From</label><input type="date" id="seasonFrom" value="2026-01-01" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></div>
-        <div><label style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase;display:block;margin-bottom:4px">To</label><input type="date" id="seasonTo" value="2026-12-31" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></div>
+        <div><label style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase;display:block;margin-bottom:4px">From</label><input type="date" id="seasonFrom" value="2026-01-01" onchange="renderSeasonPreview()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></div>
+        <div><label style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase;display:block;margin-bottom:4px">To</label><input type="date" id="seasonTo" value="2026-12-31" onchange="renderSeasonPreview()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></div>
         <button class="btn-mini" onclick="exportSeasonPDF()" style="height:37px">Export PDF</button>
       </div>
+      <div id="seasonPreview" style="margin-top:14px"></div>
     </div>
   </div>
 
@@ -5176,7 +5177,7 @@ async function exportCrewInvoice(){
     <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>`;
   openPrint(`Invoice — ${person.name}`,inner);
 }
-function renderProdAll(){renderProd();renderBusinessOverview();renderProdAlerts();renderTeam();updateDatalists();renderGlobalDeliverables();}
+function renderProdAll(){renderProd();renderBusinessOverview();renderProdAlerts();renderTeam();renderSeasonPreview();updateDatalists();renderGlobalDeliverables();}
 function toggleSeason(){
   const sec=document.getElementById('seasonSec');
   sec.classList.toggle('open');
@@ -5344,49 +5345,77 @@ function exportCouplePDF(id){
     <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>`;
   openPrint(`Tale of Two Weddings — ${p.couple}`,inner);
 }
+function seasonFinanceRows(from,to){
+  const inRange=iso=>iso>=from&&iso<=to;
+  const couples=[]; const byPerson={}; const byRole={};
+  let rangeSpend=0,dayCount=0;
+  Object.values(prods||{}).forEach(p=>{
+    if(!p)return;
+    const days=(p.days||[]).filter(d=>inRange(d.date));
+    if(!days.length)return;
+    dayCount+=days.length;
+    let rangeCost=0;
+    days.forEach(d=>(d.roles||[]).forEach(r=>{
+      const v=+r.pay||0;rangeCost+=v;rangeSpend+=v;
+      byRole[r.role]=(byRole[r.role]||0)+v;
+      const nm=(r.person||'').trim();
+      if(nm&&v&&!(typeof cwTradIsPlaceholderPerson==='function'&&cwTradIsPlaceholderPerson(nm)))byPerson[nm]=(byPerson[nm]||0)+v;
+    }));
+    const pkg=+p.pkg||0,crew=crewCost(p).total,profit=pkg?pkg-crew:null;
+    const dts=days.map(d=>d.date).sort();
+    couples.push({couple:p.couple||'Unnamed couple',from:dts[0],to:dts[dts.length-1],days:days.length,rangeCost,pkg,crew,profit});
+  });
+  couples.sort((a,b)=>(b.profit??-Infinity)-(a.profit??-Infinity)||b.crew-a.crew);
+  const pkgTot=couples.reduce((s,c)=>s+(c.pkg||0),0);
+  const crewTot=couples.reduce((s,c)=>s+c.crew,0);
+  const profitTot=couples.filter(c=>c.pkg>0).reduce((s,c)=>s+c.profit,0);
+  const withPkg=couples.filter(c=>c.pkg>0).length;
+  return {couples,byPerson,byRole,rangeSpend,dayCount,pkgTot,crewTot,profitTot,withPkg};
+}
+function renderSeasonPreview(){
+  const el=document.getElementById('seasonPreview');if(!el)return;
+  const from=document.getElementById('seasonFrom')?.value||'2026-01-01';
+  const to=document.getElementById('seasonTo')?.value||'2026-12-31';
+  if(from>to){el.innerHTML='<div class="empty">Start date is after end date.</div>';return;}
+  const data=seasonFinanceRows(from,to);
+  if(!data.couples.length){el.innerHTML='<div class="empty">No shoot days in that range.</div>';return;}
+  const inr=n=>'₹'+(n||0).toLocaleString('en-IN');
+  const rows=data.couples.map(c=>`<tr><td>${esc(c.couple)}</td><td>${esc(fmt(c.from))}${c.to!==c.from?' – '+esc(fmt(c.to)):''}</td><td class="num">${c.pkg?inr(c.pkg):'—'}</td><td class="num">${inr(c.crew)}</td><td class="num">${c.profit==null?'Set package':inr(c.profit)}</td></tr>`).join('');
+  el.innerHTML=`<div class="role-spend" style="margin:0 0 12px"><div class="rs-head">Client-wise profit — package − crew cost</div>
+    <div class="cost-line"><span>Package (set)</span><span>${inr(data.pkgTot)}</span></div>
+    <div class="cost-line"><span>Crew cost</span><span>${inr(data.crewTot)}</span></div>
+    <div class="cost-line"><span>Profit</span><span>${inr(data.profitTot)}</span></div>
+    <div class="cost-line"><span>Crew spend in this date range</span><span>${inr(data.rangeSpend)}</span></div></div>
+    <table class="team-table"><tr><th>Client</th><th>Dates</th><th style="text-align:right">Package</th><th style="text-align:right">Crew cost</th><th style="text-align:right">Profit</th></tr>${rows}
+    <tr class="team-total"><td colspan="2">Total${data.withPkg<data.couples.length?` · ${data.couples.length-data.withPkg} missing package`:''}</td><td class="num">${inr(data.pkgTot)}</td><td class="num">${inr(data.crewTot)}</td><td class="num">${inr(data.profitTot)}</td></tr></table>`;
+}
 function exportSeasonPDF(fromArg,toArg){
   const from=fromArg||document.getElementById('cw12SeasonFrom')?.value||document.getElementById('seasonFrom')?.value||'2026-01-01';
   const to=toArg||document.getElementById('cw12SeasonTo')?.value||document.getElementById('seasonTo')?.value||'2026-12-31';
   if(from>to){toast('Start date is after end date.');return;}
-  const inRange=iso=>iso>=from&&iso<=to;
-  const couples=[]; const byPerson={}; const byRole={};
-  let grandTotal=0,weddingCount=0,dayCount=0;
-  Object.values(prods).forEach(p=>{
-    const days=(p.days||[]).filter(d=>inRange(d.date));
-    if(!days.length)return;
-    weddingCount++;dayCount+=days.length;
-    let cTot=0; const dts=days.map(d=>d.date).sort();
-    days.forEach(d=>(d.roles||[]).forEach(r=>{
-      const v=+r.pay||0;cTot+=v;grandTotal+=v;
-      byRole[r.role]=(byRole[r.role]||0)+v;
-      const nm=(r.person||'').trim();
-      if(nm&&v)byPerson[nm]=(byPerson[nm]||0)+v;
-    }));
-    couples.push({couple:p.couple,from:dts[0],to:dts[dts.length-1],days:days.length,total:cTot});
-  });
-  if(!weddingCount){toast('No shoot days in that range.');return;}
-  couples.sort((a,b)=>b.total-a.total);
-  const coupleRows=couples.map(c=>`<tr><td>${esc(c.couple)}</td><td>${esc(fmt(c.from))}${c.to!==c.from?' – '+esc(fmt(c.to)):''}</td><td class="n">${c.days}</td><td class="n">${inrP(c.total)}</td></tr>`).join('');
-  const personRows=Object.entries(byPerson).sort((a,b)=>b[1]-a[1]).map(([n,v])=>`<tr><td>${esc(n)}</td><td class="n">${inrP(v)}</td></tr>`).join('')||'<tr><td colspan="2" class="muted">No pay entered.</td></tr>';
-  const roleData=Object.entries(byRole).filter(([r,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-  const avg=weddingCount?Math.round(grandTotal/weddingCount):0;
+  const data=seasonFinanceRows(from,to);
+  if(!data.couples.length){toast('No shoot days in that range.');return;}
+  const coupleRows=data.couples.map(c=>`<tr><td>${esc(c.couple)}</td><td>${esc(fmt(c.from))}${c.to!==c.from?' – '+esc(fmt(c.to)):''}</td><td class="n">${c.days}</td><td class="n">${c.pkg?inrP(c.pkg):'—'}</td><td class="n">${inrP(c.crew)}</td><td class="n">${c.profit==null?'Set package':inrP(c.profit)}</td></tr>`).join('');
+  const personRows=Object.entries(data.byPerson).sort((a,b)=>b[1]-a[1]).map(([n,v])=>`<tr><td>${esc(n)}</td><td class="n">${inrP(v)}</td></tr>`).join('')||'<tr><td colspan="2" class="muted">No pay entered.</td></tr>';
+  const roleData=Object.entries(data.byRole).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
   const fmtRange=`${esc(fmt(from))} ${from.slice(0,4)} – ${esc(fmt(to))} ${to.slice(0,4)}`;
   const inner=`
     <div class="brand">Tale of Two Weddings — Studio Ledger</div>
     <h1>Season finance review</h1>
     <div class="sub">${fmtRange}</div>
     <div class="band">
-      <div class="b"><div class="k">Total crew spend</div><div class="v">${inrP(grandTotal)}</div></div>
-      <div class="b"><div class="k">Weddings</div><div class="v">${weddingCount}</div></div>
-      <div class="b"><div class="k">Shoot days</div><div class="v">${dayCount}</div></div>
-      <div class="b"><div class="k">Avg / wedding</div><div class="v">${inrP(avg)}</div></div>
+      <div class="b"><div class="k">Package value</div><div class="v">${inrP(data.pkgTot)}</div></div>
+      <div class="b"><div class="k">Crew cost</div><div class="v">${inrP(data.crewTot)}</div></div>
+      <div class="b"><div class="k">Profit</div><div class="v">${inrP(data.profitTot)}</div></div>
+      <div class="b"><div class="k">Weddings</div><div class="v">${data.couples.length}</div></div>
     </div>
-    ${roleData.length?`<h2>Spend by role</h2>${pieSVG(roleData)}`:''}
-    <h2>Cost per couple</h2>
-    <table><tr><th>Couple</th><th>Dates</th><th class="n">Days</th><th class="n">Crew cost</th></tr>${coupleRows}
-      <tr class="tot"><td colspan="3">Total</td><td class="n">${inrP(grandTotal)}</td></tr></table>
-    <h2>Total paid per person</h2>
+    <h2>Client-wise profit</h2>
+    <table><tr><th>Client</th><th>Dates</th><th class="n">Days</th><th class="n">Package</th><th class="n">Crew cost</th><th class="n">Profit</th></tr>${coupleRows}
+      <tr class="tot"><td colspan="3">Total</td><td class="n">${inrP(data.pkgTot)}</td><td class="n">${inrP(data.crewTot)}</td><td class="n">${inrP(data.profitTot)}</td></tr></table>
+    ${roleData.length?`<h2>Spend by role (in range)</h2>${pieSVG(roleData)}`:''}
+    <h2>Total paid per person (in range)</h2>
     <table>${personRows}</table>
+    <p class="muted" style="margin-top:16px">Profit = package value − full crew cost for that wedding. Crew paid-per-person is only for shoot days inside this date range. Couples with no package value show “Set package”.</p>
     <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>`;
   openPrint(`Tale of Two Weddings — Season ${from} to ${to}`,inner);
 }
@@ -8482,7 +8511,7 @@ function cw12DeliveryQueueData(){
     return `<section class="cw12-delivery-group"><div class="cw12-delivery-group-head"><h3>${esc(label)}</h3><span>${items.length} wedding${items.length===1?'':'s'} · ordered by final event</span></div>${itemHtml}</section>`;
   }).join('');
   const metrics=`<div class="cw12-delivery-metrics"><div class="cw12-delivery-metric"><span>All tracked</span><strong>${rows.length}</strong><small>${prodOnly?prodOnly+' production-only · ':''}Wedding links + production</small></div><div class="cw12-delivery-metric"><span>In delivery</span><strong>${inDelivery}</strong><small>Final event completed</small></div><div class="cw12-delivery-metric"><span>Overdue</span><strong>${overdue}</strong><small>At least one late item</small></div><div class="cw12-delivery-metric"><span>Complete</span><strong>${complete}</strong><small>All tracked items done</small></div></div>`;
-  const season=`<section class="cw12-delivery-group" style="margin-bottom:18px"><div class="cw12-delivery-group-head"><h3>Season finance</h3><span>Studio-only PDF · cost per couple, person and role</span></div><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;padding:4px 2px 8px"><div><label style="display:block;color:#8B857D;font-size:8px;margin-bottom:4px">From</label><input id="cw12SeasonFrom" type="date" value="2026-01-01" style="padding:8px 10px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></div><div><label style="display:block;color:#8B857D;font-size:8px;margin-bottom:4px">To</label><input id="cw12SeasonTo" type="date" value="2026-12-31" style="padding:8px 10px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></div><button type="button" class="cw10-soft" onclick="exportSeasonPDF()">Export season PDF</button></div></section>`;
+  const season=`<section class="cw12-delivery-group" style="margin-bottom:18px"><div class="cw12-delivery-group-head"><h3>Season finance</h3><span>Studio-only PDF · package, crew cost and client-wise profit</span></div><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;padding:4px 2px 8px"><div><label style="display:block;color:#8B857D;font-size:8px;margin-bottom:4px">From</label><input id="cw12SeasonFrom" type="date" value="2026-01-01" style="padding:8px 10px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></div><div><label style="display:block;color:#8B857D;font-size:8px;margin-bottom:4px">To</label><input id="cw12SeasonTo" type="date" value="2026-12-31" style="padding:8px 10px;border:1px solid #3A3D40;border-radius:8px;background:#111315;color:var(--ink)"></div><button type="button" class="cw10-soft" onclick="exportSeasonPDF()">Export season PDF</button></div></section>`;
   return {rows,metrics,season,groupHtml:groupHtml||'<div class="cw12-deliverables-empty">Delivery records will appear here.</div>'};
 }
 function cw12DeliveryQueueSection(){
