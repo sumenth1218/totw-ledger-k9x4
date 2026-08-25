@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.29-crew-invoice-2026-08-25">
+<meta name="totw-build" content="v13.1.30-crew-invoice-save-2026-08-25">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -2331,14 +2331,16 @@ body{background:
       <div style="margin:10px 0 4px"><select id="teamMonth" onchange="renderTeam()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></select></div>
       <div class="panel-card" id="crewInvoiceBox" style="margin:12px 0 16px;padding:16px">
         <div style="font-family:var(--display);font-size:20px;font-weight:600">Crew invoice</div>
-        <p class="hint" style="margin:6px 0 12px">Pick a crew member, tick the clients, then edit any date or amount on this invoice before you export. The PDF lists only date, ₹ pay, and the total.</p>
+        <p class="hint" style="margin:6px 0 12px">Pick a crew member, tick the clients, then edit any date or amount. Save keeps this invoice in the ledger so you can reopen it later. Export prints the PDF and saves it too. This does not change the ₹ pay typed on the wedding file.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
           <div style="min-width:220px;flex:1">
             <label style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase;display:block;margin-bottom:4px">Crew member</label>
             <select id="crewInvoicePerson" onchange="crewInvoicePick(this.value)" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></select>
           </div>
+          <button type="button" class="btn-mini" onclick="saveCrewInvoice()" style="height:37px">Save invoice</button>
           <button type="button" class="btn-mini" onclick="exportCrewInvoice()" style="height:37px">Export invoice</button>
         </div>
+        <div id="crewInvoiceSaved" style="margin-top:14px"></div>
         <div id="crewInvoiceClients" style="margin-top:14px"></div>
         <div id="crewInvoiceDraft" style="margin-top:14px"></div>
       </div>
@@ -2643,6 +2645,7 @@ let calYear = 2026;      // year shown on the Dates & Enquiries calendar
 let editState = null;    // in-place edit state {id,name,type,dates}
 let bookedDateEdit = null; // booked closed enquiry date editor {id,rows:[{old,date}]}
 let prods = {};          // production records
+let crewInvoices = {};   // saved crew invoices (drafts / exported)
 let prodsLoaded=false;
 let people = {};         // crew registry name->style
 let plans = {};          // crew planner rows: rowKey -> {iso,couple,event,loc,cells:{},need:{}}
@@ -2688,6 +2691,7 @@ let crewInvoiceTouched = false;
 let crewInvoiceRows = [];
 let crewInvoiceSeq = 1;
 let crewInvoiceMonthAtBuild = '';
+let crewInvoiceId = '';
 let openPlanPerson = null; // planner: team member whose schedule is expanded
 let planWrapKey = null;    // planner row with end-of-day wrap-up open
 let stageAddFor = null;   // production record with the custom-deliverable form open
@@ -2772,6 +2776,7 @@ function start(){
   db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};enquiriesLoaded=true;refresh();publishCrewEvents();renderClientsWorkspace();renderStudioHome();});
   db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
   db.ref('prod').on('value',s=>{prods=s.val()||{};prodsLoaded=true;renderProdAll();renderClientsWorkspace();renderStudioHome();cwScheduleOpsFinanceRefresh();});
+  db.ref('crewInvoices').on('value',s=>{crewInvoices=s.val()||{};if(typeof renderCrewInvoice==='function')renderCrewInvoice();});
   db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
   db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();renderCheckinFormOptions();renderMoodSec();previewClientFormEvents();publishCrewEvents();renderClientsWorkspace();});
   db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();renderClientsWorkspace();});
@@ -4967,14 +4972,100 @@ function crewInvoiceRebuildRows(){
   crewInvoiceMonthAtBuild=crewInvoiceMonth();
   crewInvoiceRows=crewInvoiceKey?crewInvoiceSourceRows(crewInvoiceKey,crewInvoiceSelected):[];
 }
+function crewInvoiceSavedForPerson(personKey){
+  return Object.entries(crewInvoices||{}).filter(([,inv])=>inv&&inv.personKey===personKey).sort((a,b)=>(b[1].updatedAt||0)-(a[1].updatedAt||0));
+}
+function crewInvoiceApplyRecord(id,inv){
+  crewInvoiceId=id||'';
+  crewInvoiceTouched=true;
+  crewInvoiceSelected=new Set(Array.isArray(inv.clients)?inv.clients:Object.values(inv.clients||{}));
+  const lines=Array.isArray(inv.lines)?inv.lines:Object.values(inv.lines||{});
+  crewInvoiceRows=lines.map(r=>({id:'inv'+(crewInvoiceSeq++),date:r&&r.date||'',pay:Math.max(0,Number(r&&r.pay)||0)}));
+  crewInvoiceMonthAtBuild=crewInvoiceMonth();
+}
 function crewInvoicePick(key){
   crewInvoiceKey=String(key||'');
+  crewInvoiceTouched=false;
+  crewInvoiceId='';
+  const person=crewInvoicePeople().find(x=>x.key===crewInvoiceKey);
+  crewInvoiceSelected=new Set(person?[...person.couples.keys()]:[]);
+  const month=crewInvoiceMonth();
+  const saved=person?crewInvoiceSavedForPerson(person.key).find(([,inv])=>(inv.month||'')===month):null;
+  if(saved)crewInvoiceApplyRecord(saved[0],saved[1]);
+  else crewInvoiceRebuildRows();
+  renderCrewInvoice();
+  document.getElementById('crewInvoiceBox')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function crewInvoiceNew(){
+  crewInvoiceId='';
   crewInvoiceTouched=false;
   const person=crewInvoicePeople().find(x=>x.key===crewInvoiceKey);
   crewInvoiceSelected=new Set(person?[...person.couples.keys()]:[]);
   crewInvoiceRebuildRows();
   renderCrewInvoice();
-  document.getElementById('crewInvoiceBox')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function crewInvoiceLoad(id){
+  const inv=crewInvoices[id];if(!inv){toast('That invoice is no longer saved.');return;}
+  crewInvoiceKey=inv.personKey||crewInvoiceKey;
+  crewInvoiceApplyRecord(id,inv);
+  renderCrewInvoice();
+  toast('Opened saved invoice.');
+}
+function crewInvoicePayload(status){
+  const person=crewInvoicePeople().find(x=>x.key===crewInvoiceKey);
+  if(!person)return null;
+  const lines=crewInvoiceRows.filter(r=>r.date).map(r=>({date:r.date,pay:Math.max(0,Number(r.pay)||0)}));
+  const clients=[...crewInvoiceSelected].sort((a,b)=>a.localeCompare(b,'en'));
+  const now=Date.now();
+  const prev=crewInvoiceId&&crewInvoices[crewInvoiceId]||{};
+  return {
+    personKey:person.key,
+    personName:person.name,
+    month:crewInvoiceMonth(),
+    clients,
+    lines,
+    total:lines.reduce((s,r)=>s+(+r.pay||0),0),
+    status:status||prev.status||'draft',
+    createdAt:prev.createdAt||now,
+    updatedAt:now,
+    exportedAt:status==='exported'?now:(prev.exportedAt||null),
+    by:editor||'Owner'
+  };
+}
+async function saveCrewInvoice(status,quiet){
+  if(!liveMode||!db){toast('Sign in to save invoices to the ledger.');return null;}
+  const payload=crewInvoicePayload(status);if(!payload){toast('Select a crew member first.');return null;}
+  if(!payload.clients.length){toast('Tick at least one client.');return null;}
+  if(!payload.lines.length){toast('Add at least one date.');return null;}
+  const id=crewInvoiceId||db.ref('crewInvoices').push().key;
+  try{
+    await db.ref('crewInvoices/'+id).set(payload);
+    crewInvoiceId=id;
+    crewInvoices[id]=payload;
+    crewInvoiceTouched=true;
+    if(!quiet)toast(status==='exported'?'Invoice saved and ready to print.':'Invoice saved in the ledger.');
+    log(`crew invoice ${status==='exported'?'exported':'saved'}: ${payload.personName} · ${inrP(payload.total)}`);
+    renderCrewInvoice();
+    return id;
+  }catch(err){
+    console.error(err);
+    toast('Could not save the invoice. Publish the latest database rules, then try again.');
+    return null;
+  }
+}
+async function deleteCrewInvoice(id){
+  const inv=crewInvoices[id];if(!inv)return;
+  if(!confirm(`Delete the saved invoice for ${inv.personName||'this crew member'} (${inrP(inv.total||0)})?`))return;
+  try{
+    await db.ref('crewInvoices/'+id).set(null);
+    delete crewInvoices[id];
+    if(crewInvoiceId===id)crewInvoiceId='';
+    toast('Saved invoice deleted.');
+    renderCrewInvoice();
+  }catch(err){
+    console.error(err);
+    toast('Could not delete that invoice.');
+  }
 }
 function crewInvoiceTog(couple,on){
   crewInvoiceTouched=true;
@@ -5016,12 +5107,13 @@ function renderCrewInvoice(){
   const sel=document.getElementById('crewInvoicePerson');
   const clientsEl=document.getElementById('crewInvoiceClients');
   const draftEl=document.getElementById('crewInvoiceDraft');
+  const savedEl=document.getElementById('crewInvoiceSaved');
   if(!sel||!clientsEl||!draftEl)return;
   const peopleRows=crewInvoicePeople();
   if(crewInvoiceKey&&!peopleRows.some(x=>x.key===crewInvoiceKey)){
-    crewInvoiceKey='';crewInvoiceSelected=new Set();crewInvoiceTouched=false;crewInvoiceRows=[];
+    crewInvoiceKey='';crewInvoiceId='';crewInvoiceSelected=new Set();crewInvoiceTouched=false;crewInvoiceRows=[];
   }
-  if(crewInvoiceMonth()!==crewInvoiceMonthAtBuild&&crewInvoiceKey)crewInvoiceRebuildRows();
+  if(crewInvoiceMonth()!==crewInvoiceMonthAtBuild&&crewInvoiceKey&&!crewInvoiceId)crewInvoiceRebuildRows();
   const person=peopleRows.find(x=>x.key===crewInvoiceKey);
   if(person){
     const valid=new Set(person.couples.keys());
@@ -5029,6 +5121,17 @@ function renderCrewInvoice(){
     else [...crewInvoiceSelected].forEach(c=>{if(!valid.has(c))crewInvoiceSelected.delete(c);});
   }
   sel.innerHTML='<option value="">Select crew</option>'+peopleRows.map(p=>`<option value="${esc(p.key)}" ${p.key===crewInvoiceKey?'selected':''}>${esc(p.name)}${p.pay?` · ₹${p.pay.toLocaleString('en-IN')}`:''}</option>`).join('');
+  if(savedEl){
+    const saved=person?crewInvoiceSavedForPerson(person.key):[];
+    savedEl.innerHTML=saved.length
+      ?`<div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px">Saved in ledger</div>${saved.map(([id,inv])=>{
+        const when=inv.updatedAt?new Date(inv.updatedAt).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'';
+        const period=inv.month?`${MN[+inv.month.slice(5)-1]||inv.month} ${inv.month.slice(0,4)}`:'All months';
+        const open=id===crewInvoiceId;
+        return `<div class="cost-line" style="${open?'background:var(--surface);border-radius:8px;padding:8px 10px;margin:0 -4px;':''}"><span>${esc(period)} · ${esc(inv.status==='exported'?'Exported':'Draft')}${when?` · ${esc(when)}`:''}</span><span style="display:flex;gap:8px;align-items:center">${inrP(inv.total||0)} <button type="button" class="xs" onclick="crewInvoiceLoad('${id}')" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">${open?'Editing':'Open'}</button><button type="button" class="xs" onclick="deleteCrewInvoice('${id}')">×</button></span></div>`;
+      }).join('')}`
+      :(person?'<p class="hint" style="margin:0">No saved invoice for this person yet.</p>':'');
+  }
   if(!person){
     clientsEl.innerHTML='';
     draftEl.innerHTML='<p class="hint" style="margin:0">Select a crew member to build their invoice.</p>';
@@ -5040,14 +5143,15 @@ function renderCrewInvoice(){
     :'<p class="hint" style="margin:0">No typed ₹ pay for this person in the selected month.</p>';
   const total=crewInvoiceRows.reduce((s,r)=>s+(+r.pay||0),0);
   const rowsHtml=crewInvoiceRows.length?crewInvoiceRows.slice().sort((a,b)=>String(a.date||'9999').localeCompare(String(b.date||'9999'))).map(r=>`<tr><td><input type="date" value="${esc(r.date||'')}" onchange="crewInvoiceSetDate('${r.id}',this.value)"></td><td><input type="number" min="0" step="1" value="${r.pay||''}" oninput="crewInvoiceSetPay('${r.id}',this.value)" placeholder="₹"></td><td class="n"><button type="button" class="xs" onclick="crewInvoiceDelRow('${r.id}')">×</button></td></tr>`).join(''):'<tr><td colspan="3" class="hint">No days yet — add a row or tick a client with typed ₹ pay.</td></tr>';
-  draftEl.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">Invoice lines — edit if needed</span><span style="display:flex;gap:8px"><button type="button" class="xs" onclick="crewInvoiceAddRow()" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">+ Line</button><button type="button" class="xs" onclick="crewInvoiceReset()" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">Reset to typed pay</button></span></div><table class="crew-inv-table"><tr><th>Date</th><th>Cost</th><th></th></tr>${rowsHtml}<tr class="crew-inv-total"><td>Total</td><td id="crewInvoiceTotal">₹${total.toLocaleString('en-IN')}</td><td></td></tr></table>`;
+  draftEl.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">Invoice lines — edit if needed${crewInvoiceId?' · saved':''}</span><span style="display:flex;gap:8px"><button type="button" class="xs" onclick="crewInvoiceAddRow()" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">+ Line</button><button type="button" class="xs" onclick="crewInvoiceNew()" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">New invoice</button><button type="button" class="xs" onclick="crewInvoiceReset()" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">Reset to typed pay</button></span></div><table class="crew-inv-table"><tr><th>Date</th><th>Cost</th><th></th></tr>${rowsHtml}<tr class="crew-inv-total"><td>Total</td><td id="crewInvoiceTotal">₹${total.toLocaleString('en-IN')}</td><td></td></tr></table>`;
 }
-function exportCrewInvoice(){
+async function exportCrewInvoice(){
   const person=crewInvoicePeople().find(x=>x.key===crewInvoiceKey);
   if(!person){toast('Select a crew member first.');return;}
   if(!crewInvoiceSelected.size){toast('Tick at least one client.');return;}
   const lines=crewInvoiceRows.filter(r=>r.date&&(+r.pay||0)>0).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   if(!lines.length){toast('Add at least one date with a cost.');return;}
+  await saveCrewInvoice('exported',true);
   const total=lines.reduce((s,r)=>s+(+r.pay||0),0);
   const clients=[...crewInvoiceSelected].sort((a,b)=>a.localeCompare(b,'en'));
   const mFil=crewInvoiceMonth();
