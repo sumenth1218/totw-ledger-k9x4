@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.34-crew-paid-invoice-2026-08-29">
+<meta name="totw-build" content="v13.1.35-event-paid-2026-08-29">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -446,7 +446,13 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .inv-act{margin-left:8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--ink)!important;border-radius:5px;padding:3px 8px;background:var(--ink)!important;color:var(--ivory,#F7F3EC)!important;vertical-align:middle}
 .xs.inv-paid,.btn-mini.inv-paid,.inv-act.inv-paid{background:var(--leaf)!important;color:#F4F8F4!important;border-color:var(--leaf)!important}
 .paid-pill{display:inline-block;margin-left:6px;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--leaf);border:1px solid var(--leaf);border-radius:99px;padding:1px 7px;vertical-align:middle}
+.paid-pill.part{color:var(--amber,#B07C28);border-color:var(--amber,#B07C28)}
 .team-table td.num.amt-paid,.crew-inv-table .amt-paid,.pd-wrap .amt-paid{text-decoration:line-through;color:var(--ink-soft)!important;opacity:.72}
+.pd-wrap .cost-line{gap:8px;align-items:center}
+.pd-wrap .cost-line>span:first-child{flex:1;min-width:0}
+.pay-status{flex:none;font-family:var(--mono)!important;font-size:8px!important;letter-spacing:.08em;text-transform:uppercase;border-radius:99px;padding:3px 8px;cursor:pointer;border:1px solid var(--line)!important;background:#fff!important;color:var(--ink)!important;line-height:1.2}
+.pay-status.is-paid{background:var(--leaf)!important;color:#F4F8F4!important;border-color:var(--leaf)!important}
+.pay-status.is-due{background:transparent!important;color:var(--ink-soft)!important}
 .person-detail td{padding:0 4px 10px!important;border-bottom:1px solid var(--line)}
 .pd-wrap{display:flex;flex-direction:column;gap:5px;padding:8px 10px;background:#FBFAF6;border-radius:6px}
 .dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:2px}
@@ -1726,7 +1732,7 @@ body{background:
 .pd-wrap,.person-detail .pd-wrap,.person-detail td .pd-wrap{background:var(--surface)!important;color:var(--ink)!important;border:1px solid var(--line)}
 .person-detail .cost-line,.person-detail .cost-line span,.plan-day-wrap .cost-line{color:var(--ink)!important}
 .person-detail .cost-line>span:last-child{color:var(--ink)!important}
-.person-detail .cost-line>span.amt-paid:last-child{text-decoration:line-through;color:var(--ink-soft)!important;opacity:.72}
+.person-detail .cost-line>span.amt-paid{text-decoration:line-through;color:var(--ink-soft)!important;opacity:.72}
 .person-detail td{font-size:12px;color:var(--ink-soft)}
 .team-table .person-detail td{background:transparent!important}
 .cw11-plan-head h3,.cw11-section-head h4,.cw11-plan-card,.cw11-record-card,.cw11-team-list{color:var(--ink)!important}
@@ -2336,7 +2342,7 @@ body{background:
       <div style="margin:10px 0 4px"><select id="teamMonth" onchange="renderTeam()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></select></div>
       <div class="panel-card" id="crewInvoiceBox" style="margin:12px 0 16px;padding:16px">
         <div style="font-family:var(--display);font-size:20px;font-weight:600">Crew invoice</div>
-        <p class="hint" style="margin:6px 0 12px">Pick a crew member, tick the clients, then edit any date or amount. Save keeps this invoice in the ledger so you can reopen it later. Export prints the PDF. Paid stamps it settled — the PDF shows PAID with amounts struck out, and the team list does the same. This does not change the ₹ pay typed on the wedding file.</p>
+        <p class="hint" style="margin:6px 0 12px">Pick a crew member, tick the clients, then edit any date or amount. On the list below, mark each shoot Paid or Not paid. Export prints those lines — paid ones are struck out, unpaid ones stay open. Header Paid marks every visible shoot for that person. This does not change the ₹ pay typed on the wedding file.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
           <div style="min-width:220px;flex:1">
             <label style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase;display:block;margin-bottom:4px">Crew member</label>
@@ -4897,6 +4903,87 @@ function famClass(style){
   if(s.includes('led'))return 'fam-led';
   return '';
 }
+function crewHitsForPerson(personKey,month){
+  const mFil=month==null?crewInvoiceMonth():month,hits=[];
+  Object.entries(prods||{}).forEach(([pid,p])=>{
+    (p.days||[]).forEach((d,di)=>{
+      if(mFil&&String(d.date||'').slice(0,7)!==mFil)return;
+      (d.roles||[]).forEach((r,ri)=>{
+        if(prodPersonKey(r.person)!==personKey||cwTradIsPlaceholderPerson(r.person))return;
+        hits.push({pid,di,ri,role:r,couple:String(p.couple||'').trim()||'Unnamed couple',date:d.date,events:(d.events||[]).slice(),pay:+r.pay||0,paidFlag:r.paid});
+      });
+    });
+  });
+  return hits;
+}
+function crewHitsInheritPaid(personKey,hits){
+  return !!(hits.length&&hits.every(h=>h.paidFlag!==true&&h.paidFlag!==false)&&crewInvoiceIsPaid(personKey));
+}
+function crewHitDisplayPaid(h,inherit){
+  if(h.paidFlag===true)return true;
+  if(h.paidFlag===false)return false;
+  return !!inherit;
+}
+function crewPersonPaidState(personKey,hits){
+  const list=hits||crewHitsForPerson(personKey);
+  const inherit=crewHitsInheritPaid(personKey,list);
+  const paidN=list.filter(h=>crewHitDisplayPaid(h,inherit)).length;
+  return {n:list.length,paidN,inherit,all:list.length>0&&paidN===list.length,some:paidN>0&&paidN<list.length,none:paidN===0};
+}
+function writeProdIds(ids){
+  [...new Set(ids||[])].forEach(id=>{if(id&&prods[id])writeProd(id);});
+}
+async function syncCrewInvoicePaidFlag(personKey,allPaid){
+  if(!liveMode||!db)return;
+  const rec=crewInvoiceMonthRecord(personKey);
+  if(allPaid){
+    if(rec&&rec[1]&&rec[1].status==='paid')return;
+    if(crewInvoiceKey===personKey&&crewInvoiceRows.some(r=>r.date)){await saveCrewInvoice('paid',true);return;}
+    const now=Date.now();
+    if(rec){
+      const payload=Object.assign({},rec[1],{status:'paid',paidAt:rec[1].paidAt||now,updatedAt:now,by:editor||'Owner'});
+      await db.ref('crewInvoices/'+rec[0]).set(payload);
+      crewInvoices[rec[0]]=payload;
+      return;
+    }
+    const person=crewInvoicePeople().find(x=>x.key===personKey);if(!person)return;
+    const selected=new Set([...person.couples.keys()]);
+    const lines=crewInvoiceSourceRows(person.key,selected).filter(r=>r.date).map(r=>({date:r.date,pay:Math.max(0,Number(r.pay)||0)}));
+    if(!lines.length)return;
+    const id=db.ref('crewInvoices').push().key;
+    const payload={personKey:person.key,personName:person.name,month:crewInvoiceMonth(),clients:[...selected].sort((a,b)=>a.localeCompare(b,'en')),lines,total:lines.reduce((s,r)=>s+(+r.pay||0),0),status:'paid',createdAt:now,updatedAt:now,exportedAt:null,paidAt:now,by:editor||'Owner'};
+    await db.ref('crewInvoices/'+id).set(payload);
+    crewInvoices[id]=payload;
+    if(crewInvoiceKey===person.key){crewInvoiceId=id;crewInvoiceTouched=true;}
+    return;
+  }
+  if(!rec||!rec[1]||rec[1].status!=='paid')return;
+  const prev=rec[1],now=Date.now();
+  const payload=Object.assign({},prev,{status:prev.exportedAt?'exported':'draft',paidAt:null,updatedAt:now,by:editor||'Owner'});
+  await db.ref('crewInvoices/'+rec[0]).set(payload);
+  crewInvoices[rec[0]]=payload;
+}
+async function markShootPaid(pid,di,ri){
+  const r=prods[pid]&&prods[pid].days&&prods[pid].days[di]&&prods[pid].days[di].roles&&prods[pid].days[di].roles[ri];
+  if(!r)return;
+  const personKey=prodPersonKey(r.person);
+  const hits=crewHitsForPerson(personKey);
+  const inherit=crewHitsInheritPaid(personKey,hits);
+  const cur=crewHitDisplayPaid({paidFlag:r.paid},inherit);
+  const next=!cur;
+  const pids=[];
+  if(inherit){
+    hits.forEach(h=>{prods[h.pid].days[h.di].roles[h.ri].paid=true;pids.push(h.pid);});
+  }
+  r.paid=next;
+  pids.push(pid);
+  writeProdIds(pids);
+  const after=crewHitsForPerson(personKey);
+  const all=after.length>0&&after.every(h=>h.role.paid===true);
+  try{await syncCrewInvoicePaidFlag(personKey,all);}catch(err){console.error(err);}
+  toast(next?'Marked paid.':'Marked not paid.');
+  if(typeof renderTeam==='function')renderTeam();
+}
 function renderTeam(){
   const el=document.getElementById('teamItems');
   const sec=document.getElementById('teamSec');
@@ -4906,10 +4993,10 @@ function renderTeam(){
     sel.innerHTML='<option value="">All months</option>'+[2026,2027].map(y=>MN.map((m,i)=>`<option value="${y}-${String(i+1).padStart(2,'0')}">${m} ${y}</option>`).join('')).join('');
   const mFil=sel?sel.value:'';
   const stats={};
-  Object.values(prods).forEach(p=>{
-    (p.days||[]).forEach(d=>{
+  Object.entries(prods||{}).forEach(([pid,p])=>{
+    (p.days||[]).forEach((d,di)=>{
       if(mFil&&String(d.date||'').slice(0,7)!==mFil)return;
-      (d.roles||[]).forEach(r=>{
+      (d.roles||[]).forEach((r,ri)=>{
         if(!r.person||cwTradIsPlaceholderPerson(r.person))return;
         const k=r.person.trim().toLowerCase();
         const s=stats[k]=stats[k]||{name:r.person.trim(),key:k,days:new Set(),ev:0,weds:new Set(),pay:0,shoots:[]};
@@ -4917,7 +5004,7 @@ function renderTeam(){
         s.ev+=Math.max(1,(d.events||[]).length);
         s.weds.add(p.couple);
         s.pay+=+r.pay||0;
-        s.shoots.push({couple:p.couple,date:d.date,events:(d.events||[]).slice(),role:r.role,pay:+r.pay||0});
+        s.shoots.push({pid,di,ri,couple:p.couple,date:d.date,events:(d.events||[]).slice(),role:r.role,pay:+r.pay||0,paidFlag:r.paid});
       });
     });
   });
@@ -4933,10 +5020,17 @@ function renderTeam(){
   el.innerHTML=(rows.length?roleSpendHtml+`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Events</th><th style="text-align:right">Weddings</th><th style="text-align:right">Paid</th></tr>${rows.map(s=>{
     const pr=people[s.name.toLowerCase()];
     const open=openPerson===s.key;
-    const paid=crewInvoiceIsPaid(s.key);
-    const main=`<tr class="person-row${open?' on':''}${paid?' is-paid':''}" onclick="personTog('${jsq(s.key)}')"><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill ${famClass(pr.style)}">${esc(pr.style)}</span>`:''}${paid?' <span class="paid-pill">Paid</span>':''} <button type="button" class="xs inv-act" onclick="event.stopPropagation();crewInvoicePick('${jsq(s.key)}')">Invoice</button> <button type="button" class="xs inv-act${paid?' inv-paid':''}" onclick="event.stopPropagation();markCrewPaid('${jsq(s.key)}')">${paid?'Paid ✓':'Paid'}</button> <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num${paid?' amt-paid':''}">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
+    const st=crewPersonPaidState(s.key,s.shoots);
+    const paid=st.all;
+    const pill=paid?' <span class="paid-pill">Paid</span>':st.some?` <span class="paid-pill part">${st.paidN}/${st.n} paid</span>`:'';
+    const headBtn=paid?'Paid ✓':st.some?'Pay all':'Paid';
+    const main=`<tr class="person-row${open?' on':''}${paid?' is-paid':''}" onclick="personTog('${jsq(s.key)}')"><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill ${famClass(pr.style)}">${esc(pr.style)}</span>`:''}${pill} <button type="button" class="xs inv-act" onclick="event.stopPropagation();crewInvoicePick('${jsq(s.key)}')">Invoice</button> <button type="button" class="xs inv-act${paid?' inv-paid':''}" onclick="event.stopPropagation();markCrewPaid('${jsq(s.key)}')">${headBtn}</button> <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num${paid?' amt-paid':''}">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
     if(!open)return main;
-    const shoots=s.shoots.slice().sort((a,b)=>a.date<b.date?-1:1).map(sh=>`<div class="cost-line"><span class="${paid?'amt-paid':''}">${fmt(sh.date)} · ${esc(sh.couple)}${sh.events.length?' · '+sh.events.map(esc).join(' + '):''} <span class="ev-pill ${famClass(sh.role)}" style="margin-left:2px">${esc(sh.role)}</span></span><span class="${paid?'amt-paid':''}">${sh.pay?'₹'+sh.pay.toLocaleString('en-IN'):'—'}</span></div>`).join('');
+    const inherit=st.inherit;
+    const shoots=s.shoots.slice().sort((a,b)=>a.date<b.date?-1:1).map(sh=>{
+      const rowPaid=crewHitDisplayPaid(sh,inherit);
+      return `<div class="cost-line"><span class="${rowPaid?'amt-paid':''}">${fmt(sh.date)} · ${esc(sh.couple)}${sh.events.length?' · '+sh.events.map(esc).join(' + '):''} <span class="ev-pill ${famClass(sh.role)}" style="margin-left:2px">${esc(sh.role)}</span></span><button type="button" class="pay-status ${rowPaid?'is-paid':'is-due'}" onclick="event.stopPropagation();markShootPaid('${jsq(sh.pid)}',${sh.di},${sh.ri})">${rowPaid?'Paid':'Not paid'}</button><span class="${rowPaid?'amt-paid':''}">${sh.pay?'₹'+sh.pay.toLocaleString('en-IN'):'—'}</span></div>`;
+    }).join('');
     return main+`<tr class="person-detail"><td colspan="5"><div class="pd-wrap">${shoots}</div></td></tr>`;
   }).join('')}</table>`
    :'<div class="empty">No crew logged yet. Add who shot what inside any wedding.</div>');
@@ -5099,69 +5193,25 @@ async function deleteCrewInvoice(id){
   }
 }
 async function markCrewPaid(personKey){
-  if(!liveMode||!db){toast('Sign in to mark invoices paid.');return;}
   const key=String(personKey||crewInvoiceKey||'');
   const person=crewInvoicePeople().find(x=>x.key===key);
   if(!person){toast('Select a crew member first.');return;}
-  const rec=crewInvoiceMonthRecord(person.key);
-  const now=Date.now();
-  if(rec&&rec[1]&&rec[1].status==='paid'){
-    if(!confirm(`Mark ${person.name}'s invoice as unpaid?`))return;
-    const prev=rec[1];
-    const payload=Object.assign({},prev,{status:prev.exportedAt?'exported':'draft',paidAt:null,updatedAt:now,by:editor||'Owner'});
-    try{
-      await db.ref('crewInvoices/'+rec[0]).set(payload);
-      crewInvoices[rec[0]]=payload;
-      toast('Invoice marked unpaid.');
-      log(`crew invoice unpaid: ${person.name}`);
-      if(typeof renderTeam==='function')renderTeam();
-      else renderCrewInvoice();
-    }catch(err){
-      console.error(err);
-      toast('Could not update that invoice. Publish the latest database rules, then try again.');
-    }
-    return;
-  }
-  if(crewInvoiceKey===person.key&&crewInvoiceRows.some(r=>r.date)){
-    await saveCrewInvoice('paid');
-    return;
-  }
-  let id,payload;
-  if(rec){
-    id=rec[0];
-    payload=Object.assign({},rec[1],{status:'paid',paidAt:rec[1].paidAt||now,updatedAt:now,by:editor||'Owner'});
-  }else{
-    const selected=new Set([...person.couples.keys()]);
-    const lines=crewInvoiceSourceRows(person.key,selected).filter(r=>r.date).map(r=>({date:r.date,pay:Math.max(0,Number(r.pay)||0)}));
-    if(!lines.length){toast('No typed ₹ pay to mark paid.');return;}
-    id=db.ref('crewInvoices').push().key;
-    payload={
-      personKey:person.key,
-      personName:person.name,
-      month:crewInvoiceMonth(),
-      clients:[...selected].sort((a,b)=>a.localeCompare(b,'en')),
-      lines,
-      total:lines.reduce((s,r)=>s+(+r.pay||0),0),
-      status:'paid',
-      createdAt:now,
-      updatedAt:now,
-      exportedAt:null,
-      paidAt:now,
-      by:editor||'Owner'
-    };
-  }
-  try{
-    await db.ref('crewInvoices/'+id).set(payload);
-    crewInvoices[id]=payload;
-    if(crewInvoiceKey===person.key){crewInvoiceId=id;crewInvoiceTouched=true;}
-    toast('Invoice marked paid.');
-    log(`crew invoice paid: ${payload.personName} · ${inrP(payload.total)}`);
-    if(typeof renderTeam==='function')renderTeam();
-    else renderCrewInvoice();
-  }catch(err){
+  const hits=crewHitsForPerson(person.key);
+  if(!hits.length){toast('No shoots to mark paid.');return;}
+  const st=crewPersonPaidState(person.key,hits);
+  const next=!st.all;
+  if(st.all&&!confirm(`Mark every ${person.name} shoot as not paid?`))return;
+  hits.forEach(h=>{prods[h.pid].days[h.di].roles[h.ri].paid=next;});
+  writeProdIds(hits.map(h=>h.pid));
+  try{await syncCrewInvoicePaidFlag(person.key,next);}
+  catch(err){
     console.error(err);
-    toast('Could not mark the invoice paid. Publish the latest database rules, then try again.');
+    toast('Shoot status saved. Invoice stamp needs a sign-in and the latest database rules.');
   }
+  toast(next?`Marked ${hits.length} shoots paid.`:`Marked ${hits.length} shoots not paid.`);
+  log(`crew ${next?'paid':'unpaid'}: ${person.name} · ${hits.length} shoots`);
+  if(typeof renderTeam==='function')renderTeam();
+  else renderCrewInvoice();
 }
 function crewInvoiceTog(couple,on){
   crewInvoiceTouched=true;
@@ -5236,9 +5286,10 @@ function renderCrewInvoice(){
     if(paidBtn){paidBtn.classList.remove('inv-paid');paidBtn.textContent='Paid';}
     return;
   }
-  const paid=crewInvoiceIsPaid(person.key);
+  const st=crewPersonPaidState(person.key);
+  const paid=st.all;
   const paidBtn=document.getElementById('crewInvoicePaidBtn');
-  if(paidBtn){paidBtn.classList.toggle('inv-paid',paid);paidBtn.textContent=paid?'Paid ✓':'Paid';}
+  if(paidBtn){paidBtn.classList.toggle('inv-paid',paid);paidBtn.textContent=paid?'Paid ✓':st.some?'Pay all':'Paid';}
   const couples=[...person.couples.entries()].sort((a,b)=>a[0].localeCompare(b[0],'en'));
   clientsEl.innerHTML=couples.length
     ?`<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap"><span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">Clients on this invoice</span><span style="display:flex;gap:8px"><button type="button" class="xs" onclick="crewInvoiceSelectAll(true)" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">All</button><button type="button" class="xs" onclick="crewInvoiceSelectAll(false)" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">None</button></span></div><div class="crew-inv-clients">${couples.map(([couple,pay])=>`<label class="crew-inv-check"><input type="checkbox" ${crewInvoiceSelected.has(couple)?'checked':''} onchange="crewInvoiceTog('${jsq(couple)}',this.checked)"><span>${esc(couple)} · ₹${pay.toLocaleString('en-IN')}</span></label>`).join('')}</div>`
@@ -5253,32 +5304,40 @@ async function exportCrewInvoice(){
   if(!crewInvoiceSelected.size){toast('Tick at least one client.');return;}
   const lines=crewInvoiceRows.filter(r=>r.date&&(+r.pay||0)>0).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   if(!lines.length){toast('Add at least one date with a cost.');return;}
-  const keepPaid=crewInvoiceId&&crewInvoices[crewInvoiceId]&&crewInvoices[crewInvoiceId].status==='paid';
+  const hits=crewHitsForPerson(person.key).filter(h=>crewInvoiceSelected.has(h.couple)&&h.pay>0)
+    .sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.couple).localeCompare(String(b.couple)));
+  const inherit=crewHitsInheritPaid(person.key,hits);
+  const eventRows=hits.map(h=>({date:h.date,couple:h.couple,events:h.events,role:h.role&&h.role.role,pay:h.pay,paid:crewHitDisplayPaid(h,inherit)}));
+  const st=crewPersonPaidState(person.key,hits);
+  const keepPaid=st.all;
   await saveCrewInvoice(keepPaid?'paid':'exported',true);
-  const paid=crewInvoiceId&&crewInvoices[crewInvoiceId]&&crewInvoices[crewInvoiceId].status==='paid';
-  const total=lines.reduce((s,r)=>s+(+r.pay||0),0);
+  const allPaid=st.all;
+  const somePaid=st.some;
+  const total=eventRows.length?eventRows.reduce((s,r)=>s+(+r.pay||0),0):lines.reduce((s,r)=>s+(+r.pay||0),0);
   const clients=[...crewInvoiceSelected].sort((a,b)=>a.localeCompare(b,'en'));
   const mFil=crewInvoiceMonth();
   const period=mFil?`${MN[+mFil.slice(5)-1]} ${mFil.slice(0,4)}`:'All months';
-  const nClass=paid?'n strike':'n';
-  const rows=lines.map(r=>`<tr${paid?' class="paid-line"':''}><td${paid?' class="strike"':''}>${esc(fullDate(r.date))}</td><td class="${nClass}">${inrP(r.pay)}</td></tr>`).join('');
+  const stampLabel=allPaid?'PAID':somePaid?`${st.paidN}/${st.n} PAID`:'';
+  const rows=eventRows.length
+    ?eventRows.map(r=>`<tr${r.paid?' class="paid-line"':''}><td${r.paid?' class="strike"':''}>${esc(fullDate(r.date))}</td><td${r.paid?' class="strike"':''}>${esc(r.couple)}</td><td${r.paid?' class="strike"':''}>${esc((r.events||[]).join(' + ')||'—')}${r.role?' · '+esc(r.role):''}</td><td class="n${r.paid?' strike':''}">${inrP(r.pay)}</td><td>${r.paid?'Paid':'Not paid'}</td></tr>`).join('')
+    :lines.map(r=>`<tr><td>${esc(fullDate(r.date))}</td><td class="n">${inrP(r.pay)}</td></tr>`).join('');
   const inner=`
     <div class="inv-wrap">
-    ${paid?'<div class="paid-watermark">PAID</div>':''}
+    ${allPaid?'<div class="paid-watermark">PAID</div>':somePaid?'<div class="paid-watermark">PART PAID</div>':''}
     <div class="brand">Tale of Two Weddings</div>
-    <h1>Invoice${paid?' <span class="paid-stamp">PAID</span>':''}</h1>
+    <h1>Invoice${stampLabel?` <span class="paid-stamp">${esc(stampLabel)}</span>`:''}</h1>
     <div class="sub">Prepared for ${esc(person.name)}</div>
     <div class="band">
       <div class="b"><div class="k">Period</div><div class="v" style="font-size:16px">${esc(period)}</div></div>
       <div class="b"><div class="k">Clients</div><div class="v" style="font-size:16px">${esc(clients.join(', '))}</div></div>
-      ${paid?`<div class="b"><div class="k">Status</div><div class="v" style="font-size:16px">Paid</div></div>`:''}
+      <div class="b"><div class="k">Status</div><div class="v" style="font-size:16px">${allPaid?'Paid':somePaid?`${st.paidN} paid · ${st.n-st.paidN} not paid`:'Not paid'}</div></div>
     </div>
     <h2>Shoot days</h2>
-    <table><tr><th>Date</th><th class="n">Cost</th></tr>${rows}
-      <tr class="tot"><td>Total</td><td class="${nClass}">${inrP(total)}</td></tr></table>
+    <table><tr><th>Date</th><th>Client</th><th>Event</th><th class="n">Cost</th><th>Status</th></tr>${rows}
+      <tr class="tot"><td colspan="3">Total</td><td class="n${allPaid?' strike':''}">${inrP(total)}</td><td></td></tr></table>
     <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>
     </div>`;
-  openPrint(`Invoice — ${person.name}${paid?' — PAID':''}`,inner);
+  openPrint(`Invoice — ${person.name}${allPaid?' — PAID':somePaid?' — part paid':''}`,inner);
 }
 function renderProdAll(){renderProd();renderBusinessOverview();renderProdAlerts();renderTeam();renderSeasonPreview();updateDatalists();renderGlobalDeliverables();}
 function toggleSeason(){
