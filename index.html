@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.32-season-profit-2026-08-25">
+<meta name="totw-build" content="v13.1.34-crew-paid-invoice-2026-08-29">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -443,6 +443,10 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .person-row:hover td{background:#FBFAF6}
 .person-row.on td{background:#F4F1E9}
 .pr-caret{font-size:10px;color:var(--ink-soft);margin-left:2px}
+.inv-act{margin-left:8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--ink)!important;border-radius:5px;padding:3px 8px;background:var(--ink)!important;color:var(--ivory,#F7F3EC)!important;vertical-align:middle}
+.xs.inv-paid,.btn-mini.inv-paid,.inv-act.inv-paid{background:var(--leaf)!important;color:#F4F8F4!important;border-color:var(--leaf)!important}
+.paid-pill{display:inline-block;margin-left:6px;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--leaf);border:1px solid var(--leaf);border-radius:99px;padding:1px 7px;vertical-align:middle}
+.team-table td.num.amt-paid,.crew-inv-table .amt-paid,.pd-wrap .amt-paid{text-decoration:line-through;color:var(--ink-soft)!important;opacity:.72}
 .person-detail td{padding:0 4px 10px!important;border-bottom:1px solid var(--line)}
 .pd-wrap{display:flex;flex-direction:column;gap:5px;padding:8px 10px;background:#FBFAF6;border-radius:6px}
 .dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:2px}
@@ -1722,6 +1726,7 @@ body{background:
 .pd-wrap,.person-detail .pd-wrap,.person-detail td .pd-wrap{background:var(--surface)!important;color:var(--ink)!important;border:1px solid var(--line)}
 .person-detail .cost-line,.person-detail .cost-line span,.plan-day-wrap .cost-line{color:var(--ink)!important}
 .person-detail .cost-line>span:last-child{color:var(--ink)!important}
+.person-detail .cost-line>span.amt-paid:last-child{text-decoration:line-through;color:var(--ink-soft)!important;opacity:.72}
 .person-detail td{font-size:12px;color:var(--ink-soft)}
 .team-table .person-detail td{background:transparent!important}
 .cw11-plan-head h3,.cw11-section-head h4,.cw11-plan-card,.cw11-record-card,.cw11-team-list{color:var(--ink)!important}
@@ -2331,7 +2336,7 @@ body{background:
       <div style="margin:10px 0 4px"><select id="teamMonth" onchange="renderTeam()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></select></div>
       <div class="panel-card" id="crewInvoiceBox" style="margin:12px 0 16px;padding:16px">
         <div style="font-family:var(--display);font-size:20px;font-weight:600">Crew invoice</div>
-        <p class="hint" style="margin:6px 0 12px">Pick a crew member, tick the clients, then edit any date or amount. Save keeps this invoice in the ledger so you can reopen it later. Export prints the PDF and saves it too. This does not change the ₹ pay typed on the wedding file.</p>
+        <p class="hint" style="margin:6px 0 12px">Pick a crew member, tick the clients, then edit any date or amount. Save keeps this invoice in the ledger so you can reopen it later. Export prints the PDF. Paid stamps it settled — the PDF shows PAID with amounts struck out, and the team list does the same. This does not change the ₹ pay typed on the wedding file.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
           <div style="min-width:220px;flex:1">
             <label style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase;display:block;margin-bottom:4px">Crew member</label>
@@ -2339,6 +2344,7 @@ body{background:
           </div>
           <button type="button" class="btn-mini" onclick="saveCrewInvoice()" style="height:37px">Save invoice</button>
           <button type="button" class="btn-mini" onclick="exportCrewInvoice()" style="height:37px">Export invoice</button>
+          <button type="button" class="btn-mini" id="crewInvoicePaidBtn" onclick="markCrewPaid(crewInvoiceKey)" style="height:37px">Paid</button>
         </div>
         <div id="crewInvoiceSaved" style="margin-top:14px"></div>
         <div id="crewInvoiceClients" style="margin-top:14px"></div>
@@ -2777,7 +2783,7 @@ function start(){
   db.ref('enquiries').on('value',s=>{enquiries=s.val()||{};enquiriesLoaded=true;refresh();publishCrewEvents();renderClientsWorkspace();renderStudioHome();});
   db.ref('activity').limitToLast(15).on('value',s=>{activity=s.val()||{};renderActivity();});
   db.ref('prod').on('value',s=>{prods=s.val()||{};prodsLoaded=true;renderProdAll();renderClientsWorkspace();renderStudioHome();cwScheduleOpsFinanceRefresh();});
-  db.ref('crewInvoices').on('value',s=>{crewInvoices=s.val()||{};if(typeof renderCrewInvoice==='function')renderCrewInvoice();});
+  db.ref('crewInvoices').on('value',s=>{crewInvoices=s.val()||{};if(typeof renderTeam==='function')renderTeam();else if(typeof renderCrewInvoice==='function')renderCrewInvoice();});
   db.ref('people').on('value',s=>{people=s.val()||{};updateDatalists();});
   db.ref('plan').on('value',s=>{plans=s.val()||{};renderPlan();renderCheckinFormOptions();renderMoodSec();previewClientFormEvents();publishCrewEvents();renderClientsWorkspace();});
   db.ref('planHide').on('value',s=>{planHidden=s.val()||{};renderPlan();renderClientsWorkspace();});
@@ -4927,9 +4933,10 @@ function renderTeam(){
   el.innerHTML=(rows.length?roleSpendHtml+`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Events</th><th style="text-align:right">Weddings</th><th style="text-align:right">Paid</th></tr>${rows.map(s=>{
     const pr=people[s.name.toLowerCase()];
     const open=openPerson===s.key;
-    const main=`<tr class="person-row${open?' on':''}" onclick="personTog('${jsq(s.key)}')"><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill ${famClass(pr.style)}">${esc(pr.style)}</span>`:''} <button type="button" class="xs" onclick="event.stopPropagation();crewInvoicePick('${jsq(s.key)}')" style="margin-left:8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">Invoice</button> <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
+    const paid=crewInvoiceIsPaid(s.key);
+    const main=`<tr class="person-row${open?' on':''}${paid?' is-paid':''}" onclick="personTog('${jsq(s.key)}')"><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill ${famClass(pr.style)}">${esc(pr.style)}</span>`:''}${paid?' <span class="paid-pill">Paid</span>':''} <button type="button" class="xs inv-act" onclick="event.stopPropagation();crewInvoicePick('${jsq(s.key)}')">Invoice</button> <button type="button" class="xs inv-act${paid?' inv-paid':''}" onclick="event.stopPropagation();markCrewPaid('${jsq(s.key)}')">${paid?'Paid ✓':'Paid'}</button> <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num${paid?' amt-paid':''}">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
     if(!open)return main;
-    const shoots=s.shoots.slice().sort((a,b)=>a.date<b.date?-1:1).map(sh=>`<div class="cost-line"><span>${fmt(sh.date)} · ${esc(sh.couple)}${sh.events.length?' · '+sh.events.map(esc).join(' + '):''} <span class="ev-pill ${famClass(sh.role)}" style="margin-left:2px">${esc(sh.role)}</span></span><span>${sh.pay?'₹'+sh.pay.toLocaleString('en-IN'):'—'}</span></div>`).join('');
+    const shoots=s.shoots.slice().sort((a,b)=>a.date<b.date?-1:1).map(sh=>`<div class="cost-line"><span class="${paid?'amt-paid':''}">${fmt(sh.date)} · ${esc(sh.couple)}${sh.events.length?' · '+sh.events.map(esc).join(' + '):''} <span class="ev-pill ${famClass(sh.role)}" style="margin-left:2px">${esc(sh.role)}</span></span><span class="${paid?'amt-paid':''}">${sh.pay?'₹'+sh.pay.toLocaleString('en-IN'):'—'}</span></div>`).join('');
     return main+`<tr class="person-detail"><td colspan="5"><div class="pd-wrap">${shoots}</div></td></tr>`;
   }).join('')}</table>`
    :'<div class="empty">No crew logged yet. Add who shot what inside any wedding.</div>');
@@ -4981,6 +4988,20 @@ function crewInvoiceRebuildRows(){
 function crewInvoiceSavedForPerson(personKey){
   return Object.entries(crewInvoices||{}).filter(([,inv])=>inv&&inv.personKey===personKey).sort((a,b)=>(b[1].updatedAt||0)-(a[1].updatedAt||0));
 }
+function crewInvoiceMonthRecord(personKey){
+  const month=crewInvoiceMonth();
+  return crewInvoiceSavedForPerson(personKey).find(([,inv])=>(inv.month||'')===month)||null;
+}
+function crewInvoiceIsPaid(personKey){
+  const rec=crewInvoiceMonthRecord(personKey);
+  return !!(rec&&rec[1]&&rec[1].status==='paid');
+}
+function crewInvoiceStatusLabel(inv){
+  if(!inv)return 'Draft';
+  if(inv.status==='paid')return 'Paid';
+  if(inv.status==='exported')return 'Exported';
+  return 'Draft';
+}
 function crewInvoiceApplyRecord(id,inv){
   crewInvoiceId=id||'';
   crewInvoiceTouched=true;
@@ -5024,6 +5045,7 @@ function crewInvoicePayload(status){
   const clients=[...crewInvoiceSelected].sort((a,b)=>a.localeCompare(b,'en'));
   const now=Date.now();
   const prev=crewInvoiceId&&crewInvoices[crewInvoiceId]||{};
+  const nextStatus=status||prev.status||'draft';
   return {
     personKey:person.key,
     personName:person.name,
@@ -5031,10 +5053,11 @@ function crewInvoicePayload(status){
     clients,
     lines,
     total:lines.reduce((s,r)=>s+(+r.pay||0),0),
-    status:status||prev.status||'draft',
+    status:nextStatus,
     createdAt:prev.createdAt||now,
     updatedAt:now,
     exportedAt:status==='exported'?now:(prev.exportedAt||null),
+    paidAt:nextStatus==='paid'?(prev.paidAt||now):null,
     by:editor||'Owner'
   };
 }
@@ -5049,9 +5072,10 @@ async function saveCrewInvoice(status,quiet){
     crewInvoiceId=id;
     crewInvoices[id]=payload;
     crewInvoiceTouched=true;
-    if(!quiet)toast(status==='exported'?'Invoice saved and ready to print.':'Invoice saved in the ledger.');
-    log(`crew invoice ${status==='exported'?'exported':'saved'}: ${payload.personName} · ${inrP(payload.total)}`);
-    renderCrewInvoice();
+    if(!quiet)toast(status==='exported'?'Invoice saved and ready to print.':status==='paid'?'Invoice marked paid.':'Invoice saved in the ledger.');
+    log(`crew invoice ${status==='exported'?'exported':status==='paid'?'paid':'saved'}: ${payload.personName} · ${inrP(payload.total)}`);
+    if(typeof renderTeam==='function')renderTeam();
+    else renderCrewInvoice();
     return id;
   }catch(err){
     console.error(err);
@@ -5067,10 +5091,76 @@ async function deleteCrewInvoice(id){
     delete crewInvoices[id];
     if(crewInvoiceId===id)crewInvoiceId='';
     toast('Saved invoice deleted.');
-    renderCrewInvoice();
+    if(typeof renderTeam==='function')renderTeam();
+    else renderCrewInvoice();
   }catch(err){
     console.error(err);
     toast('Could not delete that invoice.');
+  }
+}
+async function markCrewPaid(personKey){
+  if(!liveMode||!db){toast('Sign in to mark invoices paid.');return;}
+  const key=String(personKey||crewInvoiceKey||'');
+  const person=crewInvoicePeople().find(x=>x.key===key);
+  if(!person){toast('Select a crew member first.');return;}
+  const rec=crewInvoiceMonthRecord(person.key);
+  const now=Date.now();
+  if(rec&&rec[1]&&rec[1].status==='paid'){
+    if(!confirm(`Mark ${person.name}'s invoice as unpaid?`))return;
+    const prev=rec[1];
+    const payload=Object.assign({},prev,{status:prev.exportedAt?'exported':'draft',paidAt:null,updatedAt:now,by:editor||'Owner'});
+    try{
+      await db.ref('crewInvoices/'+rec[0]).set(payload);
+      crewInvoices[rec[0]]=payload;
+      toast('Invoice marked unpaid.');
+      log(`crew invoice unpaid: ${person.name}`);
+      if(typeof renderTeam==='function')renderTeam();
+      else renderCrewInvoice();
+    }catch(err){
+      console.error(err);
+      toast('Could not update that invoice. Publish the latest database rules, then try again.');
+    }
+    return;
+  }
+  if(crewInvoiceKey===person.key&&crewInvoiceRows.some(r=>r.date)){
+    await saveCrewInvoice('paid');
+    return;
+  }
+  let id,payload;
+  if(rec){
+    id=rec[0];
+    payload=Object.assign({},rec[1],{status:'paid',paidAt:rec[1].paidAt||now,updatedAt:now,by:editor||'Owner'});
+  }else{
+    const selected=new Set([...person.couples.keys()]);
+    const lines=crewInvoiceSourceRows(person.key,selected).filter(r=>r.date).map(r=>({date:r.date,pay:Math.max(0,Number(r.pay)||0)}));
+    if(!lines.length){toast('No typed ₹ pay to mark paid.');return;}
+    id=db.ref('crewInvoices').push().key;
+    payload={
+      personKey:person.key,
+      personName:person.name,
+      month:crewInvoiceMonth(),
+      clients:[...selected].sort((a,b)=>a.localeCompare(b,'en')),
+      lines,
+      total:lines.reduce((s,r)=>s+(+r.pay||0),0),
+      status:'paid',
+      createdAt:now,
+      updatedAt:now,
+      exportedAt:null,
+      paidAt:now,
+      by:editor||'Owner'
+    };
+  }
+  try{
+    await db.ref('crewInvoices/'+id).set(payload);
+    crewInvoices[id]=payload;
+    if(crewInvoiceKey===person.key){crewInvoiceId=id;crewInvoiceTouched=true;}
+    toast('Invoice marked paid.');
+    log(`crew invoice paid: ${payload.personName} · ${inrP(payload.total)}`);
+    if(typeof renderTeam==='function')renderTeam();
+    else renderCrewInvoice();
+  }catch(err){
+    console.error(err);
+    toast('Could not mark the invoice paid. Publish the latest database rules, then try again.');
   }
 }
 function crewInvoiceTog(couple,on){
@@ -5134,22 +5224,28 @@ function renderCrewInvoice(){
         const when=inv.updatedAt?new Date(inv.updatedAt).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'';
         const period=inv.month?`${MN[+inv.month.slice(5)-1]||inv.month} ${inv.month.slice(0,4)}`:'All months';
         const open=id===crewInvoiceId;
-        return `<div class="cost-line" style="${open?'background:var(--surface);border-radius:8px;padding:8px 10px;margin:0 -4px;':''}"><span>${esc(period)} · ${esc(inv.status==='exported'?'Exported':'Draft')}${when?` · ${esc(when)}`:''}</span><span style="display:flex;gap:8px;align-items:center">${inrP(inv.total||0)} <button type="button" class="xs" onclick="crewInvoiceLoad('${id}')" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">${open?'Editing':'Open'}</button><button type="button" class="xs" onclick="deleteCrewInvoice('${id}')">×</button></span></div>`;
+        const amt=inv.status==='paid'?`<span class="amt-paid">${inrP(inv.total||0)}</span>`:inrP(inv.total||0);
+        return `<div class="cost-line" style="${open?'background:var(--surface);border-radius:8px;padding:8px 10px;margin:0 -4px;':''}"><span>${esc(period)} · ${esc(crewInvoiceStatusLabel(inv))}${when?` · ${esc(when)}`:''}</span><span style="display:flex;gap:8px;align-items:center">${amt} <button type="button" class="xs" onclick="crewInvoiceLoad('${id}')" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">${open?'Editing':'Open'}</button><button type="button" class="xs" onclick="deleteCrewInvoice('${id}')">×</button></span></div>`;
       }).join('')}`
       :(person?'<p class="hint" style="margin:0">No saved invoice for this person yet.</p>':'');
   }
   if(!person){
     clientsEl.innerHTML='';
     draftEl.innerHTML='<p class="hint" style="margin:0">Select a crew member to build their invoice.</p>';
+    const paidBtn=document.getElementById('crewInvoicePaidBtn');
+    if(paidBtn){paidBtn.classList.remove('inv-paid');paidBtn.textContent='Paid';}
     return;
   }
+  const paid=crewInvoiceIsPaid(person.key);
+  const paidBtn=document.getElementById('crewInvoicePaidBtn');
+  if(paidBtn){paidBtn.classList.toggle('inv-paid',paid);paidBtn.textContent=paid?'Paid ✓':'Paid';}
   const couples=[...person.couples.entries()].sort((a,b)=>a[0].localeCompare(b[0],'en'));
   clientsEl.innerHTML=couples.length
     ?`<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap"><span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">Clients on this invoice</span><span style="display:flex;gap:8px"><button type="button" class="xs" onclick="crewInvoiceSelectAll(true)" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">All</button><button type="button" class="xs" onclick="crewInvoiceSelectAll(false)" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">None</button></span></div><div class="crew-inv-clients">${couples.map(([couple,pay])=>`<label class="crew-inv-check"><input type="checkbox" ${crewInvoiceSelected.has(couple)?'checked':''} onchange="crewInvoiceTog('${jsq(couple)}',this.checked)"><span>${esc(couple)} · ₹${pay.toLocaleString('en-IN')}</span></label>`).join('')}</div>`
     :'<p class="hint" style="margin:0">No typed ₹ pay for this person in the selected month.</p>';
   const total=crewInvoiceRows.reduce((s,r)=>s+(+r.pay||0),0);
   const rowsHtml=crewInvoiceRows.length?crewInvoiceRows.slice().sort((a,b)=>String(a.date||'9999').localeCompare(String(b.date||'9999'))).map(r=>`<tr><td><input type="date" value="${esc(r.date||'')}" onchange="crewInvoiceSetDate('${r.id}',this.value)"></td><td><input type="number" min="0" step="1" value="${r.pay||''}" oninput="crewInvoiceSetPay('${r.id}',this.value)" placeholder="₹"></td><td class="n"><button type="button" class="xs" onclick="crewInvoiceDelRow('${r.id}')">×</button></td></tr>`).join(''):'<tr><td colspan="3" class="hint">No days yet — add a row or tick a client with typed ₹ pay.</td></tr>';
-  draftEl.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">Invoice lines — edit if needed${crewInvoiceId?' · saved':''}</span><span style="display:flex;gap:8px"><button type="button" class="xs" onclick="crewInvoiceAddRow()" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">+ Line</button><button type="button" class="xs" onclick="crewInvoiceNew()" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">New invoice</button><button type="button" class="xs" onclick="crewInvoiceReset()" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">Reset to typed pay</button></span></div><table class="crew-inv-table"><tr><th>Date</th><th>Cost</th><th></th></tr>${rowsHtml}<tr class="crew-inv-total"><td>Total</td><td id="crewInvoiceTotal">₹${total.toLocaleString('en-IN')}</td><td></td></tr></table>`;
+  draftEl.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">Invoice lines — edit if needed${crewInvoiceId?' · saved':''}${paid?' · paid':''}</span><span style="display:flex;gap:8px"><button type="button" class="xs" onclick="crewInvoiceAddRow()" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">+ Line</button><button type="button" class="xs" onclick="crewInvoiceNew()" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">New invoice</button><button type="button" class="xs" onclick="crewInvoiceReset()" style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;border:1px solid var(--line);border-radius:5px;padding:3px 8px">Reset to typed pay</button></span></div><table class="crew-inv-table"><tr><th>Date</th><th>Cost</th><th></th></tr>${rowsHtml}<tr class="crew-inv-total"><td>Total${paid?' · paid':''}</td><td id="crewInvoiceTotal" class="${paid?'amt-paid':''}">₹${total.toLocaleString('en-IN')}</td><td></td></tr></table>`;
 }
 async function exportCrewInvoice(){
   const person=crewInvoicePeople().find(x=>x.key===crewInvoiceKey);
@@ -5157,25 +5253,32 @@ async function exportCrewInvoice(){
   if(!crewInvoiceSelected.size){toast('Tick at least one client.');return;}
   const lines=crewInvoiceRows.filter(r=>r.date&&(+r.pay||0)>0).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   if(!lines.length){toast('Add at least one date with a cost.');return;}
-  await saveCrewInvoice('exported',true);
+  const keepPaid=crewInvoiceId&&crewInvoices[crewInvoiceId]&&crewInvoices[crewInvoiceId].status==='paid';
+  await saveCrewInvoice(keepPaid?'paid':'exported',true);
+  const paid=crewInvoiceId&&crewInvoices[crewInvoiceId]&&crewInvoices[crewInvoiceId].status==='paid';
   const total=lines.reduce((s,r)=>s+(+r.pay||0),0);
   const clients=[...crewInvoiceSelected].sort((a,b)=>a.localeCompare(b,'en'));
   const mFil=crewInvoiceMonth();
   const period=mFil?`${MN[+mFil.slice(5)-1]} ${mFil.slice(0,4)}`:'All months';
-  const rows=lines.map(r=>`<tr><td>${esc(fullDate(r.date))}</td><td class="n">${inrP(r.pay)}</td></tr>`).join('');
+  const nClass=paid?'n strike':'n';
+  const rows=lines.map(r=>`<tr${paid?' class="paid-line"':''}><td${paid?' class="strike"':''}>${esc(fullDate(r.date))}</td><td class="${nClass}">${inrP(r.pay)}</td></tr>`).join('');
   const inner=`
+    <div class="inv-wrap">
+    ${paid?'<div class="paid-watermark">PAID</div>':''}
     <div class="brand">Tale of Two Weddings</div>
-    <h1>Invoice</h1>
+    <h1>Invoice${paid?' <span class="paid-stamp">PAID</span>':''}</h1>
     <div class="sub">Prepared for ${esc(person.name)}</div>
     <div class="band">
       <div class="b"><div class="k">Period</div><div class="v" style="font-size:16px">${esc(period)}</div></div>
       <div class="b"><div class="k">Clients</div><div class="v" style="font-size:16px">${esc(clients.join(', '))}</div></div>
+      ${paid?`<div class="b"><div class="k">Status</div><div class="v" style="font-size:16px">Paid</div></div>`:''}
     </div>
     <h2>Shoot days</h2>
     <table><tr><th>Date</th><th class="n">Cost</th></tr>${rows}
-      <tr class="tot"><td>Total</td><td class="n">${inrP(total)}</td></tr></table>
-    <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>`;
-  openPrint(`Invoice — ${person.name}`,inner);
+      <tr class="tot"><td>Total</td><td class="${nClass}">${inrP(total)}</td></tr></table>
+    <div class="sub" style="margin-top:26px">Generated ${esc(stamp())}</div>
+    </div>`;
+  openPrint(`Invoice — ${person.name}${paid?' — PAID':''}`,inner);
 }
 function renderProdAll(){renderProd();renderBusinessOverview();renderProdAlerts();renderTeam();renderSeasonPreview();updateDatalists();renderGlobalDeliverables();}
 function toggleSeason(){
@@ -5203,6 +5306,10 @@ td.n,th.n{text-align:right;font-family:'Courier New',monospace}
 .band .k{font-family:'Courier New',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#8A857A}
 .band .v{font-size:20px;font-weight:600}
 .muted{color:#8A857A}
+.inv-wrap{position:relative}
+.paid-stamp{display:inline-block;margin-left:12px;font-family:'Courier New',monospace;font-size:12px;letter-spacing:.18em;border:2px solid #3E5C44;color:#3E5C44;padding:4px 10px;transform:rotate(-8deg);vertical-align:middle}
+.paid-watermark{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%) rotate(-18deg);font-family:'Courier New',monospace;font-size:92px;letter-spacing:.2em;color:rgba(62,92,68,.14);font-weight:700;pointer-events:none;white-space:nowrap}
+td.strike,td.n.strike,tr.paid-line td{text-decoration:line-through;color:#8A857A}
 </style>`;
 function inrP(n){return '\u20B9'+(+n||0).toLocaleString('en-IN');}
 function pieSVG(data){
