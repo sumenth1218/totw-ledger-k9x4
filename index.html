@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.35-event-paid-2026-08-29">
+<meta name="totw-build" content="v13.1.37-final-2026-08-29">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -450,6 +450,11 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .team-table td.num.amt-paid,.crew-inv-table .amt-paid,.pd-wrap .amt-paid{text-decoration:line-through;color:var(--ink-soft)!important;opacity:.72}
 .pd-wrap .cost-line{gap:8px;align-items:center}
 .pd-wrap .cost-line>span:first-child{flex:1;min-width:0}
+.pd-foot{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:16px;margin-top:8px;padding:8px 2px 2px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-soft)}
+.pd-foot span{display:flex;align-items:baseline;gap:6px}
+.pd-foot b{font-family:var(--mono);font-size:13px;color:var(--ink);font-weight:600}
+.pd-foot .due b{color:var(--ink)}
+.pd-foot .settled b{text-decoration:line-through;color:var(--ink-soft);opacity:.72}
 .pay-status{flex:none;font-family:var(--mono)!important;font-size:8px!important;letter-spacing:.08em;text-transform:uppercase;border-radius:99px;padding:3px 8px;cursor:pointer;border:1px solid var(--line)!important;background:#fff!important;color:var(--ink)!important;line-height:1.2}
 .pay-status.is-paid{background:var(--leaf)!important;color:#F4F8F4!important;border-color:var(--leaf)!important}
 .pay-status.is-due{background:transparent!important;color:var(--ink-soft)!important}
@@ -3762,6 +3767,32 @@ function prodNewRoleRow(role,person,pay){
 }
 function prodPersonKey(name){return String(name||'').trim().toLowerCase().replace(/\s+/g,' ');}
 function prodRolePersonKey(r){return prodPersonKey(r&&r.person)+'|'+ciRoleToProdRole(r&&r.role);}
+function prodCollectPaidMarks(prod){
+  const byKey=new Map(),byUid=new Map();
+  (Array.isArray(prod&&prod.days)?prod.days:Object.values(prod&&prod.days||{})).forEach(d=>{
+    (Array.isArray(d&&d.roles)?d.roles:Object.values(d&&d.roles||{})).forEach(r=>{
+      if(!r||(r.paid!==true&&r.paid!==false))return;
+      const date=String(d.date||'');
+      byKey.set(date+'|'+prodRolePersonKey(r),r.paid);
+      if(r.opsUid)byUid.set(date+'|'+r.opsUid,r.paid);
+    });
+  });
+  return {byKey,byUid};
+}
+function prodApplyPaidMarks(dest,marks){
+  if(!dest||!marks)return dest;
+  (Array.isArray(dest.days)?dest.days:Object.values(dest.days||{})).forEach(d=>{
+    (Array.isArray(d.roles)?d.roles:Object.values(d.roles||{})).forEach(r=>{
+      if(!r)return;
+      const date=String(d.date||'');
+      let paid;
+      if(r.opsUid&&marks.byUid.has(date+'|'+r.opsUid))paid=marks.byUid.get(date+'|'+r.opsUid);
+      if(paid!==true&&paid!==false)paid=marks.byKey.get(date+'|'+prodRolePersonKey(r));
+      if(paid===true||paid===false)r.paid=paid;
+    });
+  });
+  return dest;
+}
 function prodEditDist(a,b){
   a=String(a||'');b=String(b||'');if(a===b)return 0;if(!a.length)return b.length;if(!b.length)return a.length;
   const rows=Array.from({length:a.length+1},(_,i)=>i);
@@ -3799,6 +3830,8 @@ function prodMergeRoleRows(prev,r){
   const pay=Math.max(+prev.pay||0,+r.pay||0);if(pay)prev.pay=pay;
   if(r.opsSource&&(!prev.opsSource||prev.opsSource==='manual'))prev.opsSource=r.opsSource;
   if(r.opsUid)prev.opsUid=r.opsUid;if(r.sourceKey)prev.sourceKey=r.sourceKey;
+  if(r.paid===true||r.paid===false)prev.paid=r.paid;
+  else if(prev.paid!==true&&prev.paid!==false&&r.paid)prev.paid=true;
   // Prefer the longer / fuller person name (Shoaib Zabih over Shoib).
   if(String(r.person||'').trim().length>String(prev.person||'').trim().length)prev.person=String(r.person||'').trim();
   prev.cards=prodMergeCards(prev.cards,r.cards,prev.role);
@@ -4928,9 +4961,12 @@ function crewPersonPaidState(personKey,hits){
   const list=hits||crewHitsForPerson(personKey);
   const inherit=crewHitsInheritPaid(personKey,list);
   const paidN=list.filter(h=>crewHitDisplayPaid(h,inherit)).length;
-  return {n:list.length,paidN,inherit,all:list.length>0&&paidN===list.length,some:paidN>0&&paidN<list.length,none:paidN===0};
+  const paidAmt=list.reduce((n,h)=>n+(crewHitDisplayPaid(h,inherit)?(+h.pay||0):0),0);
+  const totalAmt=list.reduce((n,h)=>n+(+h.pay||0),0);
+  return {n:list.length,paidN,inherit,all:list.length>0&&paidN===list.length,some:paidN>0&&paidN<list.length,none:paidN===0,paidAmt,totalAmt,dueAmt:Math.max(0,totalAmt-paidAmt)};
 }
 function writeProdIds(ids){
+  cwOpsFinanceHoldUntil=Date.now()+1800;
   [...new Set(ids||[])].forEach(id=>{if(id&&prods[id])writeProd(id);});
 }
 async function syncCrewInvoicePaidFlag(personKey,allPaid){
@@ -4998,7 +5034,7 @@ function renderTeam(){
       if(mFil&&String(d.date||'').slice(0,7)!==mFil)return;
       (d.roles||[]).forEach((r,ri)=>{
         if(!r.person||cwTradIsPlaceholderPerson(r.person))return;
-        const k=r.person.trim().toLowerCase();
+        const k=prodPersonKey(r.person);
         const s=stats[k]=stats[k]||{name:r.person.trim(),key:k,days:new Set(),ev:0,weds:new Set(),pay:0,shoots:[]};
         s.days.add(d.date);
         s.ev+=Math.max(1,(d.events||[]).length);
@@ -5017,21 +5053,22 @@ function renderTeam(){
   const roleSpendHtml=spendTot>0?`<div class="role-spend"><div class="rs-head">Spend by role${mFil?' · '+MN[+mFil.slice(5)-1]+' '+mFil.slice(0,4):' · all months'} — ₹${spendTot.toLocaleString('en-IN')}</div>${Object.entries(roleSpend).sort((a,b)=>b[1]-a[1]).map(([r,v])=>`<div class="cost-line"><span>${esc(r)}</span><span>₹${v.toLocaleString('en-IN')}</span></div>`).join('')}</div>`:'';
   const meta=document.getElementById('teamMeta');
   if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+(rows.length?` · ${rows.length}`:'');
-  el.innerHTML=(rows.length?roleSpendHtml+`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Events</th><th style="text-align:right">Weddings</th><th style="text-align:right">Paid</th></tr>${rows.map(s=>{
-    const pr=people[s.name.toLowerCase()];
+  el.innerHTML=(rows.length?roleSpendHtml+`<table class="team-table"><tr><th>Person</th><th style="text-align:right">Days</th><th style="text-align:right">Events</th><th style="text-align:right">Weddings</th><th style="text-align:right">Due</th></tr>${rows.map(s=>{
+    const pr=people[s.key]||people[s.name.toLowerCase()];
     const open=openPerson===s.key;
     const st=crewPersonPaidState(s.key,s.shoots);
     const paid=st.all;
     const pill=paid?' <span class="paid-pill">Paid</span>':st.some?` <span class="paid-pill part">${st.paidN}/${st.n} paid</span>`:'';
     const headBtn=paid?'Paid ✓':st.some?'Pay all':'Paid';
-    const main=`<tr class="person-row${open?' on':''}${paid?' is-paid':''}" onclick="personTog('${jsq(s.key)}')"><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill ${famClass(pr.style)}">${esc(pr.style)}</span>`:''}${pill} <button type="button" class="xs inv-act" onclick="event.stopPropagation();crewInvoicePick('${jsq(s.key)}')">Invoice</button> <button type="button" class="xs inv-act${paid?' inv-paid':''}" onclick="event.stopPropagation();markCrewPaid('${jsq(s.key)}')">${headBtn}</button> <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num${paid?' amt-paid':''}">₹${s.pay.toLocaleString('en-IN')}</td></tr>`;
+    const main=`<tr class="person-row${open?' on':''}${paid?' is-paid':''}" onclick="personTog('${jsq(s.key)}')"><td>${esc(s.name)}${pr&&pr.style?` <span class="ev-pill ${famClass(pr.style)}">${esc(pr.style)}</span>`:''}${pill} <button type="button" class="xs inv-act" onclick="event.stopPropagation();crewInvoicePick('${jsq(s.key)}')">Invoice</button> <button type="button" class="xs inv-act${paid?' inv-paid':''}" onclick="event.stopPropagation();markCrewPaid('${jsq(s.key)}')">${headBtn}</button> <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${s.days.size}</td><td class="num">${s.ev}</td><td class="num">${s.weds.size}</td><td class="num${paid?' amt-paid':''}">₹${st.dueAmt.toLocaleString('en-IN')}</td></tr>`;
     if(!open)return main;
     const inherit=st.inherit;
     const shoots=s.shoots.slice().sort((a,b)=>a.date<b.date?-1:1).map(sh=>{
       const rowPaid=crewHitDisplayPaid(sh,inherit);
       return `<div class="cost-line"><span class="${rowPaid?'amt-paid':''}">${fmt(sh.date)} · ${esc(sh.couple)}${sh.events.length?' · '+sh.events.map(esc).join(' + '):''} <span class="ev-pill ${famClass(sh.role)}" style="margin-left:2px">${esc(sh.role)}</span></span><button type="button" class="pay-status ${rowPaid?'is-paid':'is-due'}" onclick="event.stopPropagation();markShootPaid('${jsq(sh.pid)}',${sh.di},${sh.ri})">${rowPaid?'Paid':'Not paid'}</button><span class="${rowPaid?'amt-paid':''}">${sh.pay?'₹'+sh.pay.toLocaleString('en-IN'):'—'}</span></div>`;
     }).join('');
-    return main+`<tr class="person-detail"><td colspan="5"><div class="pd-wrap">${shoots}</div></td></tr>`;
+    const foot=`<div class="pd-foot"><span>Paid <b>₹${st.paidAmt.toLocaleString('en-IN')}</b></span><span class="due">Due <b>₹${st.dueAmt.toLocaleString('en-IN')}</b></span><span${paid?' class="settled"':''}>Total <b>₹${st.totalAmt.toLocaleString('en-IN')}</b></span></div>`;
+    return main+`<tr class="person-detail"><td colspan="5"><div class="pd-wrap">${shoots}${foot}</div></td></tr>`;
   }).join('')}</table>`
    :'<div class="empty">No crew logged yet. Add who shot what inside any wedding.</div>');
   renderCrewInvoice();
@@ -6000,7 +6037,8 @@ function mergePlanDayRoles(existingRoles=[],nextRoles=[]){
       cards:Array.isArray(match.cards)&&match.cards.length?match.cards:next.cards,
       opsSource:match.opsSource||next.opsSource,
       opsUid:match.opsUid||next.opsUid,
-      sourceKey:match.sourceKey||next.sourceKey
+      sourceKey:match.sourceKey||next.sourceKey,
+      paid:match.paid===true||match.paid===false?match.paid:next.paid
     };
   });
   // Keep traditional / non-planner finance rows the planner does not own
@@ -7367,11 +7405,11 @@ function cwBuildOpsFinanceSync(results){
     day.events=[...new Set([...(Array.isArray(day.events)?day.events:[]),...dayEvents.map(e=>e.name)])];
     // Sync roster from Team & prep. Preserve ₹ pay + Disk I/II/✓ already entered in Finance.
     const prior=Array.isArray(day.roles)?day.roles:Object.values(day.roles||{});
-    const payByUid=new Map(),payByKey=new Map(),cardsByUid=new Map(),cardsByKey=new Map();
+    const payByUid=new Map(),payByKey=new Map(),cardsByUid=new Map(),cardsByKey=new Map(),paidByUid=new Map(),paidByKey=new Map();
     prior.forEach(r=>{
       const pay=Number(r&&r.pay)||0;
-      if(r&&r.opsUid){payByUid.set(r.opsUid,Math.max(payByUid.get(r.opsUid)||0,pay));if(r.cards)cardsByUid.set(r.opsUid,r.cards);}
-      const key=prodRolePersonKey(r);if(key&&key!=='|'){payByKey.set(key,Math.max(payByKey.get(key)||0,pay));if(r.cards)cardsByKey.set(key,r.cards);}
+      if(r&&r.opsUid){payByUid.set(r.opsUid,Math.max(payByUid.get(r.opsUid)||0,pay));if(r.cards)cardsByUid.set(r.opsUid,r.cards);if(r.paid===true||r.paid===false)paidByUid.set(r.opsUid,r.paid);}
+      const key=prodRolePersonKey(r);if(key&&key!=='|'){payByKey.set(key,Math.max(payByKey.get(key)||0,pay));if(r.cards)cardsByKey.set(key,r.cards);if(r.paid===true||r.paid===false)paidByKey.set(key,r.paid);}
     });
     const traditional=prior.filter(r=>r&&r.opsSource==='traditionalUnit');
     const projected=rows.map(({crewUid,person,role})=>{
@@ -7384,7 +7422,10 @@ function cwBuildOpsFinanceSync(results){
       }
       if(NODATA.has(prodRole))cards=[];
       else cards=prodMergeCards(cards,[{a:false,b:false,v:false}],prodRole);
-      return {person,role:prodRole,pay:Number(pay)||0,opsSource:'teamPrep',opsDay:date,opsUid:crewUid||null,cards};
+      const paid=crewUid&&paidByUid.has(crewUid)?paidByUid.get(crewUid):(paidByKey.has(key)?paidByKey.get(key):undefined);
+      const row={person,role:prodRole,pay:Number(pay)||0,opsSource:'teamPrep',opsDay:date,opsUid:crewUid||null,cards};
+      if(paid===true||paid===false)row.paid=paid;
+      return row;
     });
     const incomingKeys=new Set(projected.map(prodRolePersonKey)),incomingUids=new Set(projected.map(r=>r.opsUid).filter(Boolean));
     const leftovers=prior.filter(r=>{
@@ -7400,13 +7441,17 @@ function cwBuildOpsFinanceSync(results){
     prod.days.sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
     staged.set(prodId,prod);
   });
-  staged.forEach((prod,id)=>{if(JSON.stringify(prods[id]||null)!==JSON.stringify(prod))updates[`prod/${id}`]=prod;});
+  staged.forEach((prod,id)=>{
+    if(prods[id])prodApplyPaidMarks(prod,prodCollectPaidMarks(prods[id]));
+    if(JSON.stringify(prods[id]||null)!==JSON.stringify(prod))updates[`prod/${id}`]=prod;
+  });
   return {staged,updates};
 }
-let cwOpsFinanceRefreshTimer=null,cwOpsFinanceRefreshBusy=false;
+let cwOpsFinanceRefreshTimer=null,cwOpsFinanceRefreshBusy=false,cwOpsFinanceHoldUntil=0;
 function cwScheduleOpsFinanceRefresh(){
   clearTimeout(cwOpsFinanceRefreshTimer);
-  cwOpsFinanceRefreshTimer=setTimeout(cwRefreshAllOpsFinance,650);
+  const delay=Math.max(650,(cwOpsFinanceHoldUntil||0)-Date.now());
+  cwOpsFinanceRefreshTimer=setTimeout(cwRefreshAllOpsFinance,delay);
 }
 async function cwRefreshAllOpsFinance(){
   if(cwOpsFinanceRefreshBusy||!liveMode||!db||!prodsLoaded||!checkinEventsLoaded)return;
@@ -9921,7 +9966,8 @@ function cwTradFinanceRow(unit,pass,prior){
     opsSource:'traditionalUnit',sourceKey:unit.unitId,opsDay:unit.date,
     partnerName:unit.partnerName||'',partnerId:unit.partnerId||'',
     composition:cwTradComposition(unit),captainName:captain,
-    cards
+    cards,
+    paid:prior&&(prior.paid===true||prior.paid===false)?prior.paid:undefined
   };
 }
 function cwTradProjectFinance(state,unit,updates,remove=false){
@@ -9966,7 +10012,7 @@ function cwTradSyncFinanceLabels(){
         pass=traditionalPasses[unit.passId]||{};
         const row=cwTradFinanceRow(unit,pass,r);
         if(r.person!==row.person||ciRoleToProdRole(r.role)!==row.role||r.captainName!==row.captainName||r.composition!==row.composition){
-          day.roles[i]={...r,...row,pay:Number(r.pay)||Number(row.pay)||0,cards:r.cards||row.cards};
+          day.roles[i]={...r,...row,pay:Number(r.pay)||Number(row.pay)||0,cards:r.cards||row.cards,paid:r.paid===true||r.paid===false?r.paid:row.paid};
           changed=true;
         }
       });
