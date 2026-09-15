@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.37-final-2026-08-29">
+<meta name="totw-build" content="v13.1.38-plan-months-2026-09-15">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -312,6 +312,10 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .plan-wrap{width:100%;margin-left:0;padding:0 4px 0 0}
 .prod-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--ink);padding:16px 0 8px}
 .prod-head h2{font-family:var(--display);font-size:28px;font-weight:500}
+.plan-month-range{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.plan-month-range label{display:flex;flex-direction:column;gap:3px;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.plan-month-range select{padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink);font-family:var(--body)}
+.plan-table tr.plan-month-break td{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);padding:14px 4px 6px;border-bottom:1px solid var(--ink);background:transparent}
 .btn-mini{background:var(--ink);color:var(--paper);border:none;border-radius:6px;padding:9px 14px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
 .p-row{display:flex;justify-content:space-between;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line);cursor:pointer}
 .p-row .nm{font-family:var(--display);font-size:19px;font-weight:500}
@@ -2392,12 +2396,15 @@ body{background:
  <div class="plan-wrap">
   <div class="prod-head">
     <h2>Crew Planning</h2>
-    <div style="display:flex;gap:12px;align-items:center">
+    <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
       <button class="btn-mini" onclick="importRoster()">Import roster</button>
-      <select id="planMonth" onchange="renderPlan()" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)"></select>
+      <div class="plan-month-range">
+        <label>From<select id="planMonth" onchange="planMonthRangeChanged()"></select></label>
+        <label>To<select id="planMonthTo" onchange="planMonthRangeChanged()"></select></label>
+      </div>
     </div>
   </div>
-  <p class="hint" style="margin:10px 0 0">Booked dates fill in from the calendar. Type names into role cells (CP · CV · TP · TV · Extras). Use "&amp; 1" or "+1" for a lead plus an unnamed hand. When a day is done, tap <strong>→ Production</strong> on that row, then log data captured (GB) and crew pay in the wrap-up panel.</p>
+  <p class="hint" style="margin:10px 0 0">Booked dates fill in from the calendar. Pick a From–To range to plan or send two or three months together. Type names into role cells (CP · CV · TP · TV · Extras). Use "&amp; 1" or "+1" for a lead plus an unnamed hand. When a day is done, tap <strong>→ Production</strong> on that row, then log data captured (GB) and crew pay in the wrap-up panel.</p>
   <div id="planGrid" style="margin-top:10px;overflow-x:auto"></div>
   <div id="planEmpty" class="empty" style="display:none">No booked dates this month. Mark an enquiry as booked, or block dates on the calendar, and they show up here.</div>
 
@@ -2407,7 +2414,7 @@ body{background:
       <span id="planTeamMeta">Show ▸</span>
     </div>
     <div class="act-body">
-      <p class="hint" style="margin:10px 0 4px">Per person, for the month above: the dates and couples they're on — so you can convey their schedule at a glance.</p>
+      <p class="hint" style="margin:10px 0 4px">Per person, for the months selected above. Copy schedule sends the full date list for WhatsApp. Copy changes only sends what moved since you last marked it sent.</p>
       <div id="planTeamList"></div>
     </div>
   </div>
@@ -5738,6 +5745,78 @@ if(_enqNameEl)_enqNameEl.addEventListener('input',()=>{
 });
 /* ================= CREW PLANNER (planning only, separate from Production) ================= */
 const PLAN_ROLES=[['cp','CP'],['cv','CV'],['tp','TP'],['tv','TV'],['ex','Extras']];
+function planYmSpan(from,to){
+  const a=String(from||'').slice(0,7),b=String(to||a).slice(0,7);
+  if(!/^\d{4}-\d{2}$/.test(a))return ['2026-01'];
+  const end=/^\d{4}-\d{2}$/.test(b)&&b>=a?b:a;
+  const out=[];let y=+a.slice(0,4),m=+a.slice(5);
+  const ey=+end.slice(0,4),em=+end.slice(5);
+  while(y<ey||(y===ey&&m<=em)){
+    out.push(y+'-'+String(m).padStart(2,'0'));
+    m++;if(m>12){m=1;y++;}
+    if(out.length>24)break;
+  }
+  return out;
+}
+function planMonthSet(month){
+  if(!month)return null;
+  if(month instanceof Set)return month;
+  if(Array.isArray(month))return new Set(month.filter(Boolean));
+  if(typeof month==='string')return new Set([month]);
+  return null;
+}
+function planIsoInMonths(iso,month){
+  const set=planMonthSet(month);
+  if(!set)return true;
+  return set.has(String(iso||'').slice(0,7));
+}
+function planMonthTitle(ym){
+  const y=String(ym||'').slice(0,4),m=+String(ym||'').slice(5);
+  return (MN[m-1]||'')+(y?' '+y:'');
+}
+function planRangeTitle(months){
+  const list=planMonthSet(months)?[...planMonthSet(months)].sort():[];
+  if(!list.length)return 'All months';
+  if(list.length===1)return planMonthTitle(list[0]);
+  return planMonthTitle(list[0])+' – '+planMonthTitle(list[list.length-1]);
+}
+function planFillMonthSelects(){
+  const from=document.getElementById('planMonth');
+  const to=document.getElementById('planMonthTo');
+  if(!from)return;
+  const t=new Date();
+  const nowYM=(t.getFullYear()>=2026&&t.getFullYear()<=2027)?t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0'):'2026-01';
+  const fill=sel=>{
+    if(!sel||sel.options.length)return;
+    let opts='';
+    [2026,2027].forEach(y=>MN.forEach((m,i)=>{const v=y+'-'+String(i+1).padStart(2,'0');opts+=`<option value="${v}"${v===nowYM?' selected':''}>${m} ${y}</option>`;}));
+    sel.innerHTML=opts;
+  };
+  fill(from);fill(to);
+  if(to&&!to.value)to.value=from.value||nowYM;
+}
+function planSelectedMonths(){
+  planFillMonthSelects();
+  const from=document.getElementById('planMonth')?.value||'2026-01';
+  const to=document.getElementById('planMonthTo')?.value||from;
+  return planYmSpan(from,to);
+}
+function planMonthRangeChanged(){
+  const from=document.getElementById('planMonth');
+  const to=document.getElementById('planMonthTo');
+  if(from&&to&&to.value<from.value)to.value=from.value;
+  renderPlan();
+}
+function planCopyText(msg){
+  const text=String(msg||'').replace(/\s+$/,'');
+  if(!text)return;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>toast('Copied — paste into WhatsApp.')).catch(()=>planCopyTextFallback(text));
+  }else planCopyTextFallback(text);
+}
+function planCopyTextFallback(text){
+  const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Copied — paste into WhatsApp.');
+}
 
 function planRowKey(iso,couple,event){return (iso+'|'+String(couple||'').trim().toLowerCase()+'|'+String(event||'').trim().toLowerCase()).replace(/[.#$\[\]]/g,'_');}
 function coupleTint(name){
@@ -5764,7 +5843,7 @@ function writePlan(key){
 // All booked event-rows for a given month (1-based). Source: BAKED + teamBookings.
 function planBookings(month){
   const rows=[];
-  const push=(m,d,c,e,l,y)=>{if(!m||!d||!c)return;const iso=`${y||2026}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;if(month&&iso.slice(0,7)!==month)return;rows.push({iso,m,d,couple:c,event:e||'—',loc:l||''});};
+  const push=(m,d,c,e,l,y)=>{if(!m||!d||!c)return;const iso=`${y||2026}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;if(!planIsoInMonths(iso,month))return;rows.push({iso,m,d,couple:c,event:e||'—',loc:l||''});};
   BAKED.forEach(([m,d,c,e,l])=>push(m,d,c,e,l,2026));
   Object.values(teamBookings).forEach(b=>push(b.m,b.d,b.c,b.e,b.l,b.y||2026));
   // de-dupe identical iso|couple|event
@@ -5778,7 +5857,7 @@ function planRows(month){
   const rows=[],meta={};
   Object.entries(plans).forEach(([k,p])=>{
     if(!p||!p.iso)return;
-    if(month&&String(p.iso||'').slice(0,7)!==month)return;
+    if(!planIsoInMonths(p.iso,month))return;
     const row={key:k,iso:p.iso,couple:p.couple||'',event:p.event||'—',loc:p.loc||'',src:'plan'};
     rows.push(row);meta[k]={iso:row.iso,couple:row.couple,event:row.event,loc:row.loc};
   });
@@ -5804,20 +5883,15 @@ function renderPlan(){
   const grid=document.getElementById('planGrid');
   const empty=document.getElementById('planEmpty');
   if(!grid)return;
-  const sel=document.getElementById('planMonth');
-  if(sel&&!sel.options.length){
-    const t=new Date();
-    const nowYM=(t.getFullYear()===2026||t.getFullYear()===2027)?t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0'):'2026-01';
-    let opts='';
-    [2026,2027].forEach(y=>MN.forEach((m,i)=>{const v=y+'-'+String(i+1).padStart(2,'0');opts+=`<option value="${v}"${v===nowYM?' selected':''}>${m} ${y}</option>`;}));
-    sel.innerHTML=opts;
-  }
-  const month=sel?sel.value:'2026-01';
-  const rows=planRows(month);
-  if(!rows.length){grid.innerHTML='';empty.style.display='';return;}
-  empty.style.display='none';
+  planFillMonthSelects();
+  const months=planSelectedMonths();
+  const rows=planRows(months);
+  if(!rows.length){grid.innerHTML='';if(empty){empty.style.display='';empty.textContent=months.length>1?'No booked dates in these months. Mark an enquiry as booked, or block dates on the calendar, and they show up here.':'No booked dates this month. Mark an enquiry as booked, or block dates on the calendar, and they show up here.';}renderPlanTeam(months);return;}
+  if(empty)empty.style.display='none';
   const head=`<tr><th class="thd">Date</th><th class="thc">Couple</th><th class="the">Event</th><th class="thl">Loc</th>${PLAN_ROLES.map(([rk,lab])=>`<th>${lab}</th>`).join('')}<th class="thp"></th></tr>`;
   const todayISO=ciTodayIso();
+  const span=4+PLAN_ROLES.length+1;
+  let lastYm='';
   const body=rows.map(r=>{
     const pl=plans[r.key]||{cells:{},need:{}};
     const cells=PLAN_ROLES.map(([rk,lab])=>{
@@ -5840,25 +5914,27 @@ function renderPlan(){
       }
     }
     const pushCell=`<td class="ppush">${pushBtn}<button class="xs" title="Remove this row" onclick="planDel('${jsq(r.key)}')">×</button></td>`;
+    const ym=String(r.iso||'').slice(0,7);
+    const sep=months.length>1&&ym!==lastYm?(lastYm=ym,`<tr class="plan-month-break"><td colspan="${span}">${esc(planMonthTitle(ym))}</td></tr>`):'';
     const mainRow=`<tr class="${past?'ppast':''}"><td class="pd">${fmt(r.iso)}</td>${coupleCellHtml(r)}<td class="pe">${esc(r.event)}</td><td class="pl">${esc(r.loc||'')}</td>${cells}${pushCell}</tr>`;
-    if(!prodHit||!wrapOpen)return mainRow;
+    if(!prodHit||!wrapOpen)return sep+mainRow;
     const payRows=(prodHit.day.roles||[]).map((c,ri)=>{
       if(!c.person||!String(c.person).trim())return '';
       return `<div class="plan-wrap-pay"><span>${esc(c.person)} · ${esc(c.role)}</span><input type="number" min="0" placeholder="₹ pay" value="${c.pay||''}" onchange="planWrapPay('${jsq(r.key)}',${ri},this.value)"></div>`;
     }).filter(Boolean).join('')||'<div class="plan-wrap-pay" style="color:var(--ink-soft)">No named crew on this production day yet.</div>';
     const gb=prodHit.day.gb||'';
     const dayCost=(prodHit.day.roles||[]).reduce((t,c)=>t+(+c.pay||0),0);
-    const wrapRow=`<tr class="plan-wrap-row"><td colspan="${4+PLAN_ROLES.length+1}"><div class="pd-wrap plan-day-wrap">
+    const wrapRow=`<tr class="plan-wrap-row"><td colspan="${span}"><div class="pd-wrap plan-day-wrap">
       <div class="plan-wrap-head"><div><b>End of day · ${esc(pl.couple||r.couple)} · ${fmt(pl.iso||r.iso)}</b><small>Log data captured and crew pay for this shoot day.</small></div>${dayCost?`<span style="font-family:var(--mono);font-size:11px;color:var(--ink-soft)">Team ₹${dayCost.toLocaleString('en-IN')}</span>`:''}</div>
       <div class="plan-wrap-gb"><span>Data captured</span><input class="gb-in" type="number" min="0" placeholder="GB" value="${gb||''}" onchange="planWrapGb('${jsq(r.key)}',this.value)"><span>GB on cards</span></div>
       <div class="plan-wrap-pays">${payRows}</div>
       <div class="plan-wrap-actions"><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="pushRow('${jsq(r.key)}')">Sync crew → Production</button><button type="button" class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="openProd('${prodHit.pid}',true);setView('business')">Open wedding file</button></div>
     </div></td></tr>`;
-    return mainRow+wrapRow;
+    return sep+mainRow+wrapRow;
   }).join('');
   const hidCount=Object.keys(planHidden).length;
   grid.innerHTML=`<table class="plan-table">${head}${body}</table>`+(hidCount?`<div style="margin-top:8px;font-size:12px;color:var(--ink-soft)">${hidCount} removed row${hidCount!==1?'s':''} · <a href="javascript:void(0)" onclick="planRestoreAll()" style="color:var(--teal)">restore all</a></div>`:'');
-  renderPlanTeam(month);
+  renderPlanTeam(months);
 }
 // Per-person schedule for the month: what they're on, and which booked dates they're free
 function itemKey(a){return a.iso+'|'+String(a.couple||'').trim().toLowerCase();}
@@ -5884,9 +5960,9 @@ function planPeople(month){
     o.lastSentAt=snap&&snap.at?snap.at:null;
     o.removed=[];
     if(snap&&snap.items){
-      const curKeys=new Set(o.assigned.filter(a=>!month||String(a.iso||'').slice(0,7)===month).map(itemKey));
+      const curKeys=new Set(o.assigned.filter(a=>planIsoInMonths(a.iso,month)).map(itemKey));
       Object.values(snap.items).forEach(it=>{
-        if(month&&String(it.iso||'').slice(0,7)!==month)return;
+        if(!planIsoInMonths(it.iso,month))return;
         if(!curKeys.has(itemKey(it)))o.removed.push(it);
       });
       o.assigned.forEach(a=>{a.isNew=!snap.items[itemKey(a)];});
@@ -5900,42 +5976,62 @@ function planPeople(month){
   return list;
 }
 function markSent(key){
-  const list=planPeople(document.getElementById('planMonth')?document.getElementById('planMonth').value:null);
+  const months=planSelectedMonths();
+  const list=planPeople(months);
   const person=list.find(o=>o.key===key);
   if(!person)return;
-  const items={};
+  const prev=sentSnaps[key]||{};
+  const items=Object.assign({},prev.items||{});
+  Object.keys(items).forEach(k=>{
+    if(planIsoInMonths(items[k]&&items[k].iso,months))delete items[k];
+  });
   person.assigned.forEach(a=>{items[itemKey(a)]={iso:a.iso,couple:a.couple,event:a.event,role:a.role};});
   const snap={at:Date.now(),items};
   sentSnaps[key]=snap;
   if(liveMode)db.ref('sentSnaps/'+key).set(snap);
   else localStorage.setItem('totw_sentsnaps',JSON.stringify(sentSnaps));
-  toast(`Marked as sent — ${person.name}. Baseline reset.`);
-  renderPlanTeam();
+  toast(`Marked as sent — ${person.name} · ${planRangeTitle(months)}.`);
+  renderPlanTeam(months);
 }
 function copyChanges(key){
-  const list=planPeople(document.getElementById('planMonth')?document.getElementById('planMonth').value:null);
+  const months=planSelectedMonths();
+  const list=planPeople(months);
   const person=list.find(o=>o.key===key);
   if(!person)return;
   const added=person.assigned.filter(a=>a.isNew);
   const removed=person.removed;
   if(!added.length&&!removed.length){toast('No changes since last sent.');return;}
-  let msg=`${person.name} — schedule update:\n`;
-  const fy=a=>fmt(a.iso)+(String(a.iso).slice(0,4)!=='2026'?' '+String(a.iso).slice(0,4):'');
-  added.forEach(a=>{msg+=`+ ADDED ${fy(a)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
-  removed.forEach(a=>{msg+=`- REMOVED ${fy(a)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
-  navigator.clipboard&&navigator.clipboard.writeText(msg).then(()=>toast('Changes copied — paste into WhatsApp.'));
-  if(!navigator.clipboard){const ta=document.createElement('textarea');ta.value=msg;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Changes copied — paste into WhatsApp.');}
+  let msg=`${person.name} — schedule update · ${planRangeTitle(months)}\n`;
+  added.forEach(a=>{msg+=`+ ADDED ${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
+  removed.forEach(a=>{msg+=`- REMOVED ${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
+  planCopyText(msg);
+}
+function copySchedule(key){
+  const months=planSelectedMonths();
+  const list=planPeople(months);
+  const person=list.find(o=>o.key===key);
+  if(!person)return;
+  if(!person.assigned.length){toast('No dates assigned in these months.');return;}
+  let msg=`${person.name} — ${planRangeTitle(months)}\n`;
+  let lastYm='';
+  person.assigned.forEach(a=>{
+    const ym=String(a.iso||'').slice(0,7);
+    if(ym!==lastYm){lastYm=ym;msg+=`\n${planMonthTitle(ym)}\n`;}
+    msg+=`${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''} · ${a.role}\n`;
+  });
+  planCopyText(msg);
 }
 function renderPlanTeam(month){
   const el=document.getElementById('planTeamList');
   const sec=document.getElementById('planTeamSec');
   const meta=document.getElementById('planTeamMeta');
   if(!el||!sec)return;
-  if(month===undefined){const sel=document.getElementById('planMonth');month=sel?sel.value:'2026-01';}
-  const list=planPeople(month).filter(o=>o.assigned.length||o.removed.length);
+  if(month===undefined)month=planSelectedMonths();
+  const months=Array.isArray(month)?month:planYmSpan(month,month);
+  const list=planPeople(months).filter(o=>o.assigned.length||o.removed.length);
   if(meta)meta.textContent=(sec.classList.contains('open')?'Hide ▾':'Show ▸')+(list.length?` · ${list.length}`:'');
-  if(!list.length){el.innerHTML='<div class="empty">No crew assigned this month yet.</div>';return;}
-  const uDays=planUnnamedDays(month);
+  if(!list.length){el.innerHTML=`<div class="empty">No crew assigned in ${esc(planRangeTitle(months).toLowerCase())} yet.</div>`;return;}
+  const uDays=planUnnamedDays(months);
   const uRate=(people['_unnamed']&&+people['_unnamed'].rate)||0;
   const uRow=uDays?`<tr class="person-row"><td>Unnamed hands <span class="ev-pill" title="'& 1' / '2P' counts not yet named">est</span><input type="number" min="0" placeholder="rate/day" value="${uRate||''}" onclick="event.stopPropagation()" onchange="unnamedRateSet(this.value)" style="width:82px;margin-left:10px;padding:4px 6px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:11px;background:#fff;color:var(--ink)"></td><td class="num">${uDays}</td><td class="num">${uRate?'₹'+(uDays*uRate).toLocaleString('en-IN'):'—'}</td></tr>`:'';
   const calc=o=>{
@@ -5956,21 +6052,25 @@ function renderPlanTeam(month){
     const chipHtml=changes?`<span class="chg-chip">${changes} change${changes!==1?'s':''}</span>`:'';
     const main=`<tr class="person-row${open?' on':''}" onclick="planPersonTog('${jsq(o.key)}')"><td>${esc(o.name)}${o.style?` <span class="ev-pill ${famClass(o.style)}">${esc(o.style)}</span>`:''}${chipHtml} <span class="pr-caret">${open?'▾':'▸'}</span></td><td class="num">${days}</td><td class="num">${est?'₹'+est.toLocaleString('en-IN'):'—'}</td></tr>`;
     if(!open)return main;
-    const monthLabel=month?MN[+month.slice(5)-1]+' '+month.slice(0,4):'All months';
+    const monthLabel=planRangeTitle(months);
     const sentLine=o.lastSentAt?`changes since last sent ${esc(fmt(new Date(o.lastSentAt).toISOString().slice(0,10)))}`:'no baseline yet — this is his first schedule';
     const merged=[...o.assigned.map(a=>({...a,removed:false})),...o.removed.map(a=>({...a,removed:true}))].sort((a,b)=>a.iso<b.iso?-1:1);
+    let lastYm='';
     const shooting=merged.length?merged.map(a=>{
+      const ym=String(a.iso||'').slice(0,7);
+      const sep=months.length>1&&ym!==lastYm?(lastYm=ym,`<div class="cost-line" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line);font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">${esc(planMonthTitle(ym))}</div>`):'';
       const tag=a.removed?'<span class="diff-tag rem">REMOVED</span>':(a.isNew?'<span class="diff-tag add">ADDED</span>':'');
-      return `<div class="cost-line${a.removed?' rem-line':''}"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span> ${tag}</span></div>`;
-    }).join(''):'<div class="cost-line" style="color:var(--ink-soft)">Not assigned anything this month</div>';
+      return `${sep}<div class="cost-line${a.removed?' rem-line':''}"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span> ${tag}</span></div>`;
+    }).join(''):`<div class="cost-line" style="color:var(--ink-soft)">Not assigned anything in ${esc(planRangeTitle(months).toLowerCase())}</div>`;
     const rateLine=`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft)"><span>Day rate</span><input type="number" min="0" placeholder="₹" value="${rate||''}" onclick="event.stopPropagation()" onchange="personRateSet('${jsq(o.key)}',this.value,'${jsq(o.name)}')" style="width:88px;padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;background:#fff;color:var(--ink)"><span style="padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-size:12px;background:#fff;color:var(--ink)">per day</span>${est?`<span style="font-family:var(--mono);font-size:11px">→ ${qty} day${qty!==1?'s':''} ≈ ₹${est.toLocaleString('en-IN')}</span>`:'<span style="font-size:11.5px">set a day rate to project this month</span>'}</div>`;
     return main+`<tr class="person-detail"><td colspan="3"><div class="pd-wrap">
-      <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:6px">${monthLabel} · ${sentLine}</div>
+      <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:6px">${esc(monthLabel)} · ${sentLine}</div>
       ${shooting}
       ${rateLine}
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="btn-mini" onclick="event.stopPropagation();markSent('${jsq(o.key)}')">Mark as sent</button>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn-mini" onclick="event.stopPropagation();copySchedule('${jsq(o.key)}')">Copy schedule</button>
         <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="event.stopPropagation();copyChanges('${jsq(o.key)}')">Copy changes</button>
+        <button class="btn-mini" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft)" onclick="event.stopPropagation();markSent('${jsq(o.key)}')">Mark as sent</button>
       </div>
     </div></td></tr>`;
   }).join('')}${uRow}${totalRow}</table>`;
