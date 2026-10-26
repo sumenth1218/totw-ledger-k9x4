@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.39-crew-locations-2026-10-26">
+<meta name="totw-build" content="v13.1.40-crew-loc-time-2026-10-26">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -378,8 +378,10 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .plan-table td.pc{font-weight:600;font-size:12px;line-height:1.3}
 .plan-table td.pe{color:var(--ink);font-size:11.5px;line-height:1.35}
 .plan-table td.pl{color:var(--ink-soft);font-size:11px;line-height:1.3}
-.cost-line .cl-loc{color:var(--ink-soft)}
-.cost-line.rem-line .cl-loc{color:inherit}
+.cl-meta{display:inline-flex;align-items:center;gap:4px;margin-left:10px;font-size:11.5px;letter-spacing:.01em;white-space:nowrap}
+.cl-meta svg{width:11px;height:11px;flex:none;opacity:.75}
+.person-detail .cost-line .cl-meta,.person-detail .cost-line .cl-meta span{color:var(--ink-soft)!important}
+.cost-line.rem-line .cl-meta span{text-decoration:line-through}
 .plan-table th.thd{width:58px}.plan-table th.thc{width:12%}.plan-table th.the{width:12%}.plan-table th.thl{width:9%}.plan-table th.thp{width:96px}
 .pcell{position:relative;min-width:0}
 .pcell input{width:100%;padding:6px 6px;border:1px solid var(--line);border-radius:5px;font-size:11.5px;background:#fff;color:var(--ink)}
@@ -5940,6 +5942,39 @@ function renderPlan(){
 }
 // Per-person schedule for the month: what they're on, and which booked dates they're free
 function itemKey(a){return a.iso+'|'+String(a.couple||'').trim().toLowerCase();}
+// Crew timing from Shoot Setup (check-in events): person's own arrival, else team reporting, else client start
+const CL_PIN='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 14.5s4.5-4.2 4.5-8A4.5 4.5 0 0 0 3.5 6.5c0 3.8 4.5 8 4.5 8z"/><circle cx="8" cy="6.5" r="1.6"/></svg>';
+const CL_CLOCK='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 4.8V8l2.2 1.4"/></svg>';
+function planTimingIndex(){
+  const idx={};
+  Object.values(checkinEvents||{}).forEach(e=>{
+    if(!e||!e.date||!e.couple)return;
+    const k=e.date+'|'+String(e.couple).trim().toLowerCase();
+    (idx[k]=idx[k]||[]).push(e);
+  });
+  return idx;
+}
+function planTimeFor(idx,a,personName){
+  const list=idx[itemKey(a)];
+  if(!list||!list.length)return {time:'',venue:''};
+  const words=s=>String(s||'').toLowerCase().split(/[^a-z]+/).filter(w=>w.length>2);
+  const evW=new Set(words(a.event));
+  let best=list[0],bestScore=-1;
+  list.forEach(e=>{
+    const names=[e.eventName,...(Array.isArray(e.eventNames)?e.eventNames:[])].join(' ');
+    let sc=words(names).filter(w=>evW.has(w)).length;
+    const me=Object.values(e.crew||{}).some(c=>String(c&&c.name||'').trim().toLowerCase()===String(personName||'').trim().toLowerCase());
+    if(me)sc+=5;
+    if(sc>bestScore){best=e;bestScore=sc;}
+  });
+  const mine=Object.values(best.crew||{}).find(c=>String(c&&c.name||'').trim().toLowerCase()===String(personName||'').trim().toLowerCase());
+  const t=(mine&&(mine.arrivalTime||mine.reportTime))||best.reportingTime||best.functionStart||best.scheduledStart||'';
+  return {time:/^\d{1,2}:\d{2}$/.test(t)?t:'',venue:best.venueName||''};
+}
+function clMetaHtml(a){
+  return (a.loc?`<span class="cl-meta">${CL_PIN}<span>${esc(a.loc)}</span></span>`:'')+(a.time?`<span class="cl-meta">${CL_CLOCK}<span>${esc(ciFmtTime(a.time))}</span></span>`:'');
+}
+function clMetaText(a){return (a.loc?' · 📍 '+a.loc:'')+(a.time?' · 🕒 '+ciFmtTime(a.time):'');}
 function planPeople(month){
   const rows=planRows(month);
   const bookingDates={};
@@ -5957,8 +5992,10 @@ function planPeople(month){
       planNames(val).forEach(nm=>{const o=ensure(nm);o.assigned.push({iso:r.iso,couple:r.couple,event:r.event,loc:r.loc||'',role:lab});o.dates.add(r.iso);});
     });
   });
+  const tIdx=planTimingIndex();
   const list=Object.values(map).map(o=>{
     o.assigned.sort((a,b)=>a.iso<b.iso?-1:1);
+    o.assigned.forEach(a=>{const t=planTimeFor(tIdx,a,o.name);a.time=t.time;if(!a.loc&&t.venue)a.loc=t.venue;});
     // diff against last-sent baseline for this person, within this month
     const snap=sentSnaps[o.key];
     o.lastSentAt=snap&&snap.at?snap.at:null;
@@ -5973,6 +6010,7 @@ function planPeople(month){
     } else {
       o.assigned.forEach(a=>{a.isNew=false;});
     }
+    o.removed.forEach(a=>{const t=planTimeFor(tIdx,a,o.name);a.time=t.time;if(!a.loc&&t.venue)a.loc=t.venue;});
     o.removed.sort((a,b)=>a.iso<b.iso?-1:1);
     return o;
   });
@@ -6006,8 +6044,8 @@ function copyChanges(key){
   const removed=person.removed;
   if(!added.length&&!removed.length){toast('No changes since last sent.');return;}
   let msg=`${person.name} — schedule update · ${planRangeTitle(months)}\n`;
-  added.forEach(a=>{msg+=`+ ADDED ${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}${a.loc?' · 📍 '+a.loc:''}\n`;});
-  removed.forEach(a=>{msg+=`- REMOVED ${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}${a.loc?' · 📍 '+a.loc:''}\n`;});
+  added.forEach(a=>{msg+=`+ ADDED ${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}${clMetaText(a)}\n`;});
+  removed.forEach(a=>{msg+=`- REMOVED ${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}${clMetaText(a)}\n`;});
   planCopyText(msg);
 }
 function copySchedule(key){
@@ -6021,7 +6059,7 @@ function copySchedule(key){
   person.assigned.forEach(a=>{
     const ym=String(a.iso||'').slice(0,7);
     if(ym!==lastYm){lastYm=ym;msg+=`\n${planMonthTitle(ym)}\n`;}
-    msg+=`${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}${a.loc?' · 📍 '+a.loc:''} · ${a.role}\n`;
+    msg+=`${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}${clMetaText(a)} · ${a.role}\n`;
   });
   planCopyText(msg);
 }
@@ -6064,7 +6102,7 @@ function renderPlanTeam(month){
       const ym=String(a.iso||'').slice(0,7);
       const sep=months.length>1&&ym!==lastYm?(lastYm=ym,`<div class="cost-line" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line);font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">${esc(planMonthTitle(ym))}</div>`):'';
       const tag=a.removed?'<span class="diff-tag rem">REMOVED</span>':(a.isNew?'<span class="diff-tag add">ADDED</span>':'');
-      return `${sep}<div class="cost-line${a.removed?' rem-line':''}"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''}${a.loc?` <span class="cl-loc">· ${esc(a.loc)}</span>`:''} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span> ${tag}</span></div>`;
+      return `${sep}<div class="cost-line${a.removed?' rem-line':''}"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''}${clMetaHtml(a)} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span> ${tag}</span></div>`;
     }).join(''):`<div class="cost-line" style="color:var(--ink-soft)">Not assigned anything in ${esc(planRangeTitle(months).toLowerCase())}</div>`;
     const rateLine=`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft)"><span>Day rate</span><input type="number" min="0" placeholder="₹" value="${rate||''}" onclick="event.stopPropagation()" onchange="personRateSet('${jsq(o.key)}',this.value,'${jsq(o.name)}')" style="width:88px;padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;background:#fff;color:var(--ink)"><span style="padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-size:12px;background:#fff;color:var(--ink)">per day</span>${est?`<span style="font-family:var(--mono);font-size:11px">→ ${qty} day${qty!==1?'s':''} ≈ ₹${est.toLocaleString('en-IN')}</span>`:'<span style="font-size:11.5px">set a day rate to project this month</span>'}</div>`;
     return main+`<tr class="person-detail"><td colspan="3"><div class="pd-wrap">
