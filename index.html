@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<meta name="totw-build" content="v13.1.38-plan-months-2026-09-15">
+<meta name="totw-build" content="v13.1.39-crew-locations-2026-10-26">
 <title>Tale of Two Weddings — Studio Ledger</title>
 <link rel="icon" href="totw-logo-square.jpg?v=3" type="image/jpeg">
 <link rel="apple-touch-icon" href="crew-icon-180.png?v=3">
@@ -378,6 +378,8 @@ h1 em{font-style:italic;color:var(--sindoor)}
 .plan-table td.pc{font-weight:600;font-size:12px;line-height:1.3}
 .plan-table td.pe{color:var(--ink);font-size:11.5px;line-height:1.35}
 .plan-table td.pl{color:var(--ink-soft);font-size:11px;line-height:1.3}
+.cost-line .cl-loc{color:var(--ink-soft)}
+.cost-line.rem-line .cl-loc{color:inherit}
 .plan-table th.thd{width:58px}.plan-table th.thc{width:12%}.plan-table th.the{width:12%}.plan-table th.thl{width:9%}.plan-table th.thp{width:96px}
 .pcell{position:relative;min-width:0}
 .pcell input{width:100%;padding:6px 6px;border:1px solid var(--line);border-radius:5px;font-size:11.5px;background:#fff;color:var(--ink)}
@@ -5943,6 +5945,8 @@ function planPeople(month){
   const bookingDates={};
   rows.forEach(r=>{(bookingDates[r.iso]=bookingDates[r.iso]||[]).push(r.couple);});
   const allIsos=Object.keys(bookingDates).sort();
+  const locByKey={};
+  rows.forEach(r=>{if(r.loc)locByKey[itemKey(r)]=r.loc;});
   const map={};
   const ensure=nm=>{const k=nm.toLowerCase();if(!map[k])map[k]={key:k,name:(people[k]&&people[k].name)||nm,style:(people[k]&&people[k].style)||'',assigned:[],dates:new Set()};return map[k];};
   Object.values(people).forEach(o=>{if(o&&o.name)ensure(o.name);});
@@ -5950,7 +5954,7 @@ function planPeople(month){
     const pl=plans[r.key]||{};
     PLAN_ROLES.forEach(([rk,lab])=>{
       const val=(pl.cells&&pl.cells[rk])||'';
-      planNames(val).forEach(nm=>{const o=ensure(nm);o.assigned.push({iso:r.iso,couple:r.couple,event:r.event,role:lab});o.dates.add(r.iso);});
+      planNames(val).forEach(nm=>{const o=ensure(nm);o.assigned.push({iso:r.iso,couple:r.couple,event:r.event,loc:r.loc||'',role:lab});o.dates.add(r.iso);});
     });
   });
   const list=Object.values(map).map(o=>{
@@ -5963,7 +5967,7 @@ function planPeople(month){
       const curKeys=new Set(o.assigned.filter(a=>planIsoInMonths(a.iso,month)).map(itemKey));
       Object.values(snap.items).forEach(it=>{
         if(!planIsoInMonths(it.iso,month))return;
-        if(!curKeys.has(itemKey(it)))o.removed.push(it);
+        if(!curKeys.has(itemKey(it)))o.removed.push(it.loc?it:{...it,loc:locByKey[itemKey(it)]||''});
       });
       o.assigned.forEach(a=>{a.isNew=!snap.items[itemKey(a)];});
     } else {
@@ -5985,7 +5989,7 @@ function markSent(key){
   Object.keys(items).forEach(k=>{
     if(planIsoInMonths(items[k]&&items[k].iso,months))delete items[k];
   });
-  person.assigned.forEach(a=>{items[itemKey(a)]={iso:a.iso,couple:a.couple,event:a.event,role:a.role};});
+  person.assigned.forEach(a=>{items[itemKey(a)]={iso:a.iso,couple:a.couple,event:a.event,loc:a.loc||'',role:a.role};});
   const snap={at:Date.now(),items};
   sentSnaps[key]=snap;
   if(liveMode)db.ref('sentSnaps/'+key).set(snap);
@@ -6002,8 +6006,8 @@ function copyChanges(key){
   const removed=person.removed;
   if(!added.length&&!removed.length){toast('No changes since last sent.');return;}
   let msg=`${person.name} — schedule update · ${planRangeTitle(months)}\n`;
-  added.forEach(a=>{msg+=`+ ADDED ${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
-  removed.forEach(a=>{msg+=`- REMOVED ${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}\n`;});
+  added.forEach(a=>{msg+=`+ ADDED ${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}${a.loc?' · 📍 '+a.loc:''}\n`;});
+  removed.forEach(a=>{msg+=`- REMOVED ${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}${a.loc?' · 📍 '+a.loc:''}\n`;});
   planCopyText(msg);
 }
 function copySchedule(key){
@@ -6017,7 +6021,7 @@ function copySchedule(key){
   person.assigned.forEach(a=>{
     const ym=String(a.iso||'').slice(0,7);
     if(ym!==lastYm){lastYm=ym;msg+=`\n${planMonthTitle(ym)}\n`;}
-    msg+=`${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''} · ${a.role}\n`;
+    msg+=`${fullDate(a.iso)} · ${a.couple}${a.event&&a.event!=='—'?' · '+a.event:''}${a.loc?' · 📍 '+a.loc:''} · ${a.role}\n`;
   });
   planCopyText(msg);
 }
@@ -6060,7 +6064,7 @@ function renderPlanTeam(month){
       const ym=String(a.iso||'').slice(0,7);
       const sep=months.length>1&&ym!==lastYm?(lastYm=ym,`<div class="cost-line" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line);font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">${esc(planMonthTitle(ym))}</div>`):'';
       const tag=a.removed?'<span class="diff-tag rem">REMOVED</span>':(a.isNew?'<span class="diff-tag add">ADDED</span>':'');
-      return `${sep}<div class="cost-line${a.removed?' rem-line':''}"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span> ${tag}</span></div>`;
+      return `${sep}<div class="cost-line${a.removed?' rem-line':''}"><span>${fmt(a.iso)} · ${esc(a.couple)}${a.event&&a.event!=='—'?' · '+esc(a.event):''}${a.loc?` <span class="cl-loc">· ${esc(a.loc)}</span>`:''} <span class="ev-pill ${famClass(a.role)}" style="margin-left:2px">${esc(a.role)}</span> ${tag}</span></div>`;
     }).join(''):`<div class="cost-line" style="color:var(--ink-soft)">Not assigned anything in ${esc(planRangeTitle(months).toLowerCase())}</div>`;
     const rateLine=`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft)"><span>Day rate</span><input type="number" min="0" placeholder="₹" value="${rate||''}" onclick="event.stopPropagation()" onchange="personRateSet('${jsq(o.key)}',this.value,'${jsq(o.name)}')" style="width:88px;padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-family:var(--mono);font-size:12px;background:#fff;color:var(--ink)"><span style="padding:5px 7px;border:1px solid var(--line);border-radius:5px;font-size:12px;background:#fff;color:var(--ink)">per day</span>${est?`<span style="font-family:var(--mono);font-size:11px">→ ${qty} day${qty!==1?'s':''} ≈ ₹${est.toLocaleString('en-IN')}</span>`:'<span style="font-size:11.5px">set a day rate to project this month</span>'}</div>`;
     return main+`<tr class="person-detail"><td colspan="3"><div class="pd-wrap">
